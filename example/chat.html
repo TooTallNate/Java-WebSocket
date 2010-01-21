@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>WebSocket Chat Client</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/javascript">
+        if (!window.WebSocket) alert("Your browser doesn't support the WebSocket API!");
+        var ws;
+
+        function connect() {
+            ws = new WebSocket(document.getElementById("uri").value);
+            ws.onopen = function() {
+                document.getElementById("uri").enabled = false;
+                document.getElementById("connectButton").enabled = false;
+            }
+            ws.onmessage = function(e) {
+                var logArea = document.getElementById("log");
+                logArea.innerHTML += e.data + "\n";
+            }
+            ws.onclose = function() {
+                document.getElementById("uri").enabled = true;
+                document.getElementById("connectButton").enabled = true;
+            }
+        }
+
+        function send() {
+            if (ws) {
+                var textField = document.getElementById("textField");
+                ws.send(textField.value);
+                textField.value = "";
+            }
+        }
+    </script>
+  </head>
+  <body>
+      <input type="text" id="uri" value="ws://localhost" style="width:200px;"> <input type="button" onclick="connect()" value="Connect" id="connectButton"><br>
+      <textarea id="log" rows="50" cols="100"></textarea><br>
+      <input type="text" id="textField" value="" style="width:200px;"> <input type="button" onclick="send()" value="Send" id="send"><br>
+  </body>
+</html>
