@@ -3,38 +3,73 @@
   <head>
     <title>WebSocket Chat Client</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    <script type="text/javascript" src="prototype.js"></script>
     <script type="text/javascript">
-        if (!window.WebSocket) alert("Your browser doesn't support the WebSocket API!");
-        var ws;
+        document.observe("dom:loaded", function() {
+            function log(text) {
+                $("log").innerHTML = (new Date).getTime() + ": " + (!Object.isUndefined(text) && text !== null ? text.escapeHTML() : "null") + $("log").innerHTML;
+            }
 
-        function connect() {
-            ws = new WebSocket(document.getElementById("uri").value);
-            ws.onopen = function() {
-                document.getElementById("uri").enabled = false;
-                document.getElementById("connectButton").enabled = false;
+            if (!window.WebSocket) {
+                var head = $$("head")[0];
+                head.insert(new Element("script", { type: "text/javascript", src: "swfobject.js" }));
+                head.insert(new Element("script", { type: "text/javascript", src: "FABridge.js" }));
+                head.insert(new Element("script", { type: "text/javascript", src: "web_socket.js" }));
+                log("WebSocket not natively supported, falling back to Flash");
+            } else {
+                log("Using browser's native WebSocket implementation")
             }
-            ws.onmessage = function(e) {
-                var logArea = document.getElementById("log");
-                logArea.innerHTML += e.data + "\n";
-            }
-            ws.onclose = function() {
-                document.getElementById("uri").enabled = true;
-                document.getElementById("connectButton").enabled = true;
-            }
-        }
 
-        function send() {
-            if (ws) {
-                var textField = document.getElementById("textField");
-                ws.send(textField.value);
-                textField.value = "";
+            var ws;
+
+            function connect() {
+                ws = new WebSocket($F("uri"));
+                ws.onopen = function() {
+                    log("[WebSocket#onopen] called.\n");
+                    $("uriForm").enable();
+                }
+                ws.onmessage = function(e) {
+                    log("[WebSocket#onmessage] called.\n\tMessage: " + e.data + "\n");
+                }
+                ws.onclose = function() {
+                    log("[WebSocket#onclose] called.\n");
+                    $("uriForm").disable();
+                    ws = null;
+                }
             }
-        }
+
+            function send() {
+                if (ws) {
+                    var textField = $("textField");
+                    ws.send(textField.value);
+                    log("[WebSocket#send] called.\n\tSent string: " + textField.value + "\n");
+                    textField.value = "";
+                    textField.focus();
+                }
+            }
+
+            $("uriForm").observe("submit", function(e) {
+                e.stop();
+                connect();
+            });
+
+            $("sendForm").observe("submit", function(e) {
+                e.stop();
+                send();
+            });
+
+            $("disconnect").observe("click", function() {
+                if (ws) {
+                    ws.close();
+                }
+            });
+        });
     </script>
   </head>
   <body>
-      <input type="text" id="uri" value="ws://localhost" style="width:200px;"> <input type="button" onclick="connect()" value="Connect" id="connectButton"><br>
+      <form id="uriForm"><input type="text" id="uri" value="ws://localhost" style="width:200px;"> <input type="submit" value="Connect"><input type="button" id="disconnect" value="Disconnect"></form><br>
+      <form id="sendForm"><input type="text" id="textField" value="" style="width:200px;"> <input type="submit" value="Send"></form><br>
       <textarea id="log" rows="50" cols="100"></textarea><br>
-      <input type="text" id="textField" value="" style="width:200px;"> <input type="button" onclick="send()" value="Send" id="send"><br>
   </body>
 </html>

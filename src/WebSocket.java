@@ -9,6 +9,10 @@ import java.nio.charset.Charset;
  * Represents one end (client or server) of a single WebSocket connection.
  * Takes care of the "handshake" phase, then allows for easy sending of
  * text frames, and recieving frames through an event-based model.
+ *
+ * This is an inner class, used by <tt>WebSocketClient</tt> and
+ * <tt>WebSocketServer</tt>, and should never need to be instantiated directly
+ * by your code.
  * @author Nathan Rajlich
  */
 final class WebSocket {
@@ -35,7 +39,7 @@ final class WebSocket {
     public static final byte END_OF_FRAME = (byte)0xFF;
 
 
-    // INSTANCE VARIABLES //////////////////////////////////////////////////////
+    // INSTANCE PROPERTIES /////////////////////////////////////////////////////
     /**
      * The <tt>SocketChannel</tt> instance to use for this server connection.
      * This is used to read and write data to.
@@ -85,11 +89,15 @@ final class WebSocket {
     /**
      * Should be called when a Selector has a key that is writable for this
      * WebSocket's SocketChannel connection.
-     * @throws IOException
+     * @throws IOException When socket related I/O errors occur.
      */
     public void handleRead() throws IOException {
         this.buffer.rewind();
-        int bytesRead = this.socketChannel.read(this.buffer);
+        int bytesRead = -1;
+        try {
+            bytesRead = this.socketChannel.read(this.buffer);
+        } catch(Exception ex) {}
+        
         if (bytesRead == -1)
             close();
 
@@ -104,12 +112,17 @@ final class WebSocket {
         }
     }
 
+    /**
+     * Closes the underlying SocketChannel, and calls the listener's onClose
+     * event handler.
+     * @throws IOException When socket related I/O errors occur.
+     */
     public void close() throws IOException {
         this.socketChannel.close();
         this.wsl.onClose(this);
     }
 
-    public void sendFrame(String text) throws IOException {
+    public void send(String text) throws IOException {
         if (!this.handshakeComplete) throw new NotYetConnectedException();
         if (text == null) throw new NullPointerException("Cannot send 'null' data to a WebSocket.");
 
@@ -137,7 +150,11 @@ final class WebSocket {
             this.currentFrame = null;
 
         } else if (newestByte == END_OF_FRAME) { // End of Frame
-            String textFrame = new String(this.currentFrame.array(), UTF8_CHARSET);
+            String textFrame = null;
+            // currentFrame will be null if END_OF_FRAME was send directly after
+            // START_OF_FRAME, thus we will send 'null' as the sent message.
+            if (this.currentFrame != null)
+                textFrame = new String(this.currentFrame.array(), UTF8_CHARSET);
             this.wsl.onMessage(this, textFrame);
 
         } else { // Regular frame data, add to current frame buffer
@@ -163,10 +180,11 @@ final class WebSocket {
         // If the ByteBuffer ends with 0x0D 0x0A 0x0D 0x0A
         // (or two CRLFs), then the client handshake is complete
         byte[] h = this.remoteHandshake.array();
-        if (h.length>=4 && h[h.length-4] == CR
+        if ((h.length>=4 && h[h.length-4] == CR
                         && h[h.length-3] == LF
                         && h[h.length-2] == CR
-                        && h[h.length-1] == LF) {
+                        && h[h.length-1] == LF) ||
+            (h.length==23 && h[h.length-1] == 0)) {
             completeHandshake();
         }
     }

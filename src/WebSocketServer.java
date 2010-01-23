@@ -11,55 +11,138 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
- * 
+ * <tt>WebSocketServer</tt> is an abstract class that only takes care of the
+ * HTTP handshake portion of WebSockets. It's up to a subclass to add
+ * functionality/purpose to the server.
  * @author Nathan Rajlich
  */
 public abstract class WebSocketServer implements Runnable, WebSocketListener {
-
+    // CONSTANTS ///////////////////////////////////////////////////////////////
     /**
-     * Holds the list of active WebSocket connections. "Active" means able to
-     * be written to, or read from.
+     * If the nullary constructor is used, the DEFAULT_PORT will be the port
+     * the WebSocketServer is binded to.
+     */
+    public static final int DEFAULT_PORT = 80;
+    /**
+     * The value of <var>handshake</var> when a Flash client requests a policy
+     * file on this server.
+     */
+    public static final String FLASH_POLICY_REQUEST = "<policy-file-request/>\0";
+
+    
+    // INSTANCE PROPERTIES /////////////////////////////////////////////////////
+    /**
+     * Holds the list of active WebSocket connections. "Active" means WebSocket
+     * handshake is complete and socket can be written to, or read from.
      */
     private final CopyOnWriteArraySet<WebSocket> connections;
     /**
      * The port number that this WebSocket server should listen on. Default is
      * 80 (HTTP).
      */
-    private final int port;
-    /**
-     * The Thread that is watching the socket for activity.
-     */
-    private Thread serverThread;
+    private int port;
     /**
      * The socket channel for this WebSocket server.
      */
     private ServerSocketChannel server;
-    private Selector selector;
 
+    // CONSTRUCTOR /////////////////////////////////////////////////////////////
+    /**
+     * Nullary constructor. Creates a WebSocketServer that will attempt to
+     * listen on port DEFAULT_PORT.
+     */
     public WebSocketServer() {
-        this(80);
+        this(DEFAULT_PORT);
     }
 
+    /**
+     * Creates a WebSocketServer that will attempt to listen on port
+     * <var>port</var>.
+     * @param port The port number this server should listen on.
+     */
     public WebSocketServer(int port) {
-        this.port = port;
         this.connections = new CopyOnWriteArraySet<WebSocket>();
+        setPort(port);
     }
 
+    /**
+     * Starts the server thread that binds to the currently set port number and
+     * listeners for WebSocket connection requests.
+     */
     public void start() {
-        serverThread = new Thread(this);
-        serverThread.start();
+        (new Thread(this)).start();
     }
 
+    /**
+     * Closes all connected clients sockets, then closes the underlying
+     * ServerSocketChannel, effectively killing the server socket thread and
+     * freeing the port the server was bound to.
+     * @throws IOException When socket related I/O errors occur.
+     */
     public void stop() throws IOException {
+        for (WebSocket ws : connections)
+            ws.close();
         this.server.close();
     }
 
+    /**
+     * Sends <var>text</var> to all currently connected WebSocket clients.
+     * @param text The String to send across the network.
+     * @throws IOException When socket related I/O errors occur.
+     */
     public void sendToAll(String text) throws IOException {
-        for (WebSocket c : this.connections) {
-            c.sendFrame(text);
-        }
+        for (WebSocket c : this.connections)
+            c.send(text);
     }
 
+    /**
+     * Sends <var>text</var> to all currently connected WebSocket clients,
+     * except for the specified <var>connection</var>.
+     * @param connection The {@link WebSocket} connection to ignore.
+     * @param text The String to send to every connection except <var>connection</var>.
+     * @throws IOException When socket related I/O errors occur.
+     */
+    public void sendToAllExcept(WebSocket connection, String text) throws IOException {
+        if (connection == null) throw new NullPointerException("'connection' cannot be null");
+        for (WebSocket c : this.connections)
+            if (!connection.equals(c))
+                c.send(text);
+    }
+
+    /**
+     * Sends <var>text</var> to all currently connected WebSocket clients,
+     * except for those found in the Set <var>connections</var>.
+     * @param connections
+     * @param text
+     * @throws IOException When socket related I/O errors occur.
+     */
+    public void sendToAllExcept(Set<WebSocket> connections, String text) throws IOException {
+        if (connections == null) throw new NullPointerException("'connections' cannot be null");
+        for (WebSocket c : this.connections)
+            if (!connections.contains(c))
+                c.send(text);
+    }
+
+    /**
+     * Returns a WebSocket[] of currently connected clients.
+     * @return The currently connected clients in a WebSocket[].
+     */
+    public WebSocket[] connections() {
+        return this.connections.toArray(new WebSocket[0]);
+    }
+
+    /**
+     * Sets the port that this WebSocketServer should listen on.
+     * @param port The port number to listen on.
+     */
+    public void setPort(int port) {
+        this.port = port;
+    }
+
+    /**
+     * Gets the port number that this server listens on.
+     * @return The port number.
+     */
     public int getPort() {
         return port;
     }
@@ -72,25 +155,21 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
             server.configureBlocking(false);
             server.socket().bind(new java.net.InetSocketAddress(port));
 
-            selector = Selector.open();
+            Selector selector = Selector.open();
             server.register(selector, server.validOps());
 
             while(true) {
-                // Waiting for events
-                //System.out.println("waiting for events...");
                 selector.select();
-                // Get keys
-                Set keys = selector.selectedKeys();
+                Set<SelectionKey> keys = selector.selectedKeys();
                 Iterator i = keys.iterator();
 
-                // For each keys...
                 while(i.hasNext()) {
                     SelectionKey key = (SelectionKey) i.next();
 
                     // Remove the current key
                     i.remove();
 
-                    // if isAccetable = true
+                    // if isAccetable == true
                     // then a client required a connection
                     if (key.isAcceptable()) {
                         SocketChannel client = server.accept();
@@ -99,7 +178,7 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
                         client.register(selector, SelectionKey.OP_READ, c);
                     }
 
-                    // if isReadable = true
+                    // if isReadable == true
                     // then the server is ready to read
                     if (key.isReadable()) {
                         WebSocket conn = (WebSocket)key.attachment();
@@ -110,6 +189,26 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
+        //System.out.println("End of WebSocketServer socket thread: " + Thread.currentThread());
+    }
+
+    /**
+     * Gets the XML string that should be returned if a client requests a Flash
+     * security policy.
+     *
+     * The default implementation allows access from all remote domains, but
+     * only on the port that this WebSocketServer is listening on.
+     *
+     * This is specifically implemented for gitime's WebSocket client for Flash:
+     *     http://github.com/gimite/web-socket-js
+     *
+     * @return An XML String that comforms to Flash's security policy. You MUST
+     *         not need to include the null char at the end, it is appended
+     *         automatically.
+     */
+    protected String getFlashSecurityPolicy() {
+        return "<cross-domain-policy><allow-access-from domain=\"*\" to-ports=\""
+               + getPort() + "\" /></cross-domain-policy>";
     }
 
 
@@ -126,6 +225,12 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
      * @throws IOException When socket related I/O errors occur.
      */
     public boolean onHandshakeRecieved(WebSocket conn, String handshake) throws IOException {
+        if (FLASH_POLICY_REQUEST.equals(handshake)) {
+            String policy = getFlashSecurityPolicy() + "\0";
+            conn.socketChannel().write(ByteBuffer.wrap(policy.getBytes(WebSocket.UTF8_CHARSET)));
+            return false;
+        }
+
         String[] requestLines = handshake.split("\r\n");
         boolean isWebSocketRequest = true;
         String line = requestLines[0].trim();
@@ -177,13 +282,13 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
     }
 
     public void onOpen(WebSocket conn) {
-        this.connections.add(conn);
-        onClientOpen(conn);
+        if (this.connections.add(conn))
+            onClientOpen(conn);
     }
     
     public void onClose(WebSocket conn) {
-        this.connections.remove(conn);
-        onClientClose(conn);
+        if (this.connections.remove(conn))
+            onClientClose(conn);
     }
 
     // ABTRACT METHODS /////////////////////////////////////////////////////////
