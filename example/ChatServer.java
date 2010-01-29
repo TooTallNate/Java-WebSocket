@@ -5,7 +5,11 @@ import java.io.IOException;
  * A simple WebSocketServer implementation. Keeps track of a "chatroom".
  */
 public class ChatServer extends WebSocketServer {
-    
+
+    public ChatServer(int port) {
+        super(port);
+    }
+
     public void onClientOpen(WebSocket conn) {
         try {
             this.sendToAll(conn + " entered the room!");
@@ -34,7 +38,11 @@ public class ChatServer extends WebSocketServer {
     }
 
     public static void main(String[] args) {
-        ChatServer s = new ChatServer();
+        int port = 80;
+        try {
+            port = Integer.parseInt(args[0]);
+        } catch(Exception ex) {}
+        ChatServer s = new ChatServer(port);
         s.start();
         System.out.println("ChatServer started on port: " + s.getPort());
     }
