@@ -1,5 +1,6 @@
 Java WebSockets
 ===============
+### CAUTION/TODO: This WebSocket implementation adheres to an older draft of the WebSocket specification (draft 75). The [current draft](http://www.whatwg.org/specs/web-socket-protocol/) (draft 76) is a TODO item/fork-worthy! ###
 
 This repository contains a simple WebSocket server and client implementation
 in Java. The underlying classes use the Java classes `ServerSocketChannel` and
