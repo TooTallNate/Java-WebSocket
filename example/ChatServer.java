@@ -7,7 +7,7 @@ import java.io.IOException;
 public class ChatServer extends WebSocketServer {
 
     public ChatServer(int port) {
-        super(port);
+        super(port,Draft.AUTO);
     }
 
     public void onClientOpen(WebSocket conn) {
@@ -17,6 +17,7 @@ public class ChatServer extends WebSocketServer {
             ex.printStackTrace();
         }
         System.out.println(conn + " entered the room!");
+        
     }
 
     public void onClientClose(WebSocket conn) {
@@ -38,7 +39,7 @@ public class ChatServer extends WebSocketServer {
     }
 
     public static void main(String[] args) {
-        int port = 80;
+        int port = 88;
         try {
             port = Integer.parseInt(args[0]);
         } catch(Exception ex) {}

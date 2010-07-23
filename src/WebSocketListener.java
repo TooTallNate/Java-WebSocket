@@ -1,5 +1,6 @@
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * Implemented by <tt>WebSocketClient</tt> and <tt>WebSocketServer</tt>.
@@ -7,6 +8,15 @@ import java.io.IOException;
  * @author Nathan Rajlich
  */
 interface WebSocketListener {
+	/**
+     * Enum for WebSocket Draft
+     */
+    public static enum Draft
+    {
+    	AUTO,
+    	DRAFT75,
+    	DRAFT76
+    }
     /**
      * Called when the socket connection is first established, and the WebSocket
      * handshake has been recieved. This method should parse the
@@ -17,8 +27,9 @@ interface WebSocketListener {
      * @return <var>true</var> if the handshake is valid, and <var>onOpen</var>
      *         should be immediately called afterwards. <var>false</var> if the
      *         handshake was invalid, and the connection should be terminated.
+     * @throws NoSuchAlgorithmException 
      */
-    public boolean onHandshakeRecieved(WebSocket conn, String handshake) throws IOException;
+    public boolean onHandshakeRecieved(WebSocket conn, String handshake,byte[] key3) throws IOException, NoSuchAlgorithmException;
     /**
      * Called when an entire text frame has been recieved. Do whatever you want
      * here...
@@ -39,4 +50,9 @@ interface WebSocketListener {
      * @param conn The <tt>WebSocket</tt> instance this event is occuring on.
      */
     public void onClose(WebSocket conn);
+    /**
+     * Called to retrive the Draft of this listener.
+     */
+    public Draft getDraft();
+    
 }

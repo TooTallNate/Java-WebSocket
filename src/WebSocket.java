@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.NotYetConnectedException;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * Represents one end (client or server) of a single WebSocket connection.
@@ -37,7 +38,7 @@ final class WebSocket {
      * The byte representing the end of a WebSocket text frame.
      */
     public static final byte END_OF_FRAME = (byte)0xFF;
-
+    
 
     // INSTANCE PROPERTIES /////////////////////////////////////////////////////
     /**
@@ -90,14 +91,14 @@ final class WebSocket {
      * Should be called when a Selector has a key that is writable for this
      * WebSocket's SocketChannel connection.
      * @throws IOException When socket related I/O errors occur.
+     * @throws NoSuchAlgorithmException 
      */
-    public void handleRead() throws IOException {
+    public void handleRead() throws IOException, NoSuchAlgorithmException {
         this.buffer.rewind();
         int bytesRead = -1;
         try {
             bytesRead = this.socketChannel.read(this.buffer);
         } catch(Exception ex) {}
-        
         if (bytesRead == -1)
             close();
 
@@ -168,7 +169,7 @@ final class WebSocket {
         }
     }
 
-    private void recieveHandshake() throws IOException {
+    private void recieveHandshake() throws IOException, NoSuchAlgorithmException {
         ByteBuffer ch = ByteBuffer.allocate((this.remoteHandshake != null ? this.remoteHandshake.capacity() : 0) + this.buffer.capacity());
         if (this.remoteHandshake != null) {
             this.remoteHandshake.rewind();
@@ -180,19 +181,36 @@ final class WebSocket {
         // If the ByteBuffer ends with 0x0D 0x0A 0x0D 0x0A
         // (or two CRLFs), then the client handshake is complete
         byte[] h = this.remoteHandshake.array();
-        if ((h.length>=4 && h[h.length-4] == CR
-                        && h[h.length-3] == LF
-                        && h[h.length-2] == CR
-                        && h[h.length-1] == LF) ||
-            (h.length==23 && h[h.length-1] == 0)) {
-            completeHandshake();
-        }
+    	if ((h.length>=12 && h[h.length-12] == CR
+                && h[h.length-11] == LF
+                && h[h.length-10] == CR
+                && h[h.length-9] == LF)) {
+    		byte[] key3 = new byte[8];
+            key3[0]=h[h.length-8];
+            key3[1]=h[h.length-7];
+            key3[2]=h[h.length-6];
+            key3[3]=h[h.length-5];
+            key3[4]=h[h.length-4];
+            key3[5]=h[h.length-3];
+            key3[6]=h[h.length-2];
+            key3[7]=h[h.length-1];
+        	completeHandshake(key3);
+    	}
+    	else if ((h.length>=4 && h[h.length-4] == CR
+                && h[h.length-3] == LF
+                && h[h.length-2] == CR
+                && h[h.length-1] == LF) && !(new String(this.remoteHandshake.array(),UTF8_CHARSET).contains("Sec")) ||
+                (h.length==23 && h[h.length-1] == 0) ) {
+    		
+    		completeHandshake(null);
+    	}    
     }
 
-    private void completeHandshake() throws IOException {
-        String handshake = new String(this.remoteHandshake.array(), UTF8_CHARSET);
+    private void completeHandshake(byte[] key3) throws IOException, NoSuchAlgorithmException {
+    	byte[] handshakeBytes=this.remoteHandshake.array();
+        String handshake = new String(handshakeBytes, UTF8_CHARSET);
         this.handshakeComplete = true;
-        if (this.wsl.onHandshakeRecieved(this, handshake)) {
+        if (this.wsl.onHandshakeRecieved(this,handshake,key3)) {
             this.wsl.onOpen(this);
         } else {
             close();

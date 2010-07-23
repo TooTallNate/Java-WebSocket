@@ -6,6 +6,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -155,7 +156,10 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
 
         } catch (IOException ex) {
             ex.printStackTrace();
-        }
+        } catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
 
 
@@ -170,7 +174,7 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
      *         handshake, <var>false</var> otherwise.
      * @throws IOException When socket related I/O errors occur.
      */
-    public boolean onHandshakeRecieved(WebSocket conn, String handshake) throws IOException {
+    public boolean onHandshakeRecieved(WebSocket conn, String handshake,byte[] key3) throws IOException {
         // TODO: Do some parsing of the returned handshake, and close connection
         // (return false) if we recieved anything unexpected.
         return true;

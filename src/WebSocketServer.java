@@ -5,10 +5,18 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
+
+import sun.misc.Regexp;
 
 /**
  * <tt>WebSocketServer</tt> is an abstract class that only takes care of the
@@ -45,23 +53,27 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
      * The socket channel for this WebSocket server.
      */
     private ServerSocketChannel server;
-
+    /**
+     * The Draft the Server is running on
+     */
+    private Draft draft;
     // CONSTRUCTOR /////////////////////////////////////////////////////////////
     /**
      * Nullary constructor. Creates a WebSocketServer that will attempt to
      * listen on port DEFAULT_PORT.
      */
     public WebSocketServer() {
-        this(DEFAULT_PORT);
+        this(DEFAULT_PORT,Draft.AUTO);
     }
 
-    /**
+	/**
      * Creates a WebSocketServer that will attempt to listen on port
      * <var>port</var>.
      * @param port The port number this server should listen on.
      */
-    public WebSocketServer(int port) {
+    public WebSocketServer(int port,Draft draft) {
         this.connections = new CopyOnWriteArraySet<WebSocket>();
+        this.draft=draft;
         setPort(port);
     }
 
@@ -146,6 +158,10 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
     public int getPort() {
         return port;
     }
+    
+    public Draft getDraft() {
+		return draft;
+	}
 
     
     // Runnable IMPLEMENTATION /////////////////////////////////////////////////
@@ -189,7 +205,10 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
-        //System.out.println("End of WebSocketServer socket thread: " + Thread.currentThread());
+        catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
 
     /**
@@ -223,14 +242,14 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
      * @return True if the client sent a valid WebSocket handshake and this server
      *         successfully sent a WebSocket server handshake, false otherwise.
      * @throws IOException When socket related I/O errors occur.
+     * @throws NoSuchAlgorithmException 
      */
-    public boolean onHandshakeRecieved(WebSocket conn, String handshake) throws IOException {
+    public boolean onHandshakeRecieved(WebSocket conn, String handshake,byte[] key3) throws IOException, NoSuchAlgorithmException {
         if (FLASH_POLICY_REQUEST.equals(handshake)) {
             String policy = getFlashSecurityPolicy() + "\0";
             conn.socketChannel().write(ByteBuffer.wrap(policy.getBytes(WebSocket.UTF8_CHARSET)));
             return false;
         }
-
         String[] requestLines = handshake.split("\r\n");
         boolean isWebSocketRequest = true;
         String line = requestLines[0].trim();
@@ -245,7 +264,9 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
         for (int i=1; i<requestLines.length; i++) {
             line = requestLines[i];
             int firstColon = line.indexOf(":");
-            p.setProperty(line.substring(0, firstColon).trim(), line.substring(firstColon+1).trim());
+            if(firstColon!=-1){
+            	p.setProperty(line.substring(0, firstColon).trim(), line.substring(firstColon+1).trim());
+            }
         }
         String prop = p.getProperty("Upgrade");
         if (prop == null || !prop.equals("WebSocket")) {
@@ -255,20 +276,63 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
         if (prop == null || !prop.equals("Upgrade")) {
             isWebSocketRequest = false;
         }
-
-        // If we've determined that this is a valid WebSocket request, send a
-        // valid WebSocket server handshake, then return true to keep connection alive.
+        String key1=p.getProperty("Sec-WebSocket-Key1");
+        String key2=p.getProperty("Sec-WebSocket-Key2");
+        String headerPrefix="";
+        String response="";
+        switch (this.draft){
+        	case DRAFT75:
+        		if(key1!=null||key2!=null||key3!=null){
+        			isWebSocketRequest=false;
+        		}
+        		break;
+        	case DRAFT76:
+        		if(key1==null||key2==null||key3==null){
+        			isWebSocketRequest=false;
+        		}
+        		break;	
+        }
         if (isWebSocketRequest) {
+        	if(key1!=null&&key2!=null&&key3!=null){
+    			headerPrefix="Sec-";
+    			byte[] part1=this.getPart(key1);
+    			byte[] part2=this.getPart(key2);
+    			byte[] challenge=new byte[16];
+    			challenge[0]=part1[0];
+    			challenge[1]=part1[1];
+    			challenge[2]=part1[2];
+    			challenge[3]=part1[3];
+    			challenge[4]=part2[0];
+    			challenge[5]=part2[1];
+    			challenge[6]=part2[2];
+    			challenge[7]=part2[3];
+    			challenge[8]=key3[0];
+    			challenge[9]=key3[1];
+    			challenge[10]=key3[2];
+    			challenge[11]=key3[3];
+    			challenge[12]=key3[4];
+    			challenge[13]=key3[5];
+    			challenge[14]=key3[6];
+    			challenge[15]=key3[7];
+    			MessageDigest md5=MessageDigest.getInstance("MD5");
+            	response=new String(md5.digest(challenge));
+    		}
             String responseHandshake = "HTTP/1.1 101 Web Socket Protocol Handshake\r\n" +
                                        "Upgrade: WebSocket\r\n" +
                                        "Connection: Upgrade\r\n";
-            responseHandshake += "WebSocket-Origin: " + p.getProperty("Origin") + "\r\n";
-            responseHandshake += "WebSocket-Location: ws://" + p.getProperty("Host") + path + "\r\n";
-            if (p.containsKey("WebSocket-Protocol")) {
-                responseHandshake += "WebSocket-Protocol: " + p.getProperty("WebSocket-Protocol") + "\r\n";
+            responseHandshake += headerPrefix+"WebSocket-Origin: " + p.getProperty("Origin") + "\r\n";
+            responseHandshake += headerPrefix+"WebSocket-Location: ws://" + p.getProperty("Host") + path + "\r\n";
+            if (p.containsKey(headerPrefix+"WebSocket-Protocol")) {
+                responseHandshake += headerPrefix+"WebSocket-Protocol: " + p.getProperty("WebSocket-Protocol") + "\r\n";
+            }
+            if(p.containsKey("Cookie")){
+            	responseHandshake += "Cookie: " + p.getProperty("Cookie")+"\r\n";
             }
             responseHandshake += "\r\n"; // Signifies end of handshake
-            conn.socketChannel().write(ByteBuffer.wrap(responseHandshake.getBytes(WebSocket.UTF8_CHARSET)));
+            //only set if its Draft 76
+            responseHandshake += response;
+            //Can not use UTF-8 here because we might lose bytes in response during conversion
+            conn.socketChannel().write(ByteBuffer.wrap(responseHandshake.getBytes()));
             return true;
         }
 
@@ -282,7 +346,7 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
     }
 
     public void onOpen(WebSocket conn) {
-        if (this.connections.add(conn))
+        if (this.connections.add(conn)){}
             onClientOpen(conn);
     }
     
@@ -290,7 +354,23 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
         if (this.connections.remove(conn))
             onClientClose(conn);
     }
-
+    
+    private byte[] getPart(String key){
+     	long keyNumber=Long.parseLong(key.replaceAll("[^0-9]",""));
+    	long keySpace=key.split("\u0020").length-1;
+    	int part=new Long(keyNumber/keySpace).intValue();
+    	byte[] bytes=new byte[4];
+    	bytes[0] =(byte)( part >> 24 );
+    	bytes[1] =(byte)( (part << 8) >> 24 );
+    	bytes[2] =(byte)( (part << 16) >> 24 );
+    	bytes[3] =(byte)( (part << 24) >> 24 );
+    	return bytes;
+    }
+    private void appendBytesToArray(byte[] sourceArray,byte[] destinationArray){
+    	for(int i=0;i<sourceArray.length;i++){
+    		destinationArray[destinationArray.length-(sourceArray.length+i)]=sourceArray[i];
+    	}
+    }
     // ABTRACT METHODS /////////////////////////////////////////////////////////
     public abstract void onClientOpen(WebSocket conn);
     public abstract void onClientClose(WebSocket conn);

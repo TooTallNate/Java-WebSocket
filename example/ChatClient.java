@@ -126,4 +126,10 @@ public class ChatClient extends WebSocketClient {
             }
         });
     }
+
+	@Override
+	public Draft getDraft() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
