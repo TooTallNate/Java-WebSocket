@@ -1,3 +1,4 @@
+package net.tootallnate.websocket;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -13,10 +14,12 @@ import java.security.NoSuchAlgorithmException;
  *
  * This is an inner class, used by <tt>WebSocketClient</tt> and
  * <tt>WebSocketServer</tt>, and should never need to be instantiated directly
- * by your code.
+ * by your code. However, instances are exposed in <tt>WebSocketServer</tt>
+ * through the <i>onClientOpen</i>, <i>onClientClose</i>,
+ * <i>onClientMessage</i> callbacks.
  * @author Nathan Rajlich
  */
-final class WebSocket {
+public final class WebSocket {
   // CONSTANTS ///////////////////////////////////////////////////////////////
   /**
    * The default port of WebSockets, as defined in the spec. If the nullary
@@ -84,7 +87,7 @@ final class WebSocket {
    * @param listener The {@link WebSocketListener} to notify of events when
    *                 they occur.
    */
-  public WebSocket(SocketChannel socketChannel, WebSocketListener listener) {
+  WebSocket(SocketChannel socketChannel, WebSocketListener listener) {
     this.socketChannel = socketChannel;
     this.handshakeComplete = false;
     this.remoteHandshake = this.currentFrame = null;
@@ -92,14 +95,13 @@ final class WebSocket {
     this.wsl = listener;
   }
 
-  // PUBLIC INSTANCE METHODS /////////////////////////////////////////////////
   /**
    * Should be called when a Selector has a key that is writable for this
    * WebSocket's SocketChannel connection.
    * @throws IOException When socket related I/O errors occur.
    * @throws NoSuchAlgorithmException 
    */
-  public void handleRead() throws IOException, NoSuchAlgorithmException {
+  void handleRead() throws IOException, NoSuchAlgorithmException {
     this.buffer.rewind();
     
     int bytesRead = -1;
@@ -120,6 +122,7 @@ final class WebSocket {
     }
   }
 
+  // PUBLIC INSTANCE METHODS /////////////////////////////////////////////////
   /**
    * Closes the underlying SocketChannel, and calls the listener's onClose
    * event handler.
