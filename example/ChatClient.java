@@ -1,4 +1,3 @@
-
 import java.awt.Container;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -12,6 +11,8 @@ import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+
+import net.tootallnate.websocket.WebSocketClient;
 
 /**
  * A barebones chat client that uses the WebSocket protocol.

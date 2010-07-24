@@ -1,5 +1,7 @@
-
 import java.io.IOException;
+
+import net.tootallnate.websocket.WebSocket;
+import net.tootallnate.websocket.WebSocketServer;
 
 /**
  * A simple WebSocketServer implementation. Keeps track of a "chatroom".
@@ -7,7 +9,7 @@ import java.io.IOException;
 public class ChatServer extends WebSocketServer {
 
     public ChatServer(int port) {
-        super(port,Draft.AUTO);
+        super(port, Draft.AUTO);
     }
 
     public void onClientOpen(WebSocket conn) {
