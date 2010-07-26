@@ -187,10 +187,10 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
       while(true) {
         selector.select();
         Set<SelectionKey> keys = selector.selectedKeys();
-        Iterator i = keys.iterator();
+        Iterator<SelectionKey> i = keys.iterator();
 
         while(i.hasNext()) {
-          SelectionKey key = (SelectionKey) i.next();
+          SelectionKey key = i.next();
 
           // Remove the current key
           i.remove();
@@ -293,7 +293,7 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
     String key1=p.getProperty("Sec-WebSocket-Key1");
     String key2=p.getProperty("Sec-WebSocket-Key2");
     String headerPrefix="";
-    String response="";
+    byte[] responseChallenge=new byte[16];
     switch (this.draft){
       case DRAFT75:
     	  if (key1 != null || key2 != null || key3 != null) {
@@ -309,7 +309,7 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
     if (isWebSocketRequest) {
       if (key1 != null && key2 != null && key3 != null) {
     		headerPrefix="Sec-";
-			  byte[] part1=this.getPart(key1);
+			byte[] part1=this.getPart(key1);
   			byte[] part2=this.getPart(key2);
   			byte[] challenge=new byte[16];
   			challenge[0]=part1[0];
@@ -329,7 +329,7 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
   			challenge[14]=key3[6];
   			challenge[15]=key3[7];
   			MessageDigest md5=MessageDigest.getInstance("MD5");
-        response = new String(md5.digest(challenge));
+  			responseChallenge=md5.digest(challenge);
   		}
 
       String responseHandshake = "HTTP/1.1 101 Web Socket Protocol Handshake\r\n" +
@@ -345,10 +345,10 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
       	responseHandshake += "Cookie: " + p.getProperty("Cookie")+"\r\n";
       }
       responseHandshake += "\r\n"; // Signifies end of handshake
-      //only set if its Draft 76
-      responseHandshake += response;
       //Can not use UTF-8 here because we might lose bytes in response during conversion
       conn.socketChannel().write(ByteBuffer.wrap(responseHandshake.getBytes()));
+      //Only set when Draft 76
+      conn.socketChannel().write(ByteBuffer.wrap(responseChallenge));  
       return true;
     }
 
@@ -376,7 +376,7 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
   private byte[] getPart(String key){
    	long keyNumber=Long.parseLong(key.replaceAll("[^0-9]",""));
   	long keySpace=key.split("\u0020").length-1;
-  	int part=new Long(keyNumber/keySpace).intValue();
+  	long part=new Long(keyNumber/keySpace);
   	byte[] bytes=new byte[4];
   	bytes[0] =(byte)( part >> 24 );
   	bytes[1] =(byte)( (part << 8) >> 24 );
@@ -384,13 +384,6 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
   	bytes[3] =(byte)( (part << 24) >> 24 );
   	return bytes;
   }
-
-  private void appendBytesToArray(byte[] sourceArray,byte[] destinationArray){
-    for(int i=0;i<sourceArray.length;i++){
-    	destinationArray[destinationArray.length-(sourceArray.length+i)]=sourceArray[i];
-    }
-  }
-  
   
   // ABTRACT METHODS /////////////////////////////////////////////////////////
   public abstract void onClientOpen(WebSocket conn);

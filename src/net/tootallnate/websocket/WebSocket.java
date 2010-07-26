@@ -187,25 +187,51 @@ public final class WebSocket {
     }
     ch.put(this.buffer);
     this.remoteHandshake = ch;
-
-    // If the ByteBuffer contains 8 random bytes and ends with
-    // 0x0D 0x0A 0x0D 0x0A (or two CRLFs), then the client
-    // handshake is complete for Draft 76.
     byte[] h = this.remoteHandshake.array();
-    if ((h.length>=12 && h[h.length-12] == CR
+    // If the ByteBuffer contains 16 random bytes, and ends with
+    // 0x0D 0x0A 0x0D 0x0A (or two CRLFs), then the client
+    // handshake is complete for Draft 76 Client.
+    if((h.length>=20 && h[h.length-20] == CR
+            && h[h.length-19] == LF
+            && h[h.length-18] == CR
+            && h[h.length-17] == LF)){
+    	byte[] handShakeBody = new byte[16];
+    	handShakeBody[0]=h[h.length-16];
+        handShakeBody[1]=h[h.length-15];
+        handShakeBody[2]=h[h.length-14];
+        handShakeBody[3]=h[h.length-13];
+        handShakeBody[4]=h[h.length-12];
+        handShakeBody[5]=h[h.length-11];
+        handShakeBody[6]=h[h.length-10];
+        handShakeBody[7]=h[h.length-9];
+    	handShakeBody[8]=h[h.length-8];
+        handShakeBody[9]=h[h.length-7];
+        handShakeBody[10]=h[h.length-6];
+        handShakeBody[11]=h[h.length-5];
+        handShakeBody[12]=h[h.length-4];
+        handShakeBody[13]=h[h.length-3];
+        handShakeBody[14]=h[h.length-2];
+        handShakeBody[15]=h[h.length-1];
+        completeHandshake(handShakeBody);
+    }
+    // If the ByteBuffer contains 8 random bytes,ends with
+    // 0x0D 0x0A 0x0D 0x0A (or two CRLFs), and the response
+    // contains Sec-WebSocket-Key1 then the client
+    // handshake is complete for Draft 76 Server.
+    else if ((h.length>=12 && h[h.length-12] == CR
         && h[h.length-11] == LF
         && h[h.length-10] == CR
-        && h[h.length-9] == LF)) {
-  	  byte[] key3 = new byte[8];
-      key3[0]=h[h.length-8];
-      key3[1]=h[h.length-7];
-      key3[2]=h[h.length-6];
-      key3[3]=h[h.length-5];
-      key3[4]=h[h.length-4];
-      key3[5]=h[h.length-3];
-      key3[6]=h[h.length-2];
-      key3[7]=h[h.length-1];
-      completeHandshake(key3);
+        && h[h.length-9] == LF) && new String(this.remoteHandshake.array(), UTF8_CHARSET).contains("Sec-WebSocket-Key1")) {
+  	  byte[] handShakeBody = new byte[8];
+  	  handShakeBody[0]=h[h.length-8];
+      handShakeBody[1]=h[h.length-7];
+      handShakeBody[2]=h[h.length-6];
+      handShakeBody[3]=h[h.length-5];
+      handShakeBody[4]=h[h.length-4];
+      handShakeBody[5]=h[h.length-3];
+      handShakeBody[6]=h[h.length-2];
+      handShakeBody[7]=h[h.length-1];
+      completeHandshake(handShakeBody);
       
     // Consider Draft 75, and the Flash Security Policy
     // Request edge-case.
@@ -219,11 +245,11 @@ public final class WebSocket {
   	}    
   }
 
-  private void completeHandshake(byte[] key3) throws IOException, NoSuchAlgorithmException {
+  private void completeHandshake(byte[] handShakeBody) throws IOException, NoSuchAlgorithmException {
   	byte[] handshakeBytes = this.remoteHandshake.array();
     String handshake = new String(handshakeBytes, UTF8_CHARSET);
     this.handshakeComplete = true;
-    if (this.wsl.onHandshakeRecieved(this, handshake, key3)) {
+    if (this.wsl.onHandshakeRecieved(this, handshake, handShakeBody)) {
       this.wsl.onOpen(this);
     } else {
       close();

@@ -7,9 +7,13 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
+import java.util.Random;
 import java.util.Set;
+
+import net.tootallnate.websocket.WebSocketListener.Draft;
 
 /**
  * The <tt>WebSocketClient</tt> is an abstract class that expects a valid
@@ -32,7 +36,24 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
    * The WebSocket instance this client object wraps.
    */
   private WebSocket conn;
-
+  /**
+   * @author The Websocket mode this client is in.
+   */
+  private Draft draft;
+  /**
+   * Number 1 used in handshake 
+   */
+  private int number1=0;
+  /** Number 2 used in handshake
+   */
+  private int number2=0;
+  /** Key3 used in handshake
+   */
+  private byte[] key3;
+  public static enum Draft{
+	  DRAFT75,
+	  DRAFT76
+  }
 
   // CONSTRUCTOR /////////////////////////////////////////////////////////////
   /**
@@ -41,8 +62,9 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
    * must call <var>connect</var> first to initiate the socket connection.
    * @param serverUri The <tt>URI</tt> of the WebSocket server to connect to.
    */
-  public WebSocketClient(URI serverUri) {
+  public WebSocketClient(URI serverUri,Draft draft) {
     this.uri = serverUri;
+    this.draft = draft;
   }
 
   // PUBLIC INSTANCE METHODS /////////////////////////////////////////////////
@@ -104,10 +126,10 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
       while (selector.select(500) > 0) {
 
         Set<SelectionKey> keys = selector.selectedKeys();
-        Iterator i = keys.iterator();
+        Iterator<SelectionKey> i = keys.iterator();
 
         while (i.hasNext()) {
-          SelectionKey key = (SelectionKey)i.next();
+          SelectionKey key = i.next();
           i.remove();
 
           // When 'conn' has connected to the host
@@ -119,6 +141,8 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
             }
 
             // Now send WebSocket client-side handshake
+            Random r=new Random();
+            this.key3=new byte[8];
             String path = "/" + uri.getPath();
             String host = uri.getHost() + (port != WebSocket.DEFAULT_PORT ? ":" + port : "");
             String origin = null; // TODO: Make 'origin' configurable
@@ -126,10 +150,17 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
                               "Upgrade: WebSocket\r\n" +
                               "Connection: Upgrade\r\n" +
                               "Host: " + host + "\r\n" +
-                              "Origin: " + origin + "\r\n" +
+                              "Origin: " + origin + "\r\n";
+            				  if(this.draft==Draft.DRAFT76)
+            				  {
+            					  request+="Sec-WebSocket-Key1: " + this.generateKey() + "\r\n";
+            					  request+="Sec-WebSocket-Key2: " + this.generateKey() + "\r\n";
+            					  r.nextBytes(this.key3);
+            				  }
                               //extraHeaders.toString() +
-                              "\r\n";
+                   request+="\r\n";
             conn.socketChannel().write(ByteBuffer.wrap(request.getBytes(WebSocket.UTF8_CHARSET)));
+            conn.socketChannel().write(ByteBuffer.wrap(key3));
           }
 
           // When 'conn' has recieved some data
@@ -145,7 +176,39 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
 	    e.printStackTrace();
 	  }
   }
-
+  private String generateKey(){
+	  Random r=new Random();
+	  long maxNumber=4294967295L;
+	  long spaces=r.nextInt(12)+1;
+	  int max=new Long(maxNumber/spaces).intValue();
+	  max=Math.abs(max);
+	  int number=r.nextInt(max)+1;
+	  if(this.number1==0){
+		  this.number1=number;
+	  }
+	  else{
+		  this.number2=number;
+	  }	  
+	  long product=number*spaces;
+	  String key=Long.toString(product);
+	  int numChars=r.nextInt(12);
+	  for (int i=0;i<numChars;i++){
+		  int position=r.nextInt(key.length());
+		  position=Math.abs(position);
+		  char randChar=(char)(r.nextInt(95)+33);
+		  //exclude numbers here
+		  if(randChar >= 48 && randChar <=57){
+			  randChar-=15;
+		  }
+		  key=new StringBuilder(key).insert(position, randChar).toString();
+	  }
+	  for (int i=0;i<spaces;i++){
+		  int position=r.nextInt(key.length()-1)+1;
+		  position=Math.abs(position);
+		  key=new StringBuilder(key).insert(position,"\u0020").toString();
+	  }
+	  return key;
+  }
 
   // WebSocketListener IMPLEMENTATION ////////////////////////////////////////
   /**
@@ -157,10 +220,41 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
    * @return <var>true</var> if <var>handshake</var> is a valid WebSocket server
    *         handshake, <var>false</var> otherwise.
    * @throws IOException When socket related I/O errors occur.
+ * @throws NoSuchAlgorithmException 
    */
-  public boolean onHandshakeRecieved(WebSocket conn, String handshake,byte[] key3) throws IOException {
+  public boolean onHandshakeRecieved(WebSocket conn, String handshake,byte[] reply) throws IOException, NoSuchAlgorithmException {
     // TODO: Do some parsing of the returned handshake, and close connection
     // (return false) if we recieved anything unexpected.
+	if(this.draft==Draft.DRAFT76){
+		if(reply==null){
+			return false;
+		}
+		byte[] challenge=new byte[]{
+				(byte)(  this.number1 >> 24 ),
+          		(byte)( (this.number1 << 8) >> 24 ),
+          		(byte)( (this.number1 << 16) >> 24 ),
+          		(byte)( (this.number1 << 24) >> 24 ),
+          		(byte)(  this.number2 >> 24 ),
+          		(byte)( (this.number2 << 8) >> 24 ),
+          		(byte)( (this.number2 << 16) >> 24 ),
+          		(byte)( (this.number2 << 24) >> 24 ),
+          		this.key3[0],
+          		this.key3[1],
+          		this.key3[2],
+          		this.key3[3],
+          		this.key3[4],
+          		this.key3[5],
+          		this.key3[6],
+          		this.key3[7]
+          		};
+		MessageDigest md5=MessageDigest.getInstance("MD5");
+		byte[] expected=md5.digest(challenge);
+		for(int i=0;i<reply.length;i++){
+	    	if(expected[i]!=reply[i]){
+	    		return false;
+	    	}
+	    }	
+	}
     return true;
   }
 
@@ -188,7 +282,11 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
   public void onClose(WebSocket conn) {
     onClose();
   }
-
+  
+  @Override
+  public net.tootallnate.websocket.WebSocketListener.Draft getDraft() {
+  	return (net.tootallnate.websocket.WebSocketListener.Draft)net.tootallnate.websocket.WebSocketListener.Draft.valueOf(this.draft.name());
+  }
 
   // ABTRACT METHODS /////////////////////////////////////////////////////////
   public abstract void onMessage(String message);

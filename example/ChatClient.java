@@ -20,8 +20,8 @@ import net.tootallnate.websocket.WebSocketClient;
 public class ChatClient extends WebSocketClient {
     private final JTextArea ta;
 
-    public ChatClient(URI uri, JTextArea ta) {
-        super(uri);
+    public ChatClient(URI uri, JTextArea ta,Draft draft) {
+        super(uri,Draft.DRAFT75);
         this.ta = ta;
     }
 
@@ -109,7 +109,7 @@ public class ChatClient extends WebSocketClient {
                 connect.setEnabled(false);
                 uriField.setEditable(false);
                 try {
-                    cc = new ChatClient(new URI(uriField.getText()), area);
+                    cc = new ChatClient(new URI(uriField.getText()), area,Draft.DRAFT76);
                     cc.connect();
                 } catch (URISyntaxException ex) {
                     area.append(uriField.getText() + " is not a valid WebSocket URI\n");
@@ -127,10 +127,4 @@ public class ChatClient extends WebSocketClient {
             }
         });
     }
-
-	@Override
-	public Draft getDraft() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 }

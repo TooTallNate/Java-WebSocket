@@ -30,7 +30,7 @@ interface WebSocketListener {
    *         handshake was invalid, and the connection should be terminated.
    * @throws NoSuchAlgorithmException 
    */
-  public boolean onHandshakeRecieved(WebSocket conn, String handshake,byte[] key3) throws IOException, NoSuchAlgorithmException;
+  public boolean onHandshakeRecieved(WebSocket conn, String handshake,byte[] handShakeBody) throws IOException, NoSuchAlgorithmException;
   
   /**
    * Called when an entire text frame has been recieved. Do whatever you want
