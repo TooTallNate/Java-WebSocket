@@ -8,16 +8,10 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
-
-import sun.misc.Regexp;
 
 /**
  * <tt>WebSocketServer</tt> is an abstract class that only takes care of the
@@ -293,7 +287,7 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
     String key1=p.getProperty("Sec-WebSocket-Key1");
     String key2=p.getProperty("Sec-WebSocket-Key2");
     String headerPrefix="";
-    byte[] responseChallenge=new byte[16];
+    byte[] responseChallenge=null;
     switch (this.draft){
       case DRAFT75:
     	  if (key1 != null || key2 != null || key3 != null) {
@@ -348,7 +342,9 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
       //Can not use UTF-8 here because we might lose bytes in response during conversion
       conn.socketChannel().write(ByteBuffer.wrap(responseHandshake.getBytes()));
       //Only set when Draft 76
-      conn.socketChannel().write(ByteBuffer.wrap(responseChallenge));  
+      if(responseChallenge!=null){
+    	  conn.socketChannel().write(ByteBuffer.wrap(responseChallenge));
+      }
       return true;
     }
 

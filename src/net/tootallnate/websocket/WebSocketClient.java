@@ -49,7 +49,7 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
   private int number2=0;
   /** Key3 used in handshake
    */
-  private byte[] key3;
+  private byte[] key3=null;
   public static enum Draft{
 	  DRAFT75,
 	  DRAFT76
@@ -142,7 +142,6 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
 
             // Now send WebSocket client-side handshake
             Random r=new Random();
-            this.key3=new byte[8];
             String path = "/" + uri.getPath();
             String host = uri.getHost() + (port != WebSocket.DEFAULT_PORT ? ":" + port : "");
             String origin = null; // TODO: Make 'origin' configurable
@@ -155,12 +154,15 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
             				  {
             					  request+="Sec-WebSocket-Key1: " + this.generateKey() + "\r\n";
             					  request+="Sec-WebSocket-Key2: " + this.generateKey() + "\r\n";
+            					  this.key3=new byte[8];
             					  r.nextBytes(this.key3);
             				  }
                               //extraHeaders.toString() +
                    request+="\r\n";
             conn.socketChannel().write(ByteBuffer.wrap(request.getBytes(WebSocket.UTF8_CHARSET)));
-            conn.socketChannel().write(ByteBuffer.wrap(key3));
+            if(this.key3 !=null){
+            	conn.socketChannel().write(ByteBuffer.wrap(this.key3));
+            }
           }
 
           // When 'conn' has recieved some data
