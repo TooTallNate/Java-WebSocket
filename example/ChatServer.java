@@ -9,7 +9,7 @@ import net.tootallnate.websocket.WebSocketServer;
 public class ChatServer extends WebSocketServer {
 
     public ChatServer(int port) {
-        super(port, Draft.DRAFT75);
+        super(port, Draft.AUTO);
     }
 
     public void onClientOpen(WebSocket conn) {
@@ -41,7 +41,7 @@ public class ChatServer extends WebSocketServer {
     }
 
     public static void main(String[] args) {
-        int port = 88;
+        int port = 8887;
         try {
             port = Integer.parseInt(args[0]);
         } catch(Exception ex) {}
