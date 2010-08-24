@@ -12,6 +12,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import net.tootallnate.websocket.WebSocketListener.Draft;
 
@@ -119,7 +120,7 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
 
       Selector selector = Selector.open();
 
-      this.conn = new WebSocket(client, this);
+      this.conn = new WebSocket(client, new LinkedBlockingQueue<ByteBuffer>(), this);
       client.register(selector, client.validOps());
 
       // Continuous loop that is only supposed to end when close is called

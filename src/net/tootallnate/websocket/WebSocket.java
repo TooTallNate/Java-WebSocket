@@ -3,9 +3,12 @@ package net.tootallnate.websocket;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.NotYetConnectedException;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
 import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.BlockingQueue;
 
 /**
  * Represents one end (client or server) of a single WebSocket connection.
@@ -76,6 +79,15 @@ public final class WebSocket {
    * The bytes that make up the current text frame being read.
    */
   private ByteBuffer currentFrame;
+	/**
+	 * Queue of buffers that need to be sent to the client.
+	 */
+	private BlockingQueue<ByteBuffer> bufferQueue;
+	/**
+	 * Lock object to ensure that data is sent from the bufferQueue in
+	 * the proper order
+	 */
+	private Object bufferQueueMutex = new Object();
 
 
   // CONSTRUCTOR /////////////////////////////////////////////////////////////
@@ -84,11 +96,16 @@ public final class WebSocket {
    * @param socketChannel The <tt>SocketChannel</tt> instance to read and
    *                      write to. The channel should already be registered
    *                      with a Selector before construction of this object.
+	 * @param bufferQueue The Queue that we should use to buffer data that
+	 *                     hasn't been sent to the client yet.
    * @param listener The {@link WebSocketListener} to notify of events when
    *                 they occur.
    */
-  WebSocket(SocketChannel socketChannel, WebSocketListener listener) {
+  WebSocket(SocketChannel socketChannel, BlockingQueue<ByteBuffer> bufferQueue,
+			WebSocketListener listener)
+	{
     this.socketChannel = socketChannel;
+		this.bufferQueue = bufferQueue;
     this.handshakeComplete = false;
     this.remoteHandshake = this.currentFrame = null;
     this.buffer = ByteBuffer.allocate(1);
@@ -133,7 +150,11 @@ public final class WebSocket {
     this.wsl.onClose(this);
   }
 
-  public void send(String text) throws IOException {
+	/**
+	 * @return True if all of the text was sent to the client by this thread.
+	 * 		False if some of the text had to be buffered to be sent later.
+	 */
+  public boolean send(String text) throws IOException {
     if (!this.handshakeComplete) throw new NotYetConnectedException();
     if (text == null) throw new NullPointerException("Cannot send 'null' data to a WebSocket.");
 
@@ -143,11 +164,49 @@ public final class WebSocket {
     b.put(START_OF_FRAME);
     b.put(textBytes);
     b.put(END_OF_FRAME);
+		b.rewind();
 
-    // Write the ByteBuffer to the socket
-    b.rewind();
-    this.socketChannel.write(b);
+		// See if we have any backlog that needs to be sent first
+		if (handleWrite()) {
+			// Write the ByteBuffer to the socket
+			this.socketChannel.write(b);
+		}
+
+		// If we didn't get it all sent, add it to the buffer of buffers
+		if (b.remaining() > 0) {
+			if (!this.bufferQueue.offer(b)) {
+				throw new IOException("Buffers are full, message could not be sent to" +
+						this.socketChannel.socket().getRemoteSocketAddress());
+			}
+			return false;
+		}
+
+		return true;
   }
+
+	boolean hasBufferedData() {
+		return !this.bufferQueue.isEmpty();
+	}
+
+	/**
+	 * @return True if all data has been sent to the client, false if there
+	 * 		is still some buffered.
+	 */
+	boolean handleWrite() throws IOException {
+		synchronized (this.bufferQueueMutex) {
+			ByteBuffer buffer = this.bufferQueue.peek();
+			while (buffer != null) {
+				this.socketChannel.write(buffer);
+				if (buffer.remaining() > 0) {
+					return false;	// Didn't finish this buffer.  There's more to send.
+				} else {
+					this.bufferQueue.poll();	// Buffer finished.  Remove it.
+					buffer = this.bufferQueue.peek();
+				}
+			}
+			return true;
+		}
+	}
 
   public SocketChannel socketChannel() {
     return this.socketChannel;
@@ -255,4 +314,5 @@ public final class WebSocket {
       close();
     }
   }
+
 }

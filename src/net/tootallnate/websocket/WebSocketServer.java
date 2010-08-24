@@ -11,7 +11,9 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * <tt>WebSocketServer</tt> is an abstract class that only takes care of the
@@ -167,6 +169,18 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
 		return draft;
 	}
 
+	/**
+	 * @return A BlockingQueue that should be used by a WebSocket
+	 * 		to hold data that is waiting to be sent to the client.
+	 * 		The default implementation returns an unbounded
+	 * 		LinkedBlockingQueue, but you may choose to override
+	 * 		this to return a bounded queue to protect against
+	 * 		running out of memory.
+	 */
+	protected BlockingQueue<ByteBuffer> newBufferQueue() {
+		return new LinkedBlockingQueue<ByteBuffer>();
+	}
+
 
   // Runnable IMPLEMENTATION /////////////////////////////////////////////////
   public void run() {
@@ -179,33 +193,61 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
       server.register(selector, server.validOps());
 
       while(true) {
-        selector.select();
-        Set<SelectionKey> keys = selector.selectedKeys();
-        Iterator<SelectionKey> i = keys.iterator();
+				try {
+	        selector.select(100L);
+	        Set<SelectionKey> keys = selector.selectedKeys();
+	        Iterator<SelectionKey> i = keys.iterator();
 
-        while(i.hasNext()) {
-          SelectionKey key = i.next();
+	        while(i.hasNext()) {
+	          SelectionKey key = i.next();
 
-          // Remove the current key
-          i.remove();
+	          // Remove the current key
+	          i.remove();
 
-          // if isAccetable == true
-          // then a client required a connection
-          if (key.isAcceptable()) {
-            SocketChannel client = server.accept();
-            client.configureBlocking(false);
-            WebSocket c = new WebSocket(client, this);
-            client.register(selector, SelectionKey.OP_READ, c);
-          }
+	          // if isAcceptable == true
+	          // then a client required a connection
+	          if (key.isAcceptable()) {
+	            SocketChannel client = server.accept();
+	            client.configureBlocking(false);
+	            WebSocket c = new WebSocket(client, newBufferQueue(), this);
+	            client.register(selector, SelectionKey.OP_READ, c);
+	          }
 
-          // if isReadable == true
-          // then the server is ready to read
-          if (key.isReadable()) {
-            WebSocket conn = (WebSocket)key.attachment();
-            conn.handleRead();
-          }
-        }
-      }
+	          // if isReadable == true
+	          // then the server is ready to read
+	          if (key.isReadable()) {
+	            WebSocket conn = (WebSocket)key.attachment();
+	            conn.handleRead();
+	          }
+
+						// if isWritable == true
+						// then we need to send the rest of the data to the client
+						if (key.isWritable()) {
+							WebSocket conn = (WebSocket)key.attachment();
+							if (conn.handleWrite()) {
+								conn.socketChannel().register(selector,
+										SelectionKey.OP_READ, conn);
+							}
+						}
+	        }
+
+					for (WebSocket conn : this.connections) {
+						// We have to do this check here, and not in the thread that
+						// adds the buffered data to the WebSocket, because the
+						// Selector is not thread-safe, and can only be accessed
+						// by this thread.
+						if (conn.hasBufferedData()) {
+							conn.socketChannel().register(selector,
+									SelectionKey.OP_READ | SelectionKey.OP_WRITE, conn);
+						}
+					}
+
+	      } catch (IOException e) {
+					e.printStackTrace();
+				} catch (RuntimeException e) {
+					e.printStackTrace();
+				}
+			}
     } catch (IOException ex) {
       ex.printStackTrace();
     } catch (NoSuchAlgorithmException e) {
