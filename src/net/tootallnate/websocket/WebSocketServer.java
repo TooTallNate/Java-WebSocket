@@ -60,7 +60,7 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
     this(WebSocket.DEFAULT_PORT, Draft.AUTO);
   }
 
-	/**
+  /**
    * Creates a WebSocketServer that will attempt to listen on port
    * <var>port</var>.
    * @param port The port number this server should listen on.
@@ -166,20 +166,20 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
   }
 
   public Draft getDraft() {
-		return draft;
-	}
+    return draft;
+  }
 
-	/**
-	 * @return A BlockingQueue that should be used by a WebSocket
-	 * 		to hold data that is waiting to be sent to the client.
-	 * 		The default implementation returns an unbounded
-	 * 		LinkedBlockingQueue, but you may choose to override
-	 * 		this to return a bounded queue to protect against
-	 * 		running out of memory.
-	 */
-	protected BlockingQueue<ByteBuffer> newBufferQueue() {
-		return new LinkedBlockingQueue<ByteBuffer>();
-	}
+  /**
+   * @return A BlockingQueue that should be used by a WebSocket
+   *    to hold data that is waiting to be sent to the client.
+   *    The default implementation returns an unbounded
+   *    LinkedBlockingQueue, but you may choose to override
+   *    this to return a bounded queue to protect against
+   *    running out of memory.
+   */
+  protected BlockingQueue<ByteBuffer> newBufferQueue() {
+    return new LinkedBlockingQueue<ByteBuffer>();
+  }
 
 
   // Runnable IMPLEMENTATION /////////////////////////////////////////////////
@@ -193,67 +193,67 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
       server.register(selector, server.validOps());
 
       while(true) {
-				try {
-	        selector.select(100L);
-	        Set<SelectionKey> keys = selector.selectedKeys();
-	        Iterator<SelectionKey> i = keys.iterator();
+        try {
+          selector.select(100L);
+          Set<SelectionKey> keys = selector.selectedKeys();
+          Iterator<SelectionKey> i = keys.iterator();
 
-	        while(i.hasNext()) {
-	          SelectionKey key = i.next();
+          while(i.hasNext()) {
+            SelectionKey key = i.next();
 
-	          // Remove the current key
-	          i.remove();
+            // Remove the current key
+            i.remove();
 
-	          // if isAcceptable == true
-	          // then a client required a connection
-	          if (key.isAcceptable()) {
-	            SocketChannel client = server.accept();
-	            client.configureBlocking(false);
-	            WebSocket c = new WebSocket(client, newBufferQueue(), this);
-	            client.register(selector, SelectionKey.OP_READ, c);
-	          }
+            // if isAcceptable == true
+            // then a client required a connection
+            if (key.isAcceptable()) {
+              SocketChannel client = server.accept();
+              client.configureBlocking(false);
+              WebSocket c = new WebSocket(client, newBufferQueue(), this);
+              client.register(selector, SelectionKey.OP_READ, c);
+            }
 
-	          // if isReadable == true
-	          // then the server is ready to read
-	          if (key.isReadable()) {
-	            WebSocket conn = (WebSocket)key.attachment();
-	            conn.handleRead();
-	          }
+            // if isReadable == true
+            // then the server is ready to read
+            if (key.isReadable()) {
+              WebSocket conn = (WebSocket)key.attachment();
+              conn.handleRead();
+            }
 
-						// if isWritable == true
-						// then we need to send the rest of the data to the client
-						if (key.isWritable()) {
-							WebSocket conn = (WebSocket)key.attachment();
-							if (conn.handleWrite()) {
-								conn.socketChannel().register(selector,
-										SelectionKey.OP_READ, conn);
-							}
-						}
-	        }
+            // if isWritable == true
+            // then we need to send the rest of the data to the client
+            if (key.isWritable()) {
+              WebSocket conn = (WebSocket)key.attachment();
+              if (conn.handleWrite()) {
+                conn.socketChannel().register(selector,
+                    SelectionKey.OP_READ, conn);
+              }
+            }
+          }
 
-					for (WebSocket conn : this.connections) {
-						// We have to do this check here, and not in the thread that
-						// adds the buffered data to the WebSocket, because the
-						// Selector is not thread-safe, and can only be accessed
-						// by this thread.
-						if (conn.hasBufferedData()) {
-							conn.socketChannel().register(selector,
-									SelectionKey.OP_READ | SelectionKey.OP_WRITE, conn);
-						}
-					}
+          for (WebSocket conn : this.connections) {
+            // We have to do this check here, and not in the thread that
+            // adds the buffered data to the WebSocket, because the
+            // Selector is not thread-safe, and can only be accessed
+            // by this thread.
+            if (conn.hasBufferedData()) {
+              conn.socketChannel().register(selector,
+                  SelectionKey.OP_READ | SelectionKey.OP_WRITE, conn);
+            }
+          }
 
-	      } catch (IOException e) {
-					e.printStackTrace();
-				} catch (RuntimeException e) {
-					e.printStackTrace();
-				}
-			}
+        } catch (IOException e) {
+          e.printStackTrace();
+        } catch (RuntimeException e) {
+          e.printStackTrace();
+        }
+      }
     } catch (IOException ex) {
       ex.printStackTrace();
     } catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
   }
 
   /**
@@ -315,7 +315,7 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
       line = requestLines[i];
       int firstColon = line.indexOf(":");
       if (firstColon != -1) {
-      	p.setProperty(line.substring(0, firstColon).trim(), line.substring(firstColon+1).trim());
+        p.setProperty(line.substring(0, firstColon).trim(), line.substring(firstColon+1).trim());
       }
     }
     String prop = p.getProperty("Upgrade");
@@ -332,41 +332,41 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
     byte[] responseChallenge=null;
     switch (this.draft){
       case DRAFT75:
-    	  if (key1 != null || key2 != null || key3 != null) {
-    		  isWebSocketRequest = false;
-    	  }
-    	  break;
+        if (key1 != null || key2 != null || key3 != null) {
+          isWebSocketRequest = false;
+        }
+        break;
       case DRAFT76:
-    	  if (key1 == null || key2 == null || key3 == null) {
-    		  isWebSocketRequest = false;
-    	  }
-    	  break;	
+        if (key1 == null || key2 == null || key3 == null) {
+          isWebSocketRequest = false;
+        }
+        break;  
     }
     if (isWebSocketRequest) {
       if (key1 != null && key2 != null && key3 != null) {
-    		headerPrefix="Sec-";
-			byte[] part1=this.getPart(key1);
-  			byte[] part2=this.getPart(key2);
-  			byte[] challenge=new byte[16];
-  			challenge[0]=part1[0];
-  			challenge[1]=part1[1];
-  			challenge[2]=part1[2];
-  			challenge[3]=part1[3];
-  			challenge[4]=part2[0];
-  			challenge[5]=part2[1];
-  			challenge[6]=part2[2];
-  			challenge[7]=part2[3];
-  			challenge[8]=key3[0];
-  			challenge[9]=key3[1];
-  			challenge[10]=key3[2];
-  			challenge[11]=key3[3];
-  			challenge[12]=key3[4];
-  			challenge[13]=key3[5];
-  			challenge[14]=key3[6];
-  			challenge[15]=key3[7];
-  			MessageDigest md5=MessageDigest.getInstance("MD5");
-  			responseChallenge=md5.digest(challenge);
-  		}
+        headerPrefix="Sec-";
+      byte[] part1=this.getPart(key1);
+        byte[] part2=this.getPart(key2);
+        byte[] challenge=new byte[16];
+        challenge[0]=part1[0];
+        challenge[1]=part1[1];
+        challenge[2]=part1[2];
+        challenge[3]=part1[3];
+        challenge[4]=part2[0];
+        challenge[5]=part2[1];
+        challenge[6]=part2[2];
+        challenge[7]=part2[3];
+        challenge[8]=key3[0];
+        challenge[9]=key3[1];
+        challenge[10]=key3[2];
+        challenge[11]=key3[3];
+        challenge[12]=key3[4];
+        challenge[13]=key3[5];
+        challenge[14]=key3[6];
+        challenge[15]=key3[7];
+        MessageDigest md5=MessageDigest.getInstance("MD5");
+        responseChallenge=md5.digest(challenge);
+      }
 
       String responseHandshake = "HTTP/1.1 101 Web Socket Protocol Handshake\r\n" +
                                  "Upgrade: WebSocket\r\n" +
@@ -378,14 +378,14 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
         responseHandshake += headerPrefix+"WebSocket-Protocol: " + p.getProperty("WebSocket-Protocol") + "\r\n";
       }
       if (p.containsKey("Cookie")){
-      	responseHandshake += "Cookie: " + p.getProperty("Cookie")+"\r\n";
+        responseHandshake += "Cookie: " + p.getProperty("Cookie")+"\r\n";
       }
       responseHandshake += "\r\n"; // Signifies end of handshake
       //Can not use UTF-8 here because we might lose bytes in response during conversion
       conn.socketChannel().write(ByteBuffer.wrap(responseHandshake.getBytes()));
       //Only set when Draft 76
       if(responseChallenge!=null){
-    	  conn.socketChannel().write(ByteBuffer.wrap(responseChallenge));
+        conn.socketChannel().write(ByteBuffer.wrap(responseChallenge));
       }
       return true;
     }
@@ -412,15 +412,15 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
   }
 
   private byte[] getPart(String key){
-   	long keyNumber=Long.parseLong(key.replaceAll("[^0-9]",""));
-  	long keySpace=key.split("\u0020").length-1;
-  	long part=new Long(keyNumber/keySpace);
-  	byte[] bytes=new byte[4];
-  	bytes[0] =(byte)( part >> 24 );
-  	bytes[1] =(byte)( (part << 8) >> 24 );
-  	bytes[2] =(byte)( (part << 16) >> 24 );
-  	bytes[3] =(byte)( (part << 24) >> 24 );
-  	return bytes;
+    long keyNumber=Long.parseLong(key.replaceAll("[^0-9]",""));
+    long keySpace=key.split("\u0020").length-1;
+    long part=new Long(keyNumber/keySpace);
+    byte[] bytes=new byte[4];
+    bytes[0] =(byte)( part >> 24 );
+    bytes[1] =(byte)( (part << 8) >> 24 );
+    bytes[2] =(byte)( (part << 16) >> 24 );
+    bytes[3] =(byte)( (part << 24) >> 24 );
+    return bytes;
   }
   
   // ABTRACT METHODS /////////////////////////////////////////////////////////

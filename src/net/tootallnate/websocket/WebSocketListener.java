@@ -9,7 +9,7 @@ import java.security.NoSuchAlgorithmException;
  * @author Nathan Rajlich
  */
 interface WebSocketListener {
-	/**
+  /**
    * Enum for WebSocket Draft
    */
   public static enum Draft {
