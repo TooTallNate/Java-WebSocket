@@ -85,7 +85,7 @@ public final class WebSocket {
   private BlockingQueue<ByteBuffer> bufferQueue;
   /**
    * Lock object to ensure that data is sent from the bufferQueue in
-   * the proper order
+   * the proper order.
    */
   private Object bufferQueueMutex = new Object();
 
@@ -101,9 +101,7 @@ public final class WebSocket {
    * @param listener The {@link WebSocketListener} to notify of events when
    *                 they occur.
    */
-  WebSocket(SocketChannel socketChannel, BlockingQueue<ByteBuffer> bufferQueue,
-      WebSocketListener listener)
-  {
+  WebSocket(SocketChannel socketChannel, BlockingQueue<ByteBuffer> bufferQueue, WebSocketListener listener) {
     this.socketChannel = socketChannel;
     this.bufferQueue = bufferQueue;
     this.handshakeComplete = false;
@@ -223,8 +221,9 @@ public final class WebSocket {
       String textFrame = null;
       // currentFrame will be null if END_OF_FRAME was send directly after
       // START_OF_FRAME, thus we will send 'null' as the sent message.
-      if (this.currentFrame != null)
+      if (this.currentFrame != null) {
         textFrame = new String(this.currentFrame.array(), UTF8_CHARSET);
+      }
       this.wsl.onMessage(this, textFrame);
 
     } else { // Regular frame data, add to current frame buffer
@@ -299,7 +298,6 @@ public final class WebSocket {
         && h[h.length-2] == CR
         && h[h.length-1] == LF) && !(new String(this.remoteHandshake.array(), UTF8_CHARSET).contains("Sec")) ||
         (h.length==23 && h[h.length-1] == 0) ) {
-        
       completeHandshake(null);
     }    
   }
