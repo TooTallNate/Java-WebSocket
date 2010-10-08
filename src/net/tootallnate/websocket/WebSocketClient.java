@@ -47,25 +47,25 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
    */
   private Selector selector;
   /**
+   * Keeps track of whether or not the client thread should continue running.
+   */
+  private boolean running;
+  /**
    * The Websocket mode this client is in.
    */
   private Draft draft;
   /**
    * Number 1 used in handshake 
    */
-  private int number1=0;
+  private int number1 = 0;
   /**
    * Number 2 used in handshake
    */
-  private int number2=0;
+  private int number2 = 0;
   /**
    * Key3 used in handshake
    */
-  private byte[] key3=null;
-  public static enum Draft{
-    DRAFT75,
-    DRAFT76
-  }
+  private byte[] key3 = null;
 
   // CONSTRUCTOR /////////////////////////////////////////////////////////////
   /**
@@ -87,6 +87,11 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
   public URI getURI() {
     return uri;
   }
+  
+  @Override
+  public Draft getDraft() {
+    return this.draft;
+  }
 
   /**
    * Starts a background thread that attempts and maintains a WebSocket
@@ -94,6 +99,7 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
    * <var>setURI</var>.
    */
   public void connect() {
+    this.running = true;
     (new Thread(this)).start();
   }
 
@@ -103,6 +109,8 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
    * @throws IOException When socket related I/O errors occur.
    */
   public void close() throws IOException {
+    this.running = false;
+    selector.wakeup();
     conn.close();
   }
 
@@ -141,7 +149,7 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
     }
 
     // Continuous loop that is only supposed to end when "close" is called.
-    while (true) {
+    while (this.running) {
       try {
         selector.select();
         Set<SelectionKey> keys = selector.selectedKeys();
@@ -197,7 +205,7 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
       }
     }
     
-    //System.err.println("WebSocketClient thread ended!");
+    System.err.println("WebSocketClient thread ended!");
   }
 
   private String generateKey() {
@@ -305,11 +313,6 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
    */
   public void onClose(WebSocket conn) {
     onClose();
-  }
-  
-  @Override
-  public net.tootallnate.websocket.WebSocketListener.Draft getDraft() {
-    return (net.tootallnate.websocket.WebSocketListener.Draft)net.tootallnate.websocket.WebSocketListener.Draft.valueOf(this.draft.name());
   }
 
   // ABTRACT METHODS /////////////////////////////////////////////////////////

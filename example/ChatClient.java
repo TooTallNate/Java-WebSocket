@@ -43,6 +43,7 @@ public class ChatClient extends WebSocketClient {
     private static class Frame extends JFrame implements ActionListener {
         private final JTextField uriField;
         private final JButton connect;
+        private final JButton close;
         private final JTextArea area;
         private final JTextField chatField;
         private ChatClient cc;
@@ -52,7 +53,7 @@ public class ChatClient extends WebSocketClient {
             Container c = getContentPane();
             GridLayout layout = new GridLayout();
             layout.setColumns(1);
-            layout.setRows(4);
+            layout.setRows(5);
             c.setLayout(layout);
 
             uriField = new JTextField();
@@ -62,6 +63,10 @@ public class ChatClient extends WebSocketClient {
             connect = new JButton("Connect");
             connect.addActionListener(this);
             c.add(connect);
+            
+            close = new JButton("Close");
+            close.addActionListener(this);
+            c.add(close);
 
             JScrollPane scroll = new JScrollPane();
             area = new JTextArea();
@@ -115,6 +120,12 @@ public class ChatClient extends WebSocketClient {
                     area.append(uriField.getText() + " is not a valid WebSocket URI\n");
                     connect.setEnabled(true);
                     uriField.setEditable(true);
+                }
+            } else if (e.getSource() == close) {
+                try {
+                    cc.close();
+                } catch(Exception ex) {
+                  ex.printStackTrace();
                 }
             }
         }

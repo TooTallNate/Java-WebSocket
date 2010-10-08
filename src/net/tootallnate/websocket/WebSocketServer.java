@@ -166,11 +166,11 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
    * @return The port number.
    */
   public int getPort() {
-    return port;
+    return this.port;
   }
 
   public Draft getDraft() {
-    return draft;
+    return this.draft;
   }
 
 
