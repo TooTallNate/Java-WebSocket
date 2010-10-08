@@ -260,8 +260,7 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
    *     http://github.com/gimite/web-socket-js
    *
    * @return An XML String that comforms to Flash's security policy. You MUST
-   *         not need to include the null char at the end, it is appended
-   *         automatically.
+   *         not include the null char at the end, it is appended automatically.
    */
   protected String getFlashSecurityPolicy() {
     return "<cross-domain-policy><allow-access-from domain=\"*\" to-ports=\""
@@ -282,7 +281,7 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
    * @throws IOException When socket related I/O errors occur.
    * @throws NoSuchAlgorithmException 
    */
-  public boolean onHandshakeRecieved(WebSocket conn, String handshake,byte[] key3) throws IOException, NoSuchAlgorithmException {
+  public boolean onHandshakeRecieved(WebSocket conn, String handshake, byte[] key3) throws IOException, NoSuchAlgorithmException {
     
     // If a Flash client requested the Policy File...
     if (FLASH_POLICY_REQUEST.equals(handshake)) {
@@ -319,11 +318,11 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
     if (prop == null || !prop.equals("Upgrade")) {
       isWebSocketRequest = false;
     }
-    String key1=p.getProperty("Sec-WebSocket-Key1");
-    String key2=p.getProperty("Sec-WebSocket-Key2");
-    String headerPrefix="";
-    byte[] responseChallenge=null;
-    switch (this.draft){
+    String key1 = p.getProperty("Sec-WebSocket-Key1");
+    String key2 = p.getProperty("Sec-WebSocket-Key2");
+    String headerPrefix = "";
+    byte[] responseChallenge = null;
+    switch (this.draft) {
       case DRAFT75:
         if (key1 != null || key2 != null || key3 != null) {
           isWebSocketRequest = false;
@@ -337,28 +336,28 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
     }
     if (isWebSocketRequest) {
       if (key1 != null && key2 != null && key3 != null) {
-        headerPrefix="Sec-";
-      byte[] part1=this.getPart(key1);
-        byte[] part2=this.getPart(key2);
-        byte[] challenge=new byte[16];
-        challenge[0]=part1[0];
-        challenge[1]=part1[1];
-        challenge[2]=part1[2];
-        challenge[3]=part1[3];
-        challenge[4]=part2[0];
-        challenge[5]=part2[1];
-        challenge[6]=part2[2];
-        challenge[7]=part2[3];
-        challenge[8]=key3[0];
-        challenge[9]=key3[1];
-        challenge[10]=key3[2];
-        challenge[11]=key3[3];
-        challenge[12]=key3[4];
-        challenge[13]=key3[5];
-        challenge[14]=key3[6];
-        challenge[15]=key3[7];
-        MessageDigest md5=MessageDigest.getInstance("MD5");
-        responseChallenge=md5.digest(challenge);
+        headerPrefix = "Sec-";
+        byte[] part1 = this.getPart(key1);
+        byte[] part2 = this.getPart(key2);
+        byte[] challenge = new byte[16];
+        challenge[0] = part1[0];
+        challenge[1] = part1[1];
+        challenge[2] = part1[2];
+        challenge[3] = part1[3];
+        challenge[4] = part2[0];
+        challenge[5] = part2[1];
+        challenge[6] = part2[2];
+        challenge[7] = part2[3];
+        challenge[8] = key3[0];
+        challenge[9] = key3[1];
+        challenge[10] = key3[2];
+        challenge[11] = key3[3];
+        challenge[12] = key3[4];
+        challenge[13] = key3[5];
+        challenge[14] = key3[6];
+        challenge[15] = key3[7];
+        MessageDigest md5 = MessageDigest.getInstance("MD5");
+        responseChallenge = md5.digest(challenge);
       }
 
       String responseHandshake = "HTTP/1.1 101 Web Socket Protocol Handshake\r\n" +
@@ -397,25 +396,25 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
       onClientOpen(conn);
     }
   }
-    
+
   public void onClose(WebSocket conn) {
     if (this.connections.remove(conn)) {
       onClientClose(conn);
     }
   }
 
-  private byte[] getPart(String key){
-    long keyNumber=Long.parseLong(key.replaceAll("[^0-9]",""));
-    long keySpace=key.split("\u0020").length-1;
-    long part=new Long(keyNumber/keySpace);
-    byte[] bytes=new byte[4];
-    bytes[0] =(byte)( part >> 24 );
-    bytes[1] =(byte)( (part << 8) >> 24 );
-    bytes[2] =(byte)( (part << 16) >> 24 );
-    bytes[3] =(byte)( (part << 24) >> 24 );
-    return bytes;
+  private byte[] getPart(String key) {
+    long keyNumber = Long.parseLong(key.replaceAll("[^0-9]",""));
+    long keySpace = key.split("\u0020").length - 1;
+    long part = new Long(keyNumber / keySpace);
+    return new byte[] {
+      (byte)( part >> 24 ),
+      (byte)( (part << 8) >> 24 ),
+      (byte)( (part << 16) >> 24 ),
+      (byte)( (part << 24) >> 24 )      
+    };
   }
-  
+
   // ABTRACT METHODS /////////////////////////////////////////////////////////
   public abstract void onClientOpen(WebSocket conn);
   public abstract void onClientClose(WebSocket conn);

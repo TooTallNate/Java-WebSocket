@@ -244,13 +244,13 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
    * @return <var>true</var> if <var>handshake</var> is a valid WebSocket server
    *         handshake, <var>false</var> otherwise.
    * @throws IOException When socket related I/O errors occur.
- * @throws NoSuchAlgorithmException 
+   * @throws NoSuchAlgorithmException 
    */
-  public boolean onHandshakeRecieved(WebSocket conn, String handshake,byte[] reply) throws IOException, NoSuchAlgorithmException {
+  public boolean onHandshakeRecieved(WebSocket conn, String handshake, byte[] reply) throws IOException, NoSuchAlgorithmException {
     // TODO: Do some parsing of the returned handshake, and close connection
     // (return false) if we recieved anything unexpected.
     if(this.draft == Draft.DRAFT76) {
-      if (reply == null){
+      if (reply == null) {
         return false;
       }
       byte[] challenge = new byte[] {
