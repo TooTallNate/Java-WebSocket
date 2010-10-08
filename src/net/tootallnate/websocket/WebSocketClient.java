@@ -205,7 +205,7 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
       }
     }
     
-    System.err.println("WebSocketClient thread ended!");
+    //System.err.println("WebSocketClient thread ended!");
   }
 
   private String generateKey() {
