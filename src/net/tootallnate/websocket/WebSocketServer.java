@@ -218,7 +218,7 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
 
           // if isWritable == true
           // then we need to send the rest of the data to the client
-          if (key.isWritable()) {
+          if (key.isValid() && key.isWritable()) {
             WebSocket conn = (WebSocket)key.attachment();
             if (conn.handleWrite()) {
               conn.socketChannel().register(selector,
