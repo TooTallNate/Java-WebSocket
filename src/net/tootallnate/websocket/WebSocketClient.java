@@ -175,8 +175,11 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
             // Now that we're connected, re-register for only 'READ' keys.
             client.register(selector, SelectionKey.OP_READ);
 
-            // Now send WebSocket client-side handshake
-            String path = "/" + uri.getPath();
+            // Now send the WebSocket client-side handshake
+            String path = uri.getPath();
+            if (path.indexOf("/") != 0) {
+              path = "/" + path;
+            }
             String host = uri.getHost() + (port != WebSocket.DEFAULT_PORT ? ":" + port : "");
             String origin = null; // TODO: Make 'origin' configurable
             String request = "GET " + path + " HTTP/1.1\r\n" +
