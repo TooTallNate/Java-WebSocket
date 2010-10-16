@@ -13,6 +13,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 import net.tootallnate.websocket.WebSocketClient;
+import net.tootallnate.websocket.WebSocketDraft;
 
 /**
  * A barebones chat client that uses the WebSocket protocol.
@@ -20,7 +21,7 @@ import net.tootallnate.websocket.WebSocketClient;
 public class ChatClient extends WebSocketClient {
     private final JTextArea ta;
 
-    public ChatClient(URI uri, JTextArea ta, Draft draft) {
+    public ChatClient(URI uri, JTextArea ta, WebSocketDraft draft) {
         super(uri, draft);
         this.ta = ta;
     }
@@ -114,7 +115,7 @@ public class ChatClient extends WebSocketClient {
                 connect.setEnabled(false);
                 uriField.setEditable(false);
                 try {
-                    cc = new ChatClient(new URI(uriField.getText()), area, Draft.DRAFT76);
+                    cc = new ChatClient(new URI(uriField.getText()), area, WebSocketDraft.AUTO);
                     cc.connect();
                 } catch (URISyntaxException ex) {
                     area.append(uriField.getText() + " is not a valid WebSocket URI\n");

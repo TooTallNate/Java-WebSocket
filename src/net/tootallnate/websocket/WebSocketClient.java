@@ -67,7 +67,7 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
 
   // CONSTRUCTORS ////////////////////////////////////////////////////////////
   public WebSocketClient(URI serverURI) {
-    this(serverURI, WebSocketDraft.AUTO);
+    this(serverURI, WebSocketDraft.DRAFT76);
   }
 
   /**
@@ -78,6 +78,9 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
    */
   public WebSocketClient(URI serverUri, WebSocketDraft draft) {
     this.uri = serverUri;
+    if (draft == WebSocketDraft.AUTO) {
+      throw new IllegalArgumentException(draft + " is meant for `WebSocketServer` only!");
+    }
     this.draft = draft;
   }
 

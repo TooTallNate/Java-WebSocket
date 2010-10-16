@@ -1,6 +1,7 @@
 import java.io.IOException;
 
 import net.tootallnate.websocket.WebSocket;
+import net.tootallnate.websocket.WebSocketDraft;
 import net.tootallnate.websocket.WebSocketServer;
 
 /**
@@ -9,7 +10,7 @@ import net.tootallnate.websocket.WebSocketServer;
 public class ChatServer extends WebSocketServer {
 
     public ChatServer(int port) {
-        super(port, Draft.AUTO);
+        super(port);
     }
 
     public void onClientOpen(WebSocket conn) {
@@ -19,7 +20,6 @@ public class ChatServer extends WebSocketServer {
             ex.printStackTrace();
         }
         System.out.println(conn + " entered the room!");
-        
     }
 
     public void onClientClose(WebSocket conn) {
