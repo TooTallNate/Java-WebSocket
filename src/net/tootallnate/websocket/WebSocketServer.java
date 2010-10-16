@@ -52,24 +52,37 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
    */
   private Selector selector;
   /**
-   * The Draft of the WebSocket protocol the Server is running adhering to.
+   * The Draft of the WebSocket protocol the Server is adhering to.
    */
-  private Draft draft;
-  // CONSTRUCTOR /////////////////////////////////////////////////////////////
+  private WebSocketDraft draft;
+
+
+  // CONSTRUCTORS ////////////////////////////////////////////////////////////
   /**
    * Nullary constructor. Creates a WebSocketServer that will attempt to
    * listen on port WebSocket.DEFAULT_PORT.
    */
   public WebSocketServer() {
-    this(WebSocket.DEFAULT_PORT, Draft.AUTO);
+    this(WebSocket.DEFAULT_PORT, WebSocketDraft.AUTO);
   }
-
+  
   /**
    * Creates a WebSocketServer that will attempt to listen on port
    * <var>port</var>.
    * @param port The port number this server should listen on.
    */
-  public WebSocketServer(int port, Draft draft) {
+  public WebSocketServer(int port) {
+    this(port, WebSocketDraft.AUTO);
+  }
+
+  /**
+   * Creates a WebSocketServer that will attempt to listen on port <var>port</var>,
+   * and comply with <tt>WebSocketDraft</tt> version <var>draft</var>.
+   * @param port The port number this server should listen on.
+   * @param draft The version of the WebSocket protocol that this server
+   *              instance should comply to.
+   */
+  public WebSocketServer(int port, WebSocketDraft draft) {
     this.connections = new CopyOnWriteArraySet<WebSocket>();
     this.draft = draft;
     setPort(port);
@@ -169,7 +182,7 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
     return this.port;
   }
 
-  public Draft getDraft() {
+  public WebSocketDraft getDraft() {
     return this.draft;
   }
 

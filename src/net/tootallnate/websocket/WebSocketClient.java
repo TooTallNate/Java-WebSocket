@@ -15,8 +15,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import net.tootallnate.websocket.WebSocketListener.Draft;
-
 /**
  * The <tt>WebSocketClient</tt> is an abstract class that expects a valid
  * "ws://" URI to connect to. When connected, an instance recieves important
@@ -51,9 +49,9 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
    */
   private boolean running;
   /**
-   * The Websocket mode this client is in.
+   * The Draft of the WebSocket protocol the Client is adhering to.
    */
-  private Draft draft;
+  private WebSocketDraft draft;
   /**
    * Number 1 used in handshake 
    */
@@ -67,14 +65,18 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
    */
   private byte[] key3 = null;
 
-  // CONSTRUCTOR /////////////////////////////////////////////////////////////
+  // CONSTRUCTORS ////////////////////////////////////////////////////////////
+  public WebSocketClient(URI serverURI) {
+    this(serverURI, WebSocketDraft.AUTO);
+  }
+
   /**
    * Constructs a WebSocketClient instance and sets it to the connect to the
    * specified URI. The client does not attampt to connect automatically. You
    * must call <var>connect</var> first to initiate the socket connection.
    * @param serverUri The <tt>URI</tt> of the WebSocket server to connect to.
    */
-  public WebSocketClient(URI serverUri,Draft draft) {
+  public WebSocketClient(URI serverUri, WebSocketDraft draft) {
     this.uri = serverUri;
     this.draft = draft;
   }
@@ -89,7 +91,7 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
   }
   
   @Override
-  public Draft getDraft() {
+  public WebSocketDraft getDraft() {
     return this.draft;
   }
 
@@ -179,7 +181,7 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
                               "Connection: Upgrade\r\n" +
                               "Host: " + host + "\r\n" +
                               "Origin: " + origin + "\r\n";
-            if (this.draft == Draft.DRAFT76) {
+            if (this.draft == WebSocketDraft.DRAFT76) {
               request += "Sec-WebSocket-Key1: " + this.generateKey() + "\r\n";
               request += "Sec-WebSocket-Key2: " + this.generateKey() + "\r\n";
               this.key3 = new byte[8];
@@ -257,31 +259,31 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
   public boolean onHandshakeRecieved(WebSocket conn, String handshake, byte[] reply) throws IOException, NoSuchAlgorithmException {
     // TODO: Do some parsing of the returned handshake, and close connection
     // (return false) if we recieved anything unexpected.
-    if(this.draft == Draft.DRAFT76) {
+    if(this.draft == WebSocketDraft.DRAFT76) {
       if (reply == null) {
         return false;
       }
       byte[] challenge = new byte[] {
-          (byte)( this.number1 >> 24 ),
-                (byte)( (this.number1 << 8) >> 24 ),
-                (byte)( (this.number1 << 16) >> 24 ),
-                (byte)( (this.number1 << 24) >> 24 ),
-                (byte)(  this.number2 >> 24 ),
-                (byte)( (this.number2 << 8) >> 24 ),
-                (byte)( (this.number2 << 16) >> 24 ),
-                (byte)( (this.number2 << 24) >> 24 ),
-                this.key3[0],
-                this.key3[1],
-                this.key3[2],
-                this.key3[3],
-                this.key3[4],
-                this.key3[5],
-                this.key3[6],
-                this.key3[7]
+        (byte)( this.number1 >> 24 ),
+        (byte)( (this.number1 << 8) >> 24 ),
+        (byte)( (this.number1 << 16) >> 24 ),
+        (byte)( (this.number1 << 24) >> 24 ),
+        (byte)(  this.number2 >> 24 ),
+        (byte)( (this.number2 << 8) >> 24 ),
+        (byte)( (this.number2 << 16) >> 24 ),
+        (byte)( (this.number2 << 24) >> 24 ),
+        this.key3[0],
+        this.key3[1],
+        this.key3[2],
+        this.key3[3],
+        this.key3[4],
+        this.key3[5],
+        this.key3[6],
+        this.key3[7]
       };
       MessageDigest md5 = MessageDigest.getInstance("MD5");
       byte[] expected = md5.digest(challenge);
-      for(int i = 0; i < reply.length; i++){
+      for (int i = 0; i < reply.length; i++) {
         if (expected[i] != reply[i]) {
           return false;
         }

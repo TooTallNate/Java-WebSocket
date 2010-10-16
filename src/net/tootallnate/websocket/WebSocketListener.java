@@ -9,14 +9,6 @@ import java.security.NoSuchAlgorithmException;
  * @author Nathan Rajlich
  */
 interface WebSocketListener {
-  /**
-   * Enum for WebSocket Draft
-   */
-  public static enum Draft {
-    AUTO,
-    DRAFT75,
-    DRAFT76
-  }
   
   /**
    * Called when the socket connection is first established, and the WebSocket
@@ -58,5 +50,5 @@ interface WebSocketListener {
   /**
    * Called to retrieve the Draft of this listener.
    */
-  public Draft getDraft();  
+  public WebSocketDraft getDraft();  
 }
