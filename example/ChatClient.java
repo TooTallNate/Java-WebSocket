@@ -115,7 +115,7 @@ public class ChatClient extends WebSocketClient {
                 connect.setEnabled(false);
                 uriField.setEditable(false);
                 try {
-                    cc = new ChatClient(new URI(uriField.getText()), area, WebSocketDraft.AUTO);
+                    cc = new ChatClient(new URI(uriField.getText()), area, WebSocketDraft.DRAFT76);
                     cc.connect();
                 } catch (URISyntaxException ex) {
                     area.append(uriField.getText() + " is not a valid WebSocket URI\n");
