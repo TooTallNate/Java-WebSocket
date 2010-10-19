@@ -42,6 +42,8 @@ public class ChatClient extends WebSocketClient {
      * The JFrame for our Chat client.
      */
     private static class Frame extends JFrame implements ActionListener {
+        private static final long serialVersionUID = -6056260699202978657L;
+        
         private final JTextField uriField;
         private final JButton connect;
         private final JButton close;

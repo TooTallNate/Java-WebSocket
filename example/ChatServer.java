@@ -1,7 +1,6 @@
 import java.io.IOException;
 
 import net.tootallnate.websocket.WebSocket;
-import net.tootallnate.websocket.WebSocketDraft;
 import net.tootallnate.websocket.WebSocketServer;
 
 /**
