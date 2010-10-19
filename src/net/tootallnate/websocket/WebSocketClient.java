@@ -74,6 +74,8 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
    * specified URI. The client does not attampt to connect automatically. You
    * must call <var>connect</var> first to initiate the socket connection.
    * @param serverUri The <tt>URI</tt> of the WebSocket server to connect to.
+   * @throws IllegalArgumentException If <var>draft</var>
+   * is <code>WebSocketDraft.AUTO</code>
    */
   public WebSocketClient(URI serverUri, WebSocketDraft draft) {
     this.uri = serverUri;
@@ -94,7 +96,7 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
   
   @Override
   public WebSocketDraft getDraft() {
-    return this.draft;
+    return draft;
   }
 
   /**
@@ -103,8 +105,10 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
    * <var>setURI</var>.
    */
   public void connect() {
-    this.running = true;
-    (new Thread(this)).start();
+    if (!running) {
+      this.running = true;
+      (new Thread(this)).start();
+    }
   }
 
   /**
@@ -113,9 +117,11 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
    * @throws IOException When socket related I/O errors occur.
    */
   public void close() throws IOException {
-    this.running = false;
-    selector.wakeup();
-    conn.close();
+    if (running) {
+      this.running = false;
+      selector.wakeup();
+      conn.close();
+    }
   }
 
   /**
@@ -124,22 +130,18 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
    * @throws IOException When socket related I/O errors occur.
    */
   public void send(String text) throws IOException {
-    conn.send(text);
-  }
-
-  // Runnable IMPLEMENTATION /////////////////////////////////////////////////
-  public void run() {
-    int port = uri.getPort();
-    if (port == -1) {
-      port = WebSocket.DEFAULT_PORT;
+    if (conn != null) {
+      conn.send(text);
     }
-
+  }
+  
+  private boolean tryToConnect(InetSocketAddress remote) {
     // The WebSocket constructor expects a SocketChannel that is
     // non-blocking, and has a Selector attached to it.
     try {
       client = SocketChannel.open();
       client.configureBlocking(false);
-      client.connect(new InetSocketAddress(uri.getHost(), port));
+      client.connect(remote);
 
       selector = Selector.open();
 
@@ -149,10 +151,16 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
 
     } catch (IOException ex) {
       ex.printStackTrace();
-      return;
+      return false;
     }
+    
+    return true;
+  }
 
-    // Continuous loop that is only supposed to end when "close" is called.
+  // Runnable IMPLEMENTATION /////////////////////////////////////////////////
+  public void run() {
+    running = tryToConnect(new InetSocketAddress(uri.getHost(), getPort()));
+
     while (this.running) {
       try {
         selector.select();
@@ -163,44 +171,10 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
           SelectionKey key = i.next();
           i.remove();
 
-          // When 'conn' has connected to the host
           if (key.isConnectable()) {
-          
-            // Ensure connection is finished
-            if (client.isConnectionPending()) {
-              client.finishConnect();
-            }
-
-            // Now that we're connected, re-register for only 'READ' keys.
-            client.register(selector, SelectionKey.OP_READ);
-
-            // Now send the WebSocket client-side handshake
-            String path = uri.getPath();
-            if (path.indexOf("/") != 0) {
-              path = "/" + path;
-            }
-            String host = uri.getHost() + (port != WebSocket.DEFAULT_PORT ? ":" + port : "");
-            String origin = null; // TODO: Make 'origin' configurable
-            String request = "GET " + path + " HTTP/1.1\r\n" +
-                              "Upgrade: WebSocket\r\n" +
-                              "Connection: Upgrade\r\n" +
-                              "Host: " + host + "\r\n" +
-                              "Origin: " + origin + "\r\n";
-            if (this.draft == WebSocketDraft.DRAFT76) {
-              request += "Sec-WebSocket-Key1: " + this.generateKey() + "\r\n";
-              request += "Sec-WebSocket-Key2: " + this.generateKey() + "\r\n";
-              this.key3 = new byte[8];
-              (new Random()).nextBytes(this.key3);
-            }
-            //extraHeaders.toString() +
-            request+="\r\n";
-            conn.socketChannel().write(ByteBuffer.wrap(request.getBytes(WebSocket.UTF8_CHARSET)));
-            if (this.key3 != null) {
-              conn.socketChannel().write(ByteBuffer.wrap(this.key3));
-            }
+            finishConnect();
           }
 
-          // When 'conn' has recieved some data
           if (key.isReadable()) {
             conn.handleRead();
           }
@@ -213,6 +187,50 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
     }
     
     //System.err.println("WebSocketClient thread ended!");
+  }
+  
+  private int getPort() {
+    int port = uri.getPort();
+    return port == -1 ? WebSocket.DEFAULT_PORT : port;
+  }
+  
+  private void finishConnect() throws IOException {
+    if (client.isConnectionPending()) {
+      client.finishConnect();
+    }
+
+    // Now that we're connected, re-register for only 'READ' keys.
+    client.register(selector, SelectionKey.OP_READ);
+
+    sendHandshake();
+  }
+  
+  private void sendHandshake() throws IOException {
+    String path = uri.getPath();
+    if (path.indexOf("/") != 0) {
+      path = "/" + path;
+    }
+    int port = getPort();
+    String host = uri.getHost() + (port != WebSocket.DEFAULT_PORT ? ":" + port : "");
+    String origin = null; // TODO: Make 'origin' configurable
+    String request = "GET " + path + " HTTP/1.1\r\n" +
+                      "Upgrade: WebSocket\r\n" +
+                      "Connection: Upgrade\r\n" +
+                      "Host: " + host + "\r\n" +
+                      "Origin: " + origin + "\r\n";
+    
+    if (this.draft == WebSocketDraft.DRAFT76) {
+      request += "Sec-WebSocket-Key1: " + this.generateKey() + "\r\n";
+      request += "Sec-WebSocket-Key2: " + this.generateKey() + "\r\n";
+      this.key3 = new byte[8];
+      (new Random()).nextBytes(this.key3);
+    }
+    
+    request += "\r\n";
+    conn.socketChannel().write(ByteBuffer.wrap(request.getBytes(WebSocket.UTF8_CHARSET)));
+    if (this.key3 != null) {
+      conn.socketChannel().write(ByteBuffer.wrap(this.key3));
+    }
   }
 
   private String generateKey() {
