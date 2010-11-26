@@ -227,9 +227,16 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
     }
     
     request += "\r\n";
-    conn.socketChannel().write(ByteBuffer.wrap(request.getBytes(WebSocket.UTF8_CHARSET)));
+    
     if (this.key3 != null) {
-      conn.socketChannel().write(ByteBuffer.wrap(this.key3));
+      conn.socketChannel().write(new ByteBuffer[] {
+        ByteBuffer.wrap(request.getBytes(WebSocket.UTF8_CHARSET)),
+        ByteBuffer.wrap(this.key3)
+      });
+    }
+    else
+    {
+      conn.socketChannel().write(ByteBuffer.wrap(request.getBytes(WebSocket.UTF8_CHARSET)));
     }
   }
 
