@@ -86,6 +86,8 @@ public final class WebSocket {
    * the proper order.
    */
   private Object bufferQueueMutex = new Object();
+  
+  private boolean readingState = false;
 
 
   // CONSTRUCTOR /////////////////////////////////////////////////////////////
@@ -212,10 +214,12 @@ public final class WebSocket {
   private void recieveFrame() {
     byte newestByte = this.buffer.get();
 
-    if (newestByte == START_OF_FRAME) { // Beginning of Frame
+    if (newestByte == START_OF_FRAME && !readingState) { // Beginning of Frame
       this.currentFrame = null;
+      readingState = true;
 
-    } else if (newestByte == END_OF_FRAME) { // End of Frame
+    } else if (newestByte == END_OF_FRAME && readingState) { // End of Frame
+      readingState = false;
       String textFrame = null;
       // currentFrame will be null if END_OF_FRAME was send directly after
       // START_OF_FRAME, thus we will send 'null' as the sent message.
