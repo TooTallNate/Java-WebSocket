@@ -1,8 +1,10 @@
-package net.tootallnate.websocket;
+package com.locacha.websocket;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.NotYetConnectedException;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
 import java.security.NoSuchAlgorithmException;
@@ -69,6 +71,8 @@ public final class WebSocket {
    * The 1-byte buffer reused throughout the WebSocket connection to read data.
    */
   private ByteBuffer buffer;
+  
+  private ByteBuffer socketBuffer;
   /**
    * The bytes that make up the remote handshake.
    */
@@ -86,8 +90,6 @@ public final class WebSocket {
    * the proper order.
    */
   private Object bufferQueueMutex = new Object();
-  
-  private boolean readingState = false;
 
 
   // CONSTRUCTOR /////////////////////////////////////////////////////////////
@@ -106,6 +108,7 @@ public final class WebSocket {
     this.bufferQueue = bufferQueue;
     this.handshakeComplete = false;
     this.remoteHandshake = this.currentFrame = null;
+    this.socketBuffer = ByteBuffer.allocate(8192);
     this.buffer = ByteBuffer.allocate(1);
     this.wsl = listener;
   }
@@ -117,23 +120,32 @@ public final class WebSocket {
    * @throws NoSuchAlgorithmException 
    */
   void handleRead() throws IOException, NoSuchAlgorithmException {
-    this.buffer.rewind();
     
     int bytesRead = -1;
+    
     try {
-      bytesRead = this.socketChannel.read(this.buffer);
+    	socketBuffer.rewind();
+    	bytesRead = this.socketChannel.read(this.socketBuffer);
     } catch(Exception ex) {}
     
-    if (bytesRead == -1) {
+    if (bytesRead == -1) 
+    {
       close();
-    } else if (bytesRead > 0) {
-      this.buffer.rewind();
+    } 
+    else if (bytesRead > 0) 
+    {
+    	for(int i = 0; i < bytesRead; i++)
+    	{
+    		buffer.rewind();
+    		buffer.put(socketBuffer.get(i));
+    		
+    	      this.buffer.rewind();
 
-      if (!this.handshakeComplete) {
-        recieveHandshake();
-      } else {
-        recieveFrame();
-      }
+    	      if (!this.handshakeComplete) 
+    	        recieveHandshake();
+    	      else 
+    	        recieveFrame();    	      
+    	}
     }
   }
 
@@ -157,7 +169,7 @@ public final class WebSocket {
     if (text == null) throw new NullPointerException("Cannot send 'null' data to a WebSocket.");
 
     // Get 'text' into a WebSocket "frame" of bytes
-    byte[] textBytes = text.getBytes(UTF8_CHARSET);
+    byte[] textBytes = text.getBytes("UTF8");
     ByteBuffer b = ByteBuffer.allocate(textBytes.length + 2);
     b.put(START_OF_FRAME);
     b.put(textBytes);
@@ -211,20 +223,18 @@ public final class WebSocket {
   }
 
   // PRIVATE INSTANCE METHODS ////////////////////////////////////////////////
-  private void recieveFrame() {
+  private void recieveFrame()  throws IOException {
     byte newestByte = this.buffer.get();
 
-    if (newestByte == START_OF_FRAME && !readingState) { // Beginning of Frame
+    if (newestByte == START_OF_FRAME) { // Beginning of Frame
       this.currentFrame = null;
-      readingState = true;
 
-    } else if (newestByte == END_OF_FRAME && readingState) { // End of Frame
-      readingState = false;
+    } else if (newestByte == END_OF_FRAME) { // End of Frame
       String textFrame = null;
       // currentFrame will be null if END_OF_FRAME was send directly after
       // START_OF_FRAME, thus we will send 'null' as the sent message.
       if (this.currentFrame != null) {
-        textFrame = new String(this.currentFrame.array(), UTF8_CHARSET);
+        textFrame = new String(this.currentFrame.array(), "UTF8");
       }
       this.wsl.onMessage(this, textFrame);
 
@@ -281,7 +291,7 @@ public final class WebSocket {
     } else if ((h.length>=12 && h[h.length-12] == CR
         && h[h.length-11] == LF
         && h[h.length-10] == CR
-        && h[h.length-9] == LF) && new String(this.remoteHandshake.array(), UTF8_CHARSET).contains("Sec-WebSocket-Key1")) {
+        && h[h.length-9] == LF) && new String(this.remoteHandshake.array(), "UTF8").contains("Sec-WebSocket-Key1")) {
       completeHandshake(new byte[] {
         h[h.length-8],
         h[h.length-7],
@@ -298,7 +308,7 @@ public final class WebSocket {
     } else if ((h.length>=4 && h[h.length-4] == CR
         && h[h.length-3] == LF
         && h[h.length-2] == CR
-        && h[h.length-1] == LF) && !(new String(this.remoteHandshake.array(), UTF8_CHARSET).contains("Sec")) ||
+        && h[h.length-1] == LF) && !(new String(this.remoteHandshake.array(), "UTF8").contains("Sec")) ||
         (h.length==23 && h[h.length-1] == 0) ) {
       completeHandshake(null);
     }    
@@ -306,7 +316,7 @@ public final class WebSocket {
 
   private void completeHandshake(byte[] handShakeBody) throws IOException, NoSuchAlgorithmException {
     byte[] handshakeBytes = this.remoteHandshake.array();
-    String handshake = new String(handshakeBytes, UTF8_CHARSET);
+    String handshake = new String(handshakeBytes, "UTF8");
     this.handshakeComplete = true;
     if (this.wsl.onHandshakeRecieved(this, handshake, handShakeBody)) {
       this.wsl.onOpen(this);
