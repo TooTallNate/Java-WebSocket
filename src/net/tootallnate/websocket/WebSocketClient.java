@@ -219,10 +219,10 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
                       "Host: " + host + "\r\n";
     
     if (this.draft == WebSocketDraft.VERSION_07) {
-    	request += "Sec-WebSocket-Origin: " + origin + "\r\n";
+      request += "Sec-WebSocket-Origin: " + origin + "\r\n";
     }
     else {
-    	request += "Origin: " + origin + "\r\n";
+      request += "Origin: " + origin + "\r\n";
     }
     
     if (this.draft == WebSocketDraft.DRAFT76) {
@@ -232,13 +232,13 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
       (new Random()).nextBytes(this.key3);
     }
     else if(this.draft == WebSocketDraft.VERSION_07) {
-    	byte[] randomBytes = new byte[16];
-    	
-    	Random randomGenerator = new Random();
-    	randomGenerator.nextBytes(randomBytes);
-    	
-    	request += "Sec-WebSocket-Version: 7\r\n";
-    	request += "Sec-WebSocket-Key: " + new String(Base64Coder.encode(randomBytes)) + "\r\n";
+      byte[] randomBytes = new byte[16];
+      
+      Random randomGenerator = new Random();
+      randomGenerator.nextBytes(randomBytes);
+      
+      request += "Sec-WebSocket-Version: 7\r\n";
+      request += "Sec-WebSocket-Key: " + new String(Base64Coder.encode(randomBytes)) + "\r\n";
     }
     
     request += "\r\n";
