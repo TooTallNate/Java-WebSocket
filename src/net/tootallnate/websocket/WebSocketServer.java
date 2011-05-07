@@ -330,6 +330,38 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
     if (prop == null || !prop.equals("Upgrade")) {
       isWebSocketRequest = false;
     }
+    
+    // start draft-ietf-hybi-thewebsocketprotocol-07 support
+    
+    String websocketVersion = p.getProperty("Sec-WebSocket-Version");
+    
+    if(websocketVersion != null && websocketVersion.equals("7")) {
+      String base64EncodedKey = p.getProperty("Sec-WebSocket-Key");
+      if(base64EncodedKey != null && !base64EncodedKey.equals("")) {
+        final String hashConstant = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+      
+        MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
+        String acceptHeader = new String(Base64Coder.encode(sha1.digest(base64EncodedKey.concat(hashConstant).getBytes())));
+        
+        String responseHandshake = "HTTP/1.1 101 Web Socket Protocol Handshake\r\n" +
+            "Upgrade: WebSocket\r\n" +
+            "Connection: Upgrade\r\n" +
+            "Sec-WebSocket-Accept: " + acceptHeader + "\r\n";
+
+        responseHandshake += "\r\n"; // Signifies end of handshake
+          
+        // Can not use UTF-8 here because we might lose bytes in response during conversion
+        conn.socketChannel().write(ByteBuffer.wrap(responseHandshake.getBytes()));
+          
+        return true;        
+      }
+      
+      // Sec-WebSocket-Version: 7 requested, but invalid.
+      return false;
+    }
+    
+    // end draft-ietf-hybi-thewebsocketprotocol-07 support
+    
     String key1 = p.getProperty("Sec-WebSocket-Key1");
     String key2 = p.getProperty("Sec-WebSocket-Key2");
     String headerPrefix = "";
