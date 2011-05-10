@@ -216,14 +216,29 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
     String request = "GET " + path + " HTTP/1.1\r\n" +
                       "Upgrade: WebSocket\r\n" +
                       "Connection: Upgrade\r\n" +
-                      "Host: " + host + "\r\n" +
-                      "Origin: " + origin + "\r\n";
+                      "Host: " + host + "\r\n";
+    
+    if (this.draft == WebSocketDraft.VERSION_07) {
+      request += "Sec-WebSocket-Origin: " + origin + "\r\n";
+    }
+    else {
+      request += "Origin: " + origin + "\r\n";
+    }
     
     if (this.draft == WebSocketDraft.DRAFT76) {
       request += "Sec-WebSocket-Key1: " + this.generateKey() + "\r\n";
       request += "Sec-WebSocket-Key2: " + this.generateKey() + "\r\n";
       this.key3 = new byte[8];
       (new Random()).nextBytes(this.key3);
+    }
+    else if(this.draft == WebSocketDraft.VERSION_07) {
+      byte[] randomBytes = new byte[16];
+      
+      Random randomGenerator = new Random();
+      randomGenerator.nextBytes(randomBytes);
+      
+      request += "Sec-WebSocket-Version: 7\r\n";
+      request += "Sec-WebSocket-Key: " + new String(Base64Coder.encode(randomBytes)) + "\r\n";
     }
     
     request += "\r\n";
