@@ -335,7 +335,7 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
     
     String websocketVersion = p.getProperty("Sec-WebSocket-Version");
     
-	if (this.draft == WebSocketDraft.AUTO || this.draft == WebSocketDraft.VERSION_7) {
+	if (this.draft == WebSocketDraft.AUTO || this.draft == WebSocketDraft.VERSION_07) {
 	  if(websocketVersion != null && websocketVersion.equals("7")) {
         String base64EncodedKey = p.getProperty("Sec-WebSocket-Key");
         if(base64EncodedKey != null && !base64EncodedKey.equals("")) {
