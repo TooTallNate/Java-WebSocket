@@ -1,6 +1,7 @@
 package net.tootallnate.websocket;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.channels.NotYetConnectedException;
 import java.nio.channels.SocketChannel;
@@ -31,7 +32,7 @@ public final class WebSocket {
   /**
    * The WebSocket protocol expects UTF-8 encoded bytes.
    */
-  public static final Charset UTF8_CHARSET = Charset.forName("UTF-8");
+  public static final String UTF8_CHARSET = "UTF-8";
   /**
    * The byte representing CR, or Carriage Return, or \r
    */
@@ -224,7 +225,13 @@ public final class WebSocket {
       // currentFrame will be null if END_OF_FRAME was send directly after
       // START_OF_FRAME, thus we will send 'null' as the sent message.
       if (this.currentFrame != null) {
-        textFrame = new String(this.currentFrame.array(), UTF8_CHARSET);
+        try {
+          textFrame = new String(this.currentFrame.array(), UTF8_CHARSET);
+        } catch (UnsupportedEncodingException ex) {
+          // TODO: Fire an 'onError' handler here
+          ex.printStackTrace();
+          textFrame = "";
+        }
       }
       this.wsl.onMessage(this, textFrame);
 
