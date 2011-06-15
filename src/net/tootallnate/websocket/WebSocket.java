@@ -71,6 +71,10 @@ public final class WebSocket {
    */
   private ByteBuffer buffer;
   /**
+   * Buffer where data is read to from the socket
+   */
+  private ByteBuffer socketBuffer;
+  /**
    * The bytes that make up the remote handshake.
    */
   private ByteBuffer remoteHandshake;
@@ -107,6 +111,7 @@ public final class WebSocket {
     this.bufferQueue = bufferQueue;
     this.handshakeComplete = false;
     this.remoteHandshake = this.currentFrame = null;
+    this.socketBuffer = ByteBuffer.allocate(8192);
     this.buffer = ByteBuffer.allocate(1);
     this.wsl = listener;
   }
@@ -118,22 +123,27 @@ public final class WebSocket {
    * @throws NoSuchAlgorithmException 
    */
   void handleRead() throws IOException, NoSuchAlgorithmException {
-    this.buffer.rewind();
-    
+
     int bytesRead = -1;
+    
     try {
-      bytesRead = this.socketChannel.read(this.buffer);
+      socketBuffer.rewind();
+      bytesRead = this.socketChannel.read(this.socketBuffer);
     } catch(Exception ex) {}
     
-    if (bytesRead == -1) {
+    if (bytesRead == -1)  {
       close();
     } else if (bytesRead > 0) {
-      this.buffer.rewind();
+      for(int i = 0; i < bytesRead; i++) {
+        buffer.rewind();
+        buffer.put(socketBuffer.get(i));
 
-      if (!this.handshakeComplete) {
-        recieveHandshake();
-      } else {
-        recieveFrame();
+        this.buffer.rewind();
+
+        if (!this.handshakeComplete) 
+          recieveHandshake();
+        else 
+          recieveFrame();    	      
       }
     }
   }
