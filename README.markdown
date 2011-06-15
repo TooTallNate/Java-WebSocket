@@ -16,10 +16,12 @@ folder. First, compile the example classes and JAR file:
     ant
 
 Then, start the chat server (a `WebSocketServer` subclass):
+
     java -cp example:dist/WebSocket.jar ChatServer
 
 Now that the server is started, we need to connect some clients. Run the
 Java chat client (a `WebSocketClient` subclass):
+
     java -cp example:dist/WebSocket.jar ChatClient
 
 The chat client is a simple Swing GUI application that allows you to send
