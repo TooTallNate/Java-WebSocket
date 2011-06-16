@@ -255,7 +255,8 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
     }
     long product = number * spaces;
     String key = Long.toString(product);
-    int numChars = r.nextInt(12);
+    //always insert atleast one random character
+    int numChars = r.nextInt(12)+1;
     for (int i=0; i < numChars; i++){
       int position = r.nextInt(key.length());
       position = Math.abs(position);
