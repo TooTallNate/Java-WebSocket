@@ -28,7 +28,7 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
    * The value of <var>handshake</var> when a Flash client requests a policy
    * file on this server.
    */
-  protected static final String FLASH_POLICY_REQUEST = "<policy-file-request/>\0";
+  private static final String FLASH_POLICY_REQUEST = "<policy-file-request/>\0";
 
 
   // INSTANCE PROPERTIES /////////////////////////////////////////////////////
@@ -36,24 +36,24 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
    * Holds the list of active WebSocket connections. "Active" means WebSocket
    * handshake is complete and socket can be written to, or read from.
    */
-  protected final CopyOnWriteArraySet<WebSocket> connections;
+  private final CopyOnWriteArraySet<WebSocket> connections;
   /**
    * The port number that this WebSocket server should listen on. Default is
    * WebSocket.DEFAULT_PORT.
    */
-  protected int port;
+  private int port;
   /**
    * The socket channel for this WebSocket server.
    */
-  protected ServerSocketChannel server;
+  private ServerSocketChannel server;
   /**
    * The 'Selector' used to get event keys from the underlying socket.
    */
-  protected Selector selector;
+  private Selector selector;
   /**
    * The Draft of the WebSocket protocol the Server is adhering to.
    */
-  protected WebSocketDraft draft;
+  private WebSocketDraft draft;
 
 
   // CONSTRUCTORS ////////////////////////////////////////////////////////////
@@ -298,7 +298,7 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
    * @return An XML String that comforms to Flash's security policy. You MUST
    *         not include the null char at the end, it is appended automatically.
    */
-  protected String getFlashSecurityPolicy() {
+  private String getFlashSecurityPolicy() {
     return "<cross-domain-policy><allow-access-from domain=\"*\" to-ports=\""
               + getPort() + "\" /></cross-domain-policy>";
   }
@@ -465,7 +465,7 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
     }
   }
 
-  protected byte[] getPart(String key) {
+  private byte[] getPart(String key) {
     long keyNumber = Long.parseLong(key.replaceAll("[^0-9]",""));
     long keySpace = key.split("\u0020").length - 1;
     long part = new Long(keyNumber / keySpace);
