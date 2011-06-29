@@ -46,7 +46,14 @@ interface WebSocketListener {
    * @param conn The <tt>WebSocket</tt> instance this event is occuring on.
    */
   public void onClose(WebSocket conn);
-  
+
+  /**
+   * Triggered on any IOException error. This method should be overridden for custom 
+   * implementation of error handling (e.g. when network is not available). 
+   * @param ex
+   */
+  public void onIOError(IOException ex);
+
   /**
    * Called to retrieve the Draft of this listener.
    */

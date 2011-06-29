@@ -415,25 +415,6 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
     }
   }
 
-  /**
-   * Triggered on any IOException error. This method should be overridden for custom 
-   * implementation of error handling (e.g. when network is not available). 
-   * @param ex
-   */
-  public void onIOError(IOException ex) 
-  {
-	  ex.printStackTrace();
-	  
-	  try 
-	  {
-		this.stop();
-	  } 
-	  catch (IOException e) 
-	  {
-		onIOError(ex);
-	  }
-  }
-
   private byte[] getPart(String key) {
     long keyNumber = Long.parseLong(key.replaceAll("[^0-9]",""));
     long keySpace = key.split("\u0020").length - 1;
@@ -450,4 +431,6 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
   public abstract void onClientOpen(WebSocket conn);
   public abstract void onClientClose(WebSocket conn);
   public abstract void onClientMessage(WebSocket conn, String message);
+  public abstract void onIOError(IOException ex);
+
 }

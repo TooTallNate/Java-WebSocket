@@ -14,8 +14,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import android.util.Log;
-
 /**
  * The <tt>WebSocketClient</tt> is an abstract class that expects a valid
  * "ws://" URI to connect to. When connected, an instance recieves important
@@ -133,10 +131,26 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
    * @throws IOException When socket related I/O errors occur.
    */
   public void send(String text) throws IOException {
-    if (conn != null && client.isConnected()) 
+    if (conn != null) 
     {
       conn.send(text);
     }
+  }
+  
+  /**
+   * Reinitializes and prepares the class to be used for reconnect.
+   * @return
+   */
+  public void releaseAndInitialize()
+  {
+	  conn = null;
+	  client = null;
+	  selector = null;
+	  running = false;
+	  draft = null;
+	  number1 = 0;
+	  number2 = 0;
+	  key3 = null;
   }
   
   private boolean tryToConnect(InetSocketAddress remote) {
@@ -154,7 +168,7 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
       client.register(selector, SelectionKey.OP_CONNECT);
 
     } catch (IOException ex) {
-    	onIOError(ex);
+    	onIOError(conn, ex);
       return false;
     }
     
@@ -184,7 +198,7 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
           }
         }
       } catch (IOException ex) {
-    	  onIOError(ex);
+    	  onIOError(conn, ex);
       } catch (NoSuchAlgorithmException ex) {
         ex.printStackTrace();
       }
@@ -354,38 +368,23 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
 	  {
 		  onClose();
 	  }
-
-	  conn = null;
-	  client = null;
-	  selector = null;
-	  running = false;
-	  draft = null;
-	  number1 = 0;
-	  number2 = 0;
-	  key3 = null;
+	  
+	  releaseAndInitialize();
   }
 
   /**
-   * Triggered on any IOException error. This method should be overridden for custom 
-   * implementation of error handling (e.g. when network is not available). 
-   * @param ex
+   * Calls subclass' implementation of <var>onIOError</var>.
+   * @param conn
    */
-   public void onIOError(IOException ex) 
-   {
- 	  ex.printStackTrace();
- 	  
- 	  try 
- 	  {
-		this.close();
- 	  } 
- 	  catch (IOException e) 
- 	  {
-		onIOError(ex);
- 	  }
-   }
+  public void onIOError(WebSocket conn, IOException ex) 
+  {
+	  releaseAndInitialize();
+	  onIOError(ex);
+  }
 
   // ABTRACT METHODS /////////////////////////////////////////////////////////
   public abstract void onMessage(String message);
   public abstract void onOpen();
   public abstract void onClose();
+  public abstract void onIOError(IOException ex);
 }
