@@ -14,6 +14,8 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import android.util.Log;
+
 /**
  * The <tt>WebSocketClient</tt> is an abstract class that expects a valid
  * "ws://" URI to connect to. When connected, an instance recieves important
@@ -116,12 +118,16 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
    * closes the socket connection, and ends the client socket thread.
    * @throws IOException When socket related I/O errors occur.
    */
-  public void close() throws IOException {
-    if (running) {
-      this.running = false;
-      selector.wakeup();
-      conn.close();
-    }
+  public void close() throws IOException 
+  {    
+	  Boolean active = running;
+	  this.running = false;
+	  
+	  if (active)
+	  {
+		  selector.wakeup();
+		  conn.close();
+	  }
   }
 
   /**
@@ -344,8 +350,17 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
    * Calls subclass' implementation of <var>onClose</var>.
    * @param conn
    */
-  public void onClose(WebSocket conn) {
-    onClose();
+  public void onClose(WebSocket conn) 
+  {
+	  try 
+	  {
+		  close();
+	  } 
+	  catch (IOException ex) 
+	  {
+		  onIOError(ex);
+	  }
+	  onClose();
   }
 
   /**
@@ -353,8 +368,18 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
    * implementation of error handling (e.g. when network is not available). 
    * @param ex
    */
-   public void onIOError(IOException ex) {
+   public void onIOError(IOException ex) 
+   {
  	  ex.printStackTrace();
+ 	  
+ 	  try 
+ 	  {
+		this.close();
+ 	  } 
+ 	  catch (IOException e) 
+ 	  {
+		onIOError(ex);
+ 	  }
    }
 
   // ABTRACT METHODS /////////////////////////////////////////////////////////

@@ -420,9 +420,19 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
    * implementation of error handling (e.g. when network is not available). 
    * @param ex
    */
-   public void onIOError(IOException ex) {
- 	  ex.printStackTrace();
-   }
+  public void onIOError(IOException ex) 
+  {
+	  ex.printStackTrace();
+	  
+	  try 
+	  {
+		this.stop();
+	  } 
+	  catch (IOException e) 
+	  {
+		onIOError(ex);
+	  }
+  }
 
   private byte[] getPart(String key) {
     long keyNumber = Long.parseLong(key.replaceAll("[^0-9]",""));
