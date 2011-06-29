@@ -39,7 +39,6 @@ public class ChatClient extends WebSocketClient {
     }
 
     public void onIOError(IOException ex) {
-    	super.onIOError(ex);
         ta.append("Network problem ...\n");
     }
 
