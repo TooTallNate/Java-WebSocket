@@ -55,43 +55,43 @@ public final class WebSocket {
    * The <tt>SocketChannel</tt> instance to use for this server connection.
    * This is used to read and write data to.
    */
-  private final SocketChannel socketChannel;
+  protected final SocketChannel socketChannel;
   /**
    * Internally used to determine whether to recieve data as part of the
    * remote handshake, or as part of a text frame.
    */
-  private boolean handshakeComplete;
+  protected boolean handshakeComplete;
   /**
    * The listener to notify of WebSocket events.
    */
-  private WebSocketListener wsl;
+  protected WebSocketListener wsl;
   /**
    * The 1-byte buffer reused throughout the WebSocket connection to read data.
    */
-  private ByteBuffer buffer;
+  protected ByteBuffer buffer;
   /**
    * Buffer where data is read to from the socket
    */
-  private ByteBuffer socketBuffer;
+  protected ByteBuffer socketBuffer;
   /**
    * The bytes that make up the remote handshake.
    */
-  private ByteBuffer remoteHandshake;
+  protected ByteBuffer remoteHandshake;
   /**
    * The bytes that make up the current text frame being read.
    */
-  private ByteBuffer currentFrame;
+  protected ByteBuffer currentFrame;
   /**
    * Queue of buffers that need to be sent to the client.
    */
-  private BlockingQueue<ByteBuffer> bufferQueue;
+  protected BlockingQueue<ByteBuffer> bufferQueue;
   /**
    * Lock object to ensure that data is sent from the bufferQueue in
    * the proper order.
    */
-  private Object bufferQueueMutex = new Object();
+  protected Object bufferQueueMutex = new Object();
   
-  private boolean readingState = false;
+  protected boolean readingState = false;
 
 
   // CONSTRUCTOR /////////////////////////////////////////////////////////////
@@ -220,8 +220,8 @@ public final class WebSocket {
     return this.socketChannel;
   }
 
-  // PRIVATE INSTANCE METHODS ////////////////////////////////////////////////
-  private void recieveFrame() {
+  // protected INSTANCE METHODS ////////////////////////////////////////////////
+  protected void recieveFrame() {
     byte newestByte = this.buffer.get();
 
     if (newestByte == START_OF_FRAME && !readingState) { // Beginning of Frame
@@ -255,7 +255,7 @@ public final class WebSocket {
     }
   }
 
-  private void recieveHandshake() throws IOException, NoSuchAlgorithmException {
+  protected void recieveHandshake() throws IOException, NoSuchAlgorithmException {
     ByteBuffer ch = ByteBuffer.allocate((this.remoteHandshake != null ? this.remoteHandshake.capacity() : 0) + this.buffer.capacity());
     if (this.remoteHandshake != null) {
       this.remoteHandshake.rewind();
@@ -320,7 +320,7 @@ public final class WebSocket {
     }    
   }
 
-  private void completeHandshake(byte[] handShakeBody) throws IOException, NoSuchAlgorithmException {
+  protected void completeHandshake(byte[] handShakeBody) throws IOException, NoSuchAlgorithmException {
     byte[] handshakeBytes = this.remoteHandshake.array();
     String handshake = new String(handshakeBytes, UTF8_CHARSET);
     this.handshakeComplete = true;
