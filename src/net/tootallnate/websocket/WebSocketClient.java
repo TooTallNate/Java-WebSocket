@@ -30,39 +30,39 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
   /**
    * The URI this client is supposed to connect to.
    */
-  private URI uri = null;
+	protected URI uri = null;
   /**
    * The WebSocket instance this client object wraps.
    */
-  private WebSocket conn = null;
+  protected WebSocket conn = null;
   /**
    * The SocketChannel instance this client uses.
    */
-  private SocketChannel client = null;
+  protected SocketChannel client = null;
   /**
    * The 'Selector' used to get event keys from the underlying socket.
    */
-  private Selector selector = null;
+  protected Selector selector = null;
   /**
    * Keeps track of whether or not the client thread should continue running.
    */
-  private boolean running = false;
+  protected boolean running = false;
   /**
    * The Draft of the WebSocket protocol the Client is adhering to.
    */
-  private WebSocketDraft draft = null;
+  protected WebSocketDraft draft = null;
   /**
    * Number 1 used in handshake 
    */
-  private int number1 = 0;
+  protected int number1 = 0;
   /**
    * Number 2 used in handshake
    */
-  private int number2 = 0;
+  protected int number2 = 0;
   /**
    * Key3 used in handshake
    */
-  private byte[] key3 = null;
+  protected byte[] key3 = null;
 
   // CONSTRUCTORS ////////////////////////////////////////////////////////////
   public WebSocketClient(URI serverURI) {
@@ -153,7 +153,7 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
 	  key3 = null;
   }
   
-  private boolean tryToConnect(InetSocketAddress remote) {
+  protected boolean tryToConnect(InetSocketAddress remote) {
     // The WebSocket constructor expects a SocketChannel that is
     // non-blocking, and has a Selector attached to it.
     try {
@@ -207,12 +207,12 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
     //System.err.println("WebSocketClient thread ended!");
   }
   
-  private int getPort() {
+  protected int getPort() {
     int port = uri.getPort();
     return port == -1 ? WebSocket.DEFAULT_PORT : port;
   }
   
-  private void finishConnect() throws IOException {
+  protected void finishConnect() throws IOException {
     if (client.isConnectionPending()) {
       client.finishConnect();
     }
@@ -223,7 +223,7 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
     sendHandshake();
   }
   
-  private void sendHandshake() throws IOException {
+  protected void sendHandshake() throws IOException {
     String path = uri.getPath();
     if (path.indexOf("/") != 0) {
       path = "/" + path;
@@ -258,7 +258,7 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
     }
   }
 
-  private String generateKey() {
+  protected String generateKey() {
     Random r = new Random();
     long maxNumber = 4294967295L;
     long spaces = r.nextInt(12) + 1;
