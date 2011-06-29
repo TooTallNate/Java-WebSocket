@@ -12,8 +12,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-import android.util.Log;
-
 import net.tootallnate.websocket.WebSocketClient;
 import net.tootallnate.websocket.WebSocketDraft;
 
