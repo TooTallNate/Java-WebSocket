@@ -133,7 +133,8 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
    * @throws IOException When socket related I/O errors occur.
    */
   public void send(String text) throws IOException {
-    if (conn != null) {
+    if (conn != null && client.isConnected()) 
+    {
       conn.send(text);
     }
   }
