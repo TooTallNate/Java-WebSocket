@@ -28,7 +28,7 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
    * The value of <var>handshake</var> when a Flash client requests a policy
    * file on this server.
    */
-  private static final String FLASH_POLICY_REQUEST = "<policy-file-request/>\0";
+  protected static final String FLASH_POLICY_REQUEST = "<policy-file-request/>\0";
 
 
   // INSTANCE PROPERTIES /////////////////////////////////////////////////////
@@ -36,24 +36,24 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
    * Holds the list of active WebSocket connections. "Active" means WebSocket
    * handshake is complete and socket can be written to, or read from.
    */
-  private final CopyOnWriteArraySet<WebSocket> connections;
+  protected final CopyOnWriteArraySet<WebSocket> connections;
   /**
    * The port number that this WebSocket server should listen on. Default is
    * WebSocket.DEFAULT_PORT.
    */
-  private int port;
+  protected int port;
   /**
    * The socket channel for this WebSocket server.
    */
-  private ServerSocketChannel server;
+  protected ServerSocketChannel server;
   /**
    * The 'Selector' used to get event keys from the underlying socket.
    */
-  private Selector selector;
+  protected Selector selector;
   /**
    * The Draft of the WebSocket protocol the Server is adhering to.
    */
-  private WebSocketDraft draft;
+  protected WebSocketDraft draft;
 
 
   // CONSTRUCTORS ////////////////////////////////////////////////////////////
@@ -415,7 +415,7 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
     }
   }
 
-  private byte[] getPart(String key) {
+  protected byte[] getPart(String key) {
     long keyNumber = Long.parseLong(key.replaceAll("[^0-9]",""));
     long keySpace = key.split("\u0020").length - 1;
     long part = new Long(keyNumber / keySpace);
