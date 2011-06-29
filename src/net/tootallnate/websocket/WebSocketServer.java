@@ -101,11 +101,19 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
    * freeing the port the server was bound to.
    * @throws IOException When socket related I/O errors occur.
    */
-  public void stop() throws IOException {
+  public void stop() {
     for (WebSocket ws : connections) {
-      ws.close();
+      try {
+		ws.close();
+      } catch (Exception e) {
+		onError(e);
+      }
     }
-    this.server.close();
+    try {
+		this.server.close();
+	} catch (Exception e) {
+		onError(e);
+	}
   }
 
   /**
@@ -113,9 +121,13 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
    * @param text The String to send across the network.
    * @throws IOException When socket related I/O errors occur.
    */
-  public void sendToAll(String text) throws IOException {
+  public void sendToAll(String text) {
     for (WebSocket c : this.connections) {
-      c.send(text);
+    	try {
+    		c.send(text);
+    	} catch (Exception e) {
+    		onError(e);
+    	}
     }
   }
 
@@ -126,14 +138,21 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
    * @param text The String to send to every connection except <var>connection</var>.
    * @throws IOException When socket related I/O errors occur.
    */
-  public void sendToAllExcept(WebSocket connection, String text) throws IOException {
+  public void sendToAllExcept(WebSocket connection, String text) {
     if (connection == null) {
       throw new NullPointerException("'connection' cannot be null");
     }
     
     for (WebSocket c : this.connections) {
       if (!connection.equals(c)) {
-        c.send(text);
+        try 
+        {
+			c.send(text);
+		} 
+        catch (Exception e) 
+        {
+        	onError(e);
+		}
       }
     }
   }
@@ -145,14 +164,21 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
    * @param text
    * @throws IOException When socket related I/O errors occur.
    */
-  public void sendToAllExcept(Set<WebSocket> connections, String text) throws IOException {
+  public void sendToAllExcept(Set<WebSocket> connections, String text) {
     if (connections == null) {
       throw new NullPointerException("'connections' cannot be null");
     }
     
     for (WebSocket c : this.connections) {
       if (!connections.contains(c)) {
-        c.send(text);
+        try 
+        {
+			c.send(text);
+		} 
+        catch (Exception e) 
+        {
+        	onError(e);
+		}
       }
     }
   }
@@ -195,8 +221,8 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
 
       selector = Selector.open();
       server.register(selector, server.validOps());
-    } catch (IOException ex) {
-    	onIOError(ex);
+    } catch (Exception e) {
+    	onError(e);
       return;
     }
 
@@ -249,12 +275,10 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
                 SelectionKey.OP_READ | SelectionKey.OP_WRITE, conn);
           }
         }
-      } catch (IOException ex) {
-    	  onIOError(ex);
-      } catch (RuntimeException ex) {
-        ex.printStackTrace();
-      } catch (NoSuchAlgorithmException ex) {
-        ex.printStackTrace();
+      } 
+      catch (Exception e) 
+      {
+    	  onError(e);
       }
     }
     
@@ -293,12 +317,20 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
    * @throws IOException When socket related I/O errors occur.
    * @throws NoSuchAlgorithmException 
    */
-  public boolean onHandshakeRecieved(WebSocket conn, String handshake, byte[] key3) throws IOException, NoSuchAlgorithmException {
+  public boolean onHandshakeRecieved(WebSocket conn, String handshake, byte[] key3) 
+  {
     
     // If a Flash client requested the Policy File...
     if (FLASH_POLICY_REQUEST.equals(handshake)) {
       String policy = getFlashSecurityPolicy() + "\0";
-      conn.socketChannel().write(ByteBuffer.wrap(policy.getBytes(WebSocket.UTF8_CHARSET)));
+      try 
+      {
+    	  conn.socketChannel().write(ByteBuffer.wrap(policy.getBytes(WebSocket.UTF8_CHARSET)));
+      } 
+      catch (Exception e) 
+      {
+    	  onError(e);
+      }
       return false;
     }
     
@@ -368,8 +400,17 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
         challenge[13] = key3[5];
         challenge[14] = key3[6];
         challenge[15] = key3[7];
-        MessageDigest md5 = MessageDigest.getInstance("MD5");
-        responseChallenge = md5.digest(challenge);
+        
+        MessageDigest md5 = null;
+		try 
+		{
+			md5 = MessageDigest.getInstance("MD5");
+	        responseChallenge = md5.digest(challenge);
+		} 
+		catch (Exception e) 
+		{
+			onError(e);
+		}
       }
 
       String responseHandshake = "HTTP/1.1 101 Web Socket Protocol Handshake\r\n" +
@@ -385,11 +426,20 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
         responseHandshake += "Cookie: " + p.getProperty("Cookie")+"\r\n";
       }
       responseHandshake += "\r\n"; // Signifies end of handshake
-      //Can not use UTF-8 here because we might lose bytes in response during conversion
-      conn.socketChannel().write(ByteBuffer.wrap(responseHandshake.getBytes()));
-      //Only set when Draft 76
-      if(responseChallenge!=null){
-        conn.socketChannel().write(ByteBuffer.wrap(responseChallenge));
+      
+      try
+      {
+          //Can not use UTF-8 here because we might lose bytes in response during conversion
+          conn.socketChannel().write(ByteBuffer.wrap(responseHandshake.getBytes()));
+          //Only set when Draft 76
+          if(responseChallenge!=null)
+          {
+            conn.socketChannel().write(ByteBuffer.wrap(responseChallenge));
+          }
+      }
+      catch(Exception e)
+      {
+    	  onError(e);
       }
       return true;
     }
@@ -431,6 +481,6 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
   public abstract void onClientOpen(WebSocket conn);
   public abstract void onClientClose(WebSocket conn);
   public abstract void onClientMessage(WebSocket conn, String message);
-  public abstract void onIOError(IOException ex);
+  public abstract void onError(Exception e);
 
 }

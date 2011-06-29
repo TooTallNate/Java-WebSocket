@@ -52,7 +52,7 @@ interface WebSocketListener {
    * implementation of error handling (e.g. when network is not available). 
    * @param ex
    */
-  public void onIOError(IOException ex);
+  public void onError(Exception e);
 
   /**
    * Called to retrieve the Draft of this listener.

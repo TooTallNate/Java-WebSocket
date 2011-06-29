@@ -125,10 +125,8 @@ public final class WebSocket {
 
     int bytesRead = -1;
     
-    try {
-      socketBuffer.rewind();
-      bytesRead = this.socketChannel.read(this.socketBuffer);
-    } catch(Exception ex) {}
+    socketBuffer.rewind();
+    bytesRead = this.socketChannel.read(this.socketBuffer);
     
     if (bytesRead == -1)  {
       close();
