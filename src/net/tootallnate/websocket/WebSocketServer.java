@@ -196,7 +196,7 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
       selector = Selector.open();
       server.register(selector, server.validOps());
     } catch (IOException ex) {
-      ex.printStackTrace();
+    	onIOError(ex);
       return;
     }
 
@@ -250,7 +250,7 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
           }
         }
       } catch (IOException ex) {
-        ex.printStackTrace();
+    	  onIOError(ex);
       } catch (RuntimeException ex) {
         ex.printStackTrace();
       } catch (NoSuchAlgorithmException ex) {
@@ -414,6 +414,15 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
       onClientClose(conn);
     }
   }
+
+  /**
+   * Triggered on any IOException error. This method should be overridden for custom 
+   * implementation of error handling (e.g. when network is not available). 
+   * @param ex
+   */
+   public void onIOError(IOException ex) {
+ 	  ex.printStackTrace();
+   }
 
   private byte[] getPart(String key) {
     long keyNumber = Long.parseLong(key.replaceAll("[^0-9]",""));

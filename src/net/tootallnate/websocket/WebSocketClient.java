@@ -150,7 +150,7 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
       client.register(selector, SelectionKey.OP_CONNECT);
 
     } catch (IOException ex) {
-      ex.printStackTrace();
+    	onIOError(ex);
       return false;
     }
     
@@ -180,7 +180,7 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
           }
         }
       } catch (IOException ex) {
-        ex.printStackTrace();
+    	  onIOError(ex);
       } catch (NoSuchAlgorithmException ex) {
         ex.printStackTrace();
       }
@@ -347,6 +347,15 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
   public void onClose(WebSocket conn) {
     onClose();
   }
+
+  /**
+   * Triggered on any IOException error. This method should be overridden for custom 
+   * implementation of error handling (e.g. when network is not available). 
+   * @param ex
+   */
+   public void onIOError(IOException ex) {
+ 	  ex.printStackTrace();
+   }
 
   // ABTRACT METHODS /////////////////////////////////////////////////////////
   public abstract void onMessage(String message);
