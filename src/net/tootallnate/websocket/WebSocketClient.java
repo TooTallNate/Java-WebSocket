@@ -32,27 +32,27 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
   /**
    * The URI this client is supposed to connect to.
    */
-  private URI uri;
+  private URI uri = null;
   /**
    * The WebSocket instance this client object wraps.
    */
-  private WebSocket conn;
+  private WebSocket conn = null;
   /**
    * The SocketChannel instance this client uses.
    */
-  private SocketChannel client;
+  private SocketChannel client = null;
   /**
    * The 'Selector' used to get event keys from the underlying socket.
    */
-  private Selector selector;
+  private Selector selector = null;
   /**
    * Keeps track of whether or not the client thread should continue running.
    */
-  private boolean running;
+  private boolean running = false;
   /**
    * The Draft of the WebSocket protocol the Client is adhering to.
    */
-  private WebSocketDraft draft;
+  private WebSocketDraft draft = null;
   /**
    * Number 1 used in handshake 
    */
@@ -120,10 +120,7 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
    */
   public void close() throws IOException 
   {    
-	  Boolean active = running;
-	  this.running = false;
-	  
-	  if (active)
+	  if (running)
 	  {
 		  selector.wakeup();
 		  conn.close();
@@ -352,15 +349,19 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
    */
   public void onClose(WebSocket conn) 
   {
-	  try 
+	  if (running)
 	  {
-		  close();
-	  } 
-	  catch (IOException ex) 
-	  {
-		  onIOError(ex);
+		  onClose();
 	  }
-	  onClose();
+
+	  conn = null;
+	  client = null;
+	  selector = null;
+	  running = false;
+	  draft = null;
+	  number1 = 0;
+	  number2 = 0;
+	  key3 = null;
   }
 
   /**
