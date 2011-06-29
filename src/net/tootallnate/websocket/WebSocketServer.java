@@ -196,7 +196,7 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
       selector = Selector.open();
       server.register(selector, server.validOps());
     } catch (IOException ex) {
-      ex.printStackTrace();
+    	onIOError(ex);
       return;
     }
 
@@ -250,7 +250,7 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
           }
         }
       } catch (IOException ex) {
-        ex.printStackTrace();
+    	  onIOError(ex);
       } catch (RuntimeException ex) {
         ex.printStackTrace();
       } catch (NoSuchAlgorithmException ex) {
@@ -431,4 +431,6 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
   public abstract void onClientOpen(WebSocket conn);
   public abstract void onClientClose(WebSocket conn);
   public abstract void onClientMessage(WebSocket conn, String message);
+  public abstract void onIOError(IOException ex);
+
 }

@@ -47,9 +47,31 @@ Writing your own WebSocket Client
 
 The `net.tootallnate.websocket.WebSocketClient` abstract class can connect to
 valid WebSocket servers. The constructor expects a valid `ws://` URI to
-connect to. Important events `onOpen`, `onClose`, and `onMessage` get fired
-throughout the life of the WebSocketClient, and must be implemented in **your**
-subclass.
+connect to. Important events `onOpen`, `onClose`, `onMessage` and `onIOError` 
+get fired throughout the life of the WebSocketClient, and must be implemented 
+in **your** subclass.
+
+Testing in Android Emulator
+---------------------------
+
+Please note Android Emulator has issues using `IPv6 addresses`. Executing any
+socket related code (like this library) inside it will address an error
+
+    java.net.SocketException: Bad address family
+
+You have to manually disable `IPv6` by calling
+  
+    java.lang.System.setProperty("java.net.preferIPv6Addresses", "false");
+    java.lang.System.setProperty("java.net.preferIPv4Stack", "true");
+
+somewhere in your project, before instantiating the `WebSocketClient` class. 
+You can check if you are currently testing in the Android Emulator like this
+    
+    if ("google_sdk".equals( Build.PRODUCT ))
+    {
+      ... disable IPv6
+    }
+
 
 License
 -------

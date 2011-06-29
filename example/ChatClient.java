@@ -12,6 +12,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
+import android.util.Log;
+
 import net.tootallnate.websocket.WebSocketClient;
 import net.tootallnate.websocket.WebSocketDraft;
 
@@ -36,6 +38,11 @@ public class ChatClient extends WebSocketClient {
 
     public void onClose() {
         ta.append("You have been disconnected from: " + getURI() + "\n");
+    }
+
+    public void onIOError(IOException ex) {
+    	super.onIOError(ex);
+        ta.append("Network problem ...\n");
     }
 
     /**
