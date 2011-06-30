@@ -40,9 +40,8 @@ public class ChatClient extends WebSocketClient {
         ta.append("You have been disconnected from: " + getURI() + "\n");
     }
 
-    public void onIOError(IOException ex) {
-    	super.onIOError(ex);
-        ta.append("Network problem ...\n");
+    public void onError(Exception e) {
+        ta.append("Error ...\n");
     }
 
     /**

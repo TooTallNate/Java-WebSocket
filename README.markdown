@@ -47,7 +47,7 @@ Writing your own WebSocket Client
 
 The `net.tootallnate.websocket.WebSocketClient` abstract class can connect to
 valid WebSocket servers. The constructor expects a valid `ws://` URI to
-connect to. Important events `onOpen`, `onClose`, `onMessage` and `onIOError` 
+connect to. Important events `onOpen`, `onClose`, `onMessage` and `onError` 
 get fired throughout the life of the WebSocketClient, and must be implemented 
 in **your** subclass.
 
