@@ -95,6 +95,16 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener
 	  return uri;
   }
   
+  /**
+   * Tells if the thread is running.
+   * @return True for yes otherwise false
+   */
+  public Boolean isRunning() 
+  {
+	  return running;
+  }
+  
+  
   @Override
   public WebSocketDraft getDraft() 
   {
