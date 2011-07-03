@@ -14,20 +14,20 @@ Running the Example
 There's a simple chat server and client example located in the `example`
 folder. First, compile the example classes and JAR file:
 
-``` shell
+``` bash
 ant
 ```
 
 Then, start the chat server (a `WebSocketServer` subclass):
 
-``` shell
+``` bash
 java -cp example:dist/WebSocket.jar ChatServer
 ```
 
 Now that the server is started, we need to connect some clients. Run the
 Java chat client (a `WebSocketClient` subclass):
 
-``` shell
+``` bash
 java -cp example:dist/WebSocket.jar ChatClient
 ```
 
@@ -64,7 +64,7 @@ Testing in Android Emulator
 Please note Android Emulator has issues using `IPv6 addresses`. Executing any
 socket related code (like this library) inside it will address an error
 
-``` shell
+``` bash
 java.net.SocketException: Bad address family
 ```
 
