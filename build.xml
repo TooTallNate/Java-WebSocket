@@ -1,8 +1,8 @@
 <project default="jar">
 
   <target name="compile">
-    <javac srcdir="src" />
-    <javac srcdir="example" classpath="src" />
+    <javac includeantruntime="false" srcdir="src" />
+    <javac includeantruntime="false" srcdir="example" classpath="src" />
   </target>
 
   <target name="jar" depends="compile">
