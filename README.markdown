@@ -13,16 +13,23 @@ Running the Example
 
 There's a simple chat server and client example located in the `example`
 folder. First, compile the example classes and JAR file:
-    ant
+
+``` shell
+ant
+```
 
 Then, start the chat server (a `WebSocketServer` subclass):
 
-    java -cp example:dist/WebSocket.jar ChatServer
+``` shell
+java -cp example:dist/WebSocket.jar ChatServer
+```
 
 Now that the server is started, we need to connect some clients. Run the
 Java chat client (a `WebSocketClient` subclass):
 
-    java -cp example:dist/WebSocket.jar ChatClient
+``` shell
+java -cp example:dist/WebSocket.jar ChatClient
+```
 
 The chat client is a simple Swing GUI application that allows you to send
 messages to all other connected clients, and receive messages from others in a
@@ -57,20 +64,25 @@ Testing in Android Emulator
 Please note Android Emulator has issues using `IPv6 addresses`. Executing any
 socket related code (like this library) inside it will address an error
 
-    java.net.SocketException: Bad address family
+``` shell
+java.net.SocketException: Bad address family
+```
 
 You have to manually disable `IPv6` by calling
-  
-    java.lang.System.setProperty("java.net.preferIPv6Addresses", "false");
-    java.lang.System.setProperty("java.net.preferIPv4Stack", "true");
+
+``` java
+java.lang.System.setProperty("java.net.preferIPv6Addresses", "false");
+java.lang.System.setProperty("java.net.preferIPv4Stack", "true");
+```
 
 somewhere in your project, before instantiating the `WebSocketClient` class. 
 You can check if you are currently testing in the Android Emulator like this
-    
-    if ("google_sdk".equals( Build.PRODUCT ))
-    {
-      ... disable IPv6
-    }
+
+``` java
+if ("google_sdk".equals( Build.PRODUCT )) {
+  // ... disable IPv6
+}
+```
 
 
 License
