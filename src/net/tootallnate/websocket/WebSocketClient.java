@@ -120,8 +120,22 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
   {    
 	  if (running)
 	  {
-		  selector.wakeup();
-		  conn.close();
+		  // must be called to stop do loop
+		  running = false;  
+		  
+		  // call this inside IF because it can be null if the connection has't started
+		  // but user is calling close()
+		  if (selector != null && conn != null)
+		  {
+			  selector.wakeup();
+			  conn.close();
+			  // close() is synchronously calling onClose(conn) so we don't have to
+		  }
+		  else
+		  {
+			  // connection has't started but the onClose events should be triggered
+			  onClose(conn);
+		  }
 	  }
   }
 
@@ -164,8 +178,13 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
       selector = Selector.open();
 
       this.conn = new WebSocket(client, new LinkedBlockingQueue<ByteBuffer>(), this);
-      // At first, we're only interested in the 'CONNECT' keys.
-      client.register(selector, SelectionKey.OP_CONNECT);
+      // the client/selector can be null when closing the connection before its start
+      // so we have to call this part inside IF
+      if (client != null)
+      {
+          // At first, we're only interested in the 'CONNECT' keys.
+          client.register(selector, SelectionKey.OP_CONNECT);
+      }
 
     } catch (IOException ex) {
     	onIOError(conn, ex);
@@ -364,11 +383,7 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
    */
   public void onClose(WebSocket conn) 
   {
-	  if (running)
-	  {
-		  onClose();
-	  }
-	  
+	  onClose();
 	  releaseAndInitialize();
   }
 
