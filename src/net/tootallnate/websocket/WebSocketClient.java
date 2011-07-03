@@ -120,8 +120,9 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
   {    
 	  if (running)
 	  {
+		  running = false;  // must be called to stop do loop
 		  selector.wakeup();
-		  conn.close();
+		  conn.close();		// synchronously calling onClose(conn)
 	  }
   }
 
@@ -364,11 +365,7 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
    */
   public void onClose(WebSocket conn) 
   {
-	  if (running)
-	  {
-		  onClose();
-	  }
-	  
+	  onClose();
 	  releaseAndInitialize();
   }
 
