@@ -218,7 +218,10 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
         }
       } catch (IOException ex) {
     	  onIOError(conn, ex);
-      } catch (NoSuchAlgorithmException ex) {
+      } catch (Exception ex) {
+    	// NullPointerException is the most common error that can happen here
+    	// (e.g.when connection closes immediately)
+    	// TODO: user should handle that kind of events my himself
         ex.printStackTrace();
       }
     }
