@@ -39,6 +39,10 @@ public class ChatServer extends WebSocketServer {
         System.out.println(conn + ": " + message);
     }
 
+    public void onIOError(IOException ex) {
+      ex.printStackTrace();
+    }
+
     public static void main(String[] args) {
         int port = 8887;
         try {
