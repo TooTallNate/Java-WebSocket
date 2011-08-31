@@ -1,9 +1,11 @@
 Java WebSockets
 ===============
 
+### Note: This lib currently only supports the older draft 75 and draft 76.
+###       Pull requests for the latests drafts would be more than accepted!
+
 This repository contains a barebones WebSocket server and client implementation
-written in 100% Java. The implementation supports both the older draft 75,
-and current draft 76. The underlying classes use the Java
+written in 100% Java. The underlying classes are implemented using the Java
 `ServerSocketChannel` and `SocketChannel` classes, which allows for a
 non-blocking event-driven model (similar to the
 [WebSocket API](<http://dev.w3.org/html5/websockets/>) for web browsers).
