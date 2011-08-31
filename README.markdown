@@ -8,7 +8,7 @@ This repository contains a barebones WebSocket server and client implementation
 written in 100% Java. The underlying classes are implemented using the Java
 `ServerSocketChannel` and `SocketChannel` classes, which allows for a
 non-blocking event-driven model (similar to the
-[WebSocket API](<http://dev.w3.org/html5/websockets/>) for web browsers).
+[WebSocket API](http://dev.w3.org/html5/websockets/) for web browsers).
 
 Running the Example
 -------------------
@@ -40,14 +40,14 @@ text box.
 There's also a simple HTML file chat client `chat.html`, which can be opened
 by any browser. If the browser natively supports the WebSocket API, then it's
 implementation will be used, otherwise it will fall back to a
-[Flash-based WebSocket Implementation](<http://github.com/gimite/web-socket-js>).
+[Flash-based WebSocket Implementation](http://github.com/gimite/web-socket-js).
 
 Writing your own WebSocket Server
 ---------------------------------
 
 The `net.tootallnate.websocket.WebSocketServer` abstract class implements the
 server-side of the
-[WebSocket Protocol](<http://www.whatwg.org/specs/web-socket-protocol/>).
+[WebSocket Protocol](http://www.whatwg.org/specs/web-socket-protocol/).
 A WebSocket server by itself doesn't do anything except establish socket
 connections though HTTP. After that it's up to **your** subclass to add purpose.
 
