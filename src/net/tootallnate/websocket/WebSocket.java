@@ -235,7 +235,11 @@ public final class WebSocket {
       // START_OF_FRAME, thus we will send 'null' as the sent message.
       if (this.currentFrame != null) {
         try {
-          textFrame = new String(this.currentFrame.array(), UTF8_CHARSET);
+          byte[] frame = new byte[this.currentFrame.position()];
+          this.currentFrame.rewind();
+          this.currentFrame.get(frame, 0, frame.length);
+          this.currentFrame = null;
+          textFrame = new String(frame, UTF8_CHARSET);
         } catch (UnsupportedEncodingException ex) {
           // TODO: Fire an 'onError' handler here
           ex.printStackTrace();
@@ -245,13 +249,17 @@ public final class WebSocket {
       this.wsl.onMessage(this, textFrame);
 
     } else { // Regular frame data, add to current frame buffer
-      ByteBuffer frame = ByteBuffer.allocate((this.currentFrame != null ? this.currentFrame.capacity() : 0) + this.buffer.capacity());
-      if (this.currentFrame != null) {
+      if (this.currentFrame == null) {
+        this.currentFrame = ByteBuffer.allocate(8192);
+      } else if (!this.currentFrame.hasRemaining()) {
         this.currentFrame.rewind();
-        frame.put(this.currentFrame);
+        ByteBuffer newBuffer = ByteBuffer.allocate(this.currentFrame.capacity() * 2);
+        newBuffer.put(this.currentFrame);
+        this.currentFrame = newBuffer;
       }
-      frame.put(newestByte);
-      this.currentFrame = frame;
+    
+      this.currentFrame.put(newestByte);
+
     }
   }
 
