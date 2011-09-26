@@ -8,11 +8,14 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.LinkedBlockingQueue;
+
+import sun.misc.BASE64Encoder;
 
 /**
  * <tt>WebSocketServer</tt> is an abstract class that only takes care of the
@@ -293,12 +296,12 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
    * @throws IOException When socket related I/O errors occur.
    * @throws NoSuchAlgorithmException 
    */
-  public boolean onHandshakeRecieved(WebSocket conn, String handshake, byte[] key3) throws IOException, NoSuchAlgorithmException {
+  public boolean onHandshakeRecieved(WebSocket conn, String handshake, byte[] key3) throws IOException {
     
     // If a Flash client requested the Policy File...
     if (FLASH_POLICY_REQUEST.equals(handshake)) {
       String policy = getFlashSecurityPolicy() + "\0";
-      conn.socketChannel().write(ByteBuffer.wrap(policy.getBytes(WebSocket.UTF8_CHARSET)));
+      conn.channelWrite(ByteBuffer.wrap(policy.getBytes(WebSocket.UTF8_CHARSET)));
       return false;
     }
     
@@ -368,7 +371,12 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
         challenge[13] = key3[5];
         challenge[14] = key3[6];
         challenge[15] = key3[7];
-        MessageDigest md5 = MessageDigest.getInstance("MD5");
+        MessageDigest md5;
+		try {
+			md5 = MessageDigest.getInstance( "MD5" );
+		} catch ( NoSuchAlgorithmException e ) {
+			throw new RuntimeException ( e );//Will never occur on a valid jre.
+		}
         responseChallenge = md5.digest(challenge);
       }
 
@@ -386,10 +394,10 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
       }
       responseHandshake += "\r\n"; // Signifies end of handshake
       //Can not use UTF-8 here because we might lose bytes in response during conversion
-      conn.socketChannel().write(ByteBuffer.wrap(responseHandshake.getBytes()));
+      conn.channelWrite( ByteBuffer.wrap( responseHandshake.getBytes() ) );
       //Only set when Draft 76
       if(responseChallenge!=null){
-        conn.socketChannel().write(ByteBuffer.wrap(responseChallenge));
+		conn.channelWrite ( ByteBuffer.wrap ( responseChallenge ) );
       }
       return true;
     }
@@ -398,6 +406,36 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
     // return false to make the WebSocket object close the connection.
     return false;
   }
+	public boolean onHandshakeRecieved( WebSocket webSocket , HashMap<String,String> elements ) throws IOException {
+		StringBuilder sb = new StringBuilder ( 160 );
+		sb.append ( "HTTP/1.1 101 Switching Protocols\r\n" );
+		sb.append ( "Upgrade: websocket\r\n" );
+		sb.append ( "Connection: Upgrade\r\n" );
+		sb.append ( "Sec-WebSocket-Accept: " );
+		String seckey = elements.get ( "Sec-WebSocket-Key" );
+		if ( seckey == null )
+			return false;
+		seckey = seckey.trim ();
+		String acc = seckey + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+		MessageDigest sh1;
+		try {
+			sh1 = MessageDigest.getInstance ( "SHA1" );
+		} catch ( NoSuchAlgorithmException e ) {
+			throw new RuntimeException ( e );
+		}
+
+		sb.append ( new BASE64Encoder ().encode ( sh1.digest ( acc.getBytes () ) ) );
+		sb.append ( "\r\n" );
+		// sb.append ( "Sec-WebSocket-Protocol:" );
+		// sb.append ( elements.get ( "Sec-WebSocket-Protocol" ) );
+		// sb.append ( "\r\n" );
+
+		sb.append ( "\r\n" );
+		String resp = sb.toString ();
+
+		webSocket.channelWrite ( ByteBuffer.wrap ( resp.getBytes () ) );
+		return true;
+	}
 
   public void onMessage(WebSocket conn, String message) {
     onClientMessage(conn, message);

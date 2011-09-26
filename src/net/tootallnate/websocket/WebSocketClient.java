@@ -276,7 +276,7 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
     }
     else
     {
-      conn.socketChannel().write(ByteBuffer.wrap(request.getBytes(WebSocket.UTF8_CHARSET)));
+      conn.channelWrite(ByteBuffer.wrap(request.getBytes(WebSocket.UTF8_CHARSET)));
     }
   }
 
@@ -327,11 +327,11 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
    * @throws IOException When socket related I/O errors occur.
    * @throws NoSuchAlgorithmException 
    */
-  public boolean onHandshakeRecieved(WebSocket conn, String handshake, byte[] reply) throws IOException, NoSuchAlgorithmException {
+  public boolean onHandshakeRecieved(WebSocket conn, String handshake, byte[] reply) throws IOException {
     // TODO: Do some parsing of the returned handshake, and close connection
     // (return false) if we recieved anything unexpected.
-    if(this.draft == WebSocketDraft.DRAFT76) {
-      if (reply == null) {
+    if( this.draft == WebSocketDraft.DRAFT76 ) {
+      if ( reply == null ) {
         return false;
       }
       byte[] challenge = new byte[] {
@@ -352,7 +352,12 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
         this.key3[6],
         this.key3[7]
       };
-      MessageDigest md5 = MessageDigest.getInstance("MD5");
+      MessageDigest md5;
+	  try {
+		md5 = MessageDigest.getInstance( "MD5" );
+	  } catch ( NoSuchAlgorithmException e ) {
+		throw new RuntimeException ( e );//Will never occur on a valid jre.
+	  }
       byte[] expected = md5.digest(challenge);
       for (int i = 0; i < reply.length; i++) {
         if (expected[i] != reply[i]) {

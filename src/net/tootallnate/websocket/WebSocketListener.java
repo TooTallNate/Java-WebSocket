@@ -2,6 +2,7 @@ package net.tootallnate.websocket;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
 
 /**
  * Implemented by <tt>WebSocketClient</tt> and <tt>WebSocketServer</tt>.
@@ -22,7 +23,7 @@ interface WebSocketListener {
    *         handshake was invalid, and the connection should be terminated.
    * @throws NoSuchAlgorithmException 
    */
-  public boolean onHandshakeRecieved(WebSocket conn, String handshake, byte[] handShakeBody) throws IOException, NoSuchAlgorithmException;
+  public boolean onHandshakeRecieved(WebSocket conn, String handshake, byte[] handShakeBody) throws IOException;
   
   /**
    * Called when an entire text frame has been recieved. Do whatever you want
@@ -57,5 +58,7 @@ interface WebSocketListener {
   /**
    * Called to retrieve the Draft of this listener.
    */
-  public WebSocketDraft getDraft();  
+	public WebSocketDraft getDraft( );
+
+  public boolean onHandshakeRecieved( WebSocket webSocket , HashMap<String,String> elements ) throws IOException;
 }

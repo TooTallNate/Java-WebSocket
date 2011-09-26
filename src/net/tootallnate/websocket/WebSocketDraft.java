@@ -4,7 +4,5 @@ package net.tootallnate.websocket;
  * Enum for WebSocket Draft
  */
 public enum WebSocketDraft {
-  AUTO,
-  DRAFT75,
-  DRAFT76
+	AUTO , DRAFT75 , DRAFT76 , DRAFT10
 }
