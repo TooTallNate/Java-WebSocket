@@ -8,6 +8,7 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
@@ -23,7 +24,7 @@ import sun.misc.BASE64Encoder;
  * functionality/purpose to the server.
  * @author Nathan Rajlich
  */
-public abstract class WebSocketServer implements Runnable, WebSocketListener {
+public abstract class WebSocketServer extends WebSocketAdapter implements Runnable {
 
 
   // CONSTANTS ///////////////////////////////////////////////////////////////
@@ -56,7 +57,7 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
   /**
    * The Draft of the WebSocket protocol the Server is adhering to.
    */
-  private WebSocketDraft draft;
+  private Draft draft;
 
 
   // CONSTRUCTORS ////////////////////////////////////////////////////////////
@@ -65,7 +66,7 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
    * listen on port WebSocket.DEFAULT_PORT.
    */
   public WebSocketServer() {
-    this(WebSocket.DEFAULT_PORT, WebSocketDraft.AUTO);
+    this(WebSocket.DEFAULT_PORT, null );
   }
   
   /**
@@ -74,17 +75,17 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
    * @param port The port number this server should listen on.
    */
   public WebSocketServer(int port) {
-    this(port, WebSocketDraft.AUTO);
+    this(port, null );
   }
 
   /**
    * Creates a WebSocketServer that will attempt to listen on port <var>port</var>,
-   * and comply with <tt>WebSocketDraft</tt> version <var>draft</var>.
+   * and comply with <tt>Draft</tt> version <var>draft</var>.
    * @param port The port number this server should listen on.
    * @param draft The version of the WebSocket protocol that this server
    *              instance should comply to.
    */
-  public WebSocketServer(int port, WebSocketDraft draft) {
+  public WebSocketServer(int port, Draft draft) {
     this.connections = new CopyOnWriteArraySet<WebSocket>();
     this.draft = draft;
     setPort(port);
@@ -184,7 +185,7 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
     return this.port;
   }
 
-  public WebSocketDraft getDraft() {
+  public Draft getDraft() {
     return this.draft;
   }
 
@@ -199,7 +200,7 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
       selector = Selector.open();
       server.register(selector, server.validOps());
     } catch (IOException ex) {
-    	onIOError(ex);
+    	onError(ex);
       return;
     }
 
@@ -220,7 +221,7 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
           if (key.isAcceptable()) {
             SocketChannel client = server.accept();
             client.configureBlocking(false);
-            WebSocket c = new WebSocket(client, new LinkedBlockingQueue<ByteBuffer>(), this);
+            WebSocket c = new WebSocket(client, new LinkedBlockingQueue<ByteBuffer>(), this, Collections.singletonList ( draft ) );
             client.register(selector, SelectionKey.OP_READ, c);
           }
 
@@ -253,7 +254,7 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
           }
         }
       } catch (IOException ex) {
-    	  onIOError(ex);
+    	  onError(ex);
       } catch (RuntimeException ex) {
         ex.printStackTrace();
       } catch (NoSuchAlgorithmException ex) {
@@ -283,7 +284,7 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
   }
 
 
-  // WebSocketListener IMPLEMENTATION ////////////////////////////////////////
+ // WebSocketListener IMPLEMENTATION ////////////////////////////////////////
   /**
    * Called by a {@link WebSocket} instance when a client connection has
    * finished sending a handshake. This method verifies that the handshake is
@@ -296,7 +297,7 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
    * @throws IOException When socket related I/O errors occur.
    * @throws NoSuchAlgorithmException 
    */
-  public boolean onHandshakeRecieved(WebSocket conn, String handshake, byte[] key3) throws IOException {
+/*  public boolean onHandshakeRecieved(WebSocket conn, String handshake, byte[] key3) throws IOException {
     
     // If a Flash client requested the Policy File...
     if (FLASH_POLICY_REQUEST.equals(handshake)) {
@@ -405,37 +406,7 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
     // If we got to here, then the client sent an invalid handshake, and we
     // return false to make the WebSocket object close the connection.
     return false;
-  }
-	public boolean onHandshakeRecieved( WebSocket webSocket , HashMap<String,String> elements ) throws IOException {
-		StringBuilder sb = new StringBuilder ( 160 );
-		sb.append ( "HTTP/1.1 101 Switching Protocols\r\n" );
-		sb.append ( "Upgrade: websocket\r\n" );
-		sb.append ( "Connection: Upgrade\r\n" );
-		sb.append ( "Sec-WebSocket-Accept: " );
-		String seckey = elements.get ( "Sec-WebSocket-Key" );
-		if ( seckey == null )
-			return false;
-		seckey = seckey.trim ();
-		String acc = seckey + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
-		MessageDigest sh1;
-		try {
-			sh1 = MessageDigest.getInstance ( "SHA1" );
-		} catch ( NoSuchAlgorithmException e ) {
-			throw new RuntimeException ( e );
-		}
-
-		sb.append ( new BASE64Encoder ().encode ( sh1.digest ( acc.getBytes () ) ) );
-		sb.append ( "\r\n" );
-		// sb.append ( "Sec-WebSocket-Protocol:" );
-		// sb.append ( elements.get ( "Sec-WebSocket-Protocol" ) );
-		// sb.append ( "\r\n" );
-
-		sb.append ( "\r\n" );
-		String resp = sb.toString ();
-
-		webSocket.channelWrite ( ByteBuffer.wrap ( resp.getBytes () ) );
-		return true;
-	}
+  }*/
 
   public void onMessage(WebSocket conn, String message) {
     onClientMessage(conn, message);
@@ -469,6 +440,6 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
   public abstract void onClientOpen(WebSocket conn);
   public abstract void onClientClose(WebSocket conn);
   public abstract void onClientMessage(WebSocket conn, String message);
-  public abstract void onIOError(IOException ex);
+  public abstract void onError( Throwable ex);
 
 }
