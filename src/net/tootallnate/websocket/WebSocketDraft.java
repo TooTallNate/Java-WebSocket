@@ -6,5 +6,7 @@ package net.tootallnate.websocket;
 public enum WebSocketDraft {
   AUTO,
   DRAFT75,
-  DRAFT76
+  DRAFT76,
+  VERSION_07,
+  VERSION_08
 }

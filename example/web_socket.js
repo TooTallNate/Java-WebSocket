@@ -4,7 +4,10 @@
 // Reference: http://tools.ietf.org/html/draft-hixie-thewebsocketprotocol
 
 (function() {
-  
+  if(window.MozWebSocket){
+	window.WebSocket = window.MozWebSocket;
+	return;
+  }
   if (window.WebSocket) return;
 
   var console = window.console;

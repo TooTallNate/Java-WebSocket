@@ -1,8 +1,7 @@
 Java WebSockets
 ===============
-
-### Note: This lib currently only supports the older draft 75 and draft 76.
-###       Pull requests for the latests drafts would be more than accepted!
+### Currently supports older drafts 75 and 76 using a Flash Bridge
+### hybi-07 is supported for the native FireFox implementation in FireFox 6.x
 
 This repository contains a barebones WebSocket server and client implementation
 written in 100% Java. The underlying classes are implemented using the Java
