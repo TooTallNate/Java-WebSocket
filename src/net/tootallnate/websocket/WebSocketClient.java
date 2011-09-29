@@ -30,27 +30,27 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
   /**
    * The URI this client is supposed to connect to.
    */
-  private URI uri = null;
+  private URI uri;
   /**
    * The WebSocket instance this client object wraps.
    */
-  private WebSocket conn = null;
+  private WebSocket conn;
   /**
    * The SocketChannel instance this client uses.
    */
-  private SocketChannel client = null;
+  private SocketChannel client;
   /**
    * The 'Selector' used to get event keys from the underlying socket.
    */
-  private Selector selector = null;
+  private Selector selector;
   /**
    * Keeps track of whether or not the client thread should continue running.
    */
-  private boolean running = false;
+  private boolean running;
   /**
    * The Draft of the WebSocket protocol the Client is adhering to.
    */
-  private WebSocketDraft draft = null;
+  private WebSocketDraft draft;
   /**
    * Number 1 used in handshake 
    */
@@ -94,7 +94,6 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
     return uri;
   }
   
-  @Override
   public WebSocketDraft getDraft() {
     return draft;
   }
@@ -116,27 +115,12 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
    * closes the socket connection, and ends the client socket thread.
    * @throws IOException When socket related I/O errors occur.
    */
-  public void close() throws IOException 
-  {    
-	  if (running)
-	  {
-		  // must be called to stop do loop
-		  running = false;  
-		  
-		  // call this inside IF because it can be null if the connection has't started
-		  // but user is calling close()
-		  if (selector != null && conn != null)
-		  {
-			  selector.wakeup();
-			  conn.close();
-			  // close() is synchronously calling onClose(conn) so we don't have to
-		  }
-		  else
-		  {
-			  // connection has't started but the onClose events should be triggered
-			  onClose(conn);
-		  }
-	  }
+  public void close() throws IOException {
+    if (running) {
+      this.running = false;
+      selector.wakeup();
+      conn.close();
+    }
   }
 
   /**
@@ -145,26 +129,9 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
    * @throws IOException When socket related I/O errors occur.
    */
   public void send(String text) throws IOException {
-    if (conn != null) 
-    {
+    if (conn != null) {
       conn.send(text);
     }
-  }
-  
-  /**
-   * Reinitializes and prepares the class to be used for reconnect.
-   * @return
-   */
-  public void releaseAndInitialize()
-  {
-	  conn = null;
-	  client = null;
-	  selector = null;
-	  running = false;
-	  draft = null;
-	  number1 = 0;
-	  number2 = 0;
-	  key3 = null;
   }
   
   private boolean tryToConnect(InetSocketAddress remote) {
@@ -178,16 +145,11 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
       selector = Selector.open();
 
       this.conn = new WebSocket(client, new LinkedBlockingQueue<ByteBuffer>(), this);
-      // the client/selector can be null when closing the connection before its start
-      // so we have to call this part inside IF
-      if (client != null)
-      {
-          // At first, we're only interested in the 'CONNECT' keys.
-          client.register(selector, SelectionKey.OP_CONNECT);
-      }
+      // At first, we're only interested in the 'CONNECT' keys.
+      client.register(selector, SelectionKey.OP_CONNECT);
 
     } catch (IOException ex) {
-    	onIOError(conn, ex);
+      ex.printStackTrace();
       return false;
     }
     
@@ -217,11 +179,8 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
           }
         }
       } catch (IOException ex) {
-    	  onIOError(conn, ex);
-      } catch (Exception ex) {
-    	// NullPointerException is the most common error that can happen here
-    	// (e.g.when connection closes immediately)
-    	// TODO: user should handle that kind of events my himself
+        ex.printStackTrace();
+      } catch (NoSuchAlgorithmException ex) {
         ex.printStackTrace();
       }
     }
@@ -256,14 +215,29 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
     String request = "GET " + path + " HTTP/1.1\r\n" +
                       "Upgrade: WebSocket\r\n" +
                       "Connection: Upgrade\r\n" +
-                      "Host: " + host + "\r\n" +
-                      "Origin: " + origin + "\r\n";
+                      "Host: " + host + "\r\n";
+    
+    if (this.draft == WebSocketDraft.VERSION_07) {
+      request += "Sec-WebSocket-Origin: " + origin + "\r\n";
+    }
+    else {
+      request += "Origin: " + origin + "\r\n";
+    }
     
     if (this.draft == WebSocketDraft.DRAFT76) {
       request += "Sec-WebSocket-Key1: " + this.generateKey() + "\r\n";
       request += "Sec-WebSocket-Key2: " + this.generateKey() + "\r\n";
       this.key3 = new byte[8];
       (new Random()).nextBytes(this.key3);
+    }
+    else if(this.draft == WebSocketDraft.VERSION_07) {
+      byte[] randomBytes = new byte[16];
+      
+      Random randomGenerator = new Random();
+      randomGenerator.nextBytes(randomBytes);
+      
+      request += "Sec-WebSocket-Version: 7\r\n";
+      request += "Sec-WebSocket-Key: " + new String(Base64Coder.encode(randomBytes)) + "\r\n";
     }
     
     request += "\r\n";
@@ -295,8 +269,7 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
     }
     long product = number * spaces;
     String key = Long.toString(product);
-    //always insert atleast one random character
-    int numChars = r.nextInt(12)+1;
+    int numChars = r.nextInt(12);
     for (int i=0; i < numChars; i++){
       int position = r.nextInt(key.length());
       position = Math.abs(position);
@@ -384,25 +357,12 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
    * Calls subclass' implementation of <var>onClose</var>.
    * @param conn
    */
-  public void onClose(WebSocket conn) 
-  {
-	  onClose();
-	  releaseAndInitialize();
-  }
-
-  /**
-   * Calls subclass' implementation of <var>onIOError</var>.
-   * @param conn
-   */
-  public void onIOError(WebSocket conn, IOException ex) 
-  {
-	  releaseAndInitialize();
-	  onIOError(ex);
+  public void onClose(WebSocket conn) {
+    onClose();
   }
 
   // ABTRACT METHODS /////////////////////////////////////////////////////////
   public abstract void onMessage(String message);
   public abstract void onOpen();
   public abstract void onClose();
-  public abstract void onIOError(IOException ex);
 }
