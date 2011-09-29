@@ -1,0 +1,1 @@
+java -cp "build/out/example;build/out/server" ChatServer
