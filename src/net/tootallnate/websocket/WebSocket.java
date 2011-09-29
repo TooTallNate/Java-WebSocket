@@ -293,7 +293,7 @@ public final class WebSocket {
   // PRIVATE INSTANCE METHODS ////////////////////////////////////////////////
   private void recieveFrame() {
     byte newestByte = this.buffer.get();
-    System.out.println("recieveFrame "+formatByteString(Integer.toString((0x000000FF & ((int)newestByte)),2)));
+    //System.out.println("recieveFrame "+formatByteString(Integer.toString((0x000000FF & ((int)newestByte)),2)));
     if (this.webSocketDraft == WebSocketDraft.VERSION_07) {
       /*DRAFT 07 Frames can arrive in multiple fragments
        * Each fragment */
@@ -305,98 +305,98 @@ public final class WebSocket {
         frame_masking_key_buffer = new byte[4];
         payload_frame_position=0;
         frame_payload_text = new StringBuffer();
-        System.out.println("Start reading for a frame fragment for draft 07");
+        //System.out.println("Start reading for a frame fragment for draft 07");
         /*
          * first byte is FIN,RSV1,RSV2,RSV3,OPCODE(4 bits)
          * */
         if((newestByte & 0x80) == 0x80){
-          System.out.println("FIN is set to 1, this is the last fragment");
+          //System.out.println("FIN is set to 1, this is the last fragment");
           frame_last_fragment=true;
         }else{
-          System.out.println("FIN is set to 0, there area additional frame fragments");
+          //System.out.println("FIN is set to 0, there area additional frame fragments");
           frame_last_fragment=false;
         }
         if((newestByte&0x40)==0x40){
-          System.out.println("RSV1 is set to 1");
+          //System.out.println("RSV1 is set to 1");
           frame_rsv1=1;
         }else{
-          System.out.println("RSV1 is set to 0");
+          //System.out.println("RSV1 is set to 0");
           frame_rsv1=0;
         }
         if((newestByte&0x20)==0x20){
-          System.out.println("RSV2 is set to 1");
+          //System.out.println("RSV2 is set to 1");
           frame_rsv2=1;
         }else{
-          System.out.println("RSV2 is set to 0");
+          //System.out.println("RSV2 is set to 0");
           frame_rsv2=0;
         }
         if((newestByte&0x10)==0x10){
-          System.out.println("RSV3 is set to 1");
+          //System.out.println("RSV3 is set to 1");
           frame_rsv3=1;
         }else{
-          System.out.println("RSV3 is set to 0");
+          //System.out.println("RSV3 is set to 0");
           frame_rsv3=0;
         }
         short opcode = (short)(newestByte & 0x0F);
         if(opcode==0x08){
-          System.out.println("Opcode: Connection Close");
+          //System.out.println("Opcode: Connection Close");
           frame_type=FrameType.CONNECTION_CLOSE;
         }else if((opcode >=0x03 && opcode <= 0x07)||(opcode >=0x0B && opcode <= 0x0F)){
-          System.out.println("Opcode:"+Integer.toString(opcode,16)+" Reserved for Future Use");
+          //System.out.println("Opcode:"+Integer.toString(opcode,16)+" Reserved for Future Use");
           frame_type=FrameType.RESERVED;
         }else if(opcode==0x02){
-          System.out.println("Opcode: Binary Frame");
+          //System.out.println("Opcode: Binary Frame");
           frame_type=FrameType.BINARY;
         }else if(opcode==0x01){
-          System.out.println("Opcode: Text Frame");
+          //System.out.println("Opcode: Text Frame");
           frame_type=FrameType.TEXT;
         }else if(opcode==0x00){
-          System.out.println("Opcode: Continuation Frame");
+          //System.out.println("Opcode: Continuation Frame");
           frame_type=FrameType.CONTINUATION;
         }else if(opcode==0x0A){
-          System.out.println("Opcode: Ping");
+          //System.out.println("Opcode: Ping");
           frame_type=FrameType.PING;
         }else if(opcode==0x0B){
-          System.out.println("Opcode: Pong");
+          //System.out.println("Opcode: Pong");
           frame_type=FrameType.PONG;
         }else{
-          System.out.println("Opcode: ???? "+Integer.toString(opcode,16));
+          //System.out.println("Opcode: ???? "+Integer.toString(opcode,16));
           frame_type=null;
         }
         readingState=true;
       }else{
         frame_byte_count++;
-        System.out.println("Reading byte "+frame_byte_count+" for a frame fragment already in progress for draft 07");
+        //System.out.println("Reading byte "+frame_byte_count+" for a frame fragment already in progress for draft 07");
         if(frame_byte_count==2){
-          System.out.println("Byte is mask + payload");
+          //System.out.println("Byte is mask + payload");
           if((newestByte & 0x80)==0x80){
-            System.out.println("Payload is masked");
+            //System.out.println("Payload is masked");
             frame_masked=true;
           }else{
-            System.out.println("Payload is not masked");
+            //System.out.println("Payload is not masked");
             frame_masked=false;
           }
           int payloadLength=0x07F&newestByte;
-          System.out.println("Payload length = "+payloadLength);
+          //System.out.println("Payload length = "+payloadLength);
           int payload_length=0x7F&newestByte;
           if(payload_length==126){
-            System.out.println("Payload length is extended 16 bit");
+            //System.out.println("Payload length is extended 16 bit");
             frame_payload_length_type=PayloadLengthType.EXTENDED_16BIT;
             frame_extended_payload_length_buffer = new byte[2];
           }else if(payload_length==127){
-            System.out.println("Payload length is extended 64 bit");
+            //System.out.println("Payload length is extended 64 bit");
             frame_payload_length_type=PayloadLengthType.EXTENDED_64BIT;
             frame_extended_payload_length_buffer = new byte[8];
           }else{
-            System.out.println("Final Payload length is "+payloadLength);
+            //System.out.println("Final Payload length is "+payloadLength);
             frame_payload_length=payload_length;
             
           }
         }else if(frame_byte_count<=4&&frame_payload_length_type==PayloadLengthType.EXTENDED_16BIT){
-          System.out.println("Processing an extended-16 payload length");
+          //System.out.println("Processing an extended-16 payload length");
           frame_extended_payload_length_buffer[frame_byte_count-3]=newestByte;
           if(frame_byte_count==4){
-            System.out.println("Frame payload length complete");
+            //System.out.println("Frame payload length complete");
             //process payload length buffer as an unsigned integer
             //cast the bytes to ints so that we don't get negative numbers
             int firstByte=0;
@@ -404,13 +404,13 @@ public final class WebSocket {
             firstByte = (0x000000FF & ((int)frame_extended_payload_length_buffer[0]));
             secondByte = (0x000000FF & ((int)frame_extended_payload_length_buffer[1]));
             frame_payload_length = (long)(firstByte<<8|secondByte);
-            System.out.println("Payload Length = "+frame_payload_length);
+            //System.out.println("Payload Length = "+frame_payload_length);
           }
         }else if(frame_byte_count<=10&&frame_payload_length_type==PayloadLengthType.EXTENDED_64BIT){
-          System.out.println("Processing an extended-64 payload length");
+          //System.out.println("Processing an extended-64 payload length");
           frame_extended_payload_length_buffer[frame_byte_count-3]=newestByte;
           if(frame_byte_count==10){
-            System.out.println("Frame payload length complete");
+            //System.out.println("Frame payload length complete");
             //process payload length buffer as an unsigned integer
             //Problem - java longs are 64-bit signed; the incoming wire data is 64-bit bytes
             //this causes an issue in that we can potentially lose the last byte on a maximum
@@ -428,49 +428,49 @@ public final class WebSocket {
             if(frame_payload_length<0){
               frame_payload_length = frame_payload_length*-1;
               frame_payload_length_overflow=true;
-              System.out.println("Frame payload length (extended-64bit) overflow!  TODO: HANDLE OVERFLOW CASE");
+              //System.out.println("Frame payload length (extended-64bit) overflow!  TODO: HANDLE OVERFLOW CASE");
             }
           }
         }else if(frame_masked&&frame_masking_key_byte_count<4){
-          System.out.println("Setting frame masking key buffer byte "+frame_masking_key_byte_count);
+          //System.out.println("Setting frame masking key buffer byte "+frame_masking_key_byte_count);
           frame_masking_key_buffer[frame_masking_key_byte_count++]=newestByte;
           if(frame_masking_key_byte_count==4){ //end of masking key
-            System.out.println("Finished processing frame masking key");
+            //System.out.println("Finished processing frame masking key");
             long byte0=(0x000000FF & ((int)frame_masking_key_buffer[0]));
             int byte1=(0x000000FF & ((int)frame_masking_key_buffer[1]));
             int byte2=(0x000000FF & ((int)frame_masking_key_buffer[2]));
             int byte3=(0x000000FF & ((int)frame_masking_key_buffer[3]));
             frame_masking_key=(long)(byte0<<24|byte1<<16|byte2<<8|byte3);
-            System.out.println("Masking key:  "+Long.toString(frame_masking_key,2));
+            //System.out.println("Masking key:  "+Long.toString(frame_masking_key,2));
           }
         }else if (frame_masked){
-          System.out.println("Processing masked payload data "+newestByte);
+          //System.out.println("Processing masked payload data "+newestByte);
           int mask_byte_index = (int) (payload_frame_position%4);
-          System.out.println("Applying mask transformation for index "+mask_byte_index+" to byte");
+          //System.out.println("Applying mask transformation for index "+mask_byte_index+" to byte");
           byte transformedByte = (byte) (newestByte ^ frame_masking_key_buffer[mask_byte_index]);
-          System.out.println("Transformed byte: "+(char)transformedByte);
+          //System.out.println("Transformed byte: "+(char)transformedByte);
           frame_payload_text.append(new String(new byte[] {transformedByte},UTF8_CHARSET));
           payload_frame_position++;
           if(frame_payload_text.length()==frame_payload_length){
-            System.out.println("End of text frame.  Payload Data: "+frame_payload_text.toString());
+            //System.out.println("End of text frame.  Payload Data: "+frame_payload_text.toString());
             readingState=false;
             String frame_text = frame_payload_text.toString();
             frame_payload_text=null;
             this.wsl.onMessage(this, frame_text);
           }
         }else{
-          System.out.println("Processing unmasked payload data "+newestByte);
+          //System.out.println("Processing unmasked payload data "+newestByte);
           frame_payload_text.append(new String(new byte[] {newestByte},UTF8_CHARSET));
           payload_frame_position++;
         }
       }
     } else {
       if (newestByte == START_OF_FRAME && !readingState) { // Beginning of Frame
-        System.out.println("frame start");
+        //System.out.println("frame start");
         this.currentFrame = null;
         readingState = true;
       } else if (newestByte == END_OF_FRAME && readingState) { // End of Frame
-        System.out.println("frame end");
+        //System.out.println("frame end");
         readingState = false;
         String textFrame = null;
         // currentFrame will be null if END_OF_FRAME was send directly after
@@ -491,9 +491,9 @@ public final class WebSocket {
         }
         frame.put(newestByte);
         this.currentFrame = frame;
-        System.out.println(frame);
-        System.out.println(new BigInteger(frame.array()).toString(2));
-        System.out.println();
+        //System.out.println(frame);
+        //System.out.println(new BigInteger(frame.array()).toString(2));
+        //System.out.println();
       }
     }
   }
@@ -510,7 +510,7 @@ public final class WebSocket {
     ch.put(this.buffer);
     this.remoteHandshake = ch;
     byte[] h = this.remoteHandshake.array();
-    System.out.println(new String(h));
+    //System.out.println(new String(h));
     String handshake = new String(this.remoteHandshake.array(),
         UTF8_CHARSET);
     // If the ByteBuffer contains 16 random bytes, and ends with
