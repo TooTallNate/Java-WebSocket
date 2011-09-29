@@ -294,8 +294,8 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
    * @throws NoSuchAlgorithmException 
    */
   public boolean onHandshakeRecieved(WebSocket conn, String handshake, byte[] key3) throws IOException, NoSuchAlgorithmException {
-	System.out.println("onHandshakeRecieved");
-    System.out.println(handshake);
+	//System.out.println("onHandshakeRecieved");
+    //System.out.println(handshake);
     // If a Flash client requested the Policy File...
     if (FLASH_POLICY_REQUEST.equals(handshake)) {
       String policy = getFlashSecurityPolicy() + "\0";
@@ -335,11 +335,11 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
     // start draft-ietf-hybi-thewebsocketprotocol-07 support
     
     String websocketVersion = p.getProperty("Sec-WebSocket-Version");
-    System.out.println("WebSocket version = "+websocketVersion);
-    System.out.println("Server Draft: "+this.draft);
-	if (this.draft == WebSocketDraft.AUTO || this.draft == WebSocketDraft.VERSION_07) {
-	  if(websocketVersion != null && websocketVersion.equals("7")) {
-		System.out.println("Processing version 7 websocket");
+    //System.out.println("WebSocket version = "+websocketVersion);
+    //System.out.println("Server Draft: "+this.draft);
+	if (this.draft == WebSocketDraft.AUTO || this.draft == WebSocketDraft.VERSION_07 || this.draft == WebSocketDraft.VERSION_08) {
+	  if(websocketVersion != null && (websocketVersion.equals("7")||websocketVersion.equals("8"))) {
+		//System.out.println("Processing version 7 websocket");
         String base64EncodedKey = p.getProperty("Sec-WebSocket-Key");
         if(base64EncodedKey != null && !base64EncodedKey.equals("")) {
           final String hashConstant = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
@@ -356,11 +356,11 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
             
           // Can not use UTF-8 here because we might lose bytes in response during conversion
           conn.socketChannel().write(ByteBuffer.wrap(responseHandshake.getBytes()));
-          System.out.println("ok, return true");
-          conn.setWebSocketDraft(WebSocketDraft.VERSION_07);
+          //System.out.println("ok, return true");
+          conn.setWebSocketDraft(websocketVersion.equals("7")?WebSocketDraft.VERSION_07:websocketVersion.equals("8")?WebSocketDraft.VERSION_08:WebSocketDraft.AUTO);
           return true;        
         }
-        System.out.println("Invalid WebSocket-Version 7 request");
+        //System.out.println("Invalid WebSocket-Version 7 request");
         // Sec-WebSocket-Version: 7 requested, but invalid.
         return false;
       }
@@ -428,10 +428,10 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
       //Only set when Draft 76
       if(responseChallenge!=null){
     	conn.setWebSocketDraft(WebSocketDraft.DRAFT76);
-    	System.out.println("Draft-76 websocket");
+    	//System.out.println("Draft-76 websocket");
         conn.socketChannel().write(ByteBuffer.wrap(responseChallenge));
       }else{
-      	System.out.println("Draft-75 websocket");
+      	//System.out.println("Draft-75 websocket");
     	conn.setWebSocketDraft(WebSocketDraft.DRAFT75);
       }
       return true;
@@ -443,7 +443,7 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
   }
 
   public void onMessage(WebSocket conn, String message) {
-	System.out.println("onMessage: "+message);
+	//System.out.println("onMessage: "+message);
     onClientMessage(conn, message);
   }
 

@@ -168,7 +168,7 @@ public final class WebSocket {
           "Cannot send 'null' data to a WebSocket.");
     byte[] textBytes = text.getBytes(UTF8_CHARSET);
     ByteBuffer b;
-    if (this.webSocketDraft == WebSocketDraft.VERSION_07) {
+    if (this.webSocketDraft == WebSocketDraft.VERSION_07||this.webSocketDraft == WebSocketDraft.VERSION_08) {
       long payloadLength = textBytes.length;
       long frameLength=2+payloadLength; //base header is two bytes
       PayloadLengthType payloadLengthType;
@@ -294,7 +294,7 @@ public final class WebSocket {
   private void recieveFrame() {
     byte newestByte = this.buffer.get();
     //System.out.println("recieveFrame "+formatByteString(Integer.toString((0x000000FF & ((int)newestByte)),2)));
-    if (this.webSocketDraft == WebSocketDraft.VERSION_07) {
+    if (this.webSocketDraft == WebSocketDraft.VERSION_07||this.webSocketDraft == WebSocketDraft.VERSION_08) {
       /*DRAFT 07 Frames can arrive in multiple fragments
        * Each fragment */
       if(!readingState){
@@ -360,7 +360,7 @@ public final class WebSocket {
           //System.out.println("Opcode: Pong");
           frame_type=FrameType.PONG;
         }else{
-          //System.out.println("Opcode: ???? "+Integer.toString(opcode,16));
+          System.out.println("Unknown Opcode: "+Integer.toString(opcode,2));
           frame_type=null;
         }
         readingState=true;
@@ -428,7 +428,7 @@ public final class WebSocket {
             if(frame_payload_length<0){
               frame_payload_length = frame_payload_length*-1;
               frame_payload_length_overflow=true;
-              //System.out.println("Frame payload length (extended-64bit) overflow!  TODO: HANDLE OVERFLOW CASE");
+              System.out.println("Frame payload length (extended-64bit) overflow!  TODO: HANDLE OVERFLOW CASE");
             }
           }
         }else if(frame_masked&&frame_masking_key_byte_count<4){

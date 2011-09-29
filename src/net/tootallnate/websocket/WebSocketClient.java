@@ -217,7 +217,7 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
                       "Connection: Upgrade\r\n" +
                       "Host: " + host + "\r\n";
     
-    if (this.draft == WebSocketDraft.VERSION_07) {
+    if (this.draft == WebSocketDraft.VERSION_07||this.draft == WebSocketDraft.VERSION_08) {
       request += "Sec-WebSocket-Origin: " + origin + "\r\n";
     }
     else {
@@ -230,7 +230,7 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
       this.key3 = new byte[8];
       (new Random()).nextBytes(this.key3);
     }
-    else if(this.draft == WebSocketDraft.VERSION_07) {
+    else if(this.draft == WebSocketDraft.VERSION_07||this.draft == WebSocketDraft.VERSION_08) {
       byte[] randomBytes = new byte[16];
       
       Random randomGenerator = new Random();
