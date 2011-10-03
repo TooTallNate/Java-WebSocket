@@ -7,8 +7,9 @@ import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+
+import net.tootallnate.websocket.Framedata.Opcode;
 import net.tootallnate.websocket.drafts.*;
 import net.tootallnate.websocket.exeptions.InvalidFrameException;
 import net.tootallnate.websocket.exeptions.InvalidHandshakeException;
@@ -59,7 +60,7 @@ public final class WebSocket {
    */
   public static final byte END_OF_FRAME = (byte)0xFF;
   
-  public static final boolean DEBUG = true;
+  public static final boolean DEBUG = false;
 
 
   // INSTANCE PROPERTIES /////////////////////////////////////////////////////
@@ -102,6 +103,8 @@ public final class WebSocket {
   private Handshakedata handshakerequest = null;
   
   public List<Draft> known_drafts;
+  
+  private final int maxpayloadsize;
 
 
   // CONSTRUCTOR /////////////////////////////////////////////////////////////
@@ -115,7 +118,7 @@ public final class WebSocket {
    * @param listener The {@link WebSocketListener} to notify of events when
    *                 they occur.
    */
-  WebSocket(SocketChannel socketChannel, BlockingQueue<ByteBuffer> bufferQueue, WebSocketListener listener, Draft draft) {
+  WebSocket(SocketChannel socketChannel, BlockingQueue<ByteBuffer> bufferQueue, WebSocketListener listener, Draft draft, int maxpayloadsize) {
     this.socketChannel = socketChannel;
     this.bufferQueue = bufferQueue;
     this.handshakeComplete = false;
@@ -123,9 +126,10 @@ public final class WebSocket {
     this.wsl = listener;
     this.role = Role.CLIENT;
     this.draft = draft; 
+    this.maxpayloadsize = maxpayloadsize;
   }
   
-  WebSocket(SocketChannel socketChannel, BlockingQueue<ByteBuffer> bufferQueue, WebSocketListener listener,  List<Draft> drafts ) {
+  WebSocket(SocketChannel socketChannel, BlockingQueue<ByteBuffer> bufferQueue, WebSocketListener listener,  List<Draft> drafts , int maxpayloadsize ) {
 	    this.socketChannel = socketChannel;
 	    this.bufferQueue = bufferQueue;
 	    this.handshakeComplete = false;
@@ -133,6 +137,7 @@ public final class WebSocket {
 	    this.wsl = listener;
 	    this.role = Role.SERVER;
 	    this.draft = null;
+	    this.maxpayloadsize = maxpayloadsize;
 	    if( known_drafts == null || known_drafts.isEmpty () ){
 	    	known_drafts = new ArrayList<Draft> ( 1 );
 	    	known_drafts.add ( new Draft_10 () );
@@ -158,9 +163,14 @@ public final class WebSocket {
     bytesRead = this.socketChannel.read(this.socketBuffer);
     
     
-    if (bytesRead == -1)  {
+    if ( bytesRead == -1 )  {
       close();
-    } else if (bytesRead > 0) {
+    } 
+    else if( bytesRead > maxpayloadsize ){
+    	wsl.onError ( new RuntimeException("recived packet to big") );
+    	abort ( "recived packet to big" );
+    }
+    else if ( bytesRead > 0) {
 		if(DEBUG) System.out.println( "got: {" + new String( socketBuffer.array() , 0 , bytesRead ) + "}" );
 		if( !handshakeComplete ){
 			try{
@@ -199,17 +209,38 @@ public final class WebSocket {
 			}
 		}
 		else{
-			List<Framedata> frames = draft.translateFrame ( socketBuffer.array () , bytesRead );
+			List<Framedata> frames = draft.translateFrame ( socketBuffer , bytesRead );
 			for( Framedata f : frames){
+				Opcode curop = f.getOpcode ();
+				if( curop == null )// Ignore undefined opcodes
+					continue;
+				else if( curop == Opcode.CLOSING){
+					sendFrame ( new FramedataImpl1 ( Opcode.CLOSING ) );
+					close();
+				}
+				else if( curop == Opcode.PING){
+					sendFrame ( new FramedataImpl1 ( Opcode.PONG ) );
+				}
+				else if( curop == Opcode.PONG){
+					wsl.onPong ();
+				}
 				if( currentframe == null){
 					if( f.isFin () ){
-						wsl.onMessage ( this , new String ( f.getPayloadData () , UTF8_CHARSET ) );
+						if( f.getOpcode () == Opcode.TEXT ){
+							wsl.onMessage ( this , new String ( f.getPayloadData () , UTF8_CHARSET ) );
+						}
+						else if( f.getOpcode () == Opcode.BINARY ){
+							wsl.onMessage ( this , f.getPayloadData () );
+						}
+						else{
+							if(DEBUG) System.out.println ( "Ignoring frame:" + f.toString() );
+						}
 					}
 					else{
 						currentframe = f;
 					}
 				}
-				else{
+				else if( f.getOpcode() == Opcode.CONTINIOUS ){
 					try {
 						currentframe.append ( f );
 					} catch ( InvalidFrameException e ) {

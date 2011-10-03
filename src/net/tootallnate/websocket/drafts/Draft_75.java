@@ -54,10 +54,10 @@ public class Draft_75 extends Draft {
 	}
 
 	@Override
-	public List<Framedata> translateFrame( byte[] buffer , int read ) {
+	public List<Framedata> translateFrame( ByteBuffer buffer , int read ) {
 		List<Framedata> frames= new LinkedList<Framedata> ();
 		for( int i = 0 ; i < read ; i++ ){
-			byte newestByte = newestByte = buffer[i];
+			byte newestByte =  buffer.get ( i );
 			if ( newestByte == START_OF_FRAME && !readingState ) { // Beginning of Frame
 				this.currentFrame = null;
 				readingState = true;

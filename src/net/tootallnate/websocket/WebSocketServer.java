@@ -221,7 +221,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
           if (key.isAcceptable()) {
             SocketChannel client = server.accept();
             client.configureBlocking(false);
-            WebSocket c = new WebSocket(client, new LinkedBlockingQueue<ByteBuffer>(), this, Collections.singletonList ( draft ) );
+            WebSocket c = new WebSocket(client, new LinkedBlockingQueue<ByteBuffer>(), this, Collections.singletonList ( draft ) , Integer.MAX_VALUE );
             client.register(selector, SelectionKey.OP_READ, c);
           }
 

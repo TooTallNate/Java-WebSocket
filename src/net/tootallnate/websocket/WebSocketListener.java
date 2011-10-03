@@ -26,6 +26,8 @@ interface WebSocketListener {
    */
   public void onMessage(WebSocket conn, String message);
   
+  public void onMessage( WebSocket conn , byte[] blob );
+  
   /**
    * Called after <var>onHandshakeRecieved</var> returns <var>true</var>.
    * Indicates that a complete WebSocket connection has been established,
@@ -47,4 +49,6 @@ interface WebSocketListener {
    * @param ex
    */
   public void onError( Throwable ex );
+  
+  public void onPong();
 }

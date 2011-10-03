@@ -16,8 +16,8 @@ public abstract class Draft{
 	public final static Charset  UTF8_CHARSET = Charset.forName ( "UTF-8" );
 	
 	public abstract boolean acceptHandshakeAsServer( Handshakedata handshakedata ) throws InvalidHandshakeException;
-	public abstract boolean acceptHandshakeAsClient( Handshakedata request , Handshakedata response );
-	public abstract List<Framedata> translateFrame( byte[] buffer, int read );
+	public abstract boolean acceptHandshakeAsClient( Handshakedata request , Handshakedata response ) throws InvalidHandshakeException;
+	public abstract List<Framedata> translateFrame( ByteBuffer buffer, int read );
 	public abstract ByteBuffer createBinaryFrame( Framedata framedata ); //TODO Allow to send data on the base of an Iterator or InputStream 
 	public abstract List<Framedata> createFrames(  String text , boolean mask );
 	public abstract List<Framedata> createFrames(  byte[] binary , boolean mask );
@@ -31,7 +31,7 @@ public abstract class Draft{
 	public HandshakeBuilder postProcessHandshakeResponseAsServer(  Handshakedata request , HandshakeBuilder response ) throws InvalidHandshakeException{
 		//sb.append ( "HTTP/1.1 101 Switching Protocols\r\n" );
 		response.put ( "Upgrade" , "websocket" );
-		response.put ( "Connection" , "Upgrade" );
+		response.put ( "Connection" , /*"Upgrade"*/request.getFieldValue ( "Connection" ) ); //to respond a Connection keep alives
 		return response;
 	}
 	

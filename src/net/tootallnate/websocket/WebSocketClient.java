@@ -179,7 +179,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
       selector = Selector.open();
 
-      this.conn = new WebSocket( client , new LinkedBlockingQueue<ByteBuffer>() , this , draft );
+      this.conn = new WebSocket( client , new LinkedBlockingQueue<ByteBuffer>() , this , draft , Integer.MAX_VALUE );
       // the client/selector can be null when closing the connection before its start
       // so we have to call this part inside IF
       if (client != null)

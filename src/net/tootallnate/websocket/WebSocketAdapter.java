@@ -30,4 +30,12 @@ public class WebSocketAdapter implements WebSocketListener {
 	@Override
 	public void onError( Throwable ex ) {
 	}
+
+	@Override
+	public void onMessage( WebSocket conn , byte[] blob ) {
+	}
+
+	@Override
+	public void onPong( ) {
+	}
 }

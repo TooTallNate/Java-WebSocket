@@ -2,13 +2,20 @@ package net.tootallnate.websocket;
 
 import java.nio.ByteBuffer;
 
+import net.tootallnate.websocket.exeptions.InvalidFrameException;
+
 public class FramedataImpl1 implements FrameBuilder {
+	private static byte[] emptyarray = {};
 	private boolean fin;
 	private Opcode optcode;
 	private ByteBuffer unmaskedpayload;
 	private boolean transferemasked;
 	
 	public FramedataImpl1() {
+	}
+	public FramedataImpl1( Opcode op ) {
+		this.optcode = op;
+		unmaskedpayload = ByteBuffer.wrap ( emptyarray );
 	}
 
 	@Override
@@ -56,7 +63,7 @@ public class FramedataImpl1 implements FrameBuilder {
 
 
 	@Override
-	public void append( Framedata nextframe ) {
+	public void append( Framedata nextframe ) throws InvalidFrameException {
 		if( unmaskedpayload == null ){
 			unmaskedpayload = ByteBuffer.wrap ( nextframe.getPayloadData () );
 		}
@@ -67,6 +74,9 @@ public class FramedataImpl1 implements FrameBuilder {
 		}
 	}
 	
-	
+	@Override
+	public String toString( ) {
+		return "Framedata{ optcode:" + getOpcode() + ", fin:" + isFin() + ", masked:" + getTransfereMasked() +", payload:" + new String ( unmaskedpayload.array () , Draft.UTF8_CHARSET ) + "}" ;
+	}
 
 }
