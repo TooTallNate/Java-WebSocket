@@ -52,7 +52,7 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
    */
   private WebSocketDraft draft = null;
   /**
-   * Number 1 used in handshake 
+   * Number 1 used in handshake
    */
   private int number1 = 0;
   /**
@@ -93,7 +93,7 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
   public URI getURI() {
     return uri;
   }
-  
+
   @Override
   public WebSocketDraft getDraft() {
     return draft;
@@ -116,13 +116,13 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
    * closes the socket connection, and ends the client socket thread.
    * @throws IOException When socket related I/O errors occur.
    */
-  public void close() throws IOException 
-  {    
+  public void close() throws IOException
+  {
 	  if (running)
 	  {
 		  // must be called to stop do loop
-		  running = false;  
-		  
+		  running = false;
+
 		  // call this inside IF because it can be null if the connection has't started
 		  // but user is calling close()
 		  if (selector != null && conn != null)
@@ -145,12 +145,12 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
    * @throws IOException When socket related I/O errors occur.
    */
   public void send(String text) throws IOException {
-    if (conn != null) 
+    if (conn != null)
     {
       conn.send(text);
     }
   }
-  
+
   /**
    * Reinitializes and prepares the class to be used for reconnect.
    * @return
@@ -166,7 +166,7 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
 	  number2 = 0;
 	  key3 = null;
   }
-  
+
   private boolean tryToConnect(InetSocketAddress remote) {
     // The WebSocket constructor expects a SocketChannel that is
     // non-blocking, and has a Selector attached to it.
@@ -190,7 +190,7 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
     	onIOError(conn, ex);
       return false;
     }
-    
+
     return true;
   }
 
@@ -225,15 +225,15 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
         ex.printStackTrace();
       }
     }
-    
+
     //System.err.println("WebSocketClient thread ended!");
   }
-  
+
   private int getPort() {
     int port = uri.getPort();
     return port == -1 ? WebSocket.DEFAULT_PORT : port;
   }
-  
+
   private void finishConnect() throws IOException {
     if (client.isConnectionPending()) {
       client.finishConnect();
@@ -244,7 +244,7 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
 
     sendHandshake();
   }
-  
+
   private void sendHandshake() throws IOException {
     String path = uri.getPath();
     if (path.indexOf("/") != 0) {
@@ -258,16 +258,16 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
                       "Connection: Upgrade\r\n" +
                       "Host: " + host + "\r\n" +
                       "Origin: " + origin + "\r\n";
-    
+
     if (this.draft == WebSocketDraft.DRAFT76) {
       request += "Sec-WebSocket-Key1: " + this.generateKey() + "\r\n";
       request += "Sec-WebSocket-Key2: " + this.generateKey() + "\r\n";
       this.key3 = new byte[8];
       (new Random()).nextBytes(this.key3);
     }
-    
+
     request += "\r\n";
-    
+
     if (this.key3 != null) {
       conn.socketChannel().write(new ByteBuffer[] {
         ByteBuffer.wrap(request.getBytes(WebSocket.UTF8_CHARSET)),
@@ -325,7 +325,7 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
    * @return <var>true</var> if <var>handshake</var> is a valid WebSocket server
    *         handshake, <var>false</var> otherwise.
    * @throws IOException When socket related I/O errors occur.
-   * @throws NoSuchAlgorithmException 
+   * @throws NoSuchAlgorithmException
    */
   public boolean onHandshakeRecieved(WebSocket conn, String handshake, byte[] reply) throws IOException, NoSuchAlgorithmException {
     // TODO: Do some parsing of the returned handshake, and close connection
@@ -358,7 +358,7 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
         if (expected[i] != reply[i]) {
           return false;
         }
-      } 
+      }
     }
     return true;
   }
@@ -384,7 +384,7 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
    * Calls subclass' implementation of <var>onClose</var>.
    * @param conn
    */
-  public void onClose(WebSocket conn) 
+  public void onClose(WebSocket conn)
   {
 	  onClose();
 	  releaseAndInitialize();
@@ -394,7 +394,7 @@ public abstract class WebSocketClient implements Runnable, WebSocketListener {
    * Calls subclass' implementation of <var>onIOError</var>.
    * @param conn
    */
-  public void onIOError(WebSocket conn, IOException ex) 
+  public void onIOError(WebSocket conn, IOException ex)
   {
 	  releaseAndInitialize();
 	  onIOError(ex);

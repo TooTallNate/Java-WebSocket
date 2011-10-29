@@ -64,7 +64,7 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
   public WebSocketServer() {
     this(WebSocket.DEFAULT_PORT, WebSocketDraft.AUTO);
   }
-  
+
   /**
    * Creates a WebSocketServer that will attempt to listen on port
    * <var>port</var>.
@@ -130,7 +130,7 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
     if (connection == null) {
       throw new NullPointerException("'connection' cannot be null");
     }
-    
+
     for (WebSocket c : this.connections) {
       if (!connection.equals(c)) {
         c.send(text);
@@ -149,7 +149,7 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
     if (connections == null) {
       throw new NullPointerException("'connections' cannot be null");
     }
-    
+
     for (WebSocket c : this.connections) {
       if (!connections.contains(c)) {
         c.send(text);
@@ -257,7 +257,7 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
         ex.printStackTrace();
       }
     }
-    
+
     //System.err.println("WebSocketServer thread ended!");
   }
 
@@ -291,17 +291,17 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
    * @return True if the client sent a valid WebSocket handshake and this server
    *         successfully sent a WebSocket server handshake, false otherwise.
    * @throws IOException When socket related I/O errors occur.
-   * @throws NoSuchAlgorithmException 
+   * @throws NoSuchAlgorithmException
    */
   public boolean onHandshakeRecieved(WebSocket conn, String handshake, byte[] key3) throws IOException, NoSuchAlgorithmException {
-    
+
     // If a Flash client requested the Policy File...
     if (FLASH_POLICY_REQUEST.equals(handshake)) {
       String policy = getFlashSecurityPolicy() + "\0";
       conn.socketChannel().write(ByteBuffer.wrap(policy.getBytes(WebSocket.UTF8_CHARSET)));
       return false;
     }
-    
+
     String[] requestLines = handshake.split("\r\n");
     boolean isWebSocketRequest = true;
     String line = requestLines[0].trim();
@@ -312,7 +312,7 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
       String[] firstLineTokens = line.split(" ");
       path = firstLineTokens[1];
     }
-    
+
     // 'p' will hold the HTTP headers
     Properties p = new Properties();
     for (int i = 1; i < requestLines.length; i++) {
@@ -344,7 +344,7 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
         if (key1 == null || key2 == null || key3 == null) {
           isWebSocketRequest = false;
         }
-        break;  
+        break;
     }
     if (isWebSocketRequest) {
       if (key1 != null && key2 != null && key3 != null) {
@@ -423,7 +423,7 @@ public abstract class WebSocketServer implements Runnable, WebSocketListener {
       (byte)( part >> 24 ),
       (byte)( (part << 8) >> 24 ),
       (byte)( (part << 16) >> 24 ),
-      (byte)( (part << 24) >> 24 )      
+      (byte)( (part << 24) >> 24 )
     };
   }
 

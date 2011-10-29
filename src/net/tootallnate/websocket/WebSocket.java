@@ -48,7 +48,7 @@ public final class WebSocket {
    * The byte representing the end of a WebSocket text frame.
    */
   public static final byte END_OF_FRAME = (byte)0xFF;
-    
+
 
   // INSTANCE PROPERTIES /////////////////////////////////////////////////////
   /**
@@ -90,7 +90,7 @@ public final class WebSocket {
    * the proper order.
    */
   private Object bufferQueueMutex = new Object();
-  
+
   private boolean readingState = false;
 
 
@@ -119,17 +119,17 @@ public final class WebSocket {
    * Should be called when a Selector has a key that is writable for this
    * WebSocket's SocketChannel connection.
    * @throws IOException When socket related I/O errors occur.
-   * @throws NoSuchAlgorithmException 
+   * @throws NoSuchAlgorithmException
    */
   void handleRead() throws IOException, NoSuchAlgorithmException {
 
     int bytesRead = -1;
-    
+
     try {
       socketBuffer.rewind();
       bytesRead = this.socketChannel.read(this.socketBuffer);
     } catch(Exception ex) {}
-    
+
     if (bytesRead == -1)  {
       close();
     } else if (bytesRead > 0) {
@@ -139,10 +139,10 @@ public final class WebSocket {
 
         this.buffer.rewind();
 
-        if (!this.handshakeComplete) 
+        if (!this.handshakeComplete)
           recieveHandshake();
-        else 
-          recieveFrame();    	      
+        else
+          recieveFrame();
       }
     }
   }
@@ -317,7 +317,7 @@ public final class WebSocket {
         && h[h.length-1] == LF) && !(new String(this.remoteHandshake.array(), UTF8_CHARSET).contains("Sec")) ||
         (h.length==23 && h[h.length-1] == 0) ) {
       completeHandshake(null);
-    }    
+    }
   }
 
   private void completeHandshake(byte[] handShakeBody) throws IOException, NoSuchAlgorithmException {
