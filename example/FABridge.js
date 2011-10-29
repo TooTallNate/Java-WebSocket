@@ -51,7 +51,7 @@ FABridge.addToUserTypes = function()
 	for (var i = 0; i < arguments.length; i++)
 	{
 		FABridge.userTypes[arguments[i]] = {
-			'typeName': arguments[i], 
+			'typeName': arguments[i],
 			'enriched': false
 		};
 	}
@@ -74,11 +74,11 @@ function instanceFactory(objID)
 }
 
 function FABridge__invokeJSFunction(args)
-{  
+{
     var funcID = args[0];
     var throughArgs = args.concat();//FABridge.argsToArray(arguments);
     throughArgs.shift();
-   
+
     var bridge = FABridge.extractBridgeFromID(funcID);
     return bridge.invokeLocalFunction(funcID, throughArgs);
 }
@@ -127,7 +127,7 @@ function FABridge__bridgeInitialized(bridgeName) {
     var ael = activeEmbeds.length;
     var searchStr = "bridgeName="+ bridgeName;
     if ((aol == 1 && !ael) || (aol == 1 && ael == 1)) {
-    	FABridge.attachBridge(activeObjects[0], bridgeName);	 
+    	FABridge.attachBridge(activeObjects[0], bridgeName);
     }
     else if (ael == 1 && !aol) {
     	FABridge.attachBridge(activeEmbeds[0], bridgeName);
@@ -338,7 +338,7 @@ FABridge.prototype =
     },
 
     // Object Types and Proxies
-	
+
     // accepts an object reference, returns a type object matching the obj reference.
     getTypeFromName: function(objTypeName)
     {
@@ -433,7 +433,7 @@ FABridge.prototype =
         }
         return this.remoteFunctionCache[funcID];
     },
-    
+
     //reutrns the ID of the given function; if it doesnt exist it is created and added to the local cache
     getFunctionID: function(func)
     {
@@ -468,7 +468,7 @@ FABridge.prototype =
         }
         else if (t == "function")
         {
-            //js functions are assigned an ID and stored in the local cache 
+            //js functions are assigned an ID and stored in the local cache
             result.type = FABridge.TYPE_JSFUNCTION;
             result.value = this.getFunctionID(value);
         }
@@ -487,7 +487,7 @@ FABridge.prototype =
     },
 
     //on deserialization we always check the return for the specific error code that is used to marshall NPE's into JS errors
-    // the unpacking is done by returning the value on each pachet for objects/arrays 
+    // the unpacking is done by returning the value on each pachet for objects/arrays
     deserialize: function(packedValue)
     {
 
@@ -548,7 +548,7 @@ FABridge.prototype =
 
     // check the given value for the components of the hard-coded error code : __FLASHERROR
     // used to marshall NPE's into flash
-    
+
     handleError: function(value)
     {
         if (typeof(value)=="string" && value.indexOf("__FLASHERROR")==0)
@@ -564,7 +564,7 @@ FABridge.prototype =
         else
         {
             return value;
-        }   
+        }
     }
 };
 
@@ -592,12 +592,12 @@ ASProxy.prototype =
     call: function(funcName, args)
     {
         this.bridge.callASMethod(this.fb_instance_id, funcName, args);
-    }, 
-    
+    },
+
     addRef: function() {
         this.bridge.addRef(this);
-    }, 
-    
+    },
+
     release: function() {
         this.bridge.release(this);
     }

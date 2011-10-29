@@ -47,7 +47,7 @@ public class ChatClient extends WebSocketClient {
      */
     private static class Frame extends JFrame implements ActionListener {
         private static final long serialVersionUID = -6056260699202978657L;
-        
+
         private final JTextField uriField;
         private final JButton connect;
         private final JButton close;
@@ -70,7 +70,7 @@ public class ChatClient extends WebSocketClient {
             connect = new JButton("Connect");
             connect.addActionListener(this);
             c.add(connect);
-            
+
             close = new JButton("Close");
             close.addActionListener(this);
             c.add(close);

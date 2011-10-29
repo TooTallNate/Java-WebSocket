@@ -9,7 +9,7 @@ import java.security.NoSuchAlgorithmException;
  * @author Nathan Rajlich
  */
 interface WebSocketListener {
-  
+
   /**
    * Called when the socket connection is first established, and the WebSocket
    * handshake has been recieved. This method should parse the
@@ -20,10 +20,10 @@ interface WebSocketListener {
    * @return <var>true</var> if the handshake is valid, and <var>onOpen</var>
    *         should be immediately called afterwards. <var>false</var> if the
    *         handshake was invalid, and the connection should be terminated.
-   * @throws NoSuchAlgorithmException 
+   * @throws NoSuchAlgorithmException
    */
   public boolean onHandshakeRecieved(WebSocket conn, String handshake, byte[] handShakeBody) throws IOException, NoSuchAlgorithmException;
-  
+
   /**
    * Called when an entire text frame has been recieved. Do whatever you want
    * here...
@@ -31,7 +31,7 @@ interface WebSocketListener {
    * @param message The UTF-8 decoded message that was recieved.
    */
   public void onMessage(WebSocket conn, String message);
-  
+
   /**
    * Called after <var>onHandshakeRecieved</var> returns <var>true</var>.
    * Indicates that a complete WebSocket connection has been established,
@@ -39,7 +39,7 @@ interface WebSocketListener {
    * @param conn The <tt>WebSocket</tt> instance this event is occuring on.
    */
   public void onOpen(WebSocket conn);
-  
+
   /**
    * Called after <tt>WebSocket#close</tt> is explicity called, or when the
    * other end of the WebSocket connection is closed.
@@ -48,8 +48,8 @@ interface WebSocketListener {
   public void onClose(WebSocket conn);
 
   /**
-   * Triggered on any IOException error. This method should be overridden for custom 
-   * implementation of error handling (e.g. when network is not available). 
+   * Triggered on any IOException error. This method should be overridden for custom
+   * implementation of error handling (e.g. when network is not available).
    * @param ex
    */
   public void onIOError(IOException ex);
@@ -57,5 +57,5 @@ interface WebSocketListener {
   /**
    * Called to retrieve the Draft of this listener.
    */
-  public WebSocketDraft getDraft();  
+  public WebSocketDraft getDraft();
 }

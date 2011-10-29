@@ -5,7 +5,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
     <script type="text/javascript" src="prototype.js"></script>
-    
+
     <!-- SWFObject and FABridge and only needed for the Flash WebSocket
          fallback. If the current browser supports WebSockets natively these
          are not needed. -->
@@ -20,7 +20,7 @@
 
             if (!window.WebSocket) {
                 log("WebSocket not natively supported, falling back to Flash");
-                                
+
                 WEB_SOCKET_SWF_LOCATION = "WebSocketMain.swf";
                 WEB_SOCKET_DEBUG = true;
 
