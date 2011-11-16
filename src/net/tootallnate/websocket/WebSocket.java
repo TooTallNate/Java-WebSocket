@@ -205,7 +205,7 @@ public final class WebSocket {
 				}
 			}
 			catch (InvalidHandshakeException e) {
-				abort( "draft "+draft.getClass ().getSimpleName ()+" refuses handshake: " + e.getMessage ());
+				abort( "draft "+draft+" refuses handshake: " + e.getMessage ());
 			}
 		}
 		else{
@@ -217,12 +217,15 @@ public final class WebSocket {
 				else if( curop == Opcode.CLOSING){
 					sendFrame ( new FramedataImpl1 ( Opcode.CLOSING ) );
 					close();
+					continue;
 				}
 				else if( curop == Opcode.PING){
 					sendFrame ( new FramedataImpl1 ( Opcode.PONG ) );
+					continue;
 				}
 				else if( curop == Opcode.PONG){
 					wsl.onPong ();
+					continue;
 				}
 				if( currentframe == null){
 					if( f.isFin () ){

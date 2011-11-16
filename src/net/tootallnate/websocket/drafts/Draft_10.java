@@ -137,31 +137,38 @@ public class Draft_10 extends Draft {
 		
 		return frame;
 	}
+	
 	@Override
 	public ByteBuffer createBinaryFrame( Framedata framedata ) {
 		byte[] mes   = framedata.getPayloadData ();
 		boolean mask = framedata.getTransfereMasked();
-		int sizebytes = mes.length <= 125 ? 1 : mes.length <= 65535 ? 2 : 4;//4 bytes length currently not useable
-		ByteBuffer buf = ByteBuffer.allocate ( 1 + ( sizebytes != 1 ? sizebytes + 1 : sizebytes ) +( mask ? 4 : 0 ) + mes.length );
+		int sizebytes = mes.length==0?0:mes.length <= 125 ? 1 : mes.length <= 65535 ? 2 : 4;//4 bytes length currently not useable
+		ByteBuffer buf = ByteBuffer.allocate ( 1 + ( sizebytes > 1 ? sizebytes + 1 : sizebytes ) +( mask ? 4 : 0 ) + mes.length );
 		byte optcode = fromOpcode ( framedata.getOpcode () );
 		byte one = ( byte ) ( framedata.isFin () ? -128 : 0 );
 		one |= optcode;
 		buf.put ( one );
 		byte[] payloadlengthbytes = toByteArray ( mes.length , sizebytes );
 		assert( payloadlengthbytes.length == sizebytes );
-		if( sizebytes == 1){
+		if( sizebytes == 0){
+			//controllframe
+		}
+		else if( sizebytes == 1){
 			buf.put ( (byte)( (byte)payloadlengthbytes[0] | ( mask ? (byte)-128 : 0 ) ) );
 		}
-		else{
-			if( sizebytes == 2 ){
-				buf.put ( (byte)( (byte)126 | ( mask ? (byte)-128 : 0 ) ) );
-			}
-			else if( sizebytes == 8 ){
-				buf.put ( (byte)( (byte)127 | ( mask ? (byte)-128 : 0 ) ) );
-			}
-			else throw new RuntimeException ( "Size representation not supported/specified" );
+		else if( sizebytes == 2 ){
+			buf.put ( (byte)( (byte)126 | ( mask ? (byte)-128 : 0 ) ) );
 			buf.put ( payloadlengthbytes );
 		}
+		else if( sizebytes == 8 ){
+			buf.put ( (byte)( (byte)127 | ( mask ? (byte)-128 : 0 ) ) );
+			buf.put ( payloadlengthbytes );
+		}
+		else 
+			throw new RuntimeException ( "Size representation not supported/specified" );
+		
+		
+		
 		
 		if( mask ){
 			ByteBuffer maskkey =  ByteBuffer.allocate ( 4 );
@@ -198,12 +205,12 @@ public class Draft_10 extends Draft {
 	public boolean acceptHandshakeAsServer( Handshakedata handshakedata ) throws InvalidHandshakeException {
 		//TODO Do a more detailed formal handshake test
 		String vers = handshakedata.getFieldValue ( "Sec-WebSocket-Version" );
-		if( vers != null ){
+		if( !vers.isEmpty () ){
 			int v;
 			try {
 				v = new Integer ( vers.trim () );
 			} catch ( NumberFormatException e ) {
-				throw new InvalidHandshakeException( e);
+				return false;
 			}
 			if( v == 7 || v == 8 )//g
 				return true;

@@ -77,7 +77,7 @@ public abstract class Draft{
 		byte[] lines = message.array ();
 		int previndex = 0;
 		int index = findNewLine ( lines , previndex );
-		if ( index == -1 )
+		if ( index == lines.length )
 			return null;
 		String line = new String ( lines , previndex , index - previndex );
 		//TODO Care about resources here like: GET /chat HTTP/1.1 
@@ -86,9 +86,9 @@ public abstract class Draft{
 		
 		previndex = index + 2;
 		index = findNewLine ( lines , previndex );
-		
-		while ( index != -1 ) {
-			int length = index - previndex;
+		int length = index - previndex;
+		while ( length != 0 ) {
+			
 			line = new String ( lines , previndex , length );
 			if ( index != previndex ) {
 				String[] pair = line.split ( ":" , 2 );
@@ -98,15 +98,18 @@ public abstract class Draft{
 			}
 			previndex = index + 2;
 			index = findNewLine ( lines , previndex );
+			length = index - previndex;
 		}
 		return draft;
 	}
-	
+
+	/**will return the index of the first \r\n or the index off the last element in arr*/
 	public static int findNewLine( byte[] arr , int offset ) {
 		int len = arr.length - 1;
-		  for ( int i = offset ; i < len ; i++ ) 
+		int i = offset;
+		  for (  ; i < len ; i++ ) 
 			if( arr[i] == (byte)'\r' && arr[ i + 1 ] == (byte)'\n' )
 				return i;
-		return -1;
+		return i;//the end of input will be handled like newline
 	}
 }
