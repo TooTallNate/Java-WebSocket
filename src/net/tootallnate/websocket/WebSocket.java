@@ -349,11 +349,11 @@ public final class WebSocket {
     return this.socketChannel;
   }
   
-  public void startHandshake( Handshakedata handshakedata ){
-	if( handshakeComplete ) 
-		throw new IllegalStateException ( "Handshake has allready been sent." );
-	this.handshakerequest  = handshakedata;
-
+  public void startHandshake( HandshakeBuilder handshakedata ) throws IOException{
+    if( handshakeComplete ) 
+    throw new IllegalStateException ( "Handshake has allready been sent." );
+    this.handshakerequest  = handshakedata;
+    channelWrite( draft.createHandshake( draft.postProcessHandshakeRequestAsClient( handshakedata ) , role ) );
   }
   
   private void channelWrite(ByteBuffer buf) throws IOException{
