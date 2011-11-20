@@ -1,11 +1,19 @@
 package net.tootallnate.websocket;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.channels.NotYetConnectedException;
 import java.nio.channels.SocketChannel;
+import java.nio.charset.Charset;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
+
+import net.tootallnate.websocket.Framedata.Opcode;
+import net.tootallnate.websocket.drafts.*;
+import net.tootallnate.websocket.exeptions.InvalidFrameException;
+import net.tootallnate.websocket.exeptions.InvalidHandshakeException;
+
 import java.util.concurrent.BlockingQueue;
 
 /**
@@ -22,6 +30,9 @@ import java.util.concurrent.BlockingQueue;
  */
 public final class WebSocket {
   // CONSTANTS ///////////////////////////////////////////////////////////////
+  public enum Role{
+		CLIENT, SERVER
+  }
   /**
    * The default port of WebSockets, as defined in the spec. If the nullary
    * constructor is used, DEFAULT_PORT will be the port the WebSocketServer
@@ -30,9 +41,9 @@ public final class WebSocket {
   public static final int DEFAULT_PORT = 80;
   /**
    * The WebSocket protocol expects UTF-8 encoded bytes.
-   */
-  public static final String UTF8_CHARSET = "UTF-8";
-  /**
+   */ 
+  public final static Charset  UTF8_CHARSET = Charset.forName ( "UTF-8" );
+  /** 
    * The byte representing CR, or Carriage Return, or \r
    */
   public static final byte CR = (byte)0x0D;
@@ -48,7 +59,9 @@ public final class WebSocket {
    * The byte representing the end of a WebSocket text frame.
    */
   public static final byte END_OF_FRAME = (byte)0xFF;
-    
+  
+  public static final boolean DEBUG = false;
+
 
   // INSTANCE PROPERTIES /////////////////////////////////////////////////////
   /**
@@ -66,21 +79,9 @@ public final class WebSocket {
    */
   private WebSocketListener wsl;
   /**
-   * The 1-byte buffer reused throughout the WebSocket connection to read data.
-   */
-  private ByteBuffer buffer;
-  /**
    * Buffer where data is read to from the socket
    */
   private ByteBuffer socketBuffer;
-  /**
-   * The bytes that make up the remote handshake.
-   */
-  private ByteBuffer remoteHandshake;
-  /**
-   * The bytes that make up the current text frame being read.
-   */
-  private ByteBuffer currentFrame;
   /**
    * Queue of buffers that need to be sent to the client.
    */
@@ -92,6 +93,18 @@ public final class WebSocket {
   private Object bufferQueueMutex = new Object();
   
   private boolean readingState = false;
+  
+  private Draft draft = null;
+  
+  private Role role;
+  
+  private Framedata currentframe;
+  
+  private Handshakedata handshakerequest = null;
+  
+  public List<Draft> known_drafts;
+  
+  private final int maxpayloadsize;
 
 
   // CONSTRUCTOR /////////////////////////////////////////////////////////////
@@ -105,15 +118,36 @@ public final class WebSocket {
    * @param listener The {@link WebSocketListener} to notify of events when
    *                 they occur.
    */
-  WebSocket(SocketChannel socketChannel, BlockingQueue<ByteBuffer> bufferQueue, WebSocketListener listener) {
+  WebSocket(SocketChannel socketChannel, BlockingQueue<ByteBuffer> bufferQueue, WebSocketListener listener, Draft draft, int maxpayloadsize) {
     this.socketChannel = socketChannel;
     this.bufferQueue = bufferQueue;
     this.handshakeComplete = false;
-    this.remoteHandshake = this.currentFrame = null;
     this.socketBuffer = ByteBuffer.allocate(8192);
-    this.buffer = ByteBuffer.allocate(1);
     this.wsl = listener;
+    this.role = Role.CLIENT;
+    this.draft = draft; 
+    this.maxpayloadsize = maxpayloadsize;
   }
+  
+  WebSocket(SocketChannel socketChannel, BlockingQueue<ByteBuffer> bufferQueue, WebSocketListener listener,  List<Draft> drafts , int maxpayloadsize ) {
+	    this.socketChannel = socketChannel;
+	    this.bufferQueue = bufferQueue;
+	    this.handshakeComplete = false;
+	    this.socketBuffer = ByteBuffer.allocate(8192);
+	    this.wsl = listener;
+	    this.role = Role.SERVER;
+	    this.draft = null;
+	    this.maxpayloadsize = maxpayloadsize;
+	    if( known_drafts == null || known_drafts.isEmpty () ){
+	    	known_drafts = new ArrayList<Draft> ( 1 );
+	    	known_drafts.add ( new Draft_10 () );
+	    	known_drafts.add ( new Draft_76 () );
+	    	known_drafts.add ( new Draft_75 () );
+	    }
+	    else{
+	    	known_drafts = drafts;
+	    }
+	  }
 
   /**
    * Should be called when a Selector has a key that is writable for this
@@ -125,73 +159,168 @@ public final class WebSocket {
 
     int bytesRead = -1;
     
-    try {
-      socketBuffer.rewind();
-      bytesRead = this.socketChannel.read(this.socketBuffer);
-    } catch(Exception ex) {}
+    socketBuffer.rewind();
+    bytesRead = this.socketChannel.read(this.socketBuffer);
     
-    if (bytesRead == -1)  {
+    
+    if ( bytesRead == -1 )  {
       close();
-    } else if (bytesRead > 0) {
-      for(int i = 0; i < bytesRead; i++) {
-        buffer.rewind();
-        buffer.put(socketBuffer.get(i));
-
-        this.buffer.rewind();
-
-        if (!this.handshakeComplete) 
-          recieveHandshake();
-        else 
-          recieveFrame();    	      
-      }
+    } 
+    else if( bytesRead > maxpayloadsize ){
+    	wsl.onError ( new RuntimeException("recived packet to big") );
+    	abort ( "recived packet to big" );
+    }
+    else if ( bytesRead > 0) {
+		if(DEBUG) System.out.println( "got: {" + new String( socketBuffer.array() , 0 , bytesRead ) + "}" );
+		if( !handshakeComplete ){
+			try{
+				Handshakedata handshake = Draft.translateHandshake ( socketBuffer.array () , bytesRead );
+				if( role == Role.SERVER ){
+					for( Draft d : known_drafts ){
+						if(  d.acceptHandshakeAsServer( handshake ) ){
+							HandshakeBuilder response = wsl.onHandshakeRecievedAsServer ( this , d , handshake  );
+							channelWrite ( d.createHandshake ( d.postProcessHandshakeResponseAsServer ( handshake , response ) , role ) );
+							draft = d;
+							this.handshakeComplete = true;
+							wsl.onOpen ( this );
+							break;
+						}
+					}
+					if( draft == null ){
+						abort( "no draft matches");
+						return;
+					}
+					if(DEBUG) System.out.println ( "Using draft: " + draft.getClass ().getSimpleName () );
+				}
+				else if( role == Role.CLIENT){
+					if( draft.acceptHandshakeAsClient ( handshakerequest , handshake ) 
+						&& wsl.onHandshakeRecievedAsClient ( this , handshakerequest , handshake )
+					){
+						this.handshakeComplete = true;
+						wsl.onOpen ( this );
+					}
+					else{
+						abort( "draft "+draft.getClass ().getSimpleName ()+" or server refuses handshake");
+					}
+				}
+			}
+			catch (InvalidHandshakeException e) {
+				abort( "draft "+draft+" refuses handshake: " + e.getMessage ());
+			}
+		}
+		else{
+			List<Framedata> frames = draft.translateFrame ( socketBuffer , bytesRead );
+			for( Framedata f : frames){
+				Opcode curop = f.getOpcode ();
+				if( curop == null )// Ignore undefined opcodes
+					continue;
+				else if( curop == Opcode.CLOSING){
+					sendFrame ( new FramedataImpl1 ( Opcode.CLOSING ) );
+					close();
+					continue;
+				}
+				else if( curop == Opcode.PING){
+					sendFrame ( new FramedataImpl1 ( Opcode.PONG ) );
+					continue;
+				}
+				else if( curop == Opcode.PONG){
+					wsl.onPong ();
+					continue;
+				}
+				if( currentframe == null){
+					if( f.isFin () ){
+						if( f.getOpcode () == Opcode.TEXT ){
+							wsl.onMessage ( this , new String ( f.getPayloadData () , UTF8_CHARSET ) );
+						}
+						else if( f.getOpcode () == Opcode.BINARY ){
+							wsl.onMessage ( this , f.getPayloadData () );
+						}
+						else{
+							if(DEBUG) System.out.println ( "Ignoring frame:" + f.toString() );
+						}
+					}
+					else{
+						currentframe = f;
+					}
+				}
+				else if( f.getOpcode() == Opcode.CONTINIOUS ){
+					try {
+						currentframe.append ( f );
+					} catch ( InvalidFrameException e ) {
+						wsl.onError ( e );
+						abort( "invalid frame: " +e.getMessage () );
+					}
+					if( f.isFin () ){
+						wsl.onMessage ( this , new String ( f.getPayloadData () , UTF8_CHARSET ) );
+						currentframe = null;
+					}
+				}
+			}
+		
+		}
     }
   }
 
   // PUBLIC INSTANCE METHODS /////////////////////////////////////////////////
+  public void abort( ) throws IOException {
+	  abort ( "" );
+  }
+  public void abort( String problemmessage ) throws IOException {
+	  if(DEBUG) System.out.println ( "Aborting: " + problemmessage );
+	  close();
+  }
   /**
    * Closes the underlying SocketChannel, and calls the listener's onClose
    * event handler.
    * @throws IOException When socket related I/O errors occur.
    */
   public void close() throws IOException {
+	//TODO Send HTTP error here in some cases / create abort method
+	currentframe = null;
+	handshakerequest = null;
     this.socketChannel.close();
     this.wsl.onClose(this);
   }
 
   /**
-   * @return True if all of the text was sent to the client by this thread.
+   * @return True if all of the text was sent to the client by this thread or the given data is empty
    *    False if some of the text had to be buffered to be sent later.
+   * @throws IOException 
    */
   public boolean send(String text) throws IOException {
     if (!this.handshakeComplete) throw new NotYetConnectedException();
-    if (text == null) throw new NullPointerException("Cannot send 'null' data to a WebSocket.");
-
-    // Get 'text' into a WebSocket "frame" of bytes
-    byte[] textBytes = text.getBytes(UTF8_CHARSET);
-    ByteBuffer b = ByteBuffer.allocate(textBytes.length + 2);
-    b.put(START_OF_FRAME);
-    b.put(textBytes);
-    b.put(END_OF_FRAME);
-    b.rewind();
-
-    // See if we have any backlog that needs to be sent first
-    if (handleWrite()) {
-      // Write the ByteBuffer to the socket
-      this.socketChannel.write(b);
+    if ( text == null ) throw new NullPointerException( "Cannot send 'null' data to a WebSocket." );
+    boolean mask = role == Role.CLIENT;
+    List<Framedata> frames = draft.createFrames ( text , mask );
+    if( frames.isEmpty () ){
+    	return true;
     }
-
-    // If we didn't get it all sent, add it to the buffer of buffers
-    if (b.remaining() > 0) {
-      if (!this.bufferQueue.offer(b)) {
-        throw new IOException("Buffers are full, message could not be sent to" +
-            this.socketChannel.socket().getRemoteSocketAddress());
-      }
-      return false;
+    boolean sendall = true;
+    for( Framedata f : frames ){
+    	sendall = sendFrame ( f ); //TODO high frequently calls to sendFrame are inefficient.
     }
-
-    return true;
+    return sendall;
   }
+  
+  public boolean sendFrame( Framedata framedata ) throws IOException{
+	ByteBuffer b = draft.createBinaryFrame ( framedata );
+	// See if we have any backlog that needs to be sent first
+	if (handleWrite()) {
+		// Write the ByteBuffer to the socket
+		channelWrite( b );
+	}
 
+	// If we didn't get it all sent, add it to the buffer of buffers
+	if (b.remaining() > 0) {
+		if (!this.bufferQueue.offer(b)) {
+	        throw new IOException("Buffers are full, message could not be sent to" +
+	            this.socketChannel.socket().getRemoteSocketAddress());
+		}
+		return false;
+	}
+	return true;
+  }
+  
   boolean hasBufferedData() {
     return !this.bufferQueue.isEmpty();
   }
@@ -204,7 +333,7 @@ public final class WebSocket {
     synchronized (this.bufferQueueMutex) {
       ByteBuffer buffer = this.bufferQueue.peek();
       while (buffer != null) {
-        this.socketChannel.write(buffer);
+        channelWrite( buffer );
         if (buffer.remaining() > 0) {
           return false; // Didn't finish this buffer.  There's more to send.
         } else {
@@ -219,116 +348,26 @@ public final class WebSocket {
   public SocketChannel socketChannel() {
     return this.socketChannel;
   }
-
-  // PRIVATE INSTANCE METHODS ////////////////////////////////////////////////
-  private void recieveFrame() {
-    byte newestByte = this.buffer.get();
-
-    if (newestByte == START_OF_FRAME && !readingState) { // Beginning of Frame
-      this.currentFrame = null;
-      readingState = true;
-
-    } else if (newestByte == END_OF_FRAME && readingState) { // End of Frame
-      readingState = false;
-      String textFrame = null;
-      // currentFrame will be null if END_OF_FRAME was send directly after
-      // START_OF_FRAME, thus we will send 'null' as the sent message.
-      if (this.currentFrame != null) {
-        try {
-          textFrame = new String(this.currentFrame.array(), UTF8_CHARSET);
-        } catch (UnsupportedEncodingException ex) {
-          // TODO: Fire an 'onError' handler here
-          ex.printStackTrace();
-          textFrame = "";
-        }
-      }
-      this.wsl.onMessage(this, textFrame);
-
-    } else { // Regular frame data, add to current frame buffer
-      ByteBuffer frame = ByteBuffer.allocate((this.currentFrame != null ? this.currentFrame.capacity() : 0) + this.buffer.capacity());
-      if (this.currentFrame != null) {
-        this.currentFrame.rewind();
-        frame.put(this.currentFrame);
-      }
-      frame.put(newestByte);
-      this.currentFrame = frame;
-    }
+  
+  public void startHandshake( HandshakeBuilder handshakedata ) throws IOException{
+    if( handshakeComplete ) 
+    throw new IllegalStateException ( "Handshake has allready been sent." );
+    this.handshakerequest  = handshakedata;
+    channelWrite( draft.createHandshake( draft.postProcessHandshakeRequestAsClient( handshakedata ) , role ) );
   }
-
-  private void recieveHandshake() throws IOException, NoSuchAlgorithmException {
-    ByteBuffer ch = ByteBuffer.allocate((this.remoteHandshake != null ? this.remoteHandshake.capacity() : 0) + this.buffer.capacity());
-    if (this.remoteHandshake != null) {
-      this.remoteHandshake.rewind();
-      ch.put(this.remoteHandshake);
-    }
-    ch.put(this.buffer);
-    this.remoteHandshake = ch;
-    byte[] h = this.remoteHandshake.array();
-    // If the ByteBuffer contains 16 random bytes, and ends with
-    // 0x0D 0x0A 0x0D 0x0A (or two CRLFs), then the client
-    // handshake is complete for Draft 76 Client.
-    if((h.length >= 20 && h[h.length-20] == CR
-            && h[h.length-19] == LF
-            && h[h.length-18] == CR
-            && h[h.length-17] == LF)) {
-      completeHandshake(new byte[] {
-        h[h.length-16],
-        h[h.length-15],
-        h[h.length-14],
-        h[h.length-13],
-        h[h.length-12],
-        h[h.length-11],
-        h[h.length-10],
-        h[h.length-9],
-        h[h.length-8],
-        h[h.length-7],
-        h[h.length-6],
-        h[h.length-5],
-        h[h.length-4],
-        h[h.length-3],
-        h[h.length-2],
-        h[h.length-1]
-      });
-
-    // If the ByteBuffer contains 8 random bytes,ends with
-    // 0x0D 0x0A 0x0D 0x0A (or two CRLFs), and the response
-    // contains Sec-WebSocket-Key1 then the client
-    // handshake is complete for Draft 76 Server.
-    } else if ((h.length>=12 && h[h.length-12] == CR
-        && h[h.length-11] == LF
-        && h[h.length-10] == CR
-        && h[h.length-9] == LF) && new String(this.remoteHandshake.array(), UTF8_CHARSET).contains("Sec-WebSocket-Key1")) {
-      completeHandshake(new byte[] {
-        h[h.length-8],
-        h[h.length-7],
-        h[h.length-6],
-        h[h.length-5],
-        h[h.length-4],
-        h[h.length-3],
-        h[h.length-2],
-        h[h.length-1]
-      });
-
-    // Consider Draft 75, and the Flash Security Policy
-    // Request edge-case.
-    } else if ((h.length>=4 && h[h.length-4] == CR
-        && h[h.length-3] == LF
-        && h[h.length-2] == CR
-        && h[h.length-1] == LF) && !(new String(this.remoteHandshake.array(), UTF8_CHARSET).contains("Sec")) ||
-        (h.length==23 && h[h.length-1] == 0) ) {
-      completeHandshake(null);
-    }    
+  
+  private void channelWrite(ByteBuffer buf) throws IOException{
+	  if(DEBUG) System.out.println("write: {"+new String(buf.array())+"}");
+	  //printBytes ( buf , buf.capacity () );
+	  buf.rewind ();
+	  socketChannel.write(buf);
   }
-
-  private void completeHandshake(byte[] handShakeBody) throws IOException, NoSuchAlgorithmException {
-    byte[] handshakeBytes = this.remoteHandshake.array();
-    String handshake = new String(handshakeBytes, UTF8_CHARSET);
-    this.handshakeComplete = true;
-    if (this.wsl.onHandshakeRecieved(this, handshake, handShakeBody)) {
-      this.wsl.onOpen(this);
-    } else {
-      close();
-    }
+  
+  private void printBytes(ByteBuffer buf, int len){
+	  for( int i = 0 ; i < 2 && i < len; i++ ){
+		  System.out.println (Integer.toBinaryString ( buf.get ( i ) ));
+	  }
+	  
   }
 
 }

@@ -2,6 +2,7 @@ package net.tootallnate.websocket;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
 
 /**
  * Implemented by <tt>WebSocketClient</tt> and <tt>WebSocketServer</tt>.
@@ -12,17 +13,10 @@ interface WebSocketListener {
   
   /**
    * Called when the socket connection is first established, and the WebSocket
-   * handshake has been recieved. This method should parse the
-   * <var>handshake</var>, and return a boolean indicating whether or not the
-   * connection is a valid WebSocket connection.
-   * @param conn The <tt>WebSocket</tt> instance this event is occuring on.
-   * @param handshake The entire UTF-8 decoded handshake from the connection.
-   * @return <var>true</var> if the handshake is valid, and <var>onOpen</var>
-   *         should be immediately called afterwards. <var>false</var> if the
-   *         handshake was invalid, and the connection should be terminated.
-   * @throws NoSuchAlgorithmException 
+   * handshake has been recieved.
    */
-  public boolean onHandshakeRecieved(WebSocket conn, String handshake, byte[] handShakeBody) throws IOException, NoSuchAlgorithmException;
+  public HandshakeBuilder onHandshakeRecievedAsServer( WebSocket conn , Draft draft , Handshakedata request ) throws IOException;
+  public boolean onHandshakeRecievedAsClient( WebSocket conn , Handshakedata request ,  Handshakedata response ) throws IOException;
   
   /**
    * Called when an entire text frame has been recieved. Do whatever you want
@@ -31,6 +25,8 @@ interface WebSocketListener {
    * @param message The UTF-8 decoded message that was recieved.
    */
   public void onMessage(WebSocket conn, String message);
+  
+  public void onMessage( WebSocket conn , byte[] blob );
   
   /**
    * Called after <var>onHandshakeRecieved</var> returns <var>true</var>.
@@ -52,10 +48,7 @@ interface WebSocketListener {
    * implementation of error handling (e.g. when network is not available). 
    * @param ex
    */
-  public void onIOError(IOException ex);
-
-  /**
-   * Called to retrieve the Draft of this listener.
-   */
-  public WebSocketDraft getDraft();  
+  public void onError( Throwable ex );
+  
+  public void onPong();
 }

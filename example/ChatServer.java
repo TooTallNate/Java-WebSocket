@@ -39,7 +39,7 @@ public class ChatServer extends WebSocketServer {
         System.out.println(conn + ": " + message);
     }
 
-    public void onIOError(IOException ex) {
+    public void onError(Throwable ex) {
       ex.printStackTrace();
     }
 
