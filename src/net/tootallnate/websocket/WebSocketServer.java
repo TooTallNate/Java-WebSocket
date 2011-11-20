@@ -6,17 +6,12 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.LinkedBlockingQueue;
-
-import sun.misc.BASE64Encoder;
 
 /**
  * <tt>WebSocketServer</tt> is an abstract class that only takes care of the
@@ -205,13 +200,14 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
     }
 
     while(true) {
+      SelectionKey key = null;
       try {
         selector.select();
         Set<SelectionKey> keys = selector.selectedKeys();
         Iterator<SelectionKey> i = keys.iterator();
 
         while(i.hasNext()) {
-          SelectionKey key = i.next();
+          key = i.next();
 
           // Remove the current key
           i.remove();
@@ -254,6 +250,8 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
           }
         }
       } catch (IOException ex) {
+    	  if( key != null )
+    		  key.cancel();
     	  onError(ex);
       } catch (RuntimeException ex) {
         ex.printStackTrace();
