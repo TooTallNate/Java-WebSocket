@@ -16,6 +16,7 @@ import net.tootallnate.websocket.Framedata.Opcode;
 import net.tootallnate.websocket.HandshakeBuilder;
 import net.tootallnate.websocket.Handshakedata;
 import net.tootallnate.websocket.FramedataImpl1;
+import net.tootallnate.websocket.exeptions.InvalidHandshakeException;
 
 public class Draft_75 extends Draft {
 	
@@ -102,6 +103,7 @@ public class Draft_75 extends Draft {
 	    b.put(START_OF_FRAME);
 	    b.put(pay);
 	    b.put(END_OF_FRAME);
+	    b.rewind();
 	    return b;
 	}
 
@@ -122,7 +124,7 @@ public class Draft_75 extends Draft {
 	
 	@Override
 	public boolean acceptHandshakeAsClient( Handshakedata request , Handshakedata response ) {
-		throw new RuntimeException ( "not yet implemented" );
+		return true;//TODO validate the handshake
 	}
 
 	@Override
@@ -131,8 +133,15 @@ public class Draft_75 extends Draft {
 	}
 
 	@Override
-	public HandshakeBuilder postProcessHandshakeResponseAsServer( Handshakedata request , HandshakeBuilder response ) {
-		throw new RuntimeException ( "not yet implemented" );
+	public HandshakeBuilder postProcessHandshakeResponseAsServer( Handshakedata request , HandshakeBuilder response ) throws InvalidHandshakeException {
+		super.postProcessHandshakeResponseAsServer( request , response );
+		response.setHttpStatusMessage( "Web Socket Protocol Handshake" );
+		response.put ( "Upgrade" , "WebSocket" );
+		response.put( "Sec-WebSocket-Origin" , request.getFieldValue( "Origin" ) );
+		String location = "ws://" + request.getFieldValue("Host") + request.getResourceDescriptor();
+		response.put( "Sec-WebSocket-Location" , location );
+		//TODO handle Sec-WebSocket-Protocol and Set-Cookie
+		return response;
 	}
 	
 }

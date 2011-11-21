@@ -2,16 +2,18 @@ package net.tootallnate.websocket;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class HandshakedataImpl1 implements HandshakeBuilder {
 	
+	private String httpstatusmessage;
 	private String resourcedescriptor;
 	private byte[] content;
-	private Map<String,String> map;
+	private LinkedHashMap<String,String> map;
 	
 	public HandshakedataImpl1() {
-		map = new HashMap<String,String>();
+		map = new LinkedHashMap<String,String>();
 	}
 
 	@Override
@@ -51,6 +53,22 @@ public class HandshakedataImpl1 implements HandshakeBuilder {
 	@Override
 	public void put( String name, String value ){
 		map.put ( name , value );
+	}
+
+	@Override
+	public boolean hasFieldValue( String name ) {
+		return map.containsKey( name );
+	}
+
+	@Override
+	public String getHttpStatusMessage( ) {
+		return httpstatusmessage;
+	}
+
+	@Override
+	public void setHttpStatusMessage( String message ) {
+		this.httpstatusmessage=message;
+		
 	}
 
 }
