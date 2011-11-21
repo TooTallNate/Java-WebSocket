@@ -2,6 +2,7 @@ package net.tootallnate.websocket;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -43,7 +44,7 @@ public abstract class Draft{
 			bui.append ( " HTTP/1.1" );
 		}
 		else if( ownrole == Role.SERVER ){
-			bui.append ( "HTTP/1.1 101 Switching Protocols" );
+			bui.append ( "HTTP/1.1 101 "+handshakedata.getHttpStatusMessage() );
 		}
 		else{
 			throw new RuntimeException ( "unknow role" );
@@ -58,14 +59,13 @@ public abstract class Draft{
 			bui.append ( fieldvalue );
 			bui.append ( "\r\n" );
 		}
+		bui.append ( "\r\n" );
 		byte[] httpheader = bui.toString ().getBytes ( UTF8_CHARSET );
 		byte[] content = handshakedata.getContent ();
-		ByteBuffer bytebuffer = ByteBuffer.allocate ( ( content==null ? 0 : content.length ) + httpheader.length + 2 );
+		ByteBuffer bytebuffer = ByteBuffer.allocate ( ( content==null ? 0 : content.length ) + httpheader.length );
 		bytebuffer.put ( httpheader );
 		if( content!=null )
 			bytebuffer.put ( content );
-		bytebuffer.put (  ( byte )'\r' );
-		bytebuffer.put (  ( byte )'\n' );
 		return bytebuffer;
 		
 	}
@@ -80,6 +80,9 @@ public abstract class Draft{
 		if ( index == lines.length )
 			return null;
 		String line = new String ( lines , previndex , index - previndex );
+		String[] firstLineTokens = line.split(" ");
+		String path = firstLineTokens[1];
+		draft.setResourceDescriptor( path );
 		//TODO Care about resources here like: GET /chat HTTP/1.1 
 		//if ( line.startsWith ( "GET" ) == false ) 
 		//if ( line.startsWith ( "HTTP" ) == false ) 
@@ -88,18 +91,20 @@ public abstract class Draft{
 		index = findNewLine ( lines , previndex );
 		int length = index - previndex;
 		while ( length != 0 ) {
-			
 			line = new String ( lines , previndex , length );
 			if ( index != previndex ) {
 				String[] pair = line.split ( ":" , 2 );
 				if ( pair.length != 2 )
-					draft.setContent ( ByteBuffer.allocate ( length ).put ( lines, previndex,length).array () ); //this approach will also accept suspicious looking handshakes...
-				draft.put ( pair[ 0 ] , pair[ 1 ] );
+					return null;
+				draft.put ( pair[ 0 ] , pair[ 1 ].replaceFirst( "^ +" , "" ) );
 			}
 			previndex = index + 2;
 			index = findNewLine ( lines , previndex );
 			length = index - previndex;
 		}
+		previndex = index + 2;
+		length = lines.length - previndex;
+		draft.setContent ( ByteBuffer.allocate ( length ).put ( lines, previndex , length ).array () );
 		return draft;
 	}
 
@@ -112,4 +117,15 @@ public abstract class Draft{
 				return i;
 		return i;//the end of input will be handled like newline
 	}
+	
+	public static boolean isFlashEdgeCase( byte[] request , int requestsize ){
+		byte[] req = "<policy-file-request/>".getBytes( UTF8_CHARSET );
+		for( int i = 0 ; i < requestsize && i < req.length ; i++ ){
+			if( req[i] != request[i] ){
+				return false;
+			}
+		}
+		return requestsize >= req.length;
+	}
+
 }

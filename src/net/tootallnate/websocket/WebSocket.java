@@ -61,6 +61,12 @@ public final class WebSocket {
   public static final byte END_OF_FRAME = (byte)0xFF;
   
   public static final boolean DEBUG = false;
+  
+  static{
+	if ( DEBUG ) {
+		System.out.println("WebSocket debug mode enabled");
+	}
+  }
 
 
   // INSTANCE PROPERTIES /////////////////////////////////////////////////////
@@ -173,8 +179,16 @@ public final class WebSocket {
     else if ( bytesRead > 0) {
 		if(DEBUG) System.out.println( "got: {" + new String( socketBuffer.array() , 0 , bytesRead ) + "}" );
 		if( !handshakeComplete ){
+			if(draft.isFlashEdgeCase( socketBuffer.array() , bytesRead )){
+				channelWrite( ByteBuffer.wrap( wsl.getFlashPolicy( this ).getBytes( UTF8_CHARSET ) ) );
+				return;
+			}
 			try{
 				Handshakedata handshake = Draft.translateHandshake ( socketBuffer.array () , bytesRead );
+				if( handshake == null){
+					abort("This valid http header ");
+					return;
+				}
 				if( role == Role.SERVER ){
 					for( Draft d : known_drafts ){
 						if(  d.acceptHandshakeAsServer( handshake ) ){
@@ -368,6 +382,10 @@ public final class WebSocket {
 		  System.out.println (Integer.toBinaryString ( buf.get ( i ) ));
 	  }
 	  
+  }
+  
+  public int getPort(){
+	  return socketChannel.socket().getLocalPort();
   }
 
 }
