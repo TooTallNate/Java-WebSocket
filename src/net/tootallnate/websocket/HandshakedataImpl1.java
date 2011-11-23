@@ -1,5 +1,6 @@
 package net.tootallnate.websocket;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -16,6 +17,18 @@ public class HandshakedataImpl1 implements HandshakeBuilder {
 		map = new LinkedHashMap<String,String>();
 	}
 
+	public HandshakedataImpl1( Handshakedata h ) {
+		httpstatusmessage = h.getHttpStatusMessage();
+		resourcedescriptor = h.getResourceDescriptor();
+		content = h.getContent();
+		map = new LinkedHashMap<String,String>( );
+		Iterator<String> it = h.iterateHttpFields();
+		while ( it.hasNext() ) {
+			String key = ( String ) it.next();
+			map.put( key , h.getFieldValue( key ) );
+		}
+	}
+
 	@Override
 	public String getResourceDescriptor( ) {
 		return resourcedescriptor == null ? "" : resourcedescriptor ;
@@ -23,7 +36,7 @@ public class HandshakedataImpl1 implements HandshakeBuilder {
 
 	@Override
 	public Iterator<String> iterateHttpFields( ) {
-		return map.keySet ().iterator ();
+		return Collections.unmodifiableSet( map.keySet () ).iterator ();//Safety first
 	}
 
 	@Override

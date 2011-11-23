@@ -42,16 +42,14 @@ public class Draft_75 extends Draft {
 	private ByteBuffer currentFrame;
 	
 	@Override
-	public boolean acceptHandshakeAsServer( Handshakedata handshakedata ) {
-		if( handshakedata.getContent () != null && new String( handshakedata.getContent () ).endsWith ( "\r\n\r\n" ) ){
-			Iterator<String> it = handshakedata.iterateHttpFields ();
-			while ( it.hasNext () ) {
-				if( it.next ().startsWith ( "Sec" ))
-					return true;
-				
-			}
+	public HandshakeState acceptHandshakeAsServer( Handshakedata handshakedata ) {
+		if( handshakedata.getFieldValue( "Upgrade" ).equals( "WebSocket" )
+			&& handshakedata.getFieldValue( "Connection" ).contains( "Upgrade" )
+			&& handshakedata.hasFieldValue( "Origin" )
+		){
+			return HandshakeState.MATCHED;
 		}
-		return false;
+		return HandshakeState.NOT_MATCHED;
 	}
 
 	@Override
@@ -123,23 +121,30 @@ public class Draft_75 extends Draft {
 	}
 	
 	@Override
-	public boolean acceptHandshakeAsClient( Handshakedata request , Handshakedata response ) {
-		return true;//TODO validate the handshake
+	public HandshakeState acceptHandshakeAsClient( Handshakedata request , Handshakedata response ) {
+		return request.getFieldValue( "WebSocket-Origin" ).equals( response.getFieldValue( "Origin" ) ) 
+			&& response.getFieldValue( "Upgrade" ).equals( "WebSocket" )
+			&& response.getFieldValue( "Connection" ).contains( "Upgrade" 
+		)?
+			HandshakeState.MATCHED
+			:HandshakeState.NOT_MATCHED;
 	}
 
 	@Override
-	public HandshakeBuilder postProcessHandshakeRequestAsClient( HandshakeBuilder request ) {
+	public HandshakeBuilder postProcessHandshakeRequestAsClient( HandshakeBuilder request ) throws InvalidHandshakeException{
+		request.put ( "Upgrade" , "WebSocket" );
+		request.put ( "Connection" , "Upgrade" );
 		return request;
 	}
 
 	@Override
 	public HandshakeBuilder postProcessHandshakeResponseAsServer( Handshakedata request , HandshakeBuilder response ) throws InvalidHandshakeException {
-		super.postProcessHandshakeResponseAsServer( request , response );
 		response.setHttpStatusMessage( "Web Socket Protocol Handshake" );
 		response.put ( "Upgrade" , "WebSocket" );
-		response.put( "Sec-WebSocket-Origin" , request.getFieldValue( "Origin" ) );
+		response.put ( "Connection" , request.getFieldValue ( "Connection" ) ); //to respond to a Connection keep alive
+		response.put( "WebSocket-Origin" , request.getFieldValue( "Origin" ) );
 		String location = "ws://" + request.getFieldValue("Host") + request.getResourceDescriptor();
-		response.put( "Sec-WebSocket-Location" , location );
+		response.put( "WebSocket-Location" , location );
 		//TODO handle Sec-WebSocket-Protocol and Set-Cookie
 		return response;
 	}

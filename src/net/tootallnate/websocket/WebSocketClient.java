@@ -16,6 +16,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import net.tootallnate.websocket.WebSocket.Role;
 import net.tootallnate.websocket.drafts.*;
+import net.tootallnate.websocket.exeptions.InvalidHandshakeException;
 
 /**
  * The <tt>WebSocketClient</tt> is an abstract class that expects a valid
@@ -224,10 +225,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
               key.cancel();
     	  onIOError(conn, ex);
       } catch (Exception ex) {
-    	// NullPointerException is the most common error that can happen here
-    	// (e.g.when connection closes immediately)
-    	// TODO: user should handle that kind of events my himself
-        ex.printStackTrace();
+        onError( ex );
       }
     }
     
@@ -239,7 +237,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
     return port == -1 ? WebSocket.DEFAULT_PORT : port;
   }
   
-  private void finishConnect() throws IOException {
+  private void finishConnect() throws IOException, InvalidHandshakeException {
     if (client.isConnectionPending()) {
       client.finishConnect();
     }
@@ -250,7 +248,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
     sendHandshake();
   }
   
-  private void sendHandshake() throws IOException {
+  private void sendHandshake() throws IOException, InvalidHandshakeException {
     String path = uri.getPath();
     if (path.indexOf("/") != 0) {
       path = "/" + path;

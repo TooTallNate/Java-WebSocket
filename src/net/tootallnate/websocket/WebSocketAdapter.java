@@ -29,6 +29,8 @@ public class WebSocketAdapter implements WebSocketListener {
 
 	@Override
 	public void onError( Throwable ex ) {
+		if(WebSocket.DEBUG)
+			ex.printStackTrace();
 	}
 
 	@Override
