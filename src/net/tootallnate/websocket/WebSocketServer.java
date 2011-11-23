@@ -250,9 +250,9 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
           }
         }
       } catch (IOException ex) {
-    	  if( key != null )
-    		  key.cancel();
-    	  onError(ex);
+          if( key != null )
+              key.cancel();
+          onError(ex);
       } catch (RuntimeException ex) {
         ex.printStackTrace();
       } catch (NoSuchAlgorithmException ex) {

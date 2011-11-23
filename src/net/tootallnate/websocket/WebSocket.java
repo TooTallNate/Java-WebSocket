@@ -9,6 +9,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.tootallnate.websocket.Draft.HandshakeState;
 import net.tootallnate.websocket.Framedata.Opcode;
 import net.tootallnate.websocket.drafts.*;
 import net.tootallnate.websocket.exeptions.InvalidFrameException;
@@ -61,6 +62,12 @@ public final class WebSocket {
   public static final byte END_OF_FRAME = (byte)0xFF;
   
   public static final boolean DEBUG = false;
+  
+  static{
+	if ( DEBUG ) {
+		System.out.println("WebSocket debug mode enabled");
+	}
+  }
 
 
   // INSTANCE PROPERTIES /////////////////////////////////////////////////////
@@ -173,31 +180,62 @@ public final class WebSocket {
     else if ( bytesRead > 0) {
 		if(DEBUG) System.out.println( "got: {" + new String( socketBuffer.array() , 0 , bytesRead ) + "}" );
 		if( !handshakeComplete ){
+			if(draft.isFlashEdgeCase( socketBuffer.array() , bytesRead )){
+				channelWrite( ByteBuffer.wrap( wsl.getFlashPolicy( this ).getBytes( UTF8_CHARSET ) ) );
+				return;
+			}
 			try{
-				Handshakedata handshake = Draft.translateHandshake ( socketBuffer.array () , bytesRead );
+				Handshakedata handshake;
+				HandshakeState handshakestate = null;
+				
 				if( role == Role.SERVER ){
-					for( Draft d : known_drafts ){
-						if(  d.acceptHandshakeAsServer( handshake ) ){
-							HandshakeBuilder response = wsl.onHandshakeRecievedAsServer ( this , d , handshake  );
-							channelWrite ( d.createHandshake ( d.postProcessHandshakeResponseAsServer ( handshake , response ) , role ) );
-							draft = d;
-							this.handshakeComplete = true;
-							wsl.onOpen ( this );
-							break;
-						}
-					}
 					if( draft == null ){
-						abort( "no draft matches");
+						handshake = Draft.translateHandshakeHttp( socketBuffer.array () , bytesRead );
+						for( Draft d : known_drafts ){
+							handshakestate = d.acceptHandshakeAsServer( handshake );
+							if( handshakestate == HandshakeState.MATCHED ){
+								HandshakeBuilder response = wsl.onHandshakeRecievedAsServer ( this , d , handshake  );
+								channelWrite ( d.createHandshake ( d.postProcessHandshakeResponseAsServer ( handshake , response ) , role ) );
+								draft = d;
+								this.handshakeComplete = true;
+								open();
+								return;
+							}
+							else if ( handshakestate == HandshakeState.MATCHING ){
+								if( draft != null ){
+									throw new InvalidHandshakeException( "multible drafts matching" );
+								}
+								draft = d;
+							}
+						}
+						if( draft == null ){
+							abort( "no draft matches");
+						}
 						return;
 					}
-					if(DEBUG) System.out.println ( "Using draft: " + draft.getClass ().getSimpleName () );
+					else{
+						//special case for multiple step handshakes
+						handshake = draft.translateHandshake( socketBuffer.array () , bytesRead );
+						handshakestate = draft.acceptHandshakeAsServer( handshake );
+
+						if( handshakestate == HandshakeState.MATCHED ){
+							open();
+						}
+						else if ( handshakestate != HandshakeState.MATCHING) {
+							abort( "the handshake did finaly not match" );
+						}
+						return;
+					}
 				}
 				else if( role == Role.CLIENT){
-					if( draft.acceptHandshakeAsClient ( handshakerequest , handshake ) 
-						&& wsl.onHandshakeRecievedAsClient ( this , handshakerequest , handshake )
-					){
+					handshake= draft.translateHandshake( socketBuffer.array () , bytesRead );
+					handshakestate = draft.acceptHandshakeAsClient ( handshakerequest , handshake );
+					if( handshakestate == HandshakeState.MATCHED ){
 						this.handshakeComplete = true;
-						wsl.onOpen ( this );
+						open();
+					}
+					else if ( handshakestate == HandshakeState.MATCHING ) {
+						return;
 					}
 					else{
 						abort( "draft "+draft.getClass ().getSimpleName ()+" or server refuses handshake");
@@ -209,6 +247,7 @@ public final class WebSocket {
 			}
 		}
 		else{
+			//Receiving frames
 			List<Framedata> frames = draft.translateFrame ( socketBuffer , bytesRead );
 			for( Framedata f : frames){
 				Opcode curop = f.getOpcode ();
@@ -256,9 +295,8 @@ public final class WebSocket {
 					}
 				}
 			}
-		
 		}
-    }
+	}
   }
 
   // PUBLIC INSTANCE METHODS /////////////////////////////////////////////////
@@ -266,7 +304,9 @@ public final class WebSocket {
 	  abort ( "" );
   }
   public void abort( String problemmessage ) throws IOException {
-	  if(DEBUG) System.out.println ( "Aborting: " + problemmessage );
+	  if(DEBUG){
+		System.out.println ( "Aborting: " + problemmessage );
+	  }
 	  close();
   }
   /**
@@ -349,7 +389,7 @@ public final class WebSocket {
     return this.socketChannel;
   }
   
-  public void startHandshake( HandshakeBuilder handshakedata ) throws IOException{
+  public void startHandshake( HandshakeBuilder handshakedata ) throws IOException, InvalidHandshakeException{
     if( handshakeComplete ) 
     throw new IllegalStateException ( "Handshake has allready been sent." );
     this.handshakerequest  = handshakedata;
@@ -363,11 +403,21 @@ public final class WebSocket {
 	  socketChannel.write(buf);
   }
   
-  private void printBytes(ByteBuffer buf, int len){
-	  for( int i = 0 ; i < 2 && i < len; i++ ){
-		  System.out.println (Integer.toBinaryString ( buf.get ( i ) ));
-	  }
-	  
+  private void channelWrite( List<ByteBuffer> bufs) throws IOException{
+	for( ByteBuffer b : bufs ){
+		channelWrite( b );
+	}
+  }
+  
+  
+  private void open(){
+	  if(DEBUG) System.out.println ( "open using draft: " + draft.getClass ().getSimpleName () );
+	  handshakeComplete = true;
+	  wsl.onOpen ( this );
+  }
+  
+  public int getPort(){
+	  return socketChannel.socket().getLocalPort();
   }
 
 }

@@ -51,4 +51,6 @@ interface WebSocketListener {
   public void onError( Throwable ex );
   
   public void onPong();
+  
+  public String getFlashPolicy( WebSocket conn);
 }

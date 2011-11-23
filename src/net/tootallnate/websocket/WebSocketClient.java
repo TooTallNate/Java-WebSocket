@@ -16,6 +16,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import net.tootallnate.websocket.WebSocket.Role;
 import net.tootallnate.websocket.drafts.*;
+import net.tootallnate.websocket.exeptions.InvalidHandshakeException;
 
 /**
  * The <tt>WebSocketClient</tt> is an abstract class that expects a valid
@@ -201,13 +202,14 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
     running = tryToConnect(new InetSocketAddress(uri.getHost(), getPort()));
 
     while (this.running) {
+      SelectionKey key = null;
       try {
         selector.select();
         Set<SelectionKey> keys = selector.selectedKeys();
         Iterator<SelectionKey> i = keys.iterator();
 
         while (i.hasNext()) {
-          SelectionKey key = i.next();
+          key = i.next();
           i.remove();
 
           if (key.isConnectable()) {
@@ -219,12 +221,11 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
           }
         }
       } catch (IOException ex) {
+          if( key != null )
+              key.cancel();
     	  onIOError(conn, ex);
       } catch (Exception ex) {
-    	// NullPointerException is the most common error that can happen here
-    	// (e.g.when connection closes immediately)
-    	// TODO: user should handle that kind of events my himself
-        ex.printStackTrace();
+        onError( ex );
       }
     }
     
@@ -236,7 +237,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
     return port == -1 ? WebSocket.DEFAULT_PORT : port;
   }
   
-  private void finishConnect() throws IOException {
+  private void finishConnect() throws IOException, InvalidHandshakeException {
     if (client.isConnectionPending()) {
       client.finishConnect();
     }
@@ -247,19 +248,17 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
     sendHandshake();
   }
   
-  private void sendHandshake() throws IOException {
+  private void sendHandshake() throws IOException, InvalidHandshakeException {
     String path = uri.getPath();
     if (path.indexOf("/") != 0) {
       path = "/" + path;
     }
     int port = getPort();
     String host = uri.getHost() + (port != WebSocket.DEFAULT_PORT ? ":" + port : "");
-    String origin = null; // TODO: Make 'origin' configurable
+    String origin = "x"; // TODO: Make 'origin' configurable
 
     HandshakedataImpl1 handshake = new HandshakedataImpl1();
     handshake.setResourceDescriptor ( path );
-    handshake.put ( "Upgrade" , "WebSocket" );
-    handshake.put ( "Connection" , "Upgrade" );
     handshake.put ( "Host" , host );
     handshake.put ( "Origin" , origin );
     conn.startHandshake ( handshake );

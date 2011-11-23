@@ -8,6 +8,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 
 import net.tootallnate.websocket.Draft;
 import net.tootallnate.websocket.FrameBuilder;
@@ -202,7 +203,7 @@ public class Draft_10 extends Draft {
 	}
 	
 	@Override
-	public boolean acceptHandshakeAsServer( Handshakedata handshakedata ) throws InvalidHandshakeException {
+	public HandshakeState acceptHandshakeAsServer( Handshakedata handshakedata ) throws InvalidHandshakeException {
 		//TODO Do a more detailed formal handshake test
 		String vers = handshakedata.getFieldValue ( "Sec-WebSocket-Version" );
 		if( !vers.isEmpty () ){
@@ -210,41 +211,53 @@ public class Draft_10 extends Draft {
 			try {
 				v = new Integer ( vers.trim () );
 			} catch ( NumberFormatException e ) {
-				return false;
+				return HandshakeState.NOT_MATCHED;
 			}
 			if( v == 7 || v == 8 )//g
-				return true;
+				return HandshakeState.MATCHED;
 		}
 			
-		return false;
+		return HandshakeState.NOT_MATCHED;
 	}
 
 	@Override
-	public boolean acceptHandshakeAsClient( Handshakedata request , Handshakedata response ) throws InvalidHandshakeException {
+	public HandshakeState acceptHandshakeAsClient( Handshakedata request , Handshakedata response ) throws InvalidHandshakeException {
+		if ( !request.hasFieldValue( "Sec-WebSocket-Key" )  || !response.hasFieldValue( "Sec-WebSocket-Accept" ) )
+			throw new InvalidHandshakeException ( "missing Sec-WebSocket-Key" );
+		
+		String seckey_answere = response.getFieldValue ( "Sec-WebSocket-Accept" );
 		String seckey_challenge = request.getFieldValue ( "Sec-WebSocket-Key" );
-		if ( seckey_challenge == null )
-			throw new InvalidHandshakeException ( "missing Sec-WebSocket-Key" );
-		String seckey_answere = request.getFieldValue ( "Sec-WebSocket-Key" );
-		if ( seckey_answere == null )
-			throw new InvalidHandshakeException ( "missing Sec-WebSocket-Key" );
-		if( generateFinalKey ( seckey_challenge ).equals ( generateFinalKey ( seckey_answere ) ) )
-			return true;
-		return false;
+		seckey_challenge = generateFinalKey ( seckey_challenge );
+
+		if( seckey_challenge.equals ( seckey_answere ) )
+			return HandshakeState.MATCHED;
+		return HandshakeState.NOT_MATCHED;
 	}
 
 	@Override
 	public HandshakeBuilder postProcessHandshakeRequestAsClient( HandshakeBuilder request ) {
+		request.put ( "Upgrade" , "websocket" );
+		request.put ( "Connection" , "Upgrade" ); //to respond to a Connection keep alives
 		request.put ( "Sec-WebSocket-Version" , "8" );
-		return super.postProcessHandshakeRequestAsClient ( request );
+		request.put ( "Sec-WebSocket-Key" , "8" );
+		
+		byte[] random = new byte[16];
+		new Random().nextBytes( random );
+		request.put( "Sec-WebSocket-Key" , new BASE64Encoder ().encode ( random ) );
+		
+		return request;
 	}
 
 	@Override
 	public HandshakeBuilder postProcessHandshakeResponseAsServer( Handshakedata request , HandshakeBuilder response) throws InvalidHandshakeException {
+		response.put ( "Upgrade" , "websocket" );
+		response.put ( "Connection" , request.getFieldValue ( "Connection" ) ); //to respond to a Connection keep alives
+		response.setHttpStatusMessage( "Switching Protocols" );
 		String seckey = request.getFieldValue ( "Sec-WebSocket-Key" );
 		if ( seckey == null )
 			throw new InvalidHandshakeException ( "missing Sec-WebSocket-Key" );
 		response.put( "Sec-WebSocket-Accept" , generateFinalKey( seckey ) );
-		return super.postProcessHandshakeResponseAsServer ( request , response );
+		return response;
 	}
 	
 	private Opcode toOpcode( byte opcode ){
