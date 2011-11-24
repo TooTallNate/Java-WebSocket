@@ -30,7 +30,19 @@ public class Draft_10 extends Draft {
 	
 	private ByteBuffer incompleteframe;
 	
-	
+	public static int readVersion(Handshakedata handshakedata){
+		String vers = handshakedata.getFieldValue ( "Sec-WebSocket-Version" );
+		if( !vers.isEmpty () ){
+			int v;
+			try {
+				v = new Integer ( vers.trim () );
+				return v;
+			} catch ( NumberFormatException e ) {
+				return -1;
+			}
+		}
+		return -1;
+	}
 	@Override
 	public List<Framedata> translateFrame( ByteBuffer buffer , int available ) {
 		List<Framedata> frames = new LinkedList<Framedata> ();
@@ -114,7 +126,7 @@ public class Draft_10 extends Draft {
 			}
 		}
 		int maskskeystart = foff + realpacketsize;
-                realpacketsize += ( MASK ? 4 : 0 );
+		realpacketsize += ( MASK ? 4 : 0 );
 		int payloadstart = foff + realpacketsize;
 		realpacketsize += payloadlength;
 
@@ -207,18 +219,9 @@ public class Draft_10 extends Draft {
 	@Override
 	public HandshakeState acceptHandshakeAsServer( Handshakedata handshakedata ) throws InvalidHandshakeException {
 		//TODO Do a more detailed formal handshake test
-		String vers = handshakedata.getFieldValue ( "Sec-WebSocket-Version" );
-		if( !vers.isEmpty () ){
-			int v;
-			try {
-				v = new Integer ( vers.trim () );
-			} catch ( NumberFormatException e ) {
-				return HandshakeState.NOT_MATCHED;
-			}
-			if( v == 7 || v == 8 )//g
-				return HandshakeState.MATCHED;
-		}
-			
+		int v = readVersion( handshakedata );
+		if( v == 7 || v == 8 )//g
+			return HandshakeState.MATCHED;
 		return HandshakeState.NOT_MATCHED;
 	}
 
@@ -241,7 +244,6 @@ public class Draft_10 extends Draft {
 		request.put ( "Upgrade" , "websocket" );
 		request.put ( "Connection" , "Upgrade" ); //to respond to a Connection keep alives
 		request.put ( "Sec-WebSocket-Version" , "8" );
-		request.put ( "Sec-WebSocket-Key" , "8" );
 		
 		byte[] random = new byte[16];
 		new Random().nextBytes( random );
