@@ -113,8 +113,8 @@ public class Draft_10 extends Draft {
 				throw new RuntimeException ( "Payloadsize is to big..." );
 			}
 		}
-		int maskskeystart = realpacketsize;
-		int payloadstart = realpacketsize += ( MASK ? 4 : 0 );
+		int maskskeystart = foff + realpacketsize;
+		int payloadstart = foff + realpacketsize += ( MASK ? 4 : 0 );
 		realpacketsize += payloadlength;
 		if( maxpacketsize < realpacketsize )
 			throw new IncompleteException( realpacketsize );
