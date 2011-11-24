@@ -32,10 +32,6 @@ public class Draft_76 extends Draft_75 {
 		return super.translateHandshake( buffer , readcount );
 	}
 	
-	public List<ByteBuffer> createHandshake( Handshakedata handshakedata , Role ownrole ){
-		return createHandshake( handshakedata , ownrole , false );
-	}
-	
 	@Override
 	public HandshakeState acceptHandshakeAsClient( Handshakedata request , Handshakedata response ) {
 		if( failed ){
