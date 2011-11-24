@@ -114,8 +114,10 @@ public class Draft_10 extends Draft {
 			}
 		}
 		int maskskeystart = foff + realpacketsize;
-		int payloadstart = foff + realpacketsize += ( MASK ? 4 : 0 );
+                realpacketsize += ( MASK ? 4 : 0 );
+		int payloadstart = foff + realpacketsize;
 		realpacketsize += payloadlength;
+
 		if( maxpacketsize < realpacketsize )
 			throw new IncompleteException( realpacketsize );
 		
