@@ -42,6 +42,16 @@ public class Draft_75 extends Draft {
 	private ByteBuffer currentFrame;
 	
 	@Override
+	public HandshakeState acceptHandshakeAsClient( Handshakedata request , Handshakedata response ) {
+		return request.getFieldValue( "WebSocket-Origin" ).equals( response.getFieldValue( "Origin" ) ) 
+			&& response.getFieldValue( "Upgrade" ).equals( "WebSocket" )
+			&& response.getFieldValue( "Connection" ).contains( "Upgrade" 
+		)?
+			HandshakeState.MATCHED
+			:HandshakeState.NOT_MATCHED;
+	}
+
+	@Override
 	public HandshakeState acceptHandshakeAsServer( Handshakedata handshakedata ) {
 		if( handshakedata.getFieldValue( "Upgrade" ).equals( "WebSocket" )
 			&& handshakedata.getFieldValue( "Connection" ).contains( "Upgrade" )
@@ -50,6 +60,51 @@ public class Draft_75 extends Draft {
 			return HandshakeState.MATCHED;
 		}
 		return HandshakeState.NOT_MATCHED;
+	}
+
+	@Override
+	public ByteBuffer createBinaryFrame( Framedata framedata ) {
+		byte[] pay = framedata.getPayloadData();
+		ByteBuffer b = ByteBuffer.allocate( pay.length + 2);
+	    b.put(START_OF_FRAME);
+	    b.put(pay);
+	    b.put(END_OF_FRAME);
+	    b.rewind();
+	    return b;
+	}
+
+	@Override
+	public List<Framedata> createFrames( byte[] binary , boolean mask ) {
+		throw new RuntimeException ( "not yet implemented" );
+	}
+
+	@Override
+	public List<Framedata> createFrames( String text , boolean mask ) {
+		FrameBuilder frame = new FramedataImpl1();
+		frame.setPayload ( text.getBytes(UTF8_CHARSET) );
+		frame.setFin ( true );
+		frame.setOptcode ( Opcode.TEXT );
+		frame.setTransferemasked ( mask ); 
+		return Collections.singletonList ( (Framedata)frame );
+	}
+	
+	@Override
+	public HandshakeBuilder postProcessHandshakeRequestAsClient( HandshakeBuilder request ) throws InvalidHandshakeException{
+		request.put ( "Upgrade" , "WebSocket" );
+		request.put ( "Connection" , "Upgrade" );
+		return request;
+	}
+
+	@Override
+	public HandshakeBuilder postProcessHandshakeResponseAsServer( Handshakedata request , HandshakeBuilder response ) throws InvalidHandshakeException {
+		response.setHttpStatusMessage( "Web Socket Protocol Handshake" );
+		response.put ( "Upgrade" , "WebSocket" );
+		response.put ( "Connection" , request.getFieldValue ( "Connection" ) ); //to respond to a Connection keep alive
+		response.put( "WebSocket-Origin" , request.getFieldValue( "Origin" ) );
+		String location = "ws://" + request.getFieldValue("Host") + request.getResourceDescriptor();
+		response.put( "WebSocket-Location" , location );
+		//TODO handle Sec-WebSocket-Protocol and Set-Cookie
+		return response;
 	}
 
 	@Override
@@ -92,61 +147,6 @@ public class Draft_75 extends Draft {
 			frames.add ( curframe );
 		}
 		return frames;
-	}
-
-	@Override
-	public ByteBuffer createBinaryFrame( Framedata framedata ) {
-		byte[] pay = framedata.getPayloadData();
-		ByteBuffer b = ByteBuffer.allocate( pay.length + 2);
-	    b.put(START_OF_FRAME);
-	    b.put(pay);
-	    b.put(END_OF_FRAME);
-	    b.rewind();
-	    return b;
-	}
-
-	@Override
-	public List<Framedata> createFrames( String text , boolean mask ) {
-		FrameBuilder frame = new FramedataImpl1();
-		frame.setPayload ( text.getBytes(UTF8_CHARSET) );
-		frame.setFin ( true );
-		frame.setOptcode ( Opcode.TEXT );
-		frame.setTransferemasked ( mask ); 
-		return Collections.singletonList ( (Framedata)frame );
-	}
-
-	@Override
-	public List<Framedata> createFrames( byte[] binary , boolean mask ) {
-		throw new RuntimeException ( "not yet implemented" );
-	}
-	
-	@Override
-	public HandshakeState acceptHandshakeAsClient( Handshakedata request , Handshakedata response ) {
-		return request.getFieldValue( "WebSocket-Origin" ).equals( response.getFieldValue( "Origin" ) ) 
-			&& response.getFieldValue( "Upgrade" ).equals( "WebSocket" )
-			&& response.getFieldValue( "Connection" ).contains( "Upgrade" 
-		)?
-			HandshakeState.MATCHED
-			:HandshakeState.NOT_MATCHED;
-	}
-
-	@Override
-	public HandshakeBuilder postProcessHandshakeRequestAsClient( HandshakeBuilder request ) throws InvalidHandshakeException{
-		request.put ( "Upgrade" , "WebSocket" );
-		request.put ( "Connection" , "Upgrade" );
-		return request;
-	}
-
-	@Override
-	public HandshakeBuilder postProcessHandshakeResponseAsServer( Handshakedata request , HandshakeBuilder response ) throws InvalidHandshakeException {
-		response.setHttpStatusMessage( "Web Socket Protocol Handshake" );
-		response.put ( "Upgrade" , "WebSocket" );
-		response.put ( "Connection" , request.getFieldValue ( "Connection" ) ); //to respond to a Connection keep alive
-		response.put( "WebSocket-Origin" , request.getFieldValue( "Origin" ) );
-		String location = "ws://" + request.getFieldValue("Host") + request.getResourceDescriptor();
-		response.put( "WebSocket-Location" , location );
-		//TODO handle Sec-WebSocket-Protocol and Set-Cookie
-		return response;
 	}
 	
 }
