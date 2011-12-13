@@ -60,14 +60,8 @@ public final class WebSocket {
    * The byte representing the end of a WebSocket text frame.
    */
   public static final byte END_OF_FRAME = (byte)0xFF;
-  
+
   public static final boolean DEBUG = false;
-  
-  static{
-	if ( DEBUG ) {
-		System.out.println("WebSocket debug mode enabled");
-	}
-  }
 
 
   // INSTANCE PROPERTIES /////////////////////////////////////////////////////

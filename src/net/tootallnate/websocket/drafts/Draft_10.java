@@ -8,6 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
+import net.tootallnate.websocket.Base64;
 import net.tootallnate.websocket.Draft;
 import net.tootallnate.websocket.FrameBuilder;
 import net.tootallnate.websocket.Framedata;
@@ -16,7 +17,6 @@ import net.tootallnate.websocket.FramedataImpl1;
 import net.tootallnate.websocket.HandshakeBuilder;
 import net.tootallnate.websocket.Handshakedata;
 import net.tootallnate.websocket.exeptions.InvalidHandshakeException;
-import sun.misc.BASE64Encoder;
 
 
 public class Draft_10 extends Draft {
@@ -158,7 +158,7 @@ public class Draft_10 extends Draft {
 		} catch ( NoSuchAlgorithmException e ) {
 			throw new RuntimeException ( e );
 		}
-		return new BASE64Encoder ().encode ( sh1.digest ( acc.getBytes () ) );
+		return Base64.encodeBytes ( sh1.digest ( acc.getBytes () ) );
 	}
 
 	@Override
@@ -169,7 +169,7 @@ public class Draft_10 extends Draft {
 		
 		byte[] random = new byte[16];
 		new Random().nextBytes( random );
-		request.put( "Sec-WebSocket-Key" , new BASE64Encoder().encode ( random ) );
+		request.put( "Sec-WebSocket-Key" , Base64.encodeBytes( random ) );
 		
 		return request;
 	}

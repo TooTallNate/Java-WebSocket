@@ -1,14 +1,18 @@
 Java WebSockets
 ===============
 
-### Note: This lib currently only supports the older draft 75 and draft 76.
-###       Pull requests for the latests drafts would be more than accepted!
-
 This repository contains a barebones WebSocket server and client implementation
 written in 100% Java. The underlying classes are implemented using the Java
 `ServerSocketChannel` and `SocketChannel` classes, which allows for a
 non-blocking event-driven model (similar to the
 [WebSocket API](http://dev.w3.org/html5/websockets/) for web browsers).
+
+Implemented WebSocket protocol versions are:
+
+ * [Hixie 75](http://tools.ietf.org/id/draft-hixie-thewebsocketprotocol-75.txt)
+ * [Hixie 76](http://tools.ietf.org/id/draft-hixie-thewebsocketprotocol-76.txt)
+ * [Hybi 10](http://tools.ietf.org/id/draft-ietf-hybi-thewebsocketprotocol-10.txt)
+ * [Hybi 17](http://tools.ietf.org/id/draft-ietf-hybi-thewebsocketprotocol-17.txt)
 
 Running the Example
 -------------------
