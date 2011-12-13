@@ -239,7 +239,6 @@ public class Draft_10 extends Draft {
 					//buffer.position( buffer.position() + expected_next_byte_count );
 					
 					cur = translateSingleFrame ( incompleteframe , 0 , incompleteframe.limit () );
-					System.out.println(cur);
 					frames.add ( cur );
 					offset = expected_next_byte_count;
 					incompleteframe = null;
