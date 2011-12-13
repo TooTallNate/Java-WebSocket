@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 
 import net.tootallnate.websocket.WebSocket.Role;
 import net.tootallnate.websocket.exeptions.InvalidHandshakeException;
@@ -38,6 +39,7 @@ public abstract class Draft{
 				return i;
 		return i;//the end of input will be handled like newline
 	}
+	
 	public static boolean isFlashEdgeCase( byte[] request , int requestsize ){
 		for( int i = 0 ; i < requestsize && i < FLASH_POLICY_REQUEST.length ; i++ ){
 			if( FLASH_POLICY_REQUEST[i] != request[i] ){
@@ -46,6 +48,7 @@ public abstract class Draft{
 		}
 		return requestsize >= FLASH_POLICY_REQUEST.length;
 	}
+	
 	public static HandshakeBuilder translateHandshakeHttp( byte[] buffer, int readcount ) throws InvalidHandshakeException{
 		HandshakedataImpl1 draft = new HandshakedataImpl1();
 		
@@ -85,10 +88,20 @@ public abstract class Draft{
 		draft.setContent ( ByteBuffer.allocate ( length ).put ( lines, previndex , length ).array () );
 		return draft;
 	}
+	
 	public abstract HandshakeState acceptHandshakeAsClient( Handshakedata request , Handshakedata response ) throws InvalidHandshakeException;
+	
 	public abstract HandshakeState acceptHandshakeAsServer( Handshakedata handshakedata ) throws InvalidHandshakeException;
+	
+	protected boolean basicAccept( Handshakedata handshakedata ){
+		return handshakedata.getFieldValue( "Upgrade" ).equalsIgnoreCase( "websocket" )
+			&& handshakedata.getFieldValue( "Connection" ).toLowerCase( Locale.ENGLISH ).contains( "upgrade" );
+	}
+	
 	public abstract ByteBuffer createBinaryFrame( Framedata framedata ); //TODO Allow to send data on the base of an Iterator or InputStream 
+	
 	public abstract List<Framedata> createFrames(  byte[] binary , boolean mask );
+	
 	public abstract List<Framedata> createFrames(  String text , boolean mask );
 	
 	public List<ByteBuffer> createHandshake( Handshakedata handshakedata , Role ownrole ){

@@ -1,8 +1,6 @@
 package net.tootallnate.websocket.drafts;
 import java.math.BigInteger;
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
@@ -46,12 +44,13 @@ public class Draft_10 extends Draft {
 		}
 		return -1;
 	}
+
 	private ByteBuffer incompleteframe;
 
 	@Override
 	public HandshakeState acceptHandshakeAsClient( Handshakedata request , Handshakedata response ) throws InvalidHandshakeException {
 		if ( !request.hasFieldValue( "Sec-WebSocket-Key" )  || !response.hasFieldValue( "Sec-WebSocket-Accept" ) )
-			throw new InvalidHandshakeException ( "missing Sec-WebSocket-Key" );
+			return HandshakeState.NOT_MATCHED;
 		
 		String seckey_answere = response.getFieldValue ( "Sec-WebSocket-Accept" );
 		String seckey_challenge = request.getFieldValue ( "Sec-WebSocket-Key" );
@@ -64,10 +63,10 @@ public class Draft_10 extends Draft {
 	
 	@Override
 	public HandshakeState acceptHandshakeAsServer( Handshakedata handshakedata ) throws InvalidHandshakeException {
-		//TODO Do a more detailed formal handshake test
+		//Sec-WebSocket-Origin is only required for browser clients
 		int v = readVersion( handshakedata );
 		if( v == 7 || v == 8 )//g
-			return HandshakeState.MATCHED;
+			return basicAccept( handshakedata ) ? HandshakeState.MATCHED : HandshakeState.NOT_MATCHED;
 		return HandshakeState.NOT_MATCHED;
 	}
 
@@ -105,7 +104,7 @@ public class Draft_10 extends Draft {
 		
 		if( mask ){
 			ByteBuffer maskkey =  ByteBuffer.allocate ( 4 );
-			maskkey.putInt ( Integer.MIN_VALUE );
+			maskkey.putInt ( new Random().nextInt() );
 			buf.put ( maskkey.array () );		
 			for( int i = 0 ; i < mes.length ; i++){
 				buf.put( ( byte ) ( mes[i] ^ maskkey.get ( i % 4 ) ) );
@@ -170,7 +169,7 @@ public class Draft_10 extends Draft {
 		
 		byte[] random = new byte[16];
 		new Random().nextBytes( random );
-		request.put( "Sec-WebSocket-Key" , new BASE64Encoder ().encode ( random ) );
+		request.put( "Sec-WebSocket-Key" , new BASE64Encoder().encode ( random ) );
 		
 		return request;
 	}
@@ -223,18 +222,26 @@ public class Draft_10 extends Draft {
 		Framedata cur;
 		
 		if( incompleteframe != null){
-			int keptformlastsegment = incompleteframe.limit(); //the number of bytes kept from the previous segments, belonging to incomplete frame
 			while(true){
 				try {
-					int ext = incompleteframe.limit () - keptformlastsegment; //the growth of this incomplete frame 
-					if( incompleteframe.remaining () > buffer.limit () - ext ){
-						return frames; //the given segment is to small to complete the incomplete frame ; awaiting more segments
+					int available_next_byte_count = available;// The number of bytes received
+					int expected_next_byte_count = incompleteframe.remaining();// The number of bytes to complete the incomplete frame
+
+					if( expected_next_byte_count > available_next_byte_count ){
+						//did not receive enough bytes to complete the frame
+						incompleteframe.put( buffer.array() , 0 , available_next_byte_count );
+						//assert( buffer.limit() == available_next_byte_count + buffer.position() );
+						//buffer.position( available );
+						return frames; 
 					}
-					int frombuffer = incompleteframe.remaining();
-					incompleteframe.put( buffer.array() , ext , frombuffer );
+					
+					incompleteframe.put( buffer.array() , 0 , expected_next_byte_count );
+					//buffer.position( buffer.position() + expected_next_byte_count );
+					
 					cur = translateSingleFrame ( incompleteframe , 0 , incompleteframe.limit () );
+					System.out.println(cur);
 					frames.add ( cur );
-					offset = ext + frombuffer;
+					offset = expected_next_byte_count;
 					incompleteframe = null;
 					break; // go on with the normal frame receival
 				} catch ( IncompleteException e ) {

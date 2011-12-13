@@ -1,14 +1,11 @@
 package net.tootallnate.websocket.drafts;
 
-import java.util.Random;
+import java.nio.ByteBuffer;
 
-import com.sun.org.apache.regexp.internal.recompile;
-
+import net.tootallnate.websocket.Framedata;
 import net.tootallnate.websocket.HandshakeBuilder;
 import net.tootallnate.websocket.Handshakedata;
-import net.tootallnate.websocket.Draft.HandshakeState;
 import net.tootallnate.websocket.exeptions.InvalidHandshakeException;
-import sun.misc.BASE64Encoder;
 
 public class Draft_17 extends Draft_10 {
 	@Override
@@ -25,4 +22,5 @@ public class Draft_17 extends Draft_10 {
 		 request.put ( "Sec-WebSocket-Version" , "13" );//overwriting the previous
 		 return request;
 	}
+	
 }

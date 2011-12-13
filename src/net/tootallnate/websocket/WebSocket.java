@@ -125,7 +125,7 @@ public final class WebSocket {
    * @param listener The {@link WebSocketListener} to notify of events when
    *                 they occur.
    */
-  WebSocket(SocketChannel socketChannel, BlockingQueue<ByteBuffer> bufferQueue, WebSocketListener listener, Draft draft, int maxpayloadsize) {
+  public WebSocket(SocketChannel socketChannel, BlockingQueue<ByteBuffer> bufferQueue, WebSocketListener listener, Draft draft, int maxpayloadsize) {
     this.socketChannel = socketChannel;
     this.bufferQueue = bufferQueue;
     this.handshakeComplete = false;
@@ -136,7 +136,7 @@ public final class WebSocket {
     this.maxpayloadsize = maxpayloadsize;
   }
   
-  WebSocket(SocketChannel socketChannel, BlockingQueue<ByteBuffer> bufferQueue, WebSocketListener listener,  List<Draft> drafts , int maxpayloadsize ) {
+  public WebSocket(SocketChannel socketChannel, BlockingQueue<ByteBuffer> bufferQueue, WebSocketListener listener,  List<Draft> drafts , int maxpayloadsize ) {
 	    this.socketChannel = socketChannel;
 	    this.bufferQueue = bufferQueue;
 	    this.handshakeComplete = false;
@@ -147,6 +147,7 @@ public final class WebSocket {
 	    this.maxpayloadsize = maxpayloadsize;
 	    if( known_drafts == null || known_drafts.isEmpty () ){
 	    	known_drafts = new ArrayList<Draft> ( 1 );
+	    	known_drafts.add ( new Draft_17 () );
 	    	known_drafts.add ( new Draft_10 () );
 	    	known_drafts.add ( new Draft_76 () );
 	    	known_drafts.add ( new Draft_75 () );
@@ -162,7 +163,7 @@ public final class WebSocket {
    * @throws IOException When socket related I/O errors occur.
    * @throws NoSuchAlgorithmException 
    */
-  void handleRead() throws IOException, NoSuchAlgorithmException {
+  public void handleRead() throws IOException, NoSuchAlgorithmException {
 
     int bytesRead = -1;
     
@@ -303,6 +304,7 @@ public final class WebSocket {
   public void abort( ) throws IOException {
 	  abort ( "" );
   }
+  
   public void abort( String problemmessage ) throws IOException {
 	  if(DEBUG){
 		System.out.println ( "Aborting: " + problemmessage );

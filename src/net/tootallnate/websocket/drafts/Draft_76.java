@@ -101,9 +101,8 @@ public class Draft_76 extends Draft_75 {
 		}
 		
 		try {
-			if( !response.getFieldValue( "Upgrade" ).equals( "WebSocket" )
-				&& !response.getFieldValue( "Connection" ).contains( "Upgrade" )
-				&& !response.getFieldValue( "Sec-WebSocket-Origin" ).equals( request.getFieldValue( "Origin" ) )
+			if( !response.getFieldValue( "Sec-WebSocket-Origin" ).equals( request.getFieldValue( "Origin" ) )
+				|| !basicAccept( response )
 			){
 				return HandshakeState.NOT_MATCHED;
 			}

@@ -2,10 +2,7 @@ package net.tootallnate.websocket.drafts;
 
 
 import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
-
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -13,9 +10,9 @@ import net.tootallnate.websocket.Draft;
 import net.tootallnate.websocket.FrameBuilder;
 import net.tootallnate.websocket.Framedata;
 import net.tootallnate.websocket.Framedata.Opcode;
+import net.tootallnate.websocket.FramedataImpl1;
 import net.tootallnate.websocket.HandshakeBuilder;
 import net.tootallnate.websocket.Handshakedata;
-import net.tootallnate.websocket.FramedataImpl1;
 import net.tootallnate.websocket.exeptions.InvalidHandshakeException;
 
 public class Draft_75 extends Draft {
@@ -44,18 +41,16 @@ public class Draft_75 extends Draft {
 	@Override
 	public HandshakeState acceptHandshakeAsClient( Handshakedata request , Handshakedata response ) {
 		return request.getFieldValue( "WebSocket-Origin" ).equals( response.getFieldValue( "Origin" ) ) 
-			&& response.getFieldValue( "Upgrade" ).equals( "WebSocket" )
-			&& response.getFieldValue( "Connection" ).contains( "Upgrade" 
-		)?
-			HandshakeState.MATCHED
-			:HandshakeState.NOT_MATCHED;
+			&& basicAccept( response )
+		?
+		HandshakeState.MATCHED
+		:HandshakeState.NOT_MATCHED;
 	}
 
 	@Override
 	public HandshakeState acceptHandshakeAsServer( Handshakedata handshakedata ) {
-		if( handshakedata.getFieldValue( "Upgrade" ).equals( "WebSocket" )
-			&& handshakedata.getFieldValue( "Connection" ).contains( "Upgrade" )
-			&& handshakedata.hasFieldValue( "Origin" )
+		if( handshakedata.hasFieldValue( "Origin" )
+			&& basicAccept( handshakedata )
 		){
 			return HandshakeState.MATCHED;
 		}
