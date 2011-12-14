@@ -34,7 +34,7 @@ public class ChatClient extends JFrame implements ActionListener {
 	private final JComboBox draft;
 	private WebSocketClient cc;
 
-	public ChatClient() {
+	public ChatClient( String defaultlocation ) {
 		super("WebSocket Chat Client");
 		Container c = getContentPane();
 		GridLayout layout = new GridLayout();
@@ -47,7 +47,7 @@ public class ChatClient extends JFrame implements ActionListener {
 		c.add(draft);
 
 		uriField = new JTextField();
-		uriField.setText("ws://localhost:8887");
+		uriField.setText( defaultlocation );
 		c.add(uriField);
 
 		connect = new JButton("Connect");
@@ -156,7 +156,16 @@ public class ChatClient extends JFrame implements ActionListener {
 	}
 
 	public static void main(String[] args) {
-		new ChatClient();
+		String location;
+		if( args.length != 0 ){
+			location = args[0];
+			System.out.println( "Default server url specified: \'" + location + "\'" );
+		}
+		else{
+			location = "ws://localhost:8887";
+			System.out.println( "Default server url not specified: defaulting to \'" + location + "\'" );
+		}
+		new ChatClient( location );
 	}
 
 }
