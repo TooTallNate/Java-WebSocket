@@ -1,4 +1,6 @@
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 import net.tootallnate.websocket.WebSocket;
 import net.tootallnate.websocket.WebSocketServer;
@@ -43,7 +45,8 @@ public class ChatServer extends WebSocketServer {
       ex.printStackTrace();
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
+    	WebSocket.DEBUG = true;
         int port = 8887;
         try {
             port = Integer.parseInt(args[0]);
@@ -51,5 +54,11 @@ public class ChatServer extends WebSocketServer {
         ChatServer s = new ChatServer(port);
         s.start();
         System.out.println("ChatServer started on port: " + s.getPort());
+        
+        BufferedReader sysin = new BufferedReader( new InputStreamReader( System.in ) );
+        while(true){
+        	String in = sysin.readLine();
+        	s.sendToAll( in );
+        }
     }
 }

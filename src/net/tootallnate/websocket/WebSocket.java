@@ -61,7 +61,7 @@ public final class WebSocket {
    */
   public static final byte END_OF_FRAME = (byte)0xFF;
 
-  public static final boolean DEBUG = false;
+  public static /*final*/ boolean DEBUG = false; //must be final in the future in order to take advantage of VM optimization
 
 
   // INSTANCE PROPERTIES /////////////////////////////////////////////////////
@@ -415,5 +415,9 @@ public final class WebSocket {
   public int getPort(){
 	  return socketChannel.socket().getLocalPort();
   }
-
+  
+  @Override
+	public String toString( ) {
+		return super.toString(); //its nice to be able to set breakpoints here
+	}
 }
