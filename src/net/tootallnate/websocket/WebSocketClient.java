@@ -164,7 +164,6 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	  client = null;
 	  selector = null;
 	  running = false;
-	  draft = null;
 	  number1 = 0;
 	  number2 = 0;
 	  key3 = null;
