@@ -1,8 +1,6 @@
 package net.tootallnate.websocket;
 
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
 
 /**
  * Implemented by <tt>WebSocketClient</tt> and <tt>WebSocketServer</tt>.
@@ -43,12 +41,7 @@ interface WebSocketListener {
    */
   public void onClose(WebSocket conn);
 
-  /**
-   * Triggered on any IOException error. This method should be overridden for custom 
-   * implementation of error handling (e.g. when network is not available). 
-   * @param ex
-   */
-  public void onError( Throwable ex );
+  public void onError( WebSocket conn, Exception ex );
   
   public void onPong();
   

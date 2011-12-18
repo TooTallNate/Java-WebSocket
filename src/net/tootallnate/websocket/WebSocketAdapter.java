@@ -28,12 +28,6 @@ public class WebSocketAdapter implements WebSocketListener {
 	}
 
 	@Override
-	public void onError( Throwable ex ) {
-		if(WebSocket.DEBUG)
-			ex.printStackTrace();
-	}
-
-	@Override
 	public void onMessage( WebSocket conn , byte[] blob ) {
 	}
 
@@ -54,12 +48,13 @@ public class WebSocketAdapter implements WebSocketListener {
 	* @return An XML String that comforms to Flash's security policy. You MUST
 	*         not include the null char at the end, it is appended automatically.
 	*/
-	
-	
 	@Override
 	public String getFlashPolicy( WebSocket conn ) {
 		return "<cross-domain-policy><allow-access-from domain=\"*\" to-ports=\""
         + conn.getPort() + "\" /></cross-domain-policy>\0";
-	}	
+	}
 
+	@Override
+	public void onError( WebSocket conn , Exception ex ) {
+	}
 }

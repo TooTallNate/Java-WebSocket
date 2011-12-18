@@ -1,21 +1,18 @@
 package net.tootallnate.websocket;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import net.tootallnate.websocket.WebSocket.Role;
-import net.tootallnate.websocket.drafts.*;
+import net.tootallnate.websocket.drafts.Draft_10;
 import net.tootallnate.websocket.exeptions.InvalidHandshakeException;
 
 /**
@@ -27,7 +24,7 @@ import net.tootallnate.websocket.exeptions.InvalidHandshakeException;
  * <var>send</var> method.
  * @author Nathan Rajlich
  */
-public abstract class WebSocketClient extends WebSocketAdapter implements Runnable {
+public abstract class WebSocketClient extends WebSocketAdapter implements  Runnable {
 
 
   // INSTANCE PROPERTIES /////////////////////////////////////////////////////
@@ -55,22 +52,14 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
    * The Draft of the WebSocket protocol the Client is adhering to.
    */
   private Draft draft = null;
-  /**
-   * Number 1 used in handshake 
-   */
-  private int number1 = 0;
-  /**
-   * Number 2 used in handshake
-   */
-  private int number2 = 0;
-  /**
-   * Key3 used in handshake
-   */
-  private byte[] key3 = null;
 
   // CONSTRUCTORS ////////////////////////////////////////////////////////////
   public WebSocketClient(URI serverURI) {
     this(serverURI, new Draft_10() );
+  }
+  
+  public WebSocketClient( Draft draft , URI serverURI ) {
+  	this(serverURI, draft );
   }
 
   /**
@@ -117,9 +106,8 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
   /**
    * Calls <var>close</var> on the underlying SocketChannel, which in turn
    * closes the socket connection, and ends the client socket thread.
-   * @throws IOException When socket related I/O errors occur.
    */
-  public void close() throws IOException 
+  public void close() 
   {    
 	  if (running)
 	  {
@@ -165,9 +153,6 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	  selector = null;
 	  running = false;
 	  draft = null;
-	  number1 = 0;
-	  number2 = 0;
-	  key3 = null;
   }
   
   private boolean tryToConnect(InetSocketAddress remote) {
@@ -190,7 +175,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
       }
 
     } catch (IOException ex) {
-    	onIOError(conn, ex);
+    	onError(conn, ex);
       return false;
     }
     
@@ -199,7 +184,18 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
   // Runnable IMPLEMENTATION /////////////////////////////////////////////////
   public void run() {
-    running = tryToConnect(new InetSocketAddress(uri.getHost(), getPort()));
+    try {
+		running = tryToConnect( new InetSocketAddress( uri.getHost() , getPort() ) );
+	} catch ( IllegalArgumentException e ) {//
+		onError(conn, e);
+		conn.close();
+		return;
+	}
+	catch (SecurityException e) {
+		onError(conn, e);
+		conn.close();
+		return;
+	}
 
     while (this.running) {
       SelectionKey key = null;
@@ -220,16 +216,18 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
             conn.handleRead();
           }
         }
-      } catch (IOException ex) {
-          if( key != null )
-              key.cancel();
-    	  onIOError(conn, ex);
-      } catch (Exception ex) {
-        onError( ex );
+      } catch (InvalidHandshakeException e) {
+    	  onError( e );
+    	  close();
+    	  return;
+      }
+      catch (IOException e) {
+    	  //if(e instanceof ConnectException == false)
+    	  onError( e );
+    	  close();
+    	  return;
       }
     }
-    
-    //System.err.println("WebSocketClient thread ended!");
   }
   
   private int getPort() {
@@ -255,12 +253,12 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
     }
     int port = getPort();
     String host = uri.getHost() + (port != WebSocket.DEFAULT_PORT ? ":" + port : "");
-    String origin = "x"; // TODO: Make 'origin' configurable
+    //String origin = "x"; // TODO: Make 'origin' configurable
 
     HandshakedataImpl1 handshake = new HandshakedataImpl1();
     handshake.setResourceDescriptor ( path );
     handshake.put ( "Host" , host );
-    handshake.put ( "Origin" , origin );
+    //handshake.put ( "Origin" , origin );
     conn.startHandshake ( handshake );
   }
 
@@ -295,15 +293,15 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
    * Calls subclass' implementation of <var>onIOError</var>.
    * @param conn
    */
-  public void onIOError(WebSocket conn, IOException ex) 
+  public void onError(WebSocket conn, IOException ex) 
   {
 	  releaseAndInitialize();
-	  onIOError(ex);
+	  onError(ex);
   }
 
   // ABTRACT METHODS /////////////////////////////////////////////////////////
   public abstract void onMessage(String message);
   public abstract void onOpen();
   public abstract void onClose();
-  public abstract void onIOError(IOException ex);
+  public abstract void onError( Exception ex);
 }

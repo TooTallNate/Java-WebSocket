@@ -21,15 +21,6 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public abstract class WebSocketServer extends WebSocketAdapter implements Runnable {
 
-
-  // CONSTANTS ///////////////////////////////////////////////////////////////
-  /**
-   * The value of <var>handshake</var> when a Flash client requests a policy
-   * file on this server.
-   */
-  private static final String FLASH_POLICY_REQUEST = "<policy-file-request/>\0";
-
-
   // INSTANCE PROPERTIES /////////////////////////////////////////////////////
   /**
    * Holds the list of active WebSocket connections. "Active" means WebSocket
@@ -53,6 +44,8 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
    * The Draft of the WebSocket protocol the Server is adhering to.
    */
   private Draft draft;
+  
+  private Thread thread;
 
 
   // CONSTRUCTORS ////////////////////////////////////////////////////////////
@@ -90,8 +83,10 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
    * Starts the server thread that binds to the currently set port number and
    * listeners for WebSocket connection requests.
    */
-  public void start() {
-    (new Thread(this)).start();
+  public void start() throws IllegalStateException {
+	if( thread != null )
+		throw new IllegalStateException("Already started");
+    new Thread(this).start();
   }
 
   /**
@@ -104,7 +99,9 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
     for (WebSocket ws : connections) {
       ws.close();
     }
+    thread.interrupt();
     this.server.close();
+    
   }
 
   /**
@@ -187,7 +184,10 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 
   // Runnable IMPLEMENTATION /////////////////////////////////////////////////
   public void run() {
-    try {
+	if( thread != null )
+		throw new IllegalStateException( "This instance of "+getClass().getSimpleName()+" can only be started once the same time." );
+	thread = Thread.currentThread();
+	try {
       server = ServerSocketChannel.open();
       server.configureBlocking(false);
       server.socket().bind(new java.net.InetSocketAddress(port));
@@ -195,12 +195,13 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
       selector = Selector.open();
       server.register(selector, server.validOps());
     } catch (IOException ex) {
-    	onError(ex);
-      return;
+    	onError( null , ex );
+    	return;
     }
 
-    while(true) {
+    while( !thread.isInterrupted() ) {
       SelectionKey key = null;
+      WebSocket conn = null;
       try {
         selector.select();
         Set<SelectionKey> keys = selector.selectedKeys();
@@ -224,26 +225,27 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
           // if isReadable == true
           // then the server is ready to read
           if (key.isReadable()) {
-            WebSocket conn = (WebSocket)key.attachment();
+            conn = (WebSocket)key.attachment();
             conn.handleRead();
           }
 
           // if isWritable == true
           // then we need to send the rest of the data to the client
           if (key.isValid() && key.isWritable()) {
-            WebSocket conn = (WebSocket)key.attachment();
+            conn = (WebSocket)key.attachment();
             if (conn.handleWrite()) {
               conn.socketChannel().register(selector,
                   SelectionKey.OP_READ, conn);
             }
           }
         }
-
-        for (WebSocket conn : this.connections) {
+        Iterator<WebSocket> it = this.connections.iterator();
+        while ( it.hasNext() ) {
           // We have to do this check here, and not in the thread that
           // adds the buffered data to the WebSocket, because the
           // Selector is not thread-safe, and can only be accessed
           // by this thread.
+          conn = it.next();
           if (conn.hasBufferedData()) {
             conn.socketChannel().register(selector,
                 SelectionKey.OP_READ | SelectionKey.OP_WRITE, conn);
@@ -252,15 +254,9 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
       } catch (IOException ex) {
           if( key != null )
               key.cancel();
-          onError(ex);
-      } catch (RuntimeException ex) {
-        ex.printStackTrace();
-      } catch (NoSuchAlgorithmException ex) {
-        ex.printStackTrace();
+          onError( conn , ex );//conn may be null here
       }
     }
-    
-    //System.err.println("WebSocketServer thread ended!");
   }
 
   /**
@@ -281,131 +277,6 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
               + getPort() + "\" /></cross-domain-policy>";
   }
 
-
- // WebSocketListener IMPLEMENTATION ////////////////////////////////////////
-  /**
-   * Called by a {@link WebSocket} instance when a client connection has
-   * finished sending a handshake. This method verifies that the handshake is
-   * a valid WebSocket cliend request. Then sends a WebSocket server handshake
-   * if it is valid, or closes the connection if it is not.
-   * @param conn The {@link WebSocket} instance who's handshake has been recieved.
-   * @param handshake The entire UTF-8 decoded handshake from the connection.
-   * @return True if the client sent a valid WebSocket handshake and this server
-   *         successfully sent a WebSocket server handshake, false otherwise.
-   * @throws IOException When socket related I/O errors occur.
-   * @throws NoSuchAlgorithmException 
-   */
-/*  public boolean onHandshakeRecieved(WebSocket conn, String handshake, byte[] key3) throws IOException {
-    
-    // If a Flash client requested the Policy File...
-    if (FLASH_POLICY_REQUEST.equals(handshake)) {
-      String policy = getFlashSecurityPolicy() + "\0";
-      conn.channelWrite(ByteBuffer.wrap(policy.getBytes(WebSocket.UTF8_CHARSET)));
-      return false;
-    }
-    
-    String[] requestLines = handshake.split("\r\n");
-    boolean isWebSocketRequest = true;
-    String line = requestLines[0].trim();
-    String path = null;
-    if (!(line.startsWith("GET") && line.endsWith("HTTP/1.1"))) {
-      isWebSocketRequest = false;
-    } else {
-      String[] firstLineTokens = line.split(" ");
-      path = firstLineTokens[1];
-    }
-    
-    // 'p' will hold the HTTP headers
-    Properties p = new Properties();
-    for (int i = 1; i < requestLines.length; i++) {
-      line = requestLines[i];
-      int firstColon = line.indexOf(":");
-      if (firstColon != -1) {
-        p.setProperty(line.substring(0, firstColon).trim(), line.substring(firstColon+1).trim());
-      }
-    }
-    String prop = p.getProperty("Upgrade");
-    if (prop == null || !prop.equals("WebSocket")) {
-      isWebSocketRequest = false;
-    }
-    prop = p.getProperty("Connection");
-    if (prop == null || !prop.equals("Upgrade")) {
-      isWebSocketRequest = false;
-    }
-    String key1 = p.getProperty("Sec-WebSocket-Key1");
-    String key2 = p.getProperty("Sec-WebSocket-Key2");
-    String headerPrefix = "";
-    byte[] responseChallenge = null;
-    switch (this.draft) {
-      case DRAFT75:
-        if (key1 != null || key2 != null || key3 != null) {
-          isWebSocketRequest = false;
-        }
-        break;
-      case DRAFT76:
-        if (key1 == null || key2 == null || key3 == null) {
-          isWebSocketRequest = false;
-        }
-        break;  
-    }
-    if (isWebSocketRequest) {
-      if (key1 != null && key2 != null && key3 != null) {
-        headerPrefix = "Sec-";
-        byte[] part1 = this.getPart(key1);
-        byte[] part2 = this.getPart(key2);
-        byte[] challenge = new byte[16];
-        challenge[0] = part1[0];
-        challenge[1] = part1[1];
-        challenge[2] = part1[2];
-        challenge[3] = part1[3];
-        challenge[4] = part2[0];
-        challenge[5] = part2[1];
-        challenge[6] = part2[2];
-        challenge[7] = part2[3];
-        challenge[8] = key3[0];
-        challenge[9] = key3[1];
-        challenge[10] = key3[2];
-        challenge[11] = key3[3];
-        challenge[12] = key3[4];
-        challenge[13] = key3[5];
-        challenge[14] = key3[6];
-        challenge[15] = key3[7];
-        MessageDigest md5;
-		try {
-			md5 = MessageDigest.getInstance( "MD5" );
-		} catch ( NoSuchAlgorithmException e ) {
-			throw new RuntimeException ( e );//Will never occur on a valid jre.
-		}
-        responseChallenge = md5.digest(challenge);
-      }
-
-      String responseHandshake = "HTTP/1.1 101 Web Socket Protocol Handshake\r\n" +
-                                 "Upgrade: WebSocket\r\n" +
-                                 "Connection: Upgrade\r\n";
-      responseHandshake += headerPrefix+"WebSocket-Origin: " + p.getProperty("Origin") + "\r\n";
-      responseHandshake += headerPrefix+"WebSocket-Location: ws://" + p.getProperty("Host") + path + "\r\n";
-
-      if (p.containsKey(headerPrefix+"WebSocket-Protocol")) {
-        responseHandshake += headerPrefix+"WebSocket-Protocol: " + p.getProperty("WebSocket-Protocol") + "\r\n";
-      }
-      if (p.containsKey("Cookie")){
-        responseHandshake += "Cookie: " + p.getProperty("Cookie")+"\r\n";
-      }
-      responseHandshake += "\r\n"; // Signifies end of handshake
-      //Can not use UTF-8 here because we might lose bytes in response during conversion
-      conn.channelWrite( ByteBuffer.wrap( responseHandshake.getBytes() ) );
-      //Only set when Draft 76
-      if(responseChallenge!=null){
-		conn.channelWrite ( ByteBuffer.wrap ( responseChallenge ) );
-      }
-      return true;
-    }
-
-    // If we got to here, then the client sent an invalid handshake, and we
-    // return false to make the WebSocket object close the connection.
-    return false;
-  }*/
-
   public void onMessage(WebSocket conn, String message) {
     onClientMessage(conn, message);
   }
@@ -422,22 +293,11 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
     }
   }
 
-  private byte[] getPart(String key) {
-    long keyNumber = Long.parseLong(key.replaceAll("[^0-9]",""));
-    long keySpace = key.split("\u0020").length - 1;
-    long part = new Long(keyNumber / keySpace);
-    return new byte[] {
-      (byte)( part >> 24 ),
-      (byte)( (part << 8) >> 24 ),
-      (byte)( (part << 16) >> 24 ),
-      (byte)( (part << 24) >> 24 )      
-    };
-  }
-
   // ABTRACT METHODS /////////////////////////////////////////////////////////
   public abstract void onClientOpen(WebSocket conn);
   public abstract void onClientClose(WebSocket conn);
   public abstract void onClientMessage(WebSocket conn, String message);
-  public abstract void onError( Throwable ex);
+  /** @param conn may be null if the error does not belong to a single connection */
+  public abstract void onError(WebSocket conn,Exception ex);
 
 }

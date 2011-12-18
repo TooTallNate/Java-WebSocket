@@ -27,6 +27,7 @@ public abstract class Draft{
 	* The WebSocket protocol expects UTF-8 encoded bytes.
 	*/ 
 	public static final  Charset  UTF8_CHARSET = Charset.forName ( "UTF-8" );
+	public static final  Charset  ASCII_CHARSET = Charset.forName ( "US-ASCII" );
 	
 	private static final byte[] FLASH_POLICY_REQUEST = "<policy-file-request/>".getBytes( UTF8_CHARSET );
 	
@@ -58,8 +59,8 @@ public abstract class Draft{
 		int previndex = 0;
 		int index = findNewLine ( lines , previndex );
 		if ( index == lines.length )
-			throw new InvalidHandshakeException("not an http header");;
-		String line = new String ( lines , previndex , index - previndex );
+			throw new InvalidHandshakeException("not an http header");
+		String line = new String ( lines , previndex , index - previndex, ASCII_CHARSET);
 		String[] firstLineTokens = line.split(" ");
 		//if( firstLineTokens.length != 3)
 		String path = firstLineTokens[1];
@@ -132,7 +133,7 @@ public abstract class Draft{
 			bui.append ( "\r\n" );
 		}
 		bui.append ( "\r\n" );
-		byte[] httpheader = bui.toString ().getBytes ( UTF8_CHARSET );
+		byte[] httpheader = bui.toString ().getBytes ( ASCII_CHARSET );
 		byte[] content = withcontent ? handshakedata.getContent() : null;
 		ByteBuffer bytebuffer = ByteBuffer.allocate ( ( content==null ? 0 : content.length ) + httpheader.length );
 		bytebuffer.put ( httpheader );

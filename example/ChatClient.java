@@ -16,6 +16,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 import net.tootallnate.websocket.Draft;
+import net.tootallnate.websocket.WebSocket;
 import net.tootallnate.websocket.WebSocketClient;
 import net.tootallnate.websocket.drafts.Draft_10;
 import net.tootallnate.websocket.drafts.Draft_17;
@@ -78,11 +79,7 @@ public class ChatClient extends JFrame implements ActionListener {
 			@Override
 			public void windowClosing(WindowEvent e) {
 				if (cc != null) {
-					try {
 						cc.close();
-					} catch (IOException ex) { 
-						ex.printStackTrace(); 
-					}
 				}
 				dispose();
 			}
@@ -127,8 +124,8 @@ public class ChatClient extends JFrame implements ActionListener {
 						close.setEnabled( false );
 					}
 
-					public void onIOError(IOException ex) {
-						ta.append("Network problem ...\n"+ex+"\n");
+					public void onError(Exception ex) {
+						ta.append("Exception occured ...\n"+ex+"\n");
 						ta.setCaretPosition( ta.getDocument().getLength() );
 						ex.printStackTrace();
 						connect.setEnabled(true);
@@ -156,6 +153,7 @@ public class ChatClient extends JFrame implements ActionListener {
 	}
 
 	public static void main(String[] args) {
+		WebSocket.DEBUG = true;
 		String location;
 		if( args.length != 0 ){
 			location = args[0];

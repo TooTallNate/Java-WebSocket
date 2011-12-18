@@ -40,10 +40,7 @@ public final class WebSocket {
    * is binded to. Note that ports under 1024 usually require root permissions.
    */
   public static final int DEFAULT_PORT = 80;
-  /**
-   * The WebSocket protocol expects UTF-8 encoded bytes.
-   */ 
-  public final static Charset  UTF8_CHARSET = Charset.forName ( "UTF-8" );
+
   /** 
    * The byte representing CR, or Carriage Return, or \r
    */
@@ -157,7 +154,7 @@ public final class WebSocket {
    * @throws IOException When socket related I/O errors occur.
    * @throws NoSuchAlgorithmException 
    */
-  public void handleRead() throws IOException, NoSuchAlgorithmException {
+  public void handleRead() throws IOException {
 
     int bytesRead = -1;
     
@@ -169,14 +166,14 @@ public final class WebSocket {
       close();
     } 
     else if( bytesRead > maxpayloadsize ){
-    	wsl.onError ( new RuntimeException("recived packet to big") );
+    	wsl.onError ( this , new RuntimeException("recived packet to big") );
     	abort ( "recived packet to big" );
     }
     else if ( bytesRead > 0) {
-		if(DEBUG) System.out.println( "got: {" + new String( socketBuffer.array() , 0 , bytesRead ) + "}" );
+		if(DEBUG) System.out.println( "got("+bytesRead+"): {" + new String( socketBuffer.array() , 0 , bytesRead ) + "}" );
 		if( !handshakeComplete ){
 			if(draft.isFlashEdgeCase( socketBuffer.array() , bytesRead )){
-				channelWrite( ByteBuffer.wrap( wsl.getFlashPolicy( this ).getBytes( UTF8_CHARSET ) ) );
+				channelWrite( ByteBuffer.wrap( wsl.getFlashPolicy( this ).getBytes( Draft.UTF8_CHARSET ) ) );
 				return;
 			}
 			try{
@@ -264,7 +261,7 @@ public final class WebSocket {
 				if( currentframe == null){
 					if( f.isFin () ){
 						if( f.getOpcode () == Opcode.TEXT ){
-							wsl.onMessage ( this , new String ( f.getPayloadData () , UTF8_CHARSET ) );
+							wsl.onMessage ( this , new String ( f.getPayloadData () , Draft.UTF8_CHARSET ) );
 						}
 						else if( f.getOpcode () == Opcode.BINARY ){
 							wsl.onMessage ( this , f.getPayloadData () );
@@ -281,11 +278,11 @@ public final class WebSocket {
 					try {
 						currentframe.append ( f );
 					} catch ( InvalidFrameException e ) {
-						wsl.onError ( e );
+						wsl.onError ( this, e );
 						abort( "invalid frame: " +e.getMessage () );
 					}
 					if( f.isFin () ){
-						wsl.onMessage ( this , new String ( f.getPayloadData () , UTF8_CHARSET ) );
+						wsl.onMessage ( this , new String ( f.getPayloadData () , Draft.UTF8_CHARSET ) );
 						currentframe = null;
 					}
 				}
@@ -295,11 +292,11 @@ public final class WebSocket {
   }
 
   // PUBLIC INSTANCE METHODS /////////////////////////////////////////////////
-  public void abort( ) throws IOException {
+  public void abort( ){
 	  abort ( "" );
   }
   
-  public void abort( String problemmessage ) throws IOException {
+  public void abort( String problemmessage ) {
 	  if(DEBUG){
 		System.out.println ( "Aborting: " + problemmessage );
 	  }
@@ -308,13 +305,15 @@ public final class WebSocket {
   /**
    * Closes the underlying SocketChannel, and calls the listener's onClose
    * event handler.
-   * @throws IOException When socket related I/O errors occur.
    */
-  public void close() throws IOException {
+  public void close() {
 	//TODO Send HTTP error here in some cases / create abort method
 	currentframe = null;
 	handshakerequest = null;
-    this.socketChannel.close();
+    try {
+		this.socketChannel.close();
+	} catch ( IOException e ) {
+	}
     this.wsl.onClose(this);
   }
 
@@ -393,7 +392,7 @@ public final class WebSocket {
   }
   
   private void channelWrite(ByteBuffer buf) throws IOException{
-	  if(DEBUG) System.out.println("write: {"+new String(buf.array())+"}");
+	  if(DEBUG) System.out.println("write("+buf.array().length+"): {"+new String(buf.array())+"}");
 	  //printBytes ( buf , buf.capacity () );
 	  buf.rewind ();
 	  socketChannel.write(buf);

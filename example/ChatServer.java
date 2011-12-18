@@ -41,10 +41,6 @@ public class ChatServer extends WebSocketServer {
         System.out.println(conn + ": " + message);
     }
 
-    public void onError(Throwable ex) {
-      ex.printStackTrace();
-    }
-
     public static void main(String[] args) throws IOException {
     	WebSocket.DEBUG = true;
         int port = 8887;
@@ -61,4 +57,9 @@ public class ChatServer extends WebSocketServer {
         	s.sendToAll( in );
         }
     }
+
+	@Override
+	public void onError( WebSocket conn , Exception ex ) {
+		ex.printStackTrace();
+	}
 }
