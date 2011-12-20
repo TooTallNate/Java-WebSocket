@@ -7,6 +7,7 @@ import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import net.tootallnate.websocket.Draft.HandshakeState;
@@ -323,20 +324,31 @@ public final class WebSocket {
    *    False if some of the text had to be buffered to be sent later.
    * @throws IOException 
    */
-  public boolean send(String text) throws IOException {
-    if (!this.handshakeComplete) throw new NotYetConnectedException();
-    if ( text == null ) throw new NullPointerException( "Cannot send 'null' data to a WebSocket." );
-    boolean mask = role == Role.CLIENT;
-    List<Framedata> frames = draft.createFrames ( text , mask );
-    if( frames.isEmpty () ){
-    	return true;
-    }
-    boolean sendall = true;
-    for( Framedata f : frames ){
-    	sendall = sendFrame ( f ); //TODO high frequently calls to sendFrame are inefficient.
-    }
-    return sendall;
+  public boolean send( String text ) throws IOException, IllegalArgumentException, NotYetConnectedException {
+    if ( text == null ) throw new IllegalArgumentException( "Cannot send 'null' data to a WebSocket." );
+    return send( draft.createFrames ( text , role == Role.CLIENT ) );
   }
+  
+	//TODO there should be a send for bytebuffers
+	public boolean send( byte[] bytes ) throws IOException, IllegalArgumentException, NotYetConnectedException {
+		if ( bytes == null ) throw new IllegalArgumentException( "Cannot send 'null' data to a WebSocket." );
+		return send( draft.createFrames ( bytes , role == Role.CLIENT ) );
+	}
+  
+  
+	private boolean send( Collection<Framedata> frames ) throws IOException{ //TODO instead of throwing or returning an error this method maybe should block on queue jams
+		if (!this.handshakeComplete) throw new NotYetConnectedException();
+		if( frames.isEmpty () ){
+			return true;
+		}  
+		boolean sendall = true;
+		for( Framedata f : frames ){
+			sendall &= sendFrame ( f ); //TODO high frequently calls to sendFrame are inefficient.
+		}
+		return sendall;
+  }
+  
+  
   
   public boolean sendFrame( Framedata framedata ) throws IOException{
 	ByteBuffer b = draft.createBinaryFrame ( framedata );
