@@ -331,4 +331,9 @@ public class Draft_10 extends Draft {
 		
 		return frame;
 	}
+
+	@Override
+	public void reset( ) {
+		incompleteframe = null;
+	}
 }

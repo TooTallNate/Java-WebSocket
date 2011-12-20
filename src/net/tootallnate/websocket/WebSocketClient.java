@@ -146,7 +146,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements  Runna
    * Reinitializes and prepares the class to be used for reconnect.
    * @return
    */
-  public void releaseAndInitialize()
+  private void releaseAndInitialize()
   {
 	  conn = null;
 	  client = null;
@@ -247,13 +247,17 @@ public abstract class WebSocketClient extends WebSocketAdapter implements  Runna
   }
   
   private void sendHandshake() throws IOException, InvalidHandshakeException {
-    String path = uri.getPath();
-    if (path.indexOf("/") != 0) {
-      path = "/" + path;
-    }
+	String path;
+	String part1 = uri.getPath();
+	String part2 = uri.getQuery();
+	if( part1 != null )
+		path = part1;
+	else
+		path = "/";
+     if( part2 != null)
+    	 path += "?" + part2;
     int port = getPort();
     String host = uri.getHost() + (port != WebSocket.DEFAULT_PORT ? ":" + port : "");
-    //String origin = "x"; // TODO: Make 'origin' configurable
 
     HandshakedataImpl1 handshake = new HandshakedataImpl1();
     handshake.setResourceDescriptor ( path );

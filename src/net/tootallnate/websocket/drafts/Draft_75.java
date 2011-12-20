@@ -143,5 +143,11 @@ public class Draft_75 extends Draft {
 		}
 		return frames;
 	}
+
+	@Override
+	public void reset( ) {
+		readingState = false;
+		this.currentFrame = null;
+	}
 	
 }

@@ -308,6 +308,7 @@ public final class WebSocket {
    */
   public void close() {
 	//TODO Send HTTP error here in some cases / create abort method
+	draft.reset();
 	currentframe = null;
 	handshakerequest = null;
     try {

@@ -105,6 +105,8 @@ public abstract class Draft{
 	
 	public abstract List<Framedata> createFrames(  String text , boolean mask );
 	
+	public abstract void reset( );
+	
 	public List<ByteBuffer> createHandshake( Handshakedata handshakedata , Role ownrole ){
 		return createHandshake( handshakedata , ownrole , true );
 	}
