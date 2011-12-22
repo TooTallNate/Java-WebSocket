@@ -1,8 +1,6 @@
 package net.tootallnate.websocket;
 
 import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -26,9 +24,7 @@ public abstract class Draft{
 	/**
 	* The WebSocket protocol expects UTF-8 encoded bytes.
 	*/ 
-	public static final  Charset  UTF8_CHARSET = Charset.forName ( "UTF-8" );
-	
-	private static final byte[] FLASH_POLICY_REQUEST = "<policy-file-request/>".getBytes( UTF8_CHARSET );
+	private static final byte[] FLASH_POLICY_REQUEST = WebSocket.utf8Bytes("<policy-file-request/>");
 	
 	/**will return the index of the first \r\n or the index off the last element in arr*/
 	public static int findNewLine( byte[] arr , int offset ) {
@@ -132,7 +128,7 @@ public abstract class Draft{
 			bui.append ( "\r\n" );
 		}
 		bui.append ( "\r\n" );
-		byte[] httpheader = bui.toString ().getBytes ( UTF8_CHARSET );
+		byte[] httpheader = WebSocket.utf8Bytes( bui.toString ());
 		byte[] content = withcontent ? handshakedata.getContent() : null;
 		ByteBuffer bytebuffer = ByteBuffer.allocate ( ( content==null ? 0 : content.length ) + httpheader.length );
 		bytebuffer.put ( httpheader );

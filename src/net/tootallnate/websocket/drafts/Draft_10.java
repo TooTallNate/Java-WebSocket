@@ -16,6 +16,7 @@ import net.tootallnate.websocket.Framedata.Opcode;
 import net.tootallnate.websocket.FramedataImpl1;
 import net.tootallnate.websocket.HandshakeBuilder;
 import net.tootallnate.websocket.Handshakedata;
+import net.tootallnate.websocket.WebSocket;
 import net.tootallnate.websocket.exeptions.InvalidHandshakeException;
 
 
@@ -33,7 +34,7 @@ public class Draft_10 extends Draft {
 	
 	public static int readVersion(Handshakedata handshakedata){
 		String vers = handshakedata.getFieldValue ( "Sec-WebSocket-Version" );
-		if( !vers.isEmpty () ){
+		if( vers.length() > 0 ){
 			int v;
 			try {
 				v = new Integer ( vers.trim () );
@@ -125,7 +126,7 @@ public class Draft_10 extends Draft {
 	@Override
 	public List<Framedata> createFrames( String text , boolean mask ) {
 		FrameBuilder curframe = new FramedataImpl1();
-		byte[] pay   = text.getBytes ( UTF8_CHARSET );
+		byte[] pay   = WebSocket.utf8Bytes(text);
 		curframe.setPayload ( pay );
 		curframe.setFin ( true );
 		curframe.setOptcode ( Opcode.TEXT );

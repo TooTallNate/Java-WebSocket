@@ -1,10 +1,10 @@
 package net.tootallnate.websocket;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.channels.NotYetConnectedException;
 import java.nio.channels.SocketChannel;
-import java.nio.charset.Charset;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,8 +42,8 @@ public final class WebSocket {
   public static final int DEFAULT_PORT = 80;
   /**
    * The WebSocket protocol expects UTF-8 encoded bytes.
-   */ 
-  public final static Charset  UTF8_CHARSET = Charset.forName ( "UTF-8" );
+   */
+  public final static String  UTF8 = "UTF-8";
   /** 
    * The byte representing CR, or Carriage Return, or \r
    */
@@ -176,7 +176,7 @@ public final class WebSocket {
 		if(DEBUG) System.out.println( "got: {" + new String( socketBuffer.array() , 0 , bytesRead ) + "}" );
 		if( !handshakeComplete ){
 			if(draft.isFlashEdgeCase( socketBuffer.array() , bytesRead )){
-				channelWrite( ByteBuffer.wrap( wsl.getFlashPolicy( this ).getBytes( UTF8_CHARSET ) ) );
+				channelWrite( ByteBuffer.wrap( utf8Bytes(wsl.getFlashPolicy( this )) ) );
 				return;
 			}
 			try{
@@ -264,7 +264,7 @@ public final class WebSocket {
 				if( currentframe == null){
 					if( f.isFin () ){
 						if( f.getOpcode () == Opcode.TEXT ){
-							wsl.onMessage ( this , new String ( f.getPayloadData () , UTF8_CHARSET ) );
+							wsl.onMessage ( this , new String ( f.getPayloadData (), UTF8 ) );
 						}
 						else if( f.getOpcode () == Opcode.BINARY ){
 							wsl.onMessage ( this , f.getPayloadData () );
@@ -285,7 +285,7 @@ public final class WebSocket {
 						abort( "invalid frame: " +e.getMessage () );
 					}
 					if( f.isFin () ){
-						wsl.onMessage ( this , new String ( f.getPayloadData () , UTF8_CHARSET ) );
+						wsl.onMessage ( this , new String ( f.getPayloadData (), UTF8 ) );
 						currentframe = null;
 					}
 				}
@@ -414,6 +414,17 @@ public final class WebSocket {
   
   public int getPort(){
 	  return socketChannel.socket().getLocalPort();
+  }
+
+  /*
+   * @return UTF-8 encoding in bytes
+   */
+  public static byte[] utf8Bytes(String s) {
+    try {
+      return s.getBytes(UTF8);
+    } catch (UnsupportedEncodingException e) {
+      throw new RuntimeException("UTF-8 Charset not available");
+    }
   }
 
 }

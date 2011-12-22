@@ -13,6 +13,7 @@ import net.tootallnate.websocket.Framedata.Opcode;
 import net.tootallnate.websocket.FramedataImpl1;
 import net.tootallnate.websocket.HandshakeBuilder;
 import net.tootallnate.websocket.Handshakedata;
+import net.tootallnate.websocket.WebSocket;
 import net.tootallnate.websocket.exeptions.InvalidHandshakeException;
 
 public class Draft_75 extends Draft {
@@ -76,7 +77,7 @@ public class Draft_75 extends Draft {
 	@Override
 	public List<Framedata> createFrames( String text , boolean mask ) {
 		FrameBuilder frame = new FramedataImpl1();
-		frame.setPayload ( text.getBytes(UTF8_CHARSET) );
+		frame.setPayload ( WebSocket.utf8Bytes(text) );
 		frame.setFin ( true );
 		frame.setOptcode ( Opcode.TEXT );
 		frame.setTransferemasked ( mask ); 
