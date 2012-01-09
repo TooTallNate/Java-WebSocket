@@ -1,6 +1,6 @@
 package net.tootallnate.websocket;
 
-public interface FrameBuilder extends Framedata{
+public interface FrameBuilder extends Framedata {
 
 	public abstract void setFin( boolean fin );
 
@@ -9,6 +9,5 @@ public interface FrameBuilder extends Framedata{
 	public abstract void setPayload( byte[] payload );
 
 	public abstract void setTransferemasked( boolean transferemasked );
-
 
 }

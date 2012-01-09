@@ -7,12 +7,12 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class HandshakedataImpl1 implements HandshakeBuilder {
-	
+
 	private String httpstatusmessage;
 	private String resourcedescriptor;
 	private byte[] content;
 	private LinkedHashMap<String,String> map;
-	
+
 	public HandshakedataImpl1() {
 		map = new LinkedHashMap<String,String>();
 	}
@@ -21,51 +21,52 @@ public class HandshakedataImpl1 implements HandshakeBuilder {
 		httpstatusmessage = h.getHttpStatusMessage();
 		resourcedescriptor = h.getResourceDescriptor();
 		content = h.getContent();
-		map = new LinkedHashMap<String,String>( );
+		map = new LinkedHashMap<String,String>();
 		Iterator<String> it = h.iterateHttpFields();
 		while ( it.hasNext() ) {
-			String key = ( String ) it.next();
-			map.put( key , h.getFieldValue( key ) );
+			String key = (String) it.next();
+			map.put( key, h.getFieldValue( key ) );
 		}
 	}
 
 	@Override
-	public String getResourceDescriptor( ) {
-		return resourcedescriptor == null ? "" : resourcedescriptor ;
+	public String getResourceDescriptor() {
+		// validate resourcedescriptor
+		return resourcedescriptor == null || resourcedescriptor.isEmpty() ? "" : resourcedescriptor;
 	}
 
 	@Override
-	public Iterator<String> iterateHttpFields( ) {
-		return Collections.unmodifiableSet( map.keySet () ).iterator ();//Safety first
+	public Iterator<String> iterateHttpFields() {
+		return Collections.unmodifiableSet( map.keySet() ).iterator();// Safety first
 	}
 
 	@Override
 	public String getFieldValue( String name ) {
-		String s = map.get ( name );
-		if( s == null ){
+		String s = map.get( name );
+		if( s == null ) {
 			return "";
 		}
 		return s;
 	}
 
 	@Override
-	public byte[] getContent( ) {
+	public byte[] getContent() {
 		return content;
 	}
-	
+
 	@Override
 	public void setContent( byte[] content ) {
 		this.content = content;
 	}
-	
+
 	@Override
-	public void setResourceDescriptor( String resourcedescriptor ) {
+	public void setResourceDescriptor( String resourcedescriptor ) throws IllegalArgumentException {
 		this.resourcedescriptor = resourcedescriptor;
 	}
-	
+
 	@Override
-	public void put( String name, String value ){
-		map.put ( name , value );
+	public void put( String name, String value ) {
+		map.put( name, value );
 	}
 
 	@Override
@@ -74,14 +75,14 @@ public class HandshakedataImpl1 implements HandshakeBuilder {
 	}
 
 	@Override
-	public String getHttpStatusMessage( ) {
+	public String getHttpStatusMessage() {
 		return httpstatusmessage;
 	}
 
 	@Override
 	public void setHttpStatusMessage( String message ) {
-		this.httpstatusmessage=message;
-		
+		this.httpstatusmessage = message;
+
 	}
 
 }

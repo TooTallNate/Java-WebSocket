@@ -10,6 +10,5 @@ public interface Handshakedata {
 	public String getFieldValue( String name );
 	public boolean hasFieldValue( String name );
 	public byte[] getContent();
-	//public boolean isComplete();
+	// public boolean isComplete();
 }
-
