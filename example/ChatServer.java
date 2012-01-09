@@ -10,56 +10,57 @@ import net.tootallnate.websocket.WebSocketServer;
  */
 public class ChatServer extends WebSocketServer {
 
-    public ChatServer(int port) {
-        super(port);
-    }
+	public ChatServer( int port ) {
+		super( port );
+	}
 
-    public void onClientOpen(WebSocket conn) {
-        try {
-            this.sendToAll(conn + " entered the room!");
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-        System.out.println(conn + " entered the room!");
-    }
+	public void onClientOpen( WebSocket conn ) {
+		try {
+			this.sendToAll( conn + " entered the room!" );
+		} catch ( InterruptedException ex ) {
+			ex.printStackTrace();
+		}
+		System.out.println( conn + " entered the room!" );
+	}
 
-    public void onClientClose(WebSocket conn) {
-        try {
-            this.sendToAll(conn + " has left the room!");
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-        System.out.println(conn + " has left the room!");
-    }
+	public void onClientClose( WebSocket conn ) {
+		try {
+			this.sendToAll( conn + " has left the room!" );
+		} catch ( InterruptedException ex ) {
+			ex.printStackTrace();
+		}
+		System.out.println( conn + " has left the room!" );
+	}
 
-    public void onClientMessage(WebSocket conn, String message) {
-        try {
-            this.sendToAll(conn + ": " + message);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-        System.out.println(conn + ": " + message);
-    }
+	public void onClientMessage( WebSocket conn, String message ) {
+		try {
+			this.sendToAll( conn + ": " + message );
+		} catch ( InterruptedException ex ) {
+			ex.printStackTrace();
+		}
+		System.out.println( conn + ": " + message );
+	}
 
-    public static void main(String[] args) throws IOException {
-    	WebSocket.DEBUG = true;
-        int port = 8887;
-        try {
-            port = Integer.parseInt(args[0]);
-        } catch(Exception ex) {}
-        ChatServer s = new ChatServer(port);
-        s.start();
-        System.out.println("ChatServer started on port: " + s.getPort());
-        
-        BufferedReader sysin = new BufferedReader( new InputStreamReader( System.in ) );
-        while(true){
-        	String in = sysin.readLine();
-        	s.sendToAll( in );
-        }
-    }
+	public static void main( String[] args ) throws InterruptedException , IOException {
+		WebSocket.DEBUG = true;
+		int port = 8887;
+		try {
+			port = Integer.parseInt( args[ 0 ] );
+		} catch ( Exception ex ) {
+		}
+		ChatServer s = new ChatServer( port );
+		s.start();
+		System.out.println( "ChatServer started on port: " + s.getPort() );
+
+		BufferedReader sysin = new BufferedReader( new InputStreamReader( System.in ) );
+		while ( true ) {
+			String in = sysin.readLine();
+			s.sendToAll( in );
+		}
+	}
 
 	@Override
-	public void onError( WebSocket conn , Exception ex ) {
+	public void onError( WebSocket conn, Exception ex ) {
 		ex.printStackTrace();
 	}
 }
