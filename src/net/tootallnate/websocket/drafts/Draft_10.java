@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Random;
 
 import net.tootallnate.websocket.Base64;
+import net.tootallnate.websocket.Charsetfunctions;
 import net.tootallnate.websocket.Draft;
 import net.tootallnate.websocket.FrameBuilder;
 import net.tootallnate.websocket.Framedata;
@@ -16,8 +17,8 @@ import net.tootallnate.websocket.Framedata.Opcode;
 import net.tootallnate.websocket.FramedataImpl1;
 import net.tootallnate.websocket.HandshakeBuilder;
 import net.tootallnate.websocket.Handshakedata;
-import net.tootallnate.websocket.exeptions.InvalidHandshakeException;
 import net.tootallnate.websocket.exeptions.InvalidDataException;
+import net.tootallnate.websocket.exeptions.InvalidHandshakeException;
 import net.tootallnate.websocket.exeptions.LimitExedeedException;
 
 public class Draft_10 extends Draft {
@@ -122,7 +123,7 @@ public class Draft_10 extends Draft {
 	@Override
 	public List<Framedata> createFrames( String text, boolean mask ) {
 		FrameBuilder curframe = new FramedataImpl1();
-		byte[] pay = text.getBytes( UTF8_CHARSET );
+		byte[] pay = Charsetfunctions.utf8Bytes( text );
 		curframe.setPayload( pay );
 		curframe.setFin( true );
 		curframe.setOptcode( Opcode.TEXT );

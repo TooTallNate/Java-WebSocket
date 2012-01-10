@@ -1,7 +1,6 @@
 package net.tootallnate.websocket;
 
 import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -24,11 +23,8 @@ public abstract class Draft {
 		// ,/**Can not yet say anything*/
 		// PENDING not yet in use
 	}
-	/**
-	 * The WebSocket protocol expects UTF-8 encoded bytes.
-	 */
-	public static final Charset UTF8_CHARSET = Charset.forName( "UTF-8" );
-	public static final Charset ASCII_CHARSET = Charset.forName( "US-ASCII" );
+
+	private static final byte[] FLASH_POLICY_REQUEST = Charsetfunctions.utf8Bytes( "<policy-file-request/>" );
 
 	public static ByteBuffer readLine( ByteBuffer buf ) {
 		ByteBuffer sbuf = ByteBuffer.allocate( buf.remaining() );
@@ -42,6 +38,7 @@ public abstract class Draft {
 				sbuf.limit( sbuf.position() - 2 );
 				sbuf.position( 0 );
 				return sbuf;
+
 			}
 		}
 		return null;
@@ -49,7 +46,7 @@ public abstract class Draft {
 
 	public static String readStringLine( ByteBuffer buf ) {
 		ByteBuffer b = readLine( buf );
-		return b == null ? null : new String( b.array(), 0, b.limit(), ASCII_CHARSET );
+		return b == null ? null : Charsetfunctions.stingAscii( b.array() );
 	}
 
 	public static HandshakeBuilder translateHandshakeHttp( ByteBuffer buf ) throws InvalidHandshakeException {
@@ -118,7 +115,8 @@ public abstract class Draft {
 			bui.append( "\r\n" );
 		}
 		bui.append( "\r\n" );
-		byte[] httpheader = bui.toString().getBytes( ASCII_CHARSET );
+		byte[] httpheader = Charsetfunctions.asciiBytes( bui.toString() );
+
 		byte[] content = withcontent ? handshakedata.getContent() : null;
 		ByteBuffer bytebuffer = ByteBuffer.allocate( ( content == null ? 0 : content.length ) + httpheader.length );
 		bytebuffer.put( httpheader );

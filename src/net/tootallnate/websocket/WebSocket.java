@@ -93,10 +93,10 @@ public final class WebSocket {
 
 	public List<Draft> known_drafts;
 
-	private static final byte[] FLASH_POLICY_REQUEST = "<policy-file-request/>".getBytes( Draft.UTF8_CHARSET );
+	private static final byte[] FLASH_POLICY_REQUEST = Charsetfunctions.utf8Bytes( "<policy-file-request/>" );
 
 	private int flash_policy_index = 0;
-	
+
 	SocketChannel sockchannel;
 
 	// CONSTRUCTOR /////////////////////////////////////////////////////////////
@@ -111,12 +111,12 @@ public final class WebSocket {
 	 *            The {@link WebSocketListener} to notify of events when
 	 *            they occur.
 	 */
-	public WebSocket( WebSocketListener listener , Draft draft, SocketChannel sockchannel ) {
+	public WebSocket( WebSocketListener listener , Draft draft , SocketChannel sockchannel ) {
 		init( listener, draft, sockchannel );
 	}
 
-	public WebSocket( WebSocketListener listener , List<Draft> drafts, SocketChannel sockchannel ) {
-		init( listener, null, sockchannel  );
+	public WebSocket( WebSocketListener listener , List<Draft> drafts , SocketChannel sockchannel ) {
+		init( listener, null, sockchannel );
 		this.role = Role.SERVER;
 		if( known_drafts == null || known_drafts.isEmpty() ) {
 			known_drafts = new ArrayList<Draft>( 1 );
@@ -149,13 +149,14 @@ public final class WebSocket {
 	 * @throws InterruptedException
 	 * @throws LimitExceededException
 	 */
-	public void handleRead( ) throws InterruptedException , IOException {
+	public void handleRead() throws InterruptedException , IOException {
 		if( !socketBuffer.hasRemaining() ) {
 			socketBuffer.rewind();
 			socketBuffer.limit( socketBuffer.capacity() );
 			if( sockchannel.read( socketBuffer ) == -1 ) {
 				close();
 			}
+
 			socketBuffer.flip();
 		}
 
@@ -168,7 +169,7 @@ public final class WebSocket {
 
 				handshakestate = isFlashEdgeCase( socketBuffer );
 				if( handshakestate == HandshakeState.MATCHED ) {
-					channelWrite( ByteBuffer.wrap( wsl.getFlashPolicy( this ).getBytes( Draft.UTF8_CHARSET ) ) );
+					channelWrite( ByteBuffer.wrap( Charsetfunctions.utf8Bytes( wsl.getFlashPolicy( this ) ) ) );
 					return;
 				}
 				socketBuffer.mark();
@@ -253,7 +254,7 @@ public final class WebSocket {
 					if( currentframe == null ) {
 						if( f.isFin() ) {
 							if( f.getOpcode() == Opcode.TEXT ) {
-								wsl.onMessage( this, new String( f.getPayloadData(), Draft.UTF8_CHARSET ) );
+								wsl.onMessage( this, Charsetfunctions.stingUtf8( f.getPayloadData() ) );
 							} else if( f.getOpcode() == Opcode.BINARY ) {
 								wsl.onMessage( this, f.getPayloadData() );
 							} else {
@@ -271,7 +272,7 @@ public final class WebSocket {
 							abort( "invalid frame: " + e.getMessage() );
 						}
 						if( f.isFin() ) {
-							wsl.onMessage( this, new String( f.getPayloadData(), Draft.UTF8_CHARSET ) );
+							wsl.onMessage( this, Charsetfunctions.stingUtf8( f.getPayloadData() ) );
 							currentframe = null;
 						}
 					}
@@ -349,7 +350,7 @@ public final class WebSocket {
 	 * @return True if all data has been sent to the client, false if there
 	 *         is still some buffered.
 	 */
-	public void handleWrite( ) throws IOException {
+	public void handleWrite() throws IOException {
 		ByteBuffer buffer = this.bufferQueue.peek();
 		while ( buffer != null ) {
 			sockchannel.write( buffer );
@@ -402,12 +403,12 @@ public final class WebSocket {
 		handshakeComplete = true;
 		wsl.onOpen( this );
 	}
-	
-	public InetSocketAddress getRemoteSocketAddress( ){
+
+	public InetSocketAddress getRemoteSocketAddress() {
 		return (InetSocketAddress) sockchannel.socket().getRemoteSocketAddress();
 	}
-	
-	public InetSocketAddress getLocalSocketAddress( ){
+
+	public InetSocketAddress getLocalSocketAddress() {
 		return (InetSocketAddress) sockchannel.socket().getLocalSocketAddress();
 	}
 
@@ -415,4 +416,5 @@ public final class WebSocket {
 	public String toString() {
 		return super.toString(); // its nice to be able to set breakpoints here
 	}
+
 }

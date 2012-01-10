@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import net.tootallnate.websocket.Charsetfunctions;
 import net.tootallnate.websocket.Draft;
 import net.tootallnate.websocket.FrameBuilder;
 import net.tootallnate.websocket.Framedata;
@@ -70,7 +71,7 @@ public class Draft_75 extends Draft {
 	@Override
 	public List<Framedata> createFrames( String text, boolean mask ) {
 		FrameBuilder frame = new FramedataImpl1();
-		frame.setPayload( text.getBytes( UTF8_CHARSET ) );
+		frame.setPayload( Charsetfunctions.utf8Bytes( text ) );
 		frame.setFin( true );
 		frame.setOptcode( Opcode.TEXT );
 		frame.setTransferemasked( mask );

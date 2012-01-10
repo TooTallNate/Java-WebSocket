@@ -64,6 +64,16 @@ connect to. Important events `onOpen`, `onClose`, `onMessage` and `onIOError`
 get fired throughout the life of the WebSocketClient, and must be implemented 
 in **your** subclass.
 
+Minimum Required JDK
+--------------------
+
+`Java-WebSocket` is known to work with:
+
+ * Java 1.4 (aka SE 6)
+ * Android 1.6 (API 4)
+
+Other JRE implementations may work as well, but haven't been tested.
+
 Testing in Android Emulator
 ---------------------------
 
