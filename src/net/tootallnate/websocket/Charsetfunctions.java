@@ -33,6 +33,14 @@ public class Charsetfunctions {
 			throw new RuntimeException( e );
 		}
 	}
+	
+	public static String stingAscii( byte[] bytes, int offset, int length ) {
+		try {
+			return new String( bytes, offset, length, "ASCII" );
+		} catch ( UnsupportedEncodingException e ) {
+			throw new RuntimeException( e );
+		}
+	}
 
 	public static String stingUtf8( byte[] bytes ) {
 		try {

@@ -46,7 +46,7 @@ public abstract class Draft {
 
 	public static String readStringLine( ByteBuffer buf ) {
 		ByteBuffer b = readLine( buf );
-		return b == null ? null : Charsetfunctions.stingAscii( b.array() );
+		return b == null ? null : Charsetfunctions.stingAscii( b.array(), 0, b.limit() );
 	}
 
 	public static HandshakeBuilder translateHandshakeHttp( ByteBuffer buf ) throws InvalidHandshakeException {
