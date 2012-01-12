@@ -395,7 +395,8 @@ public final class WebSocket {
   private void channelWrite(ByteBuffer buf) throws IOException{
 	  if(DEBUG) System.out.println("write: {"+new String(buf.array())+"}");
 	  //printBytes ( buf , buf.capacity () );
-	  buf.rewind ();
+	  // shouldn't rewind here because that will rewind partially written buffers
+	  //buf.rewind ();
 	  socketChannel.write(buf);
   }
   
