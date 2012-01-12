@@ -192,6 +192,8 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
     } catch (IOException ex) {
     	onIOError(conn, ex);
       return false;
+    } catch(Exception ex) {
+    	onError( ex );
     }
     
     return true;
