@@ -1,6 +1,9 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 
 import net.tootallnate.websocket.WebSocket;
 import net.tootallnate.websocket.WebSocketServer;
@@ -10,8 +13,12 @@ import net.tootallnate.websocket.WebSocketServer;
  */
 public class ChatServer extends WebSocketServer {
 
-	public ChatServer( int port ) {
-		super( port );
+	public ChatServer( int port ) throws UnknownHostException {
+		super( new InetSocketAddress( InetAddress.getLocalHost(), port ) );
+	}
+	
+	public ChatServer( InetSocketAddress address ) {
+		super( address );
 	}
 
 	public void onClientOpen( WebSocket conn ) {

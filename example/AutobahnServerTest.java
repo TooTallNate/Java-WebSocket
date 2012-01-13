@@ -1,4 +1,6 @@
-import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 
 import net.tootallnate.websocket.Draft;
 import net.tootallnate.websocket.WebSocket;
@@ -7,9 +9,13 @@ import net.tootallnate.websocket.drafts.Draft_17;
 
 public class AutobahnServerTest extends WebSocketServer {
 	private static int counter = 0;
-
-	public AutobahnServerTest( int port , Draft d ) {
-		super( port );
+	
+	public AutobahnServerTest( int port, Draft d ) throws UnknownHostException {
+		super( new InetSocketAddress( InetAddress.getLocalHost(), port ),d );
+	}
+	
+	public AutobahnServerTest( InetSocketAddress address, Draft d ) {
+		super( address, d );
 	}
 
 	@Override
@@ -49,7 +55,7 @@ public class AutobahnServerTest extends WebSocketServer {
 		}
 	}
 
-	public static void main( String[] args ) {
+	public static void main( String[] args ) throws  UnknownHostException {
 		WebSocket.DEBUG = true;
 		int port;
 		try {

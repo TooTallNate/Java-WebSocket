@@ -1,6 +1,9 @@
 package net.tootallnate.websocket;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
@@ -29,7 +32,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 * The port number that this WebSocket server should listen on. Default is
 	 * WebSocket.DEFAULT_PORT.
 	 */
-	private int port;
+	private InetSocketAddress address;
 	/**
 	 * The socket channel for this WebSocket server.
 	 */
@@ -50,8 +53,8 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 * Nullary constructor. Creates a WebSocketServer that will attempt to
 	 * listen on port WebSocket.DEFAULT_PORT.
 	 */
-	public WebSocketServer() {
-		this( WebSocket.DEFAULT_PORT, null );
+	public WebSocketServer() throws UnknownHostException {
+		this( new InetSocketAddress( InetAddress.getLocalHost(), WebSocket.DEFAULT_PORT ) , null );
 	}
 
 	/**
@@ -61,8 +64,8 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 * @param port
 	 *            The port number this server should listen on.
 	 */
-	public WebSocketServer( int port ) {
-		this( port, null );
+	public WebSocketServer( InetSocketAddress address ) {
+		this( address, null );
 	}
 
 	/**
@@ -75,17 +78,18 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 *            The version of the WebSocket protocol that this server
 	 *            instance should comply to.
 	 */
-	public WebSocketServer( int port , Draft draft ) {
+	public WebSocketServer( InetSocketAddress address , Draft draft ) {
 		this.connections = new CopyOnWriteArraySet<WebSocket>();
 		this.draft = draft;
-		setPort( port );
+		setAddress( address );
 	}
 
 	/**
 	 * Starts the server thread that binds to the currently set port number and
 	 * listeners for WebSocket connection requests.
+	 * @throws IllegalStateException 
 	 */
-	public void start() throws IllegalStateException {
+	public void start() {
 		if( thread != null )
 			throw new IllegalStateException( "Already started" );
 		new Thread( this ).start();
@@ -181,20 +185,25 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 * @param port
 	 *            The port number to listen on.
 	 */
-	public void setPort( int port ) {
-		this.port = port;
+	public void setAddress( InetSocketAddress address ) {
+		this.address = address;
 	}
 
+	public InetSocketAddress getAddress() {
+		return this.address;
+	}
+	
 	/**
 	 * Gets the port number that this server listens on.
 	 * 
 	 * @return The port number.
 	 */
 	public int getPort() {
-		return this.port;
+		return getAddress().getPort();
 	}
+	
 
-	public Draft getDraft() {
+	public Draft getDraft(){
 		return this.draft;
 	}
 
@@ -206,8 +215,8 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		try {
 			server = ServerSocketChannel.open();
 			server.configureBlocking( false );
-			server.socket().bind( new java.net.InetSocketAddress( port ) );
-
+			server.socket().bind( address );
+			//InetAddress.getLocalHost()
 			selector = Selector.open();
 			server.register( selector, server.validOps() );
 		} catch ( IOException ex ) {
@@ -242,14 +251,14 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 					// then the server is ready to read
 					if( key.isReadable() ) {
 						conn = (WebSocket) key.attachment();
-						conn.handleRead( );
+						conn.handleRead();
 					}
 
 					// if isWritable == true
 					// then we need to send the rest of the data to the client
 					if( key.isValid() && key.isWritable() ) {
 						conn = (WebSocket) key.attachment();
-						conn.handleWrite( );
+						conn.handleWrite();
 						key.channel().register( selector, SelectionKey.OP_READ, conn );
 					}
 				}
@@ -262,7 +271,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 					conn = it.next();
 					if( conn.hasBufferedData() ) {
 						conn.handleWrite();
-						//key.channel().register( selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE, conn );
+						// key.channel().register( selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE, conn );
 					}
 				}
 			} catch ( IOException ex ) {
