@@ -3,6 +3,7 @@ package net.tootallnate.websocket;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.NotYetConnectedException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -132,7 +133,11 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	public void run() {
 		try {
 			tryToConnect( new InetSocketAddress( uri.getHost(), getPort() ) );
-		} catch ( IOException e ) {//
+		} 
+		catch (ClosedByInterruptException e) {
+			onError( null, e );
+			return;
+		}catch ( IOException e ) {//
 			onError( conn, e );
 			conn.close();
 			return;
@@ -155,6 +160,9 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 					i.remove();
 					if( key.isReadable() ) {
 						conn.handleRead();
+					}
+					if(!key.isValid()){
+						continue;
 					}
 					if( key.isWritable() ) {
 						conn.handleWrite();
