@@ -84,6 +84,10 @@ public class Draft_75 extends Draft {
 	public HandshakeBuilder postProcessHandshakeRequestAsClient( HandshakeBuilder request ) throws InvalidHandshakeException {
 		request.put( "Upgrade", "WebSocket" );
 		request.put( "Connection", "Upgrade" );
+		if(!request.hasFieldValue( "Origin" )){
+			request.put( "Origin",	"random"+new Random().nextInt() );
+		}
+		
 		return request;
 	}
 
