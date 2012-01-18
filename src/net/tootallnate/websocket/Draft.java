@@ -122,6 +122,7 @@ public abstract class Draft {
 		bytebuffer.put( httpheader );
 		if( content != null )
 			bytebuffer.put( content );
+		bytebuffer.flip();
 		return Collections.singletonList( bytebuffer );
 	}
 

@@ -59,7 +59,7 @@ public class Draft_75 extends Draft {
 		b.put( START_OF_FRAME );
 		b.put( pay );
 		b.put( END_OF_FRAME );
-		b.rewind();
+		b.flip();
 		return b;
 	}
 

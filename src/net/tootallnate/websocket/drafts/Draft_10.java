@@ -107,6 +107,8 @@ public class Draft_10 extends Draft {
 			buf.put( mes );
 		// translateFrame ( buf.array () , buf.array ().length );
 		assert ( buf.remaining() == 0 ) : buf.remaining();
+		buf.flip();
+
 		return buf;
 	}
 
