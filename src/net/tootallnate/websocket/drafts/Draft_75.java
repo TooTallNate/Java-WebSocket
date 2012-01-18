@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 
 import net.tootallnate.websocket.Charsetfunctions;
 import net.tootallnate.websocket.Draft;
@@ -36,6 +37,7 @@ public class Draft_75 extends Draft {
 	public static final byte END_OF_FRAME = (byte) 0xFF;
 
 	private boolean readingState = false;
+	private boolean inframe = false;
 
 	private ByteBuffer currentFrame;
 
@@ -106,17 +108,17 @@ public class Draft_75 extends Draft {
 				this.currentFrame = null;
 				readingState = true;
 			} else if( newestByte == END_OF_FRAME && readingState ) { // End of Frame
-				readingState = false;
-				String textFrame = null;
 				// currentFrame will be null if END_OF_FRAME was send directly after
 				// START_OF_FRAME, thus we will send 'null' as the sent message.
 				if( this.currentFrame != null ) {
 					FramedataImpl1 curframe = new FramedataImpl1();
 					curframe.setPayload( currentFrame.array() );
 					curframe.setFin( true );
-					curframe.setOptcode( Opcode.TEXT );
+					curframe.setOptcode( inframe ? Opcode.CONTINIOUS : Opcode.TEXT );
 					frames.add( curframe );
 				}
+				readingState = false;
+				inframe = false;
 			} else { // Regular frame data, add to current frame buffer //TODO This code is very expensive and slow
 				ByteBuffer frame = ByteBuffer.allocate( checkAlloc( ( this.currentFrame != null ? this.currentFrame.capacity() : 0 ) + 1 ) );
 				if( this.currentFrame != null ) {
@@ -131,7 +133,8 @@ public class Draft_75 extends Draft {
 			FramedataImpl1 curframe = new FramedataImpl1();
 			curframe.setPayload( currentFrame.array() );
 			curframe.setFin( false );
-			curframe.setOptcode( Opcode.TEXT );
+			curframe.setOptcode( inframe ? Opcode.CONTINIOUS : Opcode.TEXT );
+			inframe = true;
 			frames.add( curframe );
 		}
 		return frames;
