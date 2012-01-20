@@ -106,6 +106,14 @@ if ("google_sdk".equals( Build.PRODUCT )) {
 ```
 
 
+Getting Support
+---------------
+
+If you are looking for help using `Java-WebSocket` you might want to check out the
+[#java-websocket](http://webchat.freenode.net/?channels=java-websocket) IRC room
+on the FreeNode IRC network.
+
+
 License
 -------
 
