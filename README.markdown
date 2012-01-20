@@ -14,6 +14,7 @@ Implemented WebSocket protocol versions are:
  * [Hybi 10](http://tools.ietf.org/id/draft-ietf-hybi-thewebsocketprotocol-10.txt)
  * [Hybi 17](http://tools.ietf.org/id/draft-ietf-hybi-thewebsocketprotocol-17.txt)
 
+
 Running the Example
 -------------------
 
@@ -46,6 +47,7 @@ by any browser. If the browser natively supports the WebSocket API, then it's
 implementation will be used, otherwise it will fall back to a
 [Flash-based WebSocket Implementation](http://github.com/gimite/web-socket-js).
 
+
 Writing your own WebSocket Server
 ---------------------------------
 
@@ -54,6 +56,7 @@ server-side of the
 [WebSocket Protocol](http://www.whatwg.org/specs/web-socket-protocol/).
 A WebSocket server by itself doesn't do anything except establish socket
 connections though HTTP. After that it's up to **your** subclass to add purpose.
+
 
 Writing your own WebSocket Client
 ---------------------------------
@@ -64,6 +67,7 @@ connect to. Important events `onOpen`, `onClose`, `onMessage` and `onIOError`
 get fired throughout the life of the WebSocketClient, and must be implemented 
 in **your** subclass.
 
+
 Minimum Required JDK
 --------------------
 
@@ -73,6 +77,7 @@ Minimum Required JDK
  * Android 1.6 (API 4)
 
 Other JRE implementations may work as well, but haven't been tested.
+
 
 Testing in Android Emulator
 ---------------------------
