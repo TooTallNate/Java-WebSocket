@@ -46,27 +46,10 @@ public final class WebSocket {
 	 */
 	public static final int DEFAULT_PORT = 80;
 
-	/**
-	 * The byte representing CR, or Carriage Return, or \r
-	 */
-	public static final byte CR = (byte) 0x0D;
-	/**
-	 * The byte representing LF, or Line Feed, or \n
-	 */
-	public static final byte LF = (byte) 0x0A;
-	/**
-	 * The byte representing the beginning of a WebSocket text frame.
-	 */
-	public static final byte START_OF_FRAME = (byte) 0x00;
-	/**
-	 * The byte representing the end of a WebSocket text frame.
-	 */
-	public static final byte END_OF_FRAME = (byte) 0xFF;
-
 	public static/*final*/boolean DEBUG = false; // must be final in the future in order to take advantage of VM optimization
 
 	/**
-	 * Internally used to determine whether to recieve data as part of the
+	 * Internally used to determine whether to receive data as part of the
 	 * remote handshake, or as part of a text frame.
 	 */
 	private boolean handshakeComplete;
@@ -97,7 +80,7 @@ public final class WebSocket {
 
 	private int flash_policy_index = 0;
 
-	SocketChannel sockchannel;
+	private SocketChannel sockchannel;
 
 	// CONSTRUCTOR /////////////////////////////////////////////////////////////
 	/**

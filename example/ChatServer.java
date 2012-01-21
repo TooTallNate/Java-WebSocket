@@ -14,7 +14,7 @@ import net.tootallnate.websocket.WebSocketServer;
 public class ChatServer extends WebSocketServer {
 
 	public ChatServer( int port ) throws UnknownHostException {
-		super( new InetSocketAddress( InetAddress.getLocalHost(), port ) );
+		super( new InetSocketAddress( InetAddress.getByName( "localhost" ), port ) );
 	}
 	
 	public ChatServer( InetSocketAddress address ) {

@@ -175,8 +175,8 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 * 
 	 * @return The currently connected clients in a WebSocket[].
 	 */
-	public WebSocket[] connections() {
-		return this.connections.toArray( new WebSocket[ 0 ] );
+	public Set<WebSocket> connections() {
+		return Collections.unmodifiableSet( this.connections );
 	}
 
 	/**
