@@ -169,6 +169,7 @@ public final class WebSocket {
 									draft = d;
 									this.handshakeComplete = true;
 									open();
+									handleRead();
 									return;
 								} else if( handshakestate == HandshakeState.MATCHING ) {
 									if( draft != null ) {
@@ -188,6 +189,7 @@ public final class WebSocket {
 
 							if( handshakestate == HandshakeState.MATCHED ) {
 								open();
+								handleRead();
 							} else if( handshakestate != HandshakeState.MATCHING ) {
 								abort( "the handshake did finaly not match" );
 							}
@@ -199,6 +201,7 @@ public final class WebSocket {
 						if( handshakestate == HandshakeState.MATCHED ) {
 							this.handshakeComplete = true;
 							open();
+							handleRead();
 						} else if( handshakestate == HandshakeState.MATCHING ) {
 							return;
 						} else {
