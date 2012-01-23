@@ -11,8 +11,6 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import javax.naming.LimitExceededException;
-
 import net.tootallnate.websocket.Draft.HandshakeState;
 import net.tootallnate.websocket.Framedata.Opcode;
 import net.tootallnate.websocket.drafts.Draft_10;
@@ -130,7 +128,6 @@ public final class WebSocket {
 	 * @throws IOException
 	 *             When socket related I/O errors occur.
 	 * @throws InterruptedException
-	 * @throws LimitExceededException
 	 */
 	public void handleRead() throws InterruptedException , IOException {
 		if( !socketBuffer.hasRemaining() ) {
@@ -167,7 +164,6 @@ public final class WebSocket {
 									HandshakeBuilder response = wsl.onHandshakeRecievedAsServer( this, d, handshake );
 									channelWrite( d.createHandshake( d.postProcessHandshakeResponseAsServer( handshake, response ), role ) );
 									draft = d;
-									this.handshakeComplete = true;
 									open();
 									handleRead();
 									return;
@@ -199,7 +195,6 @@ public final class WebSocket {
 						handshake = draft.translateHandshake( socketBuffer );
 						handshakestate = draft.acceptHandshakeAsClient( handshakerequest, handshake );
 						if( handshakestate == HandshakeState.MATCHED ) {
-							this.handshakeComplete = true;
 							open();
 							handleRead();
 						} else if( handshakestate == HandshakeState.MATCHING ) {
