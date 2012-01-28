@@ -2,6 +2,8 @@ package net.tootallnate.websocket;
 
 import java.io.IOException;
 
+import net.tootallnate.websocket.Framedata.Opcode;
+
 public abstract class WebSocketAdapter implements WebSocketListener {
 
 	@Override
@@ -32,7 +34,13 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 
 	@Override
 	public void onPing( WebSocket conn, Framedata f ) {
-		// conn.sendFrame ( new FramedataImpl1 ( f ) );
+		FramedataImpl1 resp = new FramedataImpl1 ( f );
+		resp.setOptcode( Opcode.PONG );
+		try {
+			conn.sendFrame ( resp );
+		} catch ( InterruptedException e ) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
