@@ -159,6 +159,7 @@ public final class WebSocket {
 						if( draft == null ) {
 							for( Draft d : known_drafts ) {
 								try {
+									d.setParseMode( role );
 									socketBuffer.reset();
 									handshake = d.translateHandshake( socketBuffer );
 									handshakestate = d.acceptHandshakeAsServer( handshake );
@@ -205,6 +206,7 @@ public final class WebSocket {
 							return;
 						}
 					} else if( role == Role.CLIENT ) {
+						draft.setParseMode( role );
 						handshake = draft.translateHandshake( socketBuffer );
 						handshakestate = draft.acceptHandshakeAsClient( handshakerequest, handshake );
 						if( handshakestate == HandshakeState.MATCHED ) {
