@@ -113,7 +113,7 @@ public final class WebSocket {
 
 	private void init( WebSocketListener listener, Draft draft, SocketChannel sockchannel ) {
 		this.sockchannel = sockchannel;
-		this.bufferQueue = new LinkedBlockingQueue<ByteBuffer>( 10 );
+		this.bufferQueue = new LinkedBlockingQueue<ByteBuffer>( );
 		this.handshakeComplete = false;
 		this.socketBuffer = ByteBuffer.allocate( 65558 );
 		socketBuffer.flip();
