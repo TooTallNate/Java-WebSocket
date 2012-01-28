@@ -100,7 +100,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 * closes the socket connection, and ends the client socket thread.
 	 * 
 	 */
-	public Thread close() throws IllegalStateException {
+	public Thread close() {
 		if( thread == null ) {
 			throw new IllegalStateException( "Socket has not yet been started or is already closed" );
 		}
@@ -131,6 +131,8 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
 	// Runnable IMPLEMENTATION /////////////////////////////////////////////////
 	public void run() {
+		if(thread == null)
+			thread = Thread.currentThread();
 		try {
 			tryToConnect( new InetSocketAddress( uri.getHost(), getPort() ) );
 		} 
@@ -184,7 +186,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 				onError( e );
 				close();
 				return;
-			} catch ( RuntimeException e ) {
+			} catch ( RuntimeException /*| CharacterCodingException*/ e ) {
 				// this catch case covers internal errors only and indicates a bug in this websocket implementation
 				onError( e );
 				close();
@@ -208,7 +210,6 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		draft.reset();
 		draft = null;
 
-		thread = null;
 		conn.close(); // close() is synchronously calling onClose(conn) so we don't have to
 	}
 
