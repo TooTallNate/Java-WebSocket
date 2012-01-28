@@ -63,7 +63,7 @@ public abstract class Draft {
 		draft.setResourceDescriptor( firstLineTokens[ 1 ] );
 
 		line = readStringLine( buf );
-		while ( line != null && !line.isEmpty() ) {
+		while ( line != null && line.length() > 0 ) {
 			String[] pair = line.split( ":", 2 );
 			if( pair.length != 2 )
 				throw new InvalidHandshakeException( "not an http header" );

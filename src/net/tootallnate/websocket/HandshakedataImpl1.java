@@ -32,7 +32,7 @@ public class HandshakedataImpl1 implements HandshakeBuilder {
 	@Override
 	public String getResourceDescriptor() {
 		// validate resourcedescriptor
-		return resourcedescriptor == null || resourcedescriptor.isEmpty() ? "" : resourcedescriptor;
+		return resourcedescriptor == null || (resourcedescriptor.length() == 0) ? "" : resourcedescriptor;
 	}
 
 	@Override
