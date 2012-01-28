@@ -26,6 +26,8 @@ public abstract class Draft {
 
 	private static final byte[] FLASH_POLICY_REQUEST = Charsetfunctions.utf8Bytes( "<policy-file-request/>" );
 
+	protected Role role = null;
+	
 	public static ByteBuffer readLine( ByteBuffer buf ) {
 		ByteBuffer sbuf = ByteBuffer.allocate( buf.remaining() );
 		byte prev = '0';
@@ -41,6 +43,8 @@ public abstract class Draft {
 
 			}
 		}
+		//ensure that there wont be any bytes skipped
+		buf.position( buf.position() - sbuf.position() );
 		return null;
 	}
 
@@ -140,6 +144,10 @@ public abstract class Draft {
 		if( bytecount < 0 )
 			throw new InvalidDataException( "Negative count" );
 		return bytecount;
+	}
+	
+	public void setParseMode( Role role ){
+		this.role = role;
 	}
 
 }
