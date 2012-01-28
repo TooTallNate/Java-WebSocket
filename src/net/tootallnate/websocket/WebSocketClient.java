@@ -232,7 +232,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		String path;
 		String part1 = uri.getPath();
 		String part2 = uri.getQuery();
-		if( part1 == null || part1.isEmpty() )
+		if( part1 == null || part1.length() == 0 )
 			path = "/";
 		else
 			path = part1;
