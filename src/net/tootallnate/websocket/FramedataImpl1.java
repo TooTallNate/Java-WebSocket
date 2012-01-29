@@ -5,11 +5,11 @@ import java.nio.ByteBuffer;
 import net.tootallnate.websocket.exeptions.InvalidFrameException;
 
 public class FramedataImpl1 implements FrameBuilder {
-	private static byte[] emptyarray = {};
-	private boolean fin;
-	private Opcode optcode;
-	private ByteBuffer unmaskedpayload;
-	private boolean transferemasked;
+	protected static byte[] emptyarray = {};
+	protected boolean fin;
+	protected Opcode optcode;
+	protected ByteBuffer unmaskedpayload;
+	protected boolean transferemasked;
 
 	public FramedataImpl1() {
 	}

@@ -193,7 +193,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 				return;
 			}
 		}
-
+		conn.close(); // close() is synchronously calling onClose(conn) so we don't have to
 		try {
 			selector.close();
 		} catch ( IOException e ) {
@@ -206,11 +206,6 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			onError( e );
 		}
 		client = null;
-
-		draft.reset();
-		draft = null;
-
-		conn.close(); // close() is synchronously calling onClose(conn) so we don't have to
 	}
 
 	private int getPort() {
@@ -274,6 +269,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 * @param conn
 	 */
 	public void onClose( WebSocket conn ) {
+		thread.interrupt();
 		onClose();
 	}
 

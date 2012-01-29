@@ -10,6 +10,7 @@ import java.util.Random;
 
 import net.tootallnate.websocket.Base64;
 import net.tootallnate.websocket.Charsetfunctions;
+import net.tootallnate.websocket.CloseFrameBuilder;
 import net.tootallnate.websocket.Draft;
 import net.tootallnate.websocket.FrameBuilder;
 import net.tootallnate.websocket.Framedata;
@@ -328,12 +329,16 @@ public class Draft_10 extends Draft {
 			payload.put( buffer.array(), buffer.position(), payload.limit() );
 			buffer.position( buffer.position() + payload.limit() );
 		}
-
-		FrameBuilder frame = new FramedataImpl1();
-		frame.setFin( FIN );
-		frame.setOptcode( toOpcode( (byte) ( b1 & 15 ) ) );
+		Opcode optcode = toOpcode( (byte) ( b1 & 15 ) );
+		FrameBuilder frame;
+		if( optcode == Opcode.CLOSING ) {
+			frame = new CloseFrameBuilder();
+		} else {
+			frame = new FramedataImpl1();
+			frame.setFin( FIN );
+			frame.setOptcode( optcode );
+		}
 		frame.setPayload( payload.array() );
-
 		return frame;
 	}
 

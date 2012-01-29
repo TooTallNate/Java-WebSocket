@@ -34,11 +34,7 @@ public class Charsetfunctions {
 	}
 
 	public static String stingAscii( byte[] bytes ) {
-		try {
-			return new String( bytes, "ASCII" );
-		} catch ( UnsupportedEncodingException e ) {
-			throw new RuntimeException( e );
-		}
+		return stingAscii( bytes, 0, bytes.length );
 	}
 	
 	public static String stingAscii( byte[] bytes, int offset, int length ){
@@ -50,8 +46,12 @@ public class Charsetfunctions {
 	}
 
 	public static String stingUtf8( byte[] bytes ) throws CharacterCodingException {
-		CharsetDecoder encode = Charset.forName("UTF8").newDecoder();
-		encode.onMalformedInput( codingErrorAction  );
-		return encode.decode( ByteBuffer.wrap( bytes )  ).toString();
+		return stingAscii( bytes, 0, bytes.length );
+	}
+
+	public static String stingUtf8( byte[] bytes, int off, int length ) throws CharacterCodingException {
+		CharsetDecoder encode = Charset.forName( "UTF8" ).newDecoder();
+		encode.onMalformedInput( codingErrorAction );
+		return encode.decode( ByteBuffer.wrap( bytes, off, length ) ).toString();
 	}
 }

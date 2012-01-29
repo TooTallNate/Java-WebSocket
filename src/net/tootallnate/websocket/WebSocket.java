@@ -36,7 +36,7 @@ import net.tootallnate.websocket.exeptions.InvalidHandshakeException;
 public final class WebSocket {
 	// CONSTANTS ///////////////////////////////////////////////////////////////
 	public enum Role {
-		CLIENT , SERVER
+		CLIENT, SERVER
 	}
 	/**
 	 * The default port of WebSockets, as defined in the spec. If the nullary
@@ -51,7 +51,9 @@ public final class WebSocket {
 	 * Internally used to determine whether to receive data as part of the
 	 * remote handshake, or as part of a text frame.
 	 */
-	private boolean handshakeComplete;
+	private boolean handshakeComplete = false;
+
+	private boolean closeHandshakeComplete = false;
 	/**
 	 * The listener to notify of WebSocket events.
 	 */
@@ -114,7 +116,6 @@ public final class WebSocket {
 	private void init( WebSocketListener listener, Draft draft, SocketChannel sockchannel ) {
 		this.sockchannel = sockchannel;
 		this.bufferQueue = new LinkedBlockingQueue<ByteBuffer>( 10 );
-		this.handshakeComplete = false;
 		this.socketBuffer = ByteBuffer.allocate( 65558 );
 		socketBuffer.flip();
 		this.wsl = listener;
@@ -237,7 +238,7 @@ public final class WebSocket {
 					if( curop == null )// Ignore undefined opcodes
 						continue;
 					else if( curop == Opcode.CLOSING ) {
-						sendFrame( new FramedataImpl1( Opcode.CLOSING ) );
+						sendFrame( new FramedataImpl1( f ) );
 						close();
 						continue;
 					} else if( curop == Opcode.PING ) {
@@ -293,16 +294,22 @@ public final class WebSocket {
 	 * event handler.
 	 */
 	public void close() {
-		// TODO Send HTTP error here in some cases / create abort method
+		if( closeHandshakeComplete ) {
+			return;
+		}
+		// TODO Send error/closecode here in some cases
+		closeHandshakeComplete = true;
+		try {
+			handleWrite();
+			sockchannel.close();
+		} catch ( IOException e ) {
+			e.printStackTrace();
+		}
+		this.wsl.onClose( this );
 		if( draft != null )
 			draft.reset();
 		currentframe = null;
 		handshakerequest = null;
-		try {
-			sockchannel.close();
-		} catch ( IOException e ) {
-		}
-		this.wsl.onClose( this );
 	}
 
 	/**
