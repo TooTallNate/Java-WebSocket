@@ -1,13 +1,15 @@
 <project default="jar">
 
   <target name="compile">
-    <javac includeantruntime="false" srcdir="src" />
-    <javac includeantruntime="false" srcdir="example" classpath="src" />
+    <mkdir dir="build/classes"/>
+    <mkdir dir="build/example"/>
+    <javac includeantruntime="false" debug="on" srcdir="src" destdir="build/classes" />
+    <javac includeantruntime="false" srcdir="example" classpath="src" destdir="build/example" />
   </target>
 
   <target name="jar" depends="compile">
     <jar destfile="dist/WebSocket.jar"
-         basedir="src"
+         basedir="build/classes"
          includes="**/*.class"
          />
   </target>
@@ -17,6 +19,10 @@
     <javadoc sourcepath="src"
              destdir="doc"
           />
+  </target>
+  
+  <target name="clean">
+    <delete dir="build"/>
   </target>
 
 </project>
