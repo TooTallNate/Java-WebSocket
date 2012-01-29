@@ -1,8 +1,15 @@
 package net.tootallnate.websocket;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CodingErrorAction;
 
 public class Charsetfunctions {
+
+	public static CodingErrorAction codingErrorAction = CodingErrorAction.REPORT;
 
 	/*
 	* @return UTF-8 encoding in bytes
@@ -34,7 +41,7 @@ public class Charsetfunctions {
 		}
 	}
 	
-	public static String stingAscii( byte[] bytes, int offset, int length ) {
+	public static String stingAscii( byte[] bytes, int offset, int length ){
 		try {
 			return new String( bytes, offset, length, "ASCII" );
 		} catch ( UnsupportedEncodingException e ) {
@@ -42,11 +49,9 @@ public class Charsetfunctions {
 		}
 	}
 
-	public static String stingUtf8( byte[] bytes ) {
-		try {
-			return new String( bytes, "UTF8" );
-		} catch ( UnsupportedEncodingException e ) {
-			throw new RuntimeException( e );
-		}
+	public static String stingUtf8( byte[] bytes ) throws CharacterCodingException {
+		CharsetDecoder encode = Charset.forName("UTF8").newDecoder();
+		encode.onMalformedInput( codingErrorAction  );
+		return encode.decode( ByteBuffer.wrap( bytes )  ).toString();
 	}
 }
