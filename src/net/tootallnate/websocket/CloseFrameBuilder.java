@@ -45,6 +45,7 @@ public class CloseFrameBuilder extends FramedataImpl1 implements CloseFrame {
 		ByteBuffer pay = ByteBuffer.allocate( 2 + by.length );
 		pay.put( buf );
 		pay.put( by );
+		setPayload( pay.array() );
 	}
 
 	@Override

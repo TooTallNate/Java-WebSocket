@@ -1,20 +1,31 @@
 package net.tootallnate.websocket.exeptions;
 
 public class InvalidDataException extends Exception {
-
-	public InvalidDataException() {
+	private int closecode;
+	public InvalidDataException( int closecode ) {
+		this.closecode = closecode;
 	}
 
-	public InvalidDataException( String arg0 ) {
-		super( arg0 );
+	public InvalidDataException( int closecode , String s ) {
+		super( s );
 	}
 
-	public InvalidDataException( Throwable arg0 ) {
-		super( arg0 );
+	public InvalidDataException( int closecode , Throwable t ) {
+		super( t );
+		if( t instanceof InvalidDataException ) {
+			closecode = ( (InvalidDataException) t ).getCloseCode();
+		}
 	}
 
-	public InvalidDataException( String arg0 , Throwable arg1 ) {
-		super( arg0, arg1 );
+	public InvalidDataException( int closecode , String s , Throwable t ) {
+		super( s, t );
+		if( t instanceof InvalidDataException ) {
+			closecode = ( (InvalidDataException) t ).getCloseCode();
+		}
+	}
+
+	public int getCloseCode() {
+		return closecode;
 	}
 
 }

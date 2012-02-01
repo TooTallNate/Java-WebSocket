@@ -25,7 +25,7 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	}
 
 	@Override
-	public void onClose( WebSocket conn ) {
+	public void onClose( WebSocket conn, int code, String reason ) {
 	}
 
 	@Override

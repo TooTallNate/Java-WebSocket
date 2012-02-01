@@ -142,7 +142,7 @@ public abstract class Draft {
 
 	public int checkAlloc( int bytecount ) throws LimitExedeedException , InvalidDataException {
 		if( bytecount < 0 )
-			throw new InvalidDataException( "Negative count" );
+			throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "Negative count" );
 		return bytecount;
 	}
 	

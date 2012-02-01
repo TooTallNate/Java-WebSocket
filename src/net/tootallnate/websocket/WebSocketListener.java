@@ -47,7 +47,7 @@ interface WebSocketListener {
 	 * @param conn
 	 *            The <tt>WebSocket</tt> instance this event is occuring on.
 	 */
-	public void onClose( WebSocket conn );
+	public void onClose( WebSocket conn, int code, String reason );
 
 	public void onError( WebSocket conn, Exception ex );
 

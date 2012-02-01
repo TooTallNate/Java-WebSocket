@@ -1,20 +1,15 @@
 package net.tootallnate.websocket.exeptions;
 
+import net.tootallnate.websocket.CloseFrame;
+
 public class LimitExedeedException extends InvalidDataException {
 
 	public LimitExedeedException() {
+		super( CloseFrame.TOOBIG );
 	}
 
 	public LimitExedeedException( String s ) {
-		super( s );
-	}
-
-	public LimitExedeedException( Throwable t ) {
-		super( t );
-	}
-
-	public LimitExedeedException( String s , Throwable t ) {
-		super( s, t );
+		super( CloseFrame.TOOBIG, s );
 	}
 
 }

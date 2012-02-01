@@ -105,7 +105,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 */
 	public void stop() throws IOException {
 		for( WebSocket ws : connections ) {
-			ws.close();
+			ws.close( CloseFrame.NORMAL );
 		}
 		thread.interrupt();
 		this.server.close();
@@ -258,7 +258,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 					// then we need to send the rest of the data to the client
 					if( key.isValid() && key.isWritable() ) {
 						conn = (WebSocket) key.attachment();
-						conn.handleWrite();
+						conn.flush();
 						key.channel().register( selector, SelectionKey.OP_READ, conn );
 					}
 				}
@@ -270,7 +270,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 					// by this thread.
 					conn = it.next();
 					if( conn.hasBufferedData() ) {
-						conn.handleWrite();
+						conn.flush();
 						// key.channel().register( selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE, conn );
 					}
 				}
@@ -279,14 +279,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 					key.cancel();
 				onError( conn, ex );// conn may be null here
 				if( conn != null ) {
-					conn.close();
-				}
-			} catch ( InterruptedException ex ) {
-				if( key != null )
-					key.cancel();
-				onError( conn, ex );// conn may be null here
-				if( conn != null ) {
-					conn.close();
+					conn.close( CloseFrame.ABNROMAL_CLOSE );
 				}
 			}
 		}

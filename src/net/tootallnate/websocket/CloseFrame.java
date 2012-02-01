@@ -73,6 +73,10 @@ public interface CloseFrame extends Framedata {
 		 */
 	public static final int EXTENSION = 1010;
 
+	/** The connection had never been established */
+	public static final int NEVERCONNECTED = -1;
+	public static final int BUGGYCLOSE = -2;
+
 	public int getCloseCode();
 	public String getMessage() throws CharacterCodingException;
 }

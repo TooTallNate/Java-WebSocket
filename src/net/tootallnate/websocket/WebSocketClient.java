@@ -8,6 +8,7 @@ import java.nio.channels.NotYetConnectedException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.nio.charset.CharacterCodingException;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -131,69 +132,69 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
 	// Runnable IMPLEMENTATION /////////////////////////////////////////////////
 	public void run() {
-		if(thread == null)
+		if( thread == null )
 			thread = Thread.currentThread();
 		try {
 			tryToConnect( new InetSocketAddress( uri.getHost(), getPort() ) );
-		} 
-		catch (ClosedByInterruptException e) {
+		} catch ( ClosedByInterruptException e ) {
 			onError( null, e );
 			return;
-		}catch ( IOException e ) {//
+		} catch ( IOException e ) {//
 			onError( conn, e );
-			conn.close();
+			conn.closeConnection( CloseFrame.ABNROMAL_CLOSE );
 			return;
 		} catch ( SecurityException e ) {
 			onError( conn, e );
-			conn.close();
+			conn.closeConnection( CloseFrame.ABNROMAL_CLOSE );
 			return;
 		}
-
-		while ( !Thread.interrupted() ) {
-			SelectionKey key = null;
-			try {
-				conn.handleWrite();
+		try/*IO*/{
+			while ( !Thread.interrupted() && !conn.isClosed() ) {
+				SelectionKey key = null;
+				conn.flush();
 				selector.select();
 				Set<SelectionKey> keys = selector.selectedKeys();
 				Iterator<SelectionKey> i = keys.iterator();
-
 				while ( i.hasNext() ) {
-					key = i.next();
-					i.remove();
-					if( key.isReadable() ) {
-						conn.handleRead();
-					}
-					if(!key.isValid()){
-						continue;
-					}
-					if( key.isWritable() ) {
-						conn.handleWrite();
-					}
-					if( key.isConnectable() ) {
-						finishConnect();
+					try {
+						key = i.next();
+						i.remove();
+						if( key.isReadable() ) {
+							conn.handleRead();
+						}
+						if( !key.isValid() ) {
+							continue;
+						}
+						if( key.isWritable() ) {
+							conn.flush();
+						}
+						if( key.isConnectable() ) {
+							try {
+								finishConnect();
+							} catch ( InterruptedException e ) {
+								conn.close( CloseFrame.NEVERCONNECTED );// report error to only
+								break;
+							} catch ( InvalidHandshakeException e ) {
+								conn.close( e ); // http error
+								conn.flush();
+							}
+						}
+					} catch ( CharacterCodingException e ) {
+						conn.close( CloseFrame.NO_UTF8 );
 					}
 				}
-			} catch ( InvalidHandshakeException e ) {
-				onError( e );
-				close();
-				return;
-			} catch ( IOException e ) {
-				// if(e instanceof ConnectException == false)
-				onError( e );
-				close();
-				return;
-			} catch ( InterruptedException e ) {
-				onError( e );
-				close();
-				return;
-			} catch ( RuntimeException /*| CharacterCodingException*/ e ) {
-				// this catch case covers internal errors only and indicates a bug in this websocket implementation
-				onError( e );
-				close();
-				return;
 			}
+		} catch ( IOException e ) {
+			onError( e );
+			conn.close( CloseFrame.ABNROMAL_CLOSE );
+			return;
+		} catch ( RuntimeException e ) {
+			// this catch case covers internal errors only and indicates a bug in this websocket implementation
+			onError( e );
+			conn.closeConnection( CloseFrame.BUGGYCLOSE, e.toString() );
+			return;
 		}
-		conn.close(); // close() is synchronously calling onClose(conn) so we don't have to
+		conn.close( CloseFrame.NORMAL ); // close() is synchronously calling onClose(conn) so we don't have to
 		try {
 			selector.close();
 		} catch ( IOException e ) {
@@ -240,7 +241,6 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		HandshakedataImpl1 handshake = new HandshakedataImpl1();
 		handshake.setResourceDescriptor( path );
 		handshake.put( "Host", host );
-		// handshake.put ( "Origin" , origin );
 		conn.startHandshake( handshake );
 	}
 

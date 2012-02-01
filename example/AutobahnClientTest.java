@@ -97,7 +97,7 @@ public class AutobahnClientTest extends WebSocketClient {
 					Thread t = new Thread( e );
 					t.start();
 					try {
-						t.join( 15000 );
+						t.join();
 
 					} catch ( InterruptedException e1 ) {
 						e1.printStackTrace();
