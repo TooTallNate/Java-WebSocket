@@ -134,6 +134,11 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	public void run() {
 		if(thread == null)
 			thread = Thread.currentThread();
+		interruptableRun();
+		thread = null;
+	}
+
+	protected void interruptableRun() {
 		try {
 			tryToConnect( new InetSocketAddress( uri.getHost(), getPort() ) );
 		} 
