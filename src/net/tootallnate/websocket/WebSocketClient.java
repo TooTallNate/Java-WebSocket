@@ -258,6 +258,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 * @param conn
 	 * @param message
 	 */
+	@Override
 	public void onMessage( WebSocket conn, String message ) {
 		onMessage( message );
 	}
@@ -267,6 +268,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 * 
 	 * @param conn
 	 */
+	@Override
 	public void onOpen( WebSocket conn ) {
 		onOpen();
 	}
@@ -276,6 +278,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 * 
 	 * @param conn
 	 */
+	@Override
 	public void onClose( WebSocket conn ) {
 		thread.interrupt();
 		onClose();
@@ -286,7 +289,8 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 * 
 	 * @param conn
 	 */
-	public void onError( WebSocket conn, IOException ex ) {
+	@Override
+	public void onError( WebSocket conn, Exception ex ) {
 		onError( ex );
 	}
 
