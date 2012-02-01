@@ -8,6 +8,7 @@ import java.nio.channels.NotYetConnectedException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.nio.channels.UnresolvedAddressException;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -147,6 +148,10 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			onError( conn, e );
 			conn.close();
 			return;
+        } catch ( UnresolvedAddressException e ) {
+            onError( conn, e );
+            conn.close();
+            return;
 		}
 
 		while ( !Thread.interrupted() ) {
