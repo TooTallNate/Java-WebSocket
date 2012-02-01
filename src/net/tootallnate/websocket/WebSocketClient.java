@@ -127,7 +127,6 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		client.connect( remote );
 		selector = Selector.open();
 		client.register( selector, SelectionKey.OP_CONNECT );
-		conn = new WebSocket( this, draft, client );
 	}
 
 	// Runnable IMPLEMENTATION /////////////////////////////////////////////////
@@ -147,17 +146,16 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			return;
 		}catch ( IOException e ) {//
 			onError( conn, e );
-			conn.close();
 			return;
 		} catch ( SecurityException e ) {
 			onError( conn, e );
-			conn.close();
 			return;
         } catch ( UnresolvedAddressException e ) {
             onError( conn, e );
-            conn.close();
             return;
 		}
+
+		conn = new WebSocket( this, draft, client );
 
 		while ( !Thread.interrupted() ) {
 			SelectionKey key = null;
