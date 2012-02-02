@@ -8,6 +8,7 @@ import java.nio.channels.NotYetConnectedException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.nio.channels.UnresolvedAddressException;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -126,13 +127,17 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		client.connect( remote );
 		selector = Selector.open();
 		client.register( selector, SelectionKey.OP_CONNECT );
-		conn = new WebSocket( this, draft, client );
 	}
 
 	// Runnable IMPLEMENTATION /////////////////////////////////////////////////
 	public void run() {
 		if(thread == null)
 			thread = Thread.currentThread();
+		interruptableRun();
+		thread = null;
+	}
+
+	protected void interruptableRun() {
 		try {
 			tryToConnect( new InetSocketAddress( uri.getHost(), getPort() ) );
 		} 
@@ -141,13 +146,16 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			return;
 		}catch ( IOException e ) {//
 			onError( conn, e );
-			conn.close();
 			return;
 		} catch ( SecurityException e ) {
 			onError( conn, e );
-			conn.close();
 			return;
+        } catch ( UnresolvedAddressException e ) {
+            onError( conn, e );
+            return;
 		}
+
+		conn = new WebSocket( this, draft, client );
 
 		while ( !Thread.interrupted() ) {
 			SelectionKey key = null;
@@ -250,6 +258,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 * @param conn
 	 * @param message
 	 */
+	@Override
 	public void onMessage( WebSocket conn, String message ) {
 		onMessage( message );
 	}
@@ -259,6 +268,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 * 
 	 * @param conn
 	 */
+	@Override
 	public void onOpen( WebSocket conn ) {
 		onOpen();
 	}
@@ -268,6 +278,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 * 
 	 * @param conn
 	 */
+	@Override
 	public void onClose( WebSocket conn ) {
 		thread.interrupt();
 		onClose();
@@ -278,7 +289,8 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 * 
 	 * @param conn
 	 */
-	public void onError( WebSocket conn, IOException ex ) {
+	@Override
+	public void onError( WebSocket conn, Exception ex ) {
 		onError( ex );
 	}
 
