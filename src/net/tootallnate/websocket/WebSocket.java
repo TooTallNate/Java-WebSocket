@@ -266,7 +266,7 @@ public final class WebSocket {
 					if( currentframe == null ) {
 						if( f.isFin() ) {
 							if( f.getOpcode() == Opcode.TEXT ) {
-								wsl.onMessage( this, Charsetfunctions.stingUtf8( f.getPayloadData() ) );
+								wsl.onMessage( this, Charsetfunctions.stringUtf8( f.getPayloadData() ) );
 							} else if( f.getOpcode() == Opcode.BINARY ) {
 								wsl.onMessage( this, f.getPayloadData() );
 							} else {
@@ -284,7 +284,7 @@ public final class WebSocket {
 							close( e );
 						}
 						if( f.isFin() ) {
-							wsl.onMessage( this, Charsetfunctions.stingUtf8( currentframe.getPayloadData() ) );
+							wsl.onMessage( this, Charsetfunctions.stringUtf8( currentframe.getPayloadData() ) );
 							currentframe = null;
 						}
 					}

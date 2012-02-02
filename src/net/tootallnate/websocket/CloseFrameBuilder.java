@@ -66,10 +66,10 @@ public class CloseFrameBuilder extends FramedataImpl1 implements CloseFrame {
 	@Override
 	public String getMessage() throws CharacterCodingException {
 		if( getCloseCode() == CloseFrame.NOCODE ) {
-			return Charsetfunctions.stingUtf8( unmaskedpayload.array() );
+			return Charsetfunctions.stringUtf8( unmaskedpayload.array() );
 		}
 		else{
-			return Charsetfunctions.stingUtf8( unmaskedpayload.array(),2,unmaskedpayload.array().length-2 );
+			return Charsetfunctions.stringUtf8( unmaskedpayload.array(),2,unmaskedpayload.array().length-2 );
 		} 
 	}
 
