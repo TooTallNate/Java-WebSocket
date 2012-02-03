@@ -18,7 +18,9 @@ import net.tootallnate.websocket.Framedata.Opcode;
 import net.tootallnate.websocket.FramedataImpl1;
 import net.tootallnate.websocket.HandshakeBuilder;
 import net.tootallnate.websocket.Handshakedata;
+import net.tootallnate.websocket.WebSocket.Role;
 import net.tootallnate.websocket.exeptions.InvalidDataException;
+import net.tootallnate.websocket.exeptions.InvalidFrameException;
 import net.tootallnate.websocket.exeptions.InvalidHandshakeException;
 import net.tootallnate.websocket.exeptions.LimitExedeedException;
 
@@ -76,7 +78,7 @@ public class Draft_10 extends Draft {
 	@Override
 	public ByteBuffer createBinaryFrame( Framedata framedata ) {
 		byte[] mes = framedata.getPayloadData();
-		boolean mask = framedata.getTransfereMasked();
+		boolean mask = role == Role.CLIENT; // framedata.getTransfereMasked();
 		int sizebytes = mes.length <= 125 ? 1 : mes.length <= 65535 ? 2 : 8;
 		ByteBuffer buf = ByteBuffer.allocate( 1 + ( sizebytes > 1 ? sizebytes + 1 : sizebytes ) + ( mask ? 4 : 0 ) + mes.length );
 		byte optcode = fromOpcode( framedata.getOpcode() );
@@ -196,7 +198,7 @@ public class Draft_10 extends Draft {
 		return buffer;
 	}
 
-	private Opcode toOpcode( byte opcode ) {
+	private Opcode toOpcode( byte opcode ) throws InvalidFrameException {
 		switch ( opcode ) {
 			case 0:
 				return Opcode.CONTINIOUS;
@@ -213,7 +215,7 @@ public class Draft_10 extends Draft {
 				return Opcode.PONG;
 				// 11-15 are not yet defined
 			default :
-				return null;
+				throw new InvalidFrameException( "unknow optcode " + (short) opcode );
 		}
 	}
 
@@ -245,12 +247,14 @@ public class Draft_10 extends Draft {
 					break; // go on with the normal frame receival
 				} catch ( IncompleteException e ) {
 					// extending as much as suggested
-					buffer.reset();
+					int oldsize = incompleteframe.limit();
 					ByteBuffer extendedframe = ByteBuffer.allocate( checkAlloc( e.getPreferedSize() ) );
 					assert ( extendedframe.limit() > incompleteframe.limit() );
+					incompleteframe.rewind();
 					extendedframe.put( incompleteframe );
 					incompleteframe = extendedframe;
-					return Collections.emptyList();
+					
+					return translateFrame( buffer );
 				}
 			}
 		}
@@ -284,29 +288,35 @@ public class Draft_10 extends Draft {
 		byte b2 = buffer.get( /*1*/);
 		boolean MASK = ( b2 & -128 ) != 0;
 		int payloadlength = (byte) ( b2 & ~(byte) 128 );
+		Opcode optcode = toOpcode( (byte) ( b1 & 15 ) );
 
 		if( payloadlength >= 0 && payloadlength <= 125 ) {
-		} else if( payloadlength == 126 ) {
-			realpacketsize += 2; // additional length bytes
-			if( maxpacketsize < realpacketsize )
-				throw new IncompleteException( realpacketsize );
-			byte[] sizebytes = new byte[ 3 ];
-			sizebytes[ 1 ] = buffer.get( /*1 + 1*/);
-			sizebytes[ 2 ] = buffer.get( /*1 + 2*/);
-			payloadlength = new BigInteger( sizebytes ).intValue();
 		} else {
-			realpacketsize += 8; // additional length bytes
-			if( maxpacketsize < realpacketsize )
-				throw new IncompleteException( realpacketsize );
-			byte[] bytes = new byte[ 8 ];
-			for( int i = 0 ; i < 8 ; i++ ) {
-				bytes[ i ] = buffer.get( /*1 + i*/);
+			if( optcode == Opcode.PING || optcode == Opcode.PONG || optcode == Opcode.CLOSING ) {
+				throw new InvalidFrameException( "more than 125 octets" );
 			}
-			long length = new BigInteger( bytes ).longValue();
-			if( length > Integer.MAX_VALUE ) {
-				throw new LimitExedeedException( "Payloadsize is to big..." );
+			if( payloadlength == 126 ) {
+				realpacketsize += 2; // additional length bytes
+				if( maxpacketsize < realpacketsize )
+					throw new IncompleteException( realpacketsize );
+				byte[] sizebytes = new byte[ 3 ];
+				sizebytes[ 1 ] = buffer.get( /*1 + 1*/);
+				sizebytes[ 2 ] = buffer.get( /*1 + 2*/);
+				payloadlength = new BigInteger( sizebytes ).intValue();
 			} else {
-				payloadlength = (int) length;
+				realpacketsize += 8; // additional length bytes
+				if( maxpacketsize < realpacketsize )
+					throw new IncompleteException( realpacketsize );
+				byte[] bytes = new byte[ 8 ];
+				for( int i = 0 ; i < 8 ; i++ ) {
+					bytes[ i ] = buffer.get( /*1 + i*/);
+				}
+				long length = new BigInteger( bytes ).longValue();
+				if( length > Integer.MAX_VALUE ) {
+					throw new LimitExedeedException( "Payloadsize is to big..." );
+				} else {
+					payloadlength = (int) length;
+				}
 			}
 		}
 
@@ -329,7 +339,7 @@ public class Draft_10 extends Draft {
 			payload.put( buffer.array(), buffer.position(), payload.limit() );
 			buffer.position( buffer.position() + payload.limit() );
 		}
-		Opcode optcode = toOpcode( (byte) ( b1 & 15 ) );
+
 		FrameBuilder frame;
 		if( optcode == Opcode.CLOSING ) {
 			frame = new CloseFrameBuilder();
