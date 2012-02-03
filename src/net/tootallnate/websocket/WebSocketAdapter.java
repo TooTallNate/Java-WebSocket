@@ -68,4 +68,5 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	@Override
 	public void onError( WebSocket conn, Exception ex ) {
 	}
+
 }

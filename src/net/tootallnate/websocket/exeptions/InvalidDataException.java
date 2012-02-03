@@ -8,6 +8,7 @@ public class InvalidDataException extends Exception {
 
 	public InvalidDataException( int closecode , String s ) {
 		super( s );
+		this.closecode = closecode;
 	}
 
 	public InvalidDataException( int closecode , Throwable t ) {

@@ -80,6 +80,7 @@ public class AutobahnClientTest extends WebSocketClient {
 						uri = URI.create( serverlocation + "/runCase?case=" + spl[ 1 ] + "&agent=" + clientname );
 
 					} else if( line.startsWith( "u" ) ) {
+						WebSocket.DEBUG = false;
 						uri = URI.create( serverlocation + "/updateReports?agent=" + clientname );
 					} else if( line.startsWith( "d" ) ) {
 						try {
@@ -152,7 +153,8 @@ public class AutobahnClientTest extends WebSocketClient {
 	}
 
 	@Override
-	public void onClose() {
+	public void onClose( int code, String reason ) {
+		System.out.println( "Closed: " + code + " " + reason );
 	}
 
 }

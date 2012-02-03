@@ -3,7 +3,6 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -114,8 +113,8 @@ public class ChatClient extends JFrame implements ActionListener {
 						ta.setCaretPosition( ta.getDocument().getLength() );
 					}
 
-					public void onClose() {
-						ta.append( "You have been disconnected from: " + getURI() + "\n" );
+					public void onClose( int code, String reason ) {
+						ta.append( "You have been disconnected from: " + getURI() + "; Code: " + code + " " + reason + "\n" );
 						ta.setCaretPosition( ta.getDocument().getLength() );
 						connect.setEnabled( true );
 						uriField.setEditable( true );

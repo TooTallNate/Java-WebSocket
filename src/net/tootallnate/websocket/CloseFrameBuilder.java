@@ -78,4 +78,11 @@ public class CloseFrameBuilder extends FramedataImpl1 implements CloseFrame {
 		return super.toString() + "code: " + getCloseCode();
 	}
 
+	@Override
+	public byte[] getPayloadData() {
+		if(getCloseCode()==NOCODE)
+			return new byte[ 0 ];
+		return super.getPayloadData();
+	}
+
 }

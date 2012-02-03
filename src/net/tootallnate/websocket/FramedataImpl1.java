@@ -80,7 +80,7 @@ public class FramedataImpl1 implements FrameBuilder {
 
 	@Override
 	public String toString() {
-		return "Framedata{ optcode:" + getOpcode() + ", fin:" + isFin() + ", masked:" + getTransfereMasked() + ", payloadlength:" + unmaskedpayload.limit() + ", payload:" + Charsetfunctions.utf8Bytes( new String( unmaskedpayload.array() ) ) + "}";
+		return "Framedata{ optcode:" + getOpcode() + ", fin:" + isFin() + ", payloadlength:" + unmaskedpayload.limit() + ", payload:" + Charsetfunctions.utf8Bytes( new String( unmaskedpayload.array() ) ) + "}";
 	}
 
 }

@@ -249,11 +249,11 @@ public final class WebSocket {
 						}
 						if( closeHandshakeSent ) {
 							// complete the close handshake by disconnecting
-							closeConnection( code, reason );
+							closeConnection( code, reason, true );
 						} else {
 							// echo close handshake
 							close( code, reason );
-							closeConnection( code, reason );
+							closeConnection( code, reason, false );
 						}
 						continue;
 					} else if( curop == Opcode.PING ) {
@@ -303,15 +303,19 @@ public final class WebSocket {
 		try {
 			closeDirect( code, message );
 		} catch ( IOException e ) {
-			closeConnection( CloseFrame.ABNROMAL_CLOSE );
+			closeConnection( CloseFrame.ABNROMAL_CLOSE,true );
 		}
 	}
 
 	public void closeDirect( int code, String message ) throws IOException {
 		if( !closeHandshakeSent ) {
+			if( handshakeComplete ) {
+				flush();
+				sendFrameDirect( new CloseFrameBuilder( code, message ) );
+			}
+			if( code == CloseFrame.PROTOCOL_ERROR )// this endpoint found a PROTOCOL_ERROR
+				closeConnection( code, false );
 			closeHandshakeSent = true;
-			flush();
-			sendFrameDirect( new CloseFrameBuilder( code, message ) );
 			return;
 		}
 	}
@@ -319,9 +323,15 @@ public final class WebSocket {
 	/**
 	 * closes the socket no matter if the closing handshake completed.
 	 * Does not send any not yet written data before closing.
-	 * Calling this method twice will have no effect.
+	 * Calling this method more than once will have no effect.
+	 * 
+	 * @param remote
+	 *            Indicates who "generated" <code>code</code>.<br>
+	 *            <code>true</code> means that this endpoint received the <code>code</code> from the other endpoint.<br>
+	 *            false means this endpoint decided to send the given code,<br>
+	 *            <code>remote</code> may also be true if this endpoint started the closing handshake since the other endpoint may not simply echo the <code>code</code> but close the connection the same time this endpoint does do but with an other <code>code</code>. <br>
 	 **/
-	public void closeConnection( int code, String message ) {
+	public void closeConnection( int code, String message, boolean remote ) {
 		if( connectionClosed ) {
 			return;
 		}
@@ -338,8 +348,8 @@ public final class WebSocket {
 		handshakerequest = null;
 	}
 
-	public void closeConnection( int code ) {
-		closeConnection( code, "" );
+	public void closeConnection( int code, boolean remote ) {
+		closeConnection( code, "", remote );
 	}
 
 	public void close( int code ) {
