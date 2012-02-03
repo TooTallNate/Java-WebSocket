@@ -51,6 +51,7 @@ public class Draft_10 extends Draft {
 	}
 
 	private ByteBuffer incompleteframe;
+	private Framedata fragmentedframe = null;
 
 	@Override
 	public HandshakeState acceptHandshakeAsClient( Handshakedata request, Handshakedata response ) throws InvalidHandshakeException {
@@ -278,7 +279,6 @@ public class Draft_10 extends Draft {
 	}
 
 	public Framedata translateSingleFrame( ByteBuffer buffer ) throws IncompleteException , InvalidDataException {
-
 		int maxpacketsize = buffer.limit() - buffer.position();
 		int realpacketsize = 2;
 		if( maxpacketsize < realpacketsize )
@@ -292,6 +292,12 @@ public class Draft_10 extends Draft {
 		boolean MASK = ( b2 & -128 ) != 0;
 		int payloadlength = (byte) ( b2 & ~(byte) 128 );
 		Opcode optcode = toOpcode( (byte) ( b1 & 15 ) );
+
+		if( !FIN ) {
+			if( optcode == Opcode.PING || optcode == Opcode.PONG || optcode == Opcode.CLOSING ) {
+				throw new InvalidFrameException( "control frames may no be fragmented" );
+			}
+		}
 
 		if( payloadlength >= 0 && payloadlength <= 125 ) {
 		} else {

@@ -75,7 +75,9 @@ public class FramedataImpl1 implements FrameBuilder {
 			ByteBuffer tmp = ByteBuffer.allocate( nextframe.getPayloadData().length + unmaskedpayload.capacity() );
 			tmp.put( unmaskedpayload.array() );
 			tmp.put( nextframe.getPayloadData() );
+			unmaskedpayload = tmp;
 		}
+		fin = nextframe.isFin();
 	}
 
 	@Override

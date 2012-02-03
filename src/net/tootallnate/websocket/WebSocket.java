@@ -5,6 +5,7 @@ import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.NotYetConnectedException;
 import java.nio.channels.SocketChannel;
+import java.nio.charset.CharacterCodingException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -229,65 +230,60 @@ public final class WebSocket {
 				List<Framedata> frames;
 				try {
 					frames = draft.translateFrame( socketBuffer );
+					for( Framedata f : frames ) {
+						if( DEBUG )
+							System.out.println( "matched frame: " + f );
+						Opcode curop = f.getOpcode();
+						if( curop == Opcode.CLOSING ) {
+							int code = CloseFrame.NOCODE;
+							String reason = "";
+							if( f instanceof CloseFrame ) {
+								CloseFrame cf = (CloseFrame) f;
+								code = cf.getCloseCode();
+								reason = cf.getMessage();
+							}
+							if( closeHandshakeSent ) {
+								// complete the close handshake by disconnecting
+								closeConnection( code, reason, true );
+							} else {
+								// echo close handshake
+								close( code, reason );
+								closeConnection( code, reason, false );
+							}
+							continue;
+						} else if( curop == Opcode.PING ) {
+							wsl.onPing( this, f );
+							continue;
+						} else if( curop == Opcode.PONG ) {
+							wsl.onPong( this, f );
+							continue;
+						} else {
+							// process non control frames
+							if( currentframe == null ) {
+								if( f.getOpcode() == Opcode.CONTINIOUS ) {
+									throw new InvalidFrameException( "unexpected continious frame" );
+								} else if( f.isFin() ) {
+									// receive normal onframe message
+									deliverMessage( f );
+								} else {
+									// remember the frame whose payload is about to be continued
+									currentframe = f;
+								}
+							} else if( f.getOpcode() == Opcode.CONTINIOUS ) {
+								currentframe.append( f );
+								if( f.isFin() ) {
+									deliverMessage( currentframe );
+									currentframe = null;
+								}
+							} else {
+								throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "non control or continious frame expected" );
+							}
+						}
+					}
 				} catch ( InvalidDataException e1 ) {
+					wsl.onError( this, e1 );
 					close( e1 );
 					return;
-				}
-				for( Framedata f : frames ) {
-					if( DEBUG )
-						System.out.println( "matched frame: " + f );
-					Opcode curop = f.getOpcode();
-					if( curop == null )// Ignore undefined opcodes
-						continue;
-					else if( curop == Opcode.CLOSING ) {
-						int code = CloseFrame.NOCODE;
-						String reason = "";
-						if( f instanceof CloseFrame ) {
-							CloseFrame cf = (CloseFrame) f;
-							code = cf.getCloseCode();
-							reason = cf.getMessage();
-						}
-						if( closeHandshakeSent ) {
-							// complete the close handshake by disconnecting
-							closeConnection( code, reason, true );
-						} else {
-							// echo close handshake
-							close( code, reason );
-							closeConnection( code, reason, false );
-						}
-						continue;
-					} else if( curop == Opcode.PING ) {
-						wsl.onPing( this, f );
-						continue;
-					} else if( curop == Opcode.PONG ) {
-						wsl.onPong( this, f );
-						continue;
-					}
-					if( currentframe == null ) {
-						if( f.isFin() ) {
-							if( f.getOpcode() == Opcode.TEXT ) {
-								wsl.onMessage( this, Charsetfunctions.stringUtf8( f.getPayloadData() ) );
-							} else if( f.getOpcode() == Opcode.BINARY ) {
-								wsl.onMessage( this, f.getPayloadData() );
-							} else {
-								if( DEBUG )
-									System.out.println( "Ignoring frame:" + f.toString() );
-							}
-						} else {
-							currentframe = f;
-						}
-					} else if( f.getOpcode() == Opcode.CONTINIOUS ) {
-						try {
-							currentframe.append( f );
-						} catch ( InvalidFrameException e ) {
-							wsl.onError( this, e );
-							close( e );
-						}
-						if( f.isFin() ) {
-							wsl.onMessage( this, Charsetfunctions.stringUtf8( currentframe.getPayloadData() ) );
-							currentframe = null;
-						}
-					}
 				}
 			}
 		}
@@ -303,7 +299,7 @@ public final class WebSocket {
 		try {
 			closeDirect( code, message );
 		} catch ( IOException e ) {
-			closeConnection( CloseFrame.ABNROMAL_CLOSE,true );
+			closeConnection( CloseFrame.ABNROMAL_CLOSE, true );
 		}
 	}
 
@@ -461,6 +457,17 @@ public final class WebSocket {
 	private void writeDirect( List<ByteBuffer> bufs ) throws IOException {
 		for( ByteBuffer b : bufs ) {
 			channelWriteDirect( b );
+		}
+	}
+	private void deliverMessage( Framedata d ) throws CharacterCodingException {
+		if( d.getOpcode() == Opcode.TEXT ) {
+			wsl.onMessage( this, Charsetfunctions.stringUtf8( d.getPayloadData() ) );
+		} else if( d.getOpcode() == Opcode.BINARY ) {
+			wsl.onMessage( this, d.getPayloadData() );
+		} else {
+			if( DEBUG )
+				System.out.println( "Ignoring frame:" + d.toString() );
+			assert ( false );
 		}
 	}
 
