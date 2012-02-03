@@ -9,6 +9,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.UnresolvedAddressException;
+import java.nio.charset.CharacterCodingException;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -96,17 +97,10 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		thread.start();
 	}
 
-	/**
-	 * Calls <var>close</var> on the underlying SocketChannel, which in turn
-	 * closes the socket connection, and ends the client socket thread.
-	 * 
-	 */
-	public Thread close() {
-		if( thread == null ) {
-			throw new IllegalStateException( "Socket has not yet been started or is already closed" );
+	public void close() {
+		if( thread != null ) {
+			thread.interrupt();
 		}
-		thread.interrupt();
-		return thread;
 	}
 
 	/**
@@ -197,7 +191,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		} catch ( RuntimeException e ) {
 			// this catch case covers internal errors only and indicates a bug in this websocket implementation
 			onError( e );
-			conn.closeConnection( CloseFrame.BUGGYCLOSE, e.toString() );
+			conn.closeConnection( CloseFrame.BUGGYCLOSE, e.toString(), false );
 			return;
 		}
 		conn.close( CloseFrame.NORMAL ); // close() is synchronously calling onClose(conn) so we don't have to
@@ -277,9 +271,9 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 * @param conn
 	 */
 	@Override
-	public void onClose( WebSocket conn ) {
+	public void onClose( WebSocket conn, int code, String reason ) {
 		thread.interrupt();
-		onClose();
+		onClose( code, reason );
 	}
 
 	/**
@@ -300,6 +294,6 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	// ABTRACT METHODS /////////////////////////////////////////////////////////
 	public abstract void onMessage( String message );
 	public abstract void onOpen();
-	public abstract void onClose();
+	public abstract void onClose( int code, String reason );
 	public abstract void onError( Exception ex );
 }
