@@ -285,6 +285,9 @@ public class Draft_10 extends Draft {
 			throw new IncompleteException( realpacketsize );
 		byte b1 = buffer.get( /*0*/);
 		boolean FIN = b1 >> 8 != 0;
+		byte rsv = (byte) ( ( b1 & ~(byte) 128 ) >> 4 );
+		if( rsv != 0 )
+			throw new InvalidFrameException( "bad rsv " + rsv );
 		byte b2 = buffer.get( /*1*/);
 		boolean MASK = ( b2 & -128 ) != 0;
 		int payloadlength = (byte) ( b2 & ~(byte) 128 );
