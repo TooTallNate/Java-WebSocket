@@ -307,7 +307,12 @@ public final class WebSocket {
 		if( !closeHandshakeSent ) {
 			if( handshakeComplete ) {
 				flush();
-				sendFrameDirect( new CloseFrameBuilder( code, message ) );
+				try {
+					sendFrameDirect( new CloseFrameBuilder( code, message ) );
+				} catch ( InvalidDataException e ) {
+					wsl.onError( this, e );
+					closeConnection( CloseFrame.ABNROMAL_CLOSE, "generated frame is invalid", false );
+				}
 			}
 			if( code == CloseFrame.PROTOCOL_ERROR )// this endpoint found a PROTOCOL_ERROR
 				closeConnection( code, false );

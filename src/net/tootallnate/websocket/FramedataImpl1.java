@@ -2,13 +2,14 @@ package net.tootallnate.websocket;
 
 import java.nio.ByteBuffer;
 
+import net.tootallnate.websocket.exeptions.InvalidDataException;
 import net.tootallnate.websocket.exeptions.InvalidFrameException;
 
 public class FramedataImpl1 implements FrameBuilder {
 	protected static byte[] emptyarray = {};
 	protected boolean fin;
 	protected Opcode optcode;
-	protected ByteBuffer unmaskedpayload;
+	private ByteBuffer unmaskedpayload;
 	protected boolean transferemasked;
 
 	public FramedataImpl1() {
@@ -57,7 +58,7 @@ public class FramedataImpl1 implements FrameBuilder {
 	}
 
 	@Override
-	public void setPayload( byte[] payload ) {
+	public void setPayload( byte[] payload ) throws InvalidDataException {
 		unmaskedpayload = ByteBuffer.wrap( payload );
 	}
 

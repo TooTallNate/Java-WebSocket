@@ -23,6 +23,7 @@ import net.tootallnate.websocket.exeptions.InvalidDataException;
 import net.tootallnate.websocket.exeptions.InvalidFrameException;
 import net.tootallnate.websocket.exeptions.InvalidHandshakeException;
 import net.tootallnate.websocket.exeptions.LimitExedeedException;
+import net.tootallnate.websocket.exeptions.NotSendableException;
 
 public class Draft_10 extends Draft {
 
@@ -119,7 +120,11 @@ public class Draft_10 extends Draft {
 	@Override
 	public List<Framedata> createFrames( byte[] binary, boolean mask ) {
 		FrameBuilder curframe = new FramedataImpl1();
-		curframe.setPayload( binary );
+		try {
+			curframe.setPayload( binary );
+		} catch ( InvalidDataException e ) {
+			throw new NotSendableException( e );
+		}
 		curframe.setFin( true );
 		curframe.setOptcode( Opcode.BINARY );
 		curframe.setTransferemasked( mask );
@@ -130,7 +135,11 @@ public class Draft_10 extends Draft {
 	public List<Framedata> createFrames( String text, boolean mask ) {
 		FrameBuilder curframe = new FramedataImpl1();
 		byte[] pay = Charsetfunctions.utf8Bytes( text );
-		curframe.setPayload( pay );
+		try {
+			curframe.setPayload( pay );
+		} catch ( InvalidDataException e ) {
+			throw new NotSendableException( e );
+		}
 		curframe.setFin( true );
 		curframe.setOptcode( Opcode.TEXT );
 		curframe.setTransferemasked( mask );

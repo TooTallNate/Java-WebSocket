@@ -2,6 +2,8 @@ package net.tootallnate.websocket;
 
 import java.nio.charset.CharacterCodingException;
 
+import net.tootallnate.websocket.exeptions.InvalidFrameException;
+
 public interface CloseFrame extends Framedata {
 		/**
 		 * indicates a normal closure, meaning whatever purpose the
@@ -77,6 +79,6 @@ public interface CloseFrame extends Framedata {
 	public static final int NEVERCONNECTED = -1;
 	public static final int BUGGYCLOSE = -2;
 
-	public int getCloseCode();
-	public String getMessage() throws CharacterCodingException;
+	public int getCloseCode() throws InvalidFrameException;
+	public String getMessage() throws CharacterCodingException , InvalidFrameException;
 }
