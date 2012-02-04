@@ -2,13 +2,14 @@ package net.tootallnate.websocket;
 
 import java.nio.ByteBuffer;
 
+import net.tootallnate.websocket.exeptions.InvalidDataException;
 import net.tootallnate.websocket.exeptions.InvalidFrameException;
 
 public class FramedataImpl1 implements FrameBuilder {
 	protected static byte[] emptyarray = {};
 	protected boolean fin;
 	protected Opcode optcode;
-	protected ByteBuffer unmaskedpayload;
+	private ByteBuffer unmaskedpayload;
 	protected boolean transferemasked;
 
 	public FramedataImpl1() {
@@ -57,7 +58,7 @@ public class FramedataImpl1 implements FrameBuilder {
 	}
 
 	@Override
-	public void setPayload( byte[] payload ) {
+	public void setPayload( byte[] payload ) throws InvalidDataException {
 		unmaskedpayload = ByteBuffer.wrap( payload );
 	}
 
@@ -75,12 +76,14 @@ public class FramedataImpl1 implements FrameBuilder {
 			ByteBuffer tmp = ByteBuffer.allocate( nextframe.getPayloadData().length + unmaskedpayload.capacity() );
 			tmp.put( unmaskedpayload.array() );
 			tmp.put( nextframe.getPayloadData() );
+			unmaskedpayload = tmp;
 		}
+		fin = nextframe.isFin();
 	}
 
 	@Override
 	public String toString() {
-		return "Framedata{ optcode:" + getOpcode() + ", fin:" + isFin() + ", masked:" + getTransfereMasked() + ", payloadlength:" + unmaskedpayload.limit() + ", payload:" + Charsetfunctions.utf8Bytes( new String( unmaskedpayload.array() ) ) + "}";
+		return "Framedata{ optcode:" + getOpcode() + ", fin:" + isFin() + ", payloadlength:" + unmaskedpayload.limit() + ", payload:" + Charsetfunctions.utf8Bytes( new String( unmaskedpayload.array() ) ) + "}";
 	}
 
 }

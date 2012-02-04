@@ -53,7 +53,9 @@ public final class WebSocket {
 	 */
 	private boolean handshakeComplete = false;
 
-	private boolean closeHandshakeComplete = false;
+	private boolean closeHandshakeSent = false;
+	private boolean connectionClosed = false;
+	private boolean isClosePending = false;
 	/**
 	 * The listener to notify of WebSocket events.
 	 */
@@ -131,12 +133,12 @@ public final class WebSocket {
 	 *             When socket related I/O errors occur.
 	 * @throws InterruptedException
 	 */
-	public void handleRead() throws InterruptedException , IOException {
+	/*package public*/void handleRead() throws IOException {
 		if( !socketBuffer.hasRemaining() ) {
 			socketBuffer.rewind();
 			socketBuffer.limit( socketBuffer.capacity() );
 			if( sockchannel.read( socketBuffer ) == -1 ) {
-				close();
+				close( CloseFrame.ABNROMAL_CLOSE );
 			}
 
 			socketBuffer.flip();
@@ -151,7 +153,7 @@ public final class WebSocket {
 
 				handshakestate = isFlashEdgeCase( socketBuffer );
 				if( handshakestate == HandshakeState.MATCHED ) {
-					channelWrite( ByteBuffer.wrap( Charsetfunctions.utf8Bytes( wsl.getFlashPolicy( this ) ) ) );
+					channelWriteDirect( ByteBuffer.wrap( Charsetfunctions.utf8Bytes( wsl.getFlashPolicy( this ) ) ) );
 					return;
 				}
 				socketBuffer.mark();
@@ -166,9 +168,9 @@ public final class WebSocket {
 									handshakestate = d.acceptHandshakeAsServer( handshake );
 									if( handshakestate == HandshakeState.MATCHED ) {
 										HandshakeBuilder response = wsl.onHandshakeRecievedAsServer( this, d, handshake );
-										channelWrite( d.createHandshake( d.postProcessHandshakeResponseAsServer( handshake, response ), role ) );
+										writeDirect( d.createHandshake( d.postProcessHandshakeResponseAsServer( handshake, response ), role ) );
 										draft = d;
-										open();
+										open( handshake );
 										handleRead();
 										return;
 									} else if( handshakestate == HandshakeState.MATCHING ) {
@@ -181,7 +183,7 @@ public final class WebSocket {
 									// go on with an other draft
 								} catch ( IncompleteHandshakeException e ) {
 									if( socketBuffer.limit() == socketBuffer.capacity() ) {
-										abort( "socketBuffer to small" );
+										close( CloseFrame.TOOBIG, "handshake is to big" );
 									}
 									// read more bytes for the handshake
 									socketBuffer.position( socketBuffer.limit() );
@@ -190,7 +192,7 @@ public final class WebSocket {
 								}
 							}
 							if( draft == null ) {
-								abort( "no draft matches" );
+								close( CloseFrame.PROTOCOL_ERROR, "no draft matches" );
 							}
 							return;
 						} else {
@@ -199,10 +201,10 @@ public final class WebSocket {
 							handshakestate = draft.acceptHandshakeAsServer( handshake );
 
 							if( handshakestate == HandshakeState.MATCHED ) {
-								open();
+								open( handshake );
 								handleRead();
 							} else if( handshakestate != HandshakeState.MATCHING ) {
-								abort( "the handshake did finaly not match" );
+								close( CloseFrame.PROTOCOL_ERROR, "the handshake did finaly not match" );
 							}
 							return;
 						}
@@ -211,105 +213,153 @@ public final class WebSocket {
 						handshake = draft.translateHandshake( socketBuffer );
 						handshakestate = draft.acceptHandshakeAsClient( handshakerequest, handshake );
 						if( handshakestate == HandshakeState.MATCHED ) {
-							open();
+							open( handshake );
 							handleRead();
 						} else if( handshakestate == HandshakeState.MATCHING ) {
 							return;
 						} else {
-							abort( "draft " + draft.getClass().getSimpleName() + " or server refuses handshake" );
+							close( CloseFrame.PROTOCOL_ERROR, "draft " + draft + " refuses handshake" );
 						}
 					}
 				} catch ( InvalidHandshakeException e ) {
-					abort( "draft " + draft + " refuses handshake: " + e.getMessage() );
+					close( e );
 				}
 			} else {
 				// Receiving frames
 				List<Framedata> frames;
 				try {
 					frames = draft.translateFrame( socketBuffer );
-				} catch ( InvalidDataException e1 ) {
-					abort(/*"detected protocol violations"*/);
-					return;
-				}
-				for( Framedata f : frames ) {
-					if( DEBUG )
-						System.out.println( "matched frame: " + f );
-					Opcode curop = f.getOpcode();
-					if( curop == null )// Ignore undefined opcodes
-						continue;
-					else if( curop == Opcode.CLOSING ) {
-						sendFrame( new FramedataImpl1( f ) );
-						close();
-						continue;
-					} else if( curop == Opcode.PING ) {
-						wsl.onPing( this, f );
-						continue;
-					} else if( curop == Opcode.PONG ) {
-						wsl.onPong( this, f );
-						continue;
-					}
-					if( currentframe == null ) {
-						if( f.isFin() ) {
-							if( f.getOpcode() == Opcode.TEXT ) {
-								wsl.onMessage( this, Charsetfunctions.stingUtf8( f.getPayloadData() ) );
-							} else if( f.getOpcode() == Opcode.BINARY ) {
-								wsl.onMessage( this, f.getPayloadData() );
-							} else {
-								if( DEBUG )
-									System.out.println( "Ignoring frame:" + f.toString() );
+					for( Framedata f : frames ) {
+						if( DEBUG )
+							System.out.println( "matched frame: " + f );
+						Opcode curop = f.getOpcode();
+						if( curop == Opcode.CLOSING ) {
+							int code = CloseFrame.NOCODE;
+							String reason = "";
+							if( f instanceof CloseFrame ) {
+								CloseFrame cf = (CloseFrame) f;
+								code = cf.getCloseCode();
+								reason = cf.getMessage();
 							}
+							if( closeHandshakeSent ) {
+								// complete the close handshake by disconnecting
+								closeConnection( code, reason, true );
+							} else {
+								// echo close handshake
+								close( code, reason );
+								closeConnection( code, reason, false );
+							}
+							continue;
+						} else if( curop == Opcode.PING ) {
+							wsl.onPing( this, f );
+							continue;
+						} else if( curop == Opcode.PONG ) {
+							wsl.onPong( this, f );
+							continue;
 						} else {
-							currentframe = f;
-						}
-					} else if( f.getOpcode() == Opcode.CONTINIOUS ) {
-						try {
-							currentframe.append( f );
-						} catch ( InvalidFrameException e ) {
-							wsl.onError( this, e );
-							abort( "invalid frame: " + e.getMessage() );
-						}
-						if( f.isFin() ) {
-							wsl.onMessage( this, Charsetfunctions.stingUtf8( f.getPayloadData() ) );
-							currentframe = null;
+							// process non control frames
+							if( currentframe == null ) {
+								if( f.getOpcode() == Opcode.CONTINIOUS ) {
+									throw new InvalidFrameException( "unexpected continious frame" );
+								} else if( f.isFin() ) {
+									// receive normal onframe message
+									deliverMessage( f );
+								} else {
+									// remember the frame whose payload is about to be continued
+									currentframe = f;
+								}
+							} else if( f.getOpcode() == Opcode.CONTINIOUS ) {
+								currentframe.append( f );
+								if( f.isFin() ) {
+									deliverMessage( currentframe );
+									currentframe = null;
+								}
+							} else {
+								throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "non control or continious frame expected" );
+							}
 						}
 					}
+				} catch ( InvalidDataException e1 ) {
+					wsl.onError( this, e1 );
+					close( e1 );
+					return;
 				}
 			}
 		}
 	}
 
 	// PUBLIC INSTANCE METHODS /////////////////////////////////////////////////
-	public void abort() {
-		abort( "" );
+
+	/**
+	 * sends the closing handshake.
+	 * may be send in response to an other handshake.
+	 */
+	public void close( int code, String message ) {
+		try {
+			closeDirect( code, message );
+		} catch ( IOException e ) {
+			closeConnection( CloseFrame.ABNROMAL_CLOSE, true );
+		}
 	}
 
-	public void abort( String problemmessage ) {
-		if( DEBUG ) {
-			System.out.println( "Aborting: " + problemmessage );
-		}
-		close();
-	}
-	/**
-	 * Closes the underlying SocketChannel, and calls the listener's onClose
-	 * event handler.
-	 */
-	public void close() {
-		if( closeHandshakeComplete ) {
+	public void closeDirect( int code, String message ) throws IOException {
+		if( !closeHandshakeSent ) {
+			if( handshakeComplete ) {
+				flush();
+				try {
+					sendFrameDirect( new CloseFrameBuilder( code, message ) );
+				} catch ( InvalidDataException e ) {
+					wsl.onError( this, e );
+					closeConnection( CloseFrame.ABNROMAL_CLOSE, "generated frame is invalid", false );
+				}
+			} else {
+				closeConnection( CloseFrame.NEVERCONNECTED, false );
+			}
+			if( code == CloseFrame.PROTOCOL_ERROR )// this endpoint found a PROTOCOL_ERROR
+				closeConnection( code, false );
+			closeHandshakeSent = true;
 			return;
 		}
-		// TODO Send error/closecode here in some cases
-		closeHandshakeComplete = true;
+	}
+
+	/**
+	 * closes the socket no matter if the closing handshake completed.
+	 * Does not send any not yet written data before closing.
+	 * Calling this method more than once will have no effect.
+	 * 
+	 * @param remote
+	 *            Indicates who "generated" <code>code</code>.<br>
+	 *            <code>true</code> means that this endpoint received the <code>code</code> from the other endpoint.<br>
+	 *            false means this endpoint decided to send the given code,<br>
+	 *            <code>remote</code> may also be true if this endpoint started the closing handshake since the other endpoint may not simply echo the <code>code</code> but close the connection the same time this endpoint does do but with an other <code>code</code>. <br>
+	 **/
+	public void closeConnection( int code, String message, boolean remote ) {
+		if( connectionClosed ) {
+			return;
+		}
+		connectionClosed = true;
 		try {
-			handleWrite();
 			sockchannel.close();
 		} catch ( IOException e ) {
-			e.printStackTrace();
+			wsl.onError( this, e );
 		}
-		this.wsl.onClose( this );
+		this.wsl.onClose( this, code, message, remote );
 		if( draft != null )
 			draft.reset();
 		currentframe = null;
 		handshakerequest = null;
+	}
+
+	public void closeConnection( int code, boolean remote ) {
+		closeConnection( code, "", remote );
+	}
+
+	public void close( int code ) {
+		close( code, "" );
+	}
+
+	public void close( InvalidDataException e ) {
+		close( e.getCloseCode(), e.getMessage() );
 	}
 
 	/**
@@ -331,11 +381,11 @@ public final class WebSocket {
 		send( draft.createFrames( bytes, role == Role.CLIENT ) );
 	}
 
-	private void send( Collection<Framedata> frames ) throws InterruptedException { // TODO instead of throwing or returning an error this method maybe should block on queue jams
+	private void send( Collection<Framedata> frames ) throws InterruptedException {
 		if( !this.handshakeComplete )
 			throw new NotYetConnectedException();
 		for( Framedata f : frames ) {
-			sendFrame( f ); // TODO high frequently calls to sendFrame are inefficient.
+			sendFrame( f );
 		}
 	}
 
@@ -343,6 +393,12 @@ public final class WebSocket {
 		if( DEBUG )
 			System.out.println( "send frame: " + framedata );
 		channelWrite( draft.createBinaryFrame( framedata ) );
+	}
+
+	private void sendFrameDirect( Framedata framedata ) throws IOException {
+		if( DEBUG )
+			System.out.println( "send frame: " + framedata );
+		channelWriteDirect( draft.createBinaryFrame( framedata ) );
 	}
 
 	boolean hasBufferedData() {
@@ -353,7 +409,7 @@ public final class WebSocket {
 	 * @return True if all data has been sent to the client, false if there
 	 *         is still some buffered.
 	 */
-	public void handleWrite() throws IOException {
+	public void flush() throws IOException {
 		ByteBuffer buffer = this.bufferQueue.peek();
 		while ( buffer != null ) {
 			sockchannel.write( buffer );
@@ -400,11 +456,32 @@ public final class WebSocket {
 		}
 	}
 
-	private void open() throws InterruptedException , IOException {
+	private void channelWriteDirect( ByteBuffer buf ) throws IOException {
+		while ( buf.hasRemaining() )
+			sockchannel.write( buf );
+	}
+	private void writeDirect( List<ByteBuffer> bufs ) throws IOException {
+		for( ByteBuffer b : bufs ) {
+			channelWriteDirect( b );
+		}
+	}
+	private void deliverMessage( Framedata d ) throws InvalidDataException {
+		if( d.getOpcode() == Opcode.TEXT ) {
+			wsl.onMessage( this, Charsetfunctions.stringUtf8( d.getPayloadData() ) );
+		} else if( d.getOpcode() == Opcode.BINARY ) {
+			wsl.onMessage( this, d.getPayloadData() );
+		} else {
+			if( DEBUG )
+				System.out.println( "Ignoring frame:" + d.toString() );
+			assert ( false );
+		}
+	}
+
+	private void open( Handshakedata d ) throws IOException {
 		if( DEBUG )
 			System.out.println( "open using draft: " + draft.getClass().getSimpleName() );
 		handshakeComplete = true;
-		wsl.onOpen( this );
+		wsl.onOpen( this, d );
 	}
 
 	public InetSocketAddress getRemoteSocketAddress() {
@@ -413,6 +490,10 @@ public final class WebSocket {
 
 	public InetSocketAddress getLocalSocketAddress() {
 		return (InetSocketAddress) sockchannel.socket().getLocalSocketAddress();
+	}
+
+	public boolean isClosed() {
+		return connectionClosed;
 	}
 
 	@Override

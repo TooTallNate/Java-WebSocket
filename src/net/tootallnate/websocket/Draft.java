@@ -50,7 +50,7 @@ public abstract class Draft {
 
 	public static String readStringLine( ByteBuffer buf ) {
 		ByteBuffer b = readLine( buf );
-		return b == null ? null : Charsetfunctions.stingAscii( b.array(), 0, b.limit() );
+		return b == null ? null : Charsetfunctions.stringAscii( b.array(), 0, b.limit() );
 	}
 
 	public static HandshakeBuilder translateHandshakeHttp( ByteBuffer buf ) throws InvalidHandshakeException {
@@ -142,7 +142,7 @@ public abstract class Draft {
 
 	public int checkAlloc( int bytecount ) throws LimitExedeedException , InvalidDataException {
 		if( bytecount < 0 )
-			throw new InvalidDataException( "Negative count" );
+			throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "Negative count" );
 		return bytecount;
 	}
 	

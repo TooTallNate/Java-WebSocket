@@ -1,8 +1,8 @@
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
 import net.tootallnate.websocket.Draft;
+import net.tootallnate.websocket.Handshakedata;
 import net.tootallnate.websocket.WebSocket;
 import net.tootallnate.websocket.WebSocketServer;
 import net.tootallnate.websocket.drafts.Draft_17;
@@ -11,7 +11,7 @@ public class AutobahnServerTest extends WebSocketServer {
 	private static int counter = 0;
 	
 	public AutobahnServerTest( int port, Draft d ) throws UnknownHostException {
-		super( new InetSocketAddress( InetAddress.getLocalHost(), port ),d );
+		super( new InetSocketAddress( "localhost", port ), d );
 	}
 	
 	public AutobahnServerTest( InetSocketAddress address, Draft d ) {
@@ -19,13 +19,13 @@ public class AutobahnServerTest extends WebSocketServer {
 	}
 
 	@Override
-	public void onClientOpen( WebSocket conn ) {
+	public void onClientOpen( WebSocket conn, Handshakedata handshake ) {
 		counter++;
-		System.out.println( "Opened connection number" + counter );
+		System.out.println( "///////////Opened connection number" + counter );
 	}
 
 	@Override
-	public void onClientClose( WebSocket conn ) {
+	public void onClientClose( WebSocket conn, int code, String reason, boolean remote ) {
 	}
 
 	@Override
@@ -56,12 +56,12 @@ public class AutobahnServerTest extends WebSocketServer {
 	}
 
 	public static void main( String[] args ) throws  UnknownHostException {
-		WebSocket.DEBUG = true;
+		WebSocket.DEBUG = false;
 		int port;
 		try {
 			port = new Integer( args[ 0 ] );
 		} catch ( Exception e ) {
-			System.out.println( "No port specified. Defaulting to 9001" );
+			System.out.println( "No port specified. Defaulting to 9003" );
 			port = 9003;
 		}
 		new AutobahnServerTest( port, new Draft_17() ).start();
