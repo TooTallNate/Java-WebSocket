@@ -5,7 +5,6 @@ import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.NotYetConnectedException;
 import java.nio.channels.SocketChannel;
-import java.nio.charset.CharacterCodingException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -171,7 +170,7 @@ public final class WebSocket {
 										HandshakeBuilder response = wsl.onHandshakeRecievedAsServer( this, d, handshake );
 										writeDirect( d.createHandshake( d.postProcessHandshakeResponseAsServer( handshake, response ), role ) );
 										draft = d;
-										open();
+										open( handshake );
 										handleRead();
 										return;
 									} else if( handshakestate == HandshakeState.MATCHING ) {
@@ -202,7 +201,7 @@ public final class WebSocket {
 							handshakestate = draft.acceptHandshakeAsServer( handshake );
 
 							if( handshakestate == HandshakeState.MATCHED ) {
-								open();
+								open( handshake );
 								handleRead();
 							} else if( handshakestate != HandshakeState.MATCHING ) {
 								close( CloseFrame.PROTOCOL_ERROR, "the handshake did finaly not match" );
@@ -214,7 +213,7 @@ public final class WebSocket {
 						handshake = draft.translateHandshake( socketBuffer );
 						handshakestate = draft.acceptHandshakeAsClient( handshakerequest, handshake );
 						if( handshakestate == HandshakeState.MATCHED ) {
-							open();
+							open( handshake );
 							handleRead();
 						} else if( handshakestate == HandshakeState.MATCHING ) {
 							return;
@@ -313,6 +312,8 @@ public final class WebSocket {
 					wsl.onError( this, e );
 					closeConnection( CloseFrame.ABNROMAL_CLOSE, "generated frame is invalid", false );
 				}
+			} else {
+				closeConnection( CloseFrame.NEVERCONNECTED, false );
 			}
 			if( code == CloseFrame.PROTOCOL_ERROR )// this endpoint found a PROTOCOL_ERROR
 				closeConnection( code, false );
@@ -342,7 +343,7 @@ public final class WebSocket {
 		} catch ( IOException e ) {
 			wsl.onError( this, e );
 		}
-		this.wsl.onClose( this, code, message );
+		this.wsl.onClose( this, code, message, remote );
 		if( draft != null )
 			draft.reset();
 		currentframe = null;
@@ -380,11 +381,11 @@ public final class WebSocket {
 		send( draft.createFrames( bytes, role == Role.CLIENT ) );
 	}
 
-	private void send( Collection<Framedata> frames ) throws InterruptedException { // TODO instead of throwing or returning an error this method maybe should block on queue jams
+	private void send( Collection<Framedata> frames ) throws InterruptedException {
 		if( !this.handshakeComplete )
 			throw new NotYetConnectedException();
 		for( Framedata f : frames ) {
-			sendFrame( f ); // TODO high frequently calls to sendFrame are inefficient.
+			sendFrame( f );
 		}
 	}
 
@@ -464,7 +465,7 @@ public final class WebSocket {
 			channelWriteDirect( b );
 		}
 	}
-	private void deliverMessage( Framedata d ) throws CharacterCodingException {
+	private void deliverMessage( Framedata d ) throws InvalidDataException {
 		if( d.getOpcode() == Opcode.TEXT ) {
 			wsl.onMessage( this, Charsetfunctions.stringUtf8( d.getPayloadData() ) );
 		} else if( d.getOpcode() == Opcode.BINARY ) {
@@ -476,11 +477,11 @@ public final class WebSocket {
 		}
 	}
 
-	private void open() throws IOException {
+	private void open( Handshakedata d ) throws IOException {
 		if( DEBUG )
 			System.out.println( "open using draft: " + draft.getClass().getSimpleName() );
 		handshakeComplete = true;
-		wsl.onOpen( this );
+		wsl.onOpen( this, d );
 	}
 
 	public InetSocketAddress getRemoteSocketAddress() {

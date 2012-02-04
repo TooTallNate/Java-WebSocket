@@ -9,7 +9,6 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.UnresolvedAddressException;
-import java.nio.charset.CharacterCodingException;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -156,31 +155,27 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 				Set<SelectionKey> keys = selector.selectedKeys();
 				Iterator<SelectionKey> i = keys.iterator();
 				while ( i.hasNext() ) {
-					try {
-						key = i.next();
-						i.remove();
-						if( key.isReadable() ) {
-							conn.handleRead();
-						}
-						if( !key.isValid() ) {
-							continue;
-						}
-						if( key.isWritable() ) {
+					key = i.next();
+					i.remove();
+					if( key.isReadable() ) {
+						conn.handleRead();
+					}
+					if( !key.isValid() ) {
+						continue;
+					}
+					if( key.isWritable() ) {
+						conn.flush();
+					}
+					if( key.isConnectable() ) {
+						try {
+							finishConnect();
+						} catch ( InterruptedException e ) {
+							conn.close( CloseFrame.NEVERCONNECTED );// report error to only
+							break;
+						} catch ( InvalidHandshakeException e ) {
+							conn.close( e ); // http error
 							conn.flush();
 						}
-						if( key.isConnectable() ) {
-							try {
-								finishConnect();
-							} catch ( InterruptedException e ) {
-								conn.close( CloseFrame.NEVERCONNECTED );// report error to only
-								break;
-							} catch ( InvalidHandshakeException e ) {
-								conn.close( e ); // http error
-								conn.flush();
-							}
-						}
-					} catch ( CharacterCodingException e ) {
-						conn.close( CloseFrame.NO_UTF8 );
 					}
 				}
 			}
@@ -261,8 +256,8 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 * @param conn
 	 */
 	@Override
-	public void onOpen( WebSocket conn ) {
-		onOpen();
+	public void onOpen( WebSocket conn, Handshakedata handshake ) {
+		onOpen( handshake );
 	}
 
 	/**
@@ -271,9 +266,9 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 * @param conn
 	 */
 	@Override
-	public void onClose( WebSocket conn, int code, String reason ) {
+	public void onClose( WebSocket conn, int code, String reason, boolean remote ) {
 		thread.interrupt();
-		onClose( code, reason );
+		onClose( code, reason, remote );
 	}
 
 	/**
@@ -293,7 +288,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
 	// ABTRACT METHODS /////////////////////////////////////////////////////////
 	public abstract void onMessage( String message );
-	public abstract void onOpen();
-	public abstract void onClose( int code, String reason );
+	public abstract void onOpen( Handshakedata handshakedata );
+	public abstract void onClose( int code, String reason, boolean remote );
 	public abstract void onError( Exception ex );
 }

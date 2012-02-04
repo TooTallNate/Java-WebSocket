@@ -38,7 +38,7 @@ interface WebSocketListener {
 	 * @param conn
 	 *            The <tt>WebSocket</tt> instance this event is occuring on.
 	 */
-	public void onOpen( WebSocket conn );
+	public void onOpen( WebSocket conn, Handshakedata d );
 
 	/**
 	 * Called after <tt>WebSocket#close</tt> is explicity called, or when the
@@ -47,7 +47,7 @@ interface WebSocketListener {
 	 * @param conn
 	 *            The <tt>WebSocket</tt> instance this event is occuring on.
 	 */
-	public void onClose( WebSocket conn, int code, String reason );
+	public void onClose( WebSocket conn, int code, String reason, boolean remote );
 
 	public void onError( WebSocket conn, Exception ex );
 

@@ -1,7 +1,6 @@
 package net.tootallnate.websocket;
 
 import java.nio.ByteBuffer;
-import java.nio.charset.CharacterCodingException;
 
 import net.tootallnate.websocket.exeptions.InvalidDataException;
 import net.tootallnate.websocket.exeptions.InvalidFrameException;
@@ -61,7 +60,7 @@ public class CloseFrameBuilder extends FramedataImpl1 implements CloseFrame {
 		return code;
 	}
 
-	private void initMessage() throws CharacterCodingException , InvalidFrameException {
+	private void initMessage() throws InvalidDataException {
 		if( code == CloseFrame.NOCODE ) {
 			reason = Charsetfunctions.stringUtf8( getPayloadData() );
 		} else {
@@ -84,11 +83,7 @@ public class CloseFrameBuilder extends FramedataImpl1 implements CloseFrame {
 	public void setPayload( byte[] payload ) throws InvalidDataException {
 		super.setPayload( payload );
 		initCloseCode();
-		try {
-			initMessage();
-		} catch ( CharacterCodingException e ) {
-			throw new InvalidDataException( CloseFrame.NO_UTF8 );
-		}
+		initMessage();
 	}
 	@Override
 	public byte[] getPayloadData() {

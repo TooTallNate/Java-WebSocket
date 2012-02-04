@@ -1,7 +1,6 @@
 package net.tootallnate.websocket;
 
-import java.nio.charset.CharacterCodingException;
-
+import net.tootallnate.websocket.exeptions.InvalidDataException;
 import net.tootallnate.websocket.exeptions.InvalidFrameException;
 
 public interface CloseFrame extends Framedata {
@@ -80,5 +79,5 @@ public interface CloseFrame extends Framedata {
 	public static final int BUGGYCLOSE = -2;
 
 	public int getCloseCode() throws InvalidFrameException;
-	public String getMessage() throws CharacterCodingException , InvalidFrameException;
+	public String getMessage() throws InvalidDataException;
 }

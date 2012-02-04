@@ -201,7 +201,6 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	public int getPort() {
 		return getAddress().getPort();
 	}
-	
 
 	public Draft getDraft(){
 		return this.draft;
@@ -302,19 +301,22 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		return "<cross-domain-policy><allow-access-from domain=\"*\" to-ports=\"" + getPort() + "\" /></cross-domain-policy>";
 	}
 
+	@Override
 	public void onMessage( WebSocket conn, String message ) {
 		onClientMessage( conn, message );
 	}
 
-	public void onOpen( WebSocket conn ) {
+	@Override
+	public void onOpen( WebSocket conn, Handshakedata handshake ) {
 		if( this.connections.add( conn ) ) {
-			onClientOpen( conn );
+			onClientOpen( conn, handshake );
 		}
 	}
 
-	public void onClose( WebSocket conn ) {
+	@Override
+	public void onClose( WebSocket conn, int code, String reason, boolean remote ) {
 		if( this.connections.remove( conn ) ) {
-			onClientClose( conn );
+			onClientClose( conn, code, reason, remote );
 		}
 	}
 
@@ -324,8 +326,8 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	}
 
 	// ABTRACT METHODS /////////////////////////////////////////////////////////
-	public abstract void onClientOpen( WebSocket conn );
-	public abstract void onClientClose( WebSocket conn );
+	public abstract void onClientOpen( WebSocket conn, Handshakedata handshake );
+	public abstract void onClientClose( WebSocket conn, int code, String reason, boolean remote );
 	public abstract void onClientMessage( WebSocket conn, String message );
 	/**
 	 * @param conn
