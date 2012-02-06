@@ -105,7 +105,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 */
 	public void stop() throws IOException {
 		for( WebSocket ws : connections ) {
-			ws.close();
+			ws.close( CloseFrame.NORMAL );
 		}
 		thread.interrupt();
 		this.server.close();
@@ -201,7 +201,6 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	public int getPort() {
 		return getAddress().getPort();
 	}
-	
 
 	public Draft getDraft(){
 		return this.draft;
@@ -258,7 +257,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 					// then we need to send the rest of the data to the client
 					if( key.isValid() && key.isWritable() ) {
 						conn = (WebSocket) key.attachment();
-						conn.handleWrite();
+						conn.flush();
 						key.channel().register( selector, SelectionKey.OP_READ, conn );
 					}
 				}
@@ -270,7 +269,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 					// by this thread.
 					conn = it.next();
 					if( conn.hasBufferedData() ) {
-						conn.handleWrite();
+						conn.flush();
 						// key.channel().register( selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE, conn );
 					}
 				}
@@ -279,14 +278,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 					key.cancel();
 				onError( conn, ex );// conn may be null here
 				if( conn != null ) {
-					conn.close();
-				}
-			} catch ( InterruptedException ex ) {
-				if( key != null )
-					key.cancel();
-				onError( conn, ex );// conn may be null here
-				if( conn != null ) {
-					conn.close();
+					conn.close( CloseFrame.ABNROMAL_CLOSE );
 				}
 			}
 		}
@@ -309,19 +301,22 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		return "<cross-domain-policy><allow-access-from domain=\"*\" to-ports=\"" + getPort() + "\" /></cross-domain-policy>";
 	}
 
+	@Override
 	public void onMessage( WebSocket conn, String message ) {
 		onClientMessage( conn, message );
 	}
 
-	public void onOpen( WebSocket conn ) {
+	@Override
+	public void onOpen( WebSocket conn, Handshakedata handshake ) {
 		if( this.connections.add( conn ) ) {
-			onClientOpen( conn );
+			onClientOpen( conn, handshake );
 		}
 	}
 
-	public void onClose( WebSocket conn ) {
+	@Override
+	public void onClose( WebSocket conn, int code, String reason, boolean remote ) {
 		if( this.connections.remove( conn ) ) {
-			onClientClose( conn );
+			onClientClose( conn, code, reason, remote );
 		}
 	}
 
@@ -331,8 +326,8 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	}
 
 	// ABTRACT METHODS /////////////////////////////////////////////////////////
-	public abstract void onClientOpen( WebSocket conn );
-	public abstract void onClientClose( WebSocket conn );
+	public abstract void onClientOpen( WebSocket conn, Handshakedata handshake );
+	public abstract void onClientClose( WebSocket conn, int code, String reason, boolean remote );
 	public abstract void onClientMessage( WebSocket conn, String message );
 	/**
 	 * @param conn

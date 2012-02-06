@@ -96,17 +96,10 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		thread.start();
 	}
 
-	/**
-	 * Calls <var>close</var> on the underlying SocketChannel, which in turn
-	 * closes the socket connection, and ends the client socket thread.
-	 * 
-	 */
-	public Thread close() {
-		if( thread == null ) {
-			throw new IllegalStateException( "Socket has not yet been started or is already closed" );
+	public void close() {
+		if( thread != null ) {
+			thread.interrupt();
 		}
-		thread.interrupt();
-		return thread;
 	}
 
 	/**
@@ -131,7 +124,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
 	// Runnable IMPLEMENTATION /////////////////////////////////////////////////
 	public void run() {
-		if(thread == null)
+		if( thread == null )
 			thread = Thread.currentThread();
 		interruptableRun();
 		thread = null;
@@ -140,68 +133,63 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	protected void interruptableRun() {
 		try {
 			tryToConnect( new InetSocketAddress( uri.getHost(), getPort() ) );
-		} 
-		catch (ClosedByInterruptException e) {
+		} catch ( ClosedByInterruptException e ) {
 			onError( null, e );
 			return;
-		}catch ( IOException e ) {//
+		} catch ( IOException e ) {//
 			onError( conn, e );
 			return;
 		} catch ( SecurityException e ) {
 			onError( conn, e );
 			return;
-        } catch ( UnresolvedAddressException e ) {
-            onError( conn, e );
-            return;
+		} catch ( UnresolvedAddressException e ) {
+			onError( conn, e );
+			return;
 		}
-
 		conn = new WebSocket( this, draft, client );
-
-		while ( !Thread.interrupted() ) {
-			SelectionKey key = null;
-			try {
-				conn.handleWrite();
+		try/*IO*/{
+			while ( !Thread.interrupted() && !conn.isClosed() ) {
+				SelectionKey key = null;
+				conn.flush();
 				selector.select();
 				Set<SelectionKey> keys = selector.selectedKeys();
 				Iterator<SelectionKey> i = keys.iterator();
-
 				while ( i.hasNext() ) {
 					key = i.next();
 					i.remove();
 					if( key.isReadable() ) {
 						conn.handleRead();
 					}
-					if(!key.isValid()){
+					if( !key.isValid() ) {
 						continue;
 					}
 					if( key.isWritable() ) {
-						conn.handleWrite();
+						conn.flush();
 					}
 					if( key.isConnectable() ) {
-						finishConnect();
+						try {
+							finishConnect();
+						} catch ( InterruptedException e ) {
+							conn.close( CloseFrame.NEVERCONNECTED );// report error to only
+							break;
+						} catch ( InvalidHandshakeException e ) {
+							conn.close( e ); // http error
+							conn.flush();
+						}
 					}
 				}
-			} catch ( InvalidHandshakeException e ) {
-				onError( e );
-				close();
-				return;
-			} catch ( IOException e ) {
-				// if(e instanceof ConnectException == false)
-				onError( e );
-				close();
-				return;
-			} catch ( InterruptedException e ) {
-				onError( e );
-				close();
-				return;
-			} catch ( RuntimeException /*| CharacterCodingException*/ e ) {
-				// this catch case covers internal errors only and indicates a bug in this websocket implementation
-				onError( e );
-				close();
-				return;
 			}
+		} catch ( IOException e ) {
+			onError( e );
+			conn.close( CloseFrame.ABNROMAL_CLOSE );
+			return;
+		} catch ( RuntimeException e ) {
+			// this catch case covers internal errors only and indicates a bug in this websocket implementation
+			onError( e );
+			conn.closeConnection( CloseFrame.BUGGYCLOSE, e.toString(), false );
+			return;
 		}
-		conn.close(); // close() is synchronously calling onClose(conn) so we don't have to
+		conn.close( CloseFrame.NORMAL ); // close() is synchronously calling onClose(conn) so we don't have to
 		try {
 			selector.close();
 		} catch ( IOException e ) {
@@ -248,7 +236,6 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		HandshakedataImpl1 handshake = new HandshakedataImpl1();
 		handshake.setResourceDescriptor( path );
 		handshake.put( "Host", host );
-		// handshake.put ( "Origin" , origin );
 		conn.startHandshake( handshake );
 	}
 
@@ -269,8 +256,8 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 * @param conn
 	 */
 	@Override
-	public void onOpen( WebSocket conn ) {
-		onOpen();
+	public void onOpen( WebSocket conn, Handshakedata handshake ) {
+		onOpen( handshake );
 	}
 
 	/**
@@ -279,9 +266,9 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 * @param conn
 	 */
 	@Override
-	public void onClose( WebSocket conn ) {
+	public void onClose( WebSocket conn, int code, String reason, boolean remote ) {
 		thread.interrupt();
-		onClose();
+		onClose( code, reason, remote );
 	}
 
 	/**
@@ -301,7 +288,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
 	// ABTRACT METHODS /////////////////////////////////////////////////////////
 	public abstract void onMessage( String message );
-	public abstract void onOpen();
-	public abstract void onClose();
+	public abstract void onOpen( Handshakedata handshakedata );
+	public abstract void onClose( int code, String reason, boolean remote );
 	public abstract void onError( Exception ex );
 }

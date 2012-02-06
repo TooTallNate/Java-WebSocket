@@ -1,43 +1,33 @@
 package net.tootallnate.websocket;
 
 import java.nio.ByteBuffer;
-import java.nio.charset.CharacterCodingException;
+
+import net.tootallnate.websocket.exeptions.InvalidDataException;
+import net.tootallnate.websocket.exeptions.InvalidFrameException;
 
 public class CloseFrameBuilder extends FramedataImpl1 implements CloseFrame {
+
+	private int code;
+	private String reason;
 
 	public CloseFrameBuilder() {
 		super( Opcode.CLOSING );
 		setFin( true );
 	}
 
-	public CloseFrameBuilder( int code ) {
+	public CloseFrameBuilder( int code ) throws InvalidDataException {
 		super( Opcode.CLOSING );
 		setFin( true );
 		setCodeAndMessage( code, "" );
 	}
 
-	public CloseFrameBuilder( int code , String m ) {
+	public CloseFrameBuilder( int code , String m ) throws InvalidDataException {
 		super( Opcode.CLOSING );
 		setFin( true );
 		setCodeAndMessage( code, m );
 	}
 
-	public void setCloseCode( int code ) {
-		try {
-			setCodeAndMessage( code, getMessage() );
-		} catch ( CharacterCodingException e ) {
-			assert ( false );
-			// not expected
-			throw new RuntimeException( e );
-		}
-	}
-
-	/** This operation changes the payload */
-	public void setMessage( String message ) {
-		setCodeAndMessage( getCloseCode(), message );
-	}
-
-	public void setCodeAndMessage( int code, String m ) {
+	private void setCodeAndMessage( int code, String m ) throws InvalidDataException {
 		byte[] by = Charsetfunctions.utf8Bytes( m );
 		ByteBuffer buf = ByteBuffer.allocate( 4 );
 		buf.putInt( code );
@@ -45,36 +35,61 @@ public class CloseFrameBuilder extends FramedataImpl1 implements CloseFrame {
 		ByteBuffer pay = ByteBuffer.allocate( 2 + by.length );
 		pay.put( buf );
 		pay.put( by );
+		setPayload( pay.array() );
 	}
 
-	@Override
-	public int getCloseCode() {
-		int code = CloseFrame.NOCODE;
-		if( unmaskedpayload.array().length >= 2 ) {
+	private void initCloseCode() throws InvalidFrameException {
+		code = CloseFrame.NOCODE;
+		byte[] payload = getPayloadData();
+		if( payload.length >= 2 ) {
 			ByteBuffer bb = ByteBuffer.allocate( 4 );
 			bb.position( 2 );
-			bb.put( unmaskedpayload.array(), 0, 2 );
+			bb.put( payload, 0, 2 );
 			bb.position( 0 );
 			code = bb.getInt();
 			if( code < 0 || code > Short.MAX_VALUE )
 				code = CloseFrame.NOCODE;
+			if( code < CloseFrame.NORMAL || code > CloseFrame.EXTENSION || code == NOCODE || code == 1004 ) {
+				throw new InvalidFrameException( "bad code " + code );
+			}
 		}
-		return code;
 	}
 
 	@Override
-	public String getMessage() throws CharacterCodingException {
-		if( getCloseCode() == CloseFrame.NOCODE ) {
-			return Charsetfunctions.stingUtf8( unmaskedpayload.array() );
+	public int getCloseCode() {
+		return code;
+	}
+
+	private void initMessage() throws InvalidDataException {
+		if( code == CloseFrame.NOCODE ) {
+			reason = Charsetfunctions.stringUtf8( getPayloadData() );
+		} else {
+			byte[] payload = getPayloadData();
+			reason = Charsetfunctions.stringUtf8( payload, 2, payload.length - 2 );
 		}
-		else{
-			return Charsetfunctions.stingUtf8( unmaskedpayload.array(),2,unmaskedpayload.array().length-2 );
-		} 
+	}
+
+	@Override
+	public String getMessage() {
+		return reason;
 	}
 
 	@Override
 	public String toString() {
-		return super.toString() + "code: " + getCloseCode();
+		return super.toString() + "code: " + code;
+	}
+
+	@Override
+	public void setPayload( byte[] payload ) throws InvalidDataException {
+		super.setPayload( payload );
+		initCloseCode();
+		initMessage();
+	}
+	@Override
+	public byte[] getPayloadData() {
+		if( code == NOCODE )
+			return new byte[ 0 ];
+		return super.getPayloadData();
 	}
 
 }

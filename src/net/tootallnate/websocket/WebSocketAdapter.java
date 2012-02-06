@@ -21,11 +21,11 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	}
 
 	@Override
-	public void onOpen( WebSocket conn ) {
+	public void onOpen( WebSocket conn, Handshakedata handshake ) {
 	}
 
 	@Override
-	public void onClose( WebSocket conn ) {
+	public void onClose( WebSocket conn, int code, String reason, boolean remote ) {
 	}
 
 	@Override
@@ -68,4 +68,5 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	@Override
 	public void onError( WebSocket conn, Exception ex ) {
 	}
+
 }

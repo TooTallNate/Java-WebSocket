@@ -4,6 +4,7 @@ import java.io.InputStreamReader;
 import java.net.URI;
 
 import net.tootallnate.websocket.Draft;
+import net.tootallnate.websocket.Handshakedata;
 import net.tootallnate.websocket.WebSocket;
 import net.tootallnate.websocket.WebSocketClient;
 import net.tootallnate.websocket.drafts.Draft_17;
@@ -80,6 +81,7 @@ public class AutobahnClientTest extends WebSocketClient {
 						uri = URI.create( serverlocation + "/runCase?case=" + spl[ 1 ] + "&agent=" + clientname );
 
 					} else if( line.startsWith( "u" ) ) {
+						WebSocket.DEBUG = false;
 						uri = URI.create( serverlocation + "/updateReports?agent=" + clientname );
 					} else if( line.startsWith( "d" ) ) {
 						try {
@@ -97,7 +99,7 @@ public class AutobahnClientTest extends WebSocketClient {
 					Thread t = new Thread( e );
 					t.start();
 					try {
-						t.join( 15000 );
+						t.join();
 
 					} catch ( InterruptedException e1 ) {
 						e1.printStackTrace();
@@ -148,11 +150,12 @@ public class AutobahnClientTest extends WebSocketClient {
 	}
 
 	@Override
-	public void onOpen() {
+	public void onOpen( Handshakedata handshake ) {
 	}
 
 	@Override
-	public void onClose() {
+	public void onClose( int code, String reason, boolean remote ) {
+		System.out.println( "Closed: " + code + " " + reason );
 	}
 
 }

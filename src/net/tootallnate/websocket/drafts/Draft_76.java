@@ -140,6 +140,7 @@ public class Draft_76 extends Draft_75 {
 
 	@Override
 	public HandshakeBuilder postProcessHandshakeResponseAsServer( Handshakedata request, HandshakeBuilder response ) throws InvalidHandshakeException {
+		response.setHttpStatusMessage( "WebSocket Protocol Handshake" );
 		response.put( "Upgrade", "WebSocket" );
 		response.put( "Connection", request.getFieldValue( "Connection" ) ); // to respond to a Connection keep alive
 		response.put( "Sec-WebSocket-Origin", request.getFieldValue( "Origin" ) );

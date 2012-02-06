@@ -7,6 +7,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CodingErrorAction;
 
+import net.tootallnate.websocket.exeptions.InvalidDataException;
+
 public class Charsetfunctions {
 
 	public static CodingErrorAction codingErrorAction = CodingErrorAction.REPORT;
@@ -33,11 +35,11 @@ public class Charsetfunctions {
 		}
 	}
 
-	public static String stingAscii( byte[] bytes ) {
-		return stingAscii( bytes, 0, bytes.length );
+	public static String stringAscii( byte[] bytes ) {
+		return stringAscii( bytes, 0, bytes.length );
 	}
 	
-	public static String stingAscii( byte[] bytes, int offset, int length ){
+	public static String stringAscii( byte[] bytes, int offset, int length ){
 		try {
 			return new String( bytes, offset, length, "ASCII" );
 		} catch ( UnsupportedEncodingException e ) {
@@ -45,13 +47,21 @@ public class Charsetfunctions {
 		}
 	}
 
-	public static String stingUtf8( byte[] bytes ) throws CharacterCodingException {
-		return stingAscii( bytes, 0, bytes.length );
+	public static String stringUtf8( byte[] bytes ) throws InvalidDataException {
+		return stringUtf8( bytes, 0, bytes.length );
 	}
 
-	public static String stingUtf8( byte[] bytes, int off, int length ) throws CharacterCodingException {
-		CharsetDecoder encode = Charset.forName( "UTF8" ).newDecoder();
-		encode.onMalformedInput( codingErrorAction );
-		return encode.decode( ByteBuffer.wrap( bytes, off, length ) ).toString();
+	public static String stringUtf8( byte[] bytes, int off, int length ) throws InvalidDataException {
+		CharsetDecoder decode = Charset.forName( "UTF8" ).newDecoder();
+		decode.onMalformedInput( codingErrorAction );
+		decode.onUnmappableCharacter( codingErrorAction );
+		//decode.replaceWith( "X" );
+		String s;
+		try {
+			s = decode.decode( ByteBuffer.wrap( bytes, off, length ) ).toString();
+		} catch ( CharacterCodingException e ) {
+			throw new InvalidDataException( CloseFrame.NO_UTF8, e );
+		}
+		return s;
 	}
 }
