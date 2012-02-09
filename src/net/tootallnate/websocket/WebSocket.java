@@ -421,7 +421,12 @@ public final class WebSocket {
 	public void flush() throws IOException {
 		ByteBuffer buffer = this.bufferQueue.peek();
 		while ( buffer != null ) {
-			sockchannel.write( buffer );
+			try {
+				sockchannel.write( buffer );
+			} catch (IOException e) {
+				closeConnection( 5, "", true );
+				break;
+			}
 			if( buffer.remaining() > 0 ) {
 				continue;
 			} else {
