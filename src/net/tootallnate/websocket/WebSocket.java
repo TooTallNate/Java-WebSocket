@@ -311,11 +311,15 @@ public final class WebSocket {
 					return;
 				}
 				flush();
-				try {
-					sendFrameDirect( new CloseFrameBuilder( code, message ) );
-				} catch ( InvalidDataException e ) {
-					wsl.onError( this, e );
-					closeConnection( CloseFrame.ABNROMAL_CLOSE, "generated frame is invalid", false );
+				if( draft.hasCloseHandshake() ) {
+					try {
+						sendFrameDirect( new CloseFrameBuilder( code, message ) );
+					} catch ( InvalidDataException e ) {
+						wsl.onError( this, e );
+						closeConnection( CloseFrame.ABNROMAL_CLOSE, "generated frame is invalid", false );
+					}
+				} else {
+					closeConnection( code, false );
 				}
 			} else {
 				closeConnection( CloseFrame.NEVERCONNECTED, false );

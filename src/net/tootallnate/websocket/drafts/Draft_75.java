@@ -154,5 +154,10 @@ public class Draft_75 extends Draft {
 		readingState = false;
 		this.currentFrame = null;
 	}
+	
+	@Override
+	public boolean hasCloseHandshake() {
+		return false;
+	}
 
 }

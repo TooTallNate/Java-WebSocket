@@ -374,4 +374,9 @@ public class Draft_10 extends Draft {
 	public void reset() {
 		incompleteframe = null;
 	}
+
+	@Override
+	public boolean hasCloseHandshake() {
+		return true;
+	}
 }

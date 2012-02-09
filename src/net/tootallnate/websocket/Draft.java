@@ -150,4 +150,6 @@ public abstract class Draft {
 		this.role = role;
 	}
 
+	public abstract boolean hasCloseHandshake();
+
 }
