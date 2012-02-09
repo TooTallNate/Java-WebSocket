@@ -11,6 +11,8 @@ import java.nio.channels.SocketChannel;
 import java.nio.channels.UnresolvedAddressException;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import net.tootallnate.websocket.drafts.Draft_10;
 import net.tootallnate.websocket.exeptions.InvalidHandshakeException;
@@ -48,6 +50,8 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	private Thread thread;
 
 	private Draft draft;
+
+	final Lock closelock = new ReentrantLock();
 
 	// CONSTRUCTORS ////////////////////////////////////////////////////////////
 	public WebSocketClient( URI serverURI ) {
@@ -99,7 +103,12 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	public void close() {
 		if( thread != null ) {
 			thread.interrupt();
+			closelock.lock();
+			if( selector != null )
+				selector.wakeup();
+			closelock.unlock();
 		}
+
 	}
 
 	/**
@@ -148,7 +157,10 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		}
 		conn = new WebSocket( this, draft, client );
 		try/*IO*/{
-			while ( !Thread.interrupted() && !conn.isClosed() ) {
+			while ( !conn.isClosed() ) {
+				if( Thread.interrupted() ) {
+					conn.close( CloseFrame.NORMAL );
+				}
 				SelectionKey key = null;
 				conn.flush();
 				selector.select();
@@ -189,13 +201,15 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			conn.closeConnection( CloseFrame.BUGGYCLOSE, e.toString(), false );
 			return;
 		}
-		conn.close( CloseFrame.NORMAL ); // close() is synchronously calling onClose(conn) so we don't have to
+
 		try {
 			selector.close();
 		} catch ( IOException e ) {
 			onError( e );
 		}
+		closelock.lock();
 		selector = null;
+		closelock.unlock();
 		try {
 			client.close();
 		} catch ( IOException e ) {

@@ -305,6 +305,11 @@ public final class WebSocket {
 	public void closeDirect( int code, String message ) throws IOException {
 		if( !closeHandshakeSent ) {
 			if( handshakeComplete ) {
+				if( code == CloseFrame.ABNROMAL_CLOSE ) {
+					closeConnection( code, true );
+					closeHandshakeSent = true;
+					return;
+				}
 				flush();
 				try {
 					sendFrameDirect( new CloseFrameBuilder( code, message ) );
