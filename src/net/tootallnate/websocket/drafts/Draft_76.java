@@ -118,7 +118,6 @@ public class Draft_76 extends Draft_75 {
 
 	@Override
 	public HandshakeState acceptHandshakeAsServer( Handshakedata handshakedata ) {
-
 		if( handshakedata.getFieldValue( "Upgrade" ).equals( "WebSocket" ) && handshakedata.getFieldValue( "Connection" ).contains( "Upgrade" ) && handshakedata.getFieldValue( "Sec-WebSocket-Key1" ).length() > 0 && !handshakedata.getFieldValue( "Sec-WebSocket-Key2" ).isEmpty() && handshakedata.hasFieldValue( "Origin" )
 		/*new String ( handshakedata.getContent () ).endsWith ( "\r\n\r\n" )*/)
 			return HandshakeState.MATCHED;
@@ -131,8 +130,13 @@ public class Draft_76 extends Draft_75 {
 		request.put( "Connection", "Upgrade" );
 		request.put( "Sec-WebSocket-Key1", this.generateKey() );
 		request.put( "Sec-WebSocket-Key2", this.generateKey() );
+
+		if( !request.hasFieldValue( "Origin" ) ) {
+			request.put( "Origin", "random" + new Random().nextInt() );
+		}
+
 		byte[] key3 = new byte[ 8 ];
-		( new Random() ).nextBytes( key3 );
+		new Random().nextBytes( key3 );
 		request.setContent( key3 );
 		return request;
 
@@ -158,14 +162,19 @@ public class Draft_76 extends Draft_75 {
 
 	@Override
 	public Handshakedata translateHandshake( ByteBuffer buf ) throws InvalidHandshakeException {
+
 		HandshakeBuilder bui = translateHandshakeHttp( buf );
-		byte[] key3 = new byte[role==Role.SERVER?8:16];
-		try {
-			buf.get( key3 );
-		} catch ( BufferUnderflowException e ) {
-			throw new IncompleteHandshakeException();
+		// the first drafts are lacking a protocol number which makes them difficult to distinguish. Sec-WebSocket-Key1 is typical for draft76
+		if( ( bui.hasFieldValue( "Sec-WebSocket-Key1" ) || role == Role.CLIENT ) && !bui.hasFieldValue( "Sec-WebSocket-Version" ) ) {
+			byte[] key3 = new byte[ role == Role.SERVER ? 8 : 16 ];
+			try {
+				buf.get( key3 );
+			} catch ( BufferUnderflowException e ) {
+				throw new IncompleteHandshakeException();
+			}
+			bui.setContent( key3 );
+
 		}
-		bui.setContent( key3 );
 		return bui;
 	}
 }
