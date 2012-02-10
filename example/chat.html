@@ -5,12 +5,6 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
     <script type="text/javascript" src="prototype.js"></script>
-    
-    <!-- SWFObject and FABridge and only needed for the Flash WebSocket
-         fallback. If the current browser supports WebSockets natively these
-         are not needed. -->
-    <script type="text/javascript" src="swfobject.js"></script>
-    <script type="text/javascript" src="FABridge.js"></script>
 
     <script type="text/javascript">
         document.observe("dom:loaded", function() {
@@ -19,18 +13,7 @@
             }
 
             if (!window.WebSocket) {
-                log("WebSocket not natively supported, falling back to Flash");
-                                
-                WEB_SOCKET_SWF_LOCATION = "WebSocketMain.swf";
-                WEB_SOCKET_DEBUG = true;
-
-                $$("head")[0].insert(new Element("script", {
-                  "type": "text/javascript",
-                  "src": "web_socket.js"
-                }));
-
-            } else {
-                log("Using browser's native WebSocket implementation")
+                alert("FATAL: WebSocket not natively supported. This demo will not work!");
             }
 
             var ws;
@@ -69,6 +52,7 @@
                 e.stop();
                 if (ws) {
                     ws.close();
+                    ws = null;
                 }
             });
         });
