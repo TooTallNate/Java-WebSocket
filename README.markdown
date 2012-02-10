@@ -28,14 +28,14 @@ ant
 Then, start the chat server (a `WebSocketServer` subclass):
 
 ``` bash
-java -cp example:dist/WebSocket.jar ChatServer
+java -cp build/examples:dist/WebSocket.jar ChatServer
 ```
 
 Now that the server is started, we need to connect some clients. Run the
 Java chat client (a `WebSocketClient` subclass):
 
 ``` bash
-java -cp example:dist/WebSocket.jar ChatClient
+java -cp build/examples:dist/WebSocket.jar ChatClient
 ```
 
 The chat client is a simple Swing GUI application that allows you to send
