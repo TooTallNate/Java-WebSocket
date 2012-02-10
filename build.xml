@@ -1,10 +1,10 @@
 <project default="jar">
 
   <target name="compile">
-    <mkdir dir="build/classes"/>
-    <mkdir dir="build/classes/"/>
+    <mkdir dir="build/classes" />
+    <mkdir dir="build/examples" />
     <javac includeantruntime="false" debug="on" srcdir="src" destdir="build/classes" />
-    <javac includeantruntime="false" srcdir="example" classpath="src" destdir="build/classes/" />
+    <javac includeantruntime="false" srcdir="example" classpath="build/classes" destdir="build/examples" />
   </target>
 
   <target name="jar" depends="compile">
