@@ -1,14 +1,16 @@
-<!-- Import JavaScript Libraries. -->
-<script type="text/javascript" src="swfobject.js"></script>
-<script type="text/javascript" src="web_socket.js"></script>
-
 <script type="text/javascript">
-
   // Let the library know where WebSocketMain.swf is:
   WEB_SOCKET_FORCE_FLASH = true
 
   // Let the library know where WebSocketMain.swf is:
   WEB_SOCKET_SWF_LOCATION = "WebSocketMain.swf"
+</script>
+
+<!-- Import JavaScript Libraries. -->
+<script type="text/javascript" src="swfobject.js"></script>
+<script type="text/javascript" src="web_socket.js"></script>
+
+<script type="text/javascript">
 
   // Write your code in the same way as for native WebSocket:
   var ws = new WebSocket('ws://localhost:8887')
