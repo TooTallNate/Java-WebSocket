@@ -24,7 +24,7 @@ public abstract class Draft {
 		// PENDING not yet in use
 	}
 
-	private static final byte[] FLASH_POLICY_REQUEST = Charsetfunctions.utf8Bytes( "<policy-file-request/>" );
+	public static final byte[] FLASH_POLICY_REQUEST = Charsetfunctions.utf8Bytes( "<policy-file-request/>\0" );
 
 	protected Role role = null;
 	

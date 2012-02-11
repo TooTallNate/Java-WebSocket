@@ -79,10 +79,6 @@ public final class WebSocket {
 
 	public List<Draft> known_drafts;
 
-	private static final byte[] FLASH_POLICY_REQUEST = Charsetfunctions.utf8Bytes( "<policy-file-request/>" );
-
-	private int flash_policy_index = 0;
-
 	private SocketChannel sockchannel;
 
 	// CONSTRUCTOR /////////////////////////////////////////////////////////////
@@ -149,13 +145,18 @@ public final class WebSocket {
 				System.out.println( "process(" + socketBuffer.remaining() + "): {" + ( socketBuffer.remaining() > 1000 ? "too big to display" : new String( socketBuffer.array(), socketBuffer.position(), socketBuffer.remaining() ) ) + "}" );
 			if( !handshakeComplete ) {
 				Handshakedata handshake;
-				HandshakeState handshakestate = null;
 
-				handshakestate = isFlashEdgeCase( socketBuffer );
-				if( handshakestate == HandshakeState.MATCHED ) {
-					channelWriteDirect( ByteBuffer.wrap( Charsetfunctions.utf8Bytes( wsl.getFlashPolicy( this ) ) ) );
-					return;
+				if( draft == null ) {
+					HandshakeState isflashedgecase = isFlashEdgeCase( socketBuffer );
+					if( isflashedgecase == HandshakeState.MATCHED ) {
+						channelWriteDirect( ByteBuffer.wrap( Charsetfunctions.utf8Bytes( wsl.getFlashPolicy( this ) ) ) );
+						closeDirect( CloseFrame.FLASHPOLICY, "" );
+						return;
+					} else if( isflashedgecase == HandshakeState.MATCHING ) {
+						return;
+					}
 				}
+				HandshakeState handshakestate = null;
 				socketBuffer.mark();
 				try {
 					if( role == Role.SERVER ) {
@@ -321,6 +322,8 @@ public final class WebSocket {
 				} else {
 					closeConnection( code, false );
 				}
+			} else if( code == CloseFrame.FLASHPOLICY ) {
+				closeConnection( CloseFrame.FLASHPOLICY, true );
 			} else {
 				closeConnection( CloseFrame.NEVERCONNECTED, false );
 			}
@@ -432,16 +435,21 @@ public final class WebSocket {
 	}
 
 	public HandshakeState isFlashEdgeCase( ByteBuffer request ) {
-		if( flash_policy_index >= FLASH_POLICY_REQUEST.length )
+		if( request.limit() > Draft.FLASH_POLICY_REQUEST.length )
 			return HandshakeState.NOT_MATCHED;
-		request.mark();
-		for( ; request.hasRemaining() && flash_policy_index < FLASH_POLICY_REQUEST.length ; flash_policy_index++ ) {
-			if( FLASH_POLICY_REQUEST[ flash_policy_index ] != request.get() ) {
-				request.reset();
-				return HandshakeState.NOT_MATCHED;
+		else if( request.limit() < Draft.FLASH_POLICY_REQUEST.length ) {
+			return HandshakeState.MATCHING;
+		} else {
+			request.mark();
+			for( int flash_policy_index = 0 ; request.hasRemaining() ; flash_policy_index++ ) {
+				if( Draft.FLASH_POLICY_REQUEST[ flash_policy_index ] != request.get() ) {
+					request.reset();
+					return HandshakeState.NOT_MATCHED;
+				}
 			}
+			return HandshakeState.MATCHED;
+			// return request.remaining() >= Draft.FLASH_POLICY_REQUEST.length ? HandshakeState.MATCHED : HandshakeState.MATCHING;
 		}
-		return request.remaining() >= FLASH_POLICY_REQUEST.length ? HandshakeState.MATCHED : HandshakeState.MATCHING;
 	}
 
 	public void startHandshake( HandshakeBuilder handshakedata ) throws InvalidHandshakeException , InterruptedException {
