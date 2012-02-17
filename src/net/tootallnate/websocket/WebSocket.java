@@ -34,7 +34,7 @@ import net.tootallnate.websocket.exeptions.InvalidHandshakeException;
  * @author Nathan Rajlich
  */
 public final class WebSocket {
-	// CONSTANTS ///////////////////////////////////////////////////////////////
+
 	public enum Role {
 		CLIENT, SERVER
 	}
@@ -168,7 +168,13 @@ public final class WebSocket {
 									handshake = d.translateHandshake( socketBuffer );
 									handshakestate = d.acceptHandshakeAsServer( handshake );
 									if( handshakestate == HandshakeState.MATCHED ) {
-										HandshakeBuilder response = wsl.onHandshakeRecievedAsServer( this, d, handshake );
+										HandshakeBuilder response;
+										try {
+											response = wsl.onHandshakeRecievedAsServer( this, d, handshake );
+										} catch ( InvalidDataException e ) {
+											closeConnection( e.getCloseCode(), e.getMessage(), false );
+											return;
+										}
 										writeDirect( d.createHandshake( d.postProcessHandshakeResponseAsServer( handshake, response ), role ) );
 										draft = d;
 										open( handshake );
@@ -214,6 +220,12 @@ public final class WebSocket {
 						handshake = draft.translateHandshake( socketBuffer );
 						handshakestate = draft.acceptHandshakeAsClient( handshakerequest, handshake );
 						if( handshakestate == HandshakeState.MATCHED ) {
+							try {
+								wsl.onHandshakeRecievedAsClient( this, handshakerequest, handshake );
+							} catch ( InvalidDataException e ) {
+								closeConnection( e.getCloseCode(), e.getMessage(), false );
+								return;
+							}
 							open( handshake );
 							handleRead();
 						} else if( handshakestate == HandshakeState.MATCHING ) {
