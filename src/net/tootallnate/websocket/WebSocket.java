@@ -170,7 +170,7 @@ public final class WebSocket {
 									if( handshakestate == HandshakeState.MATCHED ) {
 										HandshakeBuilder response;
 										try {
-											response = wsl.onHandshakeRecievedAsServer( this, d, handshake );
+											response = wsl.onWebsocketHandshakeRecievedAsServer( this, d, handshake );
 										} catch ( InvalidDataException e ) {
 											closeConnection( e.getCloseCode(), e.getMessage(), false );
 											return;
@@ -221,7 +221,7 @@ public final class WebSocket {
 						handshakestate = draft.acceptHandshakeAsClient( handshakerequest, handshake );
 						if( handshakestate == HandshakeState.MATCHED ) {
 							try {
-								wsl.onHandshakeRecievedAsClient( this, handshakerequest, handshake );
+								wsl.onWebsocketHandshakeRecievedAsClient( this, handshakerequest, handshake );
 							} catch ( InvalidDataException e ) {
 								closeConnection( e.getCloseCode(), e.getMessage(), false );
 								return;
@@ -264,10 +264,10 @@ public final class WebSocket {
 							}
 							continue;
 						} else if( curop == Opcode.PING ) {
-							wsl.onPing( this, f );
+							wsl.onWebsocketPing( this, f );
 							continue;
 						} else if( curop == Opcode.PONG ) {
-							wsl.onPong( this, f );
+							wsl.onWebsocketPong( this, f );
 							continue;
 						} else {
 							// process non control frames
@@ -293,7 +293,7 @@ public final class WebSocket {
 						}
 					}
 				} catch ( InvalidDataException e1 ) {
-					wsl.onError( this, e1 );
+					wsl.onWebsocketError( this, e1 );
 					close( e1 );
 					return;
 				}
@@ -328,7 +328,7 @@ public final class WebSocket {
 					try {
 						sendFrameDirect( new CloseFrameBuilder( code, message ) );
 					} catch ( InvalidDataException e ) {
-						wsl.onError( this, e );
+						wsl.onWebsocketError( this, e );
 						closeConnection( CloseFrame.ABNROMAL_CLOSE, "generated frame is invalid", false );
 					}
 				} else {
@@ -365,9 +365,9 @@ public final class WebSocket {
 		try {
 			sockchannel.close();
 		} catch ( IOException e ) {
-			wsl.onError( this, e );
+			wsl.onWebsocketError( this, e );
 		}
-		this.wsl.onClose( this, code, message, remote );
+		this.wsl.onWebsocketClose( this, code, message, remote );
 		if( draft != null )
 			draft.reset();
 		currentframe = null;
@@ -496,9 +496,9 @@ public final class WebSocket {
 	}
 	private void deliverMessage( Framedata d ) throws InvalidDataException {
 		if( d.getOpcode() == Opcode.TEXT ) {
-			wsl.onMessage( this, Charsetfunctions.stringUtf8( d.getPayloadData() ) );
+			wsl.onWebsocketMessage( this, Charsetfunctions.stringUtf8( d.getPayloadData() ) );
 		} else if( d.getOpcode() == Opcode.BINARY ) {
-			wsl.onMessage( this, d.getPayloadData() );
+			wsl.onWebsocketMessage( this, d.getPayloadData() );
 		} else {
 			if( DEBUG )
 				System.out.println( "Ignoring frame:" + d.toString() );
@@ -510,7 +510,7 @@ public final class WebSocket {
 		if( DEBUG )
 			System.out.println( "open using draft: " + draft.getClass().getSimpleName() );
 		handshakeComplete = true;
-		wsl.onOpen( this, d );
+		wsl.onWebsocketOpen( this, d );
 	}
 
 	public InetSocketAddress getRemoteSocketAddress() {
@@ -523,6 +523,11 @@ public final class WebSocket {
 
 	public boolean isClosed() {
 		return connectionClosed;
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode();
 	}
 
 	@Override

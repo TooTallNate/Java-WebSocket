@@ -29,7 +29,6 @@ import net.tootallnate.websocket.exeptions.InvalidHandshakeException;
  */
 public abstract class WebSocketClient extends WebSocketAdapter implements Runnable {
 
-	// INSTANCE PROPERTIES /////////////////////////////////////////////////////
 	/**
 	 * The URI this client is supposed to connect to.
 	 */
@@ -51,9 +50,8 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
 	private Draft draft;
 
-	final Lock closelock = new ReentrantLock();
+	private final Lock closelock = new ReentrantLock();
 
-	// CONSTRUCTORS ////////////////////////////////////////////////////////////
 	public WebSocketClient( URI serverURI ) {
 		this( serverURI, new Draft_10() );
 	}
@@ -74,7 +72,6 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		this.draft = draft;
 	}
 
-	// PUBLIC INSTANCE METHODS /////////////////////////////////////////////////
 	/**
 	 * Gets the URI that this WebSocketClient is connected to.
 	 * 
@@ -84,6 +81,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		return uri;
 	}
 
+	/** Returns the protocol version this client uses. */
 	public Draft getDraft() {
 		return draft;
 	}
@@ -139,20 +137,20 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		thread = null;
 	}
 
-	protected void interruptableRun() {
+	protected final void interruptableRun() {
 		try {
 			tryToConnect( new InetSocketAddress( uri.getHost(), getPort() ) );
 		} catch ( ClosedByInterruptException e ) {
-			onError( null, e );
+			onWebsocketError( null, e );
 			return;
 		} catch ( IOException e ) {//
-			onError( conn, e );
+			onWebsocketError( conn, e );
 			return;
 		} catch ( SecurityException e ) {
-			onError( conn, e );
+			onWebsocketError( conn, e );
 			return;
 		} catch ( UnresolvedAddressException e ) {
-			onError( conn, e );
+			onWebsocketError( conn, e );
 			return;
 		}
 		conn = new WebSocket( this, draft, client );
@@ -260,8 +258,13 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 * @param message
 	 */
 	@Override
-	public void onMessage( WebSocket conn, String message ) {
+	public final void onWebsocketMessage( WebSocket conn, String message ) {
 		onMessage( message );
+	}
+
+	@Override
+	public final void onWebsocketMessage( WebSocket conn, byte[] blob ) {
+		onMessage( blob );
 	}
 
 	/**
@@ -270,7 +273,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 * @param conn
 	 */
 	@Override
-	public void onOpen( WebSocket conn, Handshakedata handshake ) {
+	public final void onWebsocketOpen( WebSocket conn, Handshakedata handshake ) {
 		onOpen( handshake );
 	}
 
@@ -280,7 +283,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 * @param conn
 	 */
 	@Override
-	public void onClose( WebSocket conn, int code, String reason, boolean remote ) {
+	public final void onWebsocketClose( WebSocket conn, int code, String reason, boolean remote ) {
 		thread.interrupt();
 		onClose( code, reason, remote );
 	}
@@ -291,18 +294,24 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 * @param conn
 	 */
 	@Override
-	public void onError( WebSocket conn, Exception ex ) {
+	public final void onWebsocketError( WebSocket conn, Exception ex ) {
 		onError( ex );
 	}
 
 	@Override
-	public void onWriteDemand( WebSocket conn ) {
+	public final void onWriteDemand( WebSocket conn ) {
 		selector.wakeup();
 	}
 
+	public WebSocket getConnection() {
+		return conn;
+	}
+
 	// ABTRACT METHODS /////////////////////////////////////////////////////////
-	public abstract void onMessage( String message );
 	public abstract void onOpen( Handshakedata handshakedata );
+	public abstract void onMessage( String message );
 	public abstract void onClose( int code, String reason, boolean remote );
 	public abstract void onError( Exception ex );
+	public void onMessage( byte[] bytes ) {
+	};
 }

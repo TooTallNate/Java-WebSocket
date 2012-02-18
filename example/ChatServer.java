@@ -22,7 +22,7 @@ public class ChatServer extends WebSocketServer {
 		super( address );
 	}
 
-	public void onClientOpen( WebSocket conn, Handshakedata handshake ) {
+	public void onOpen( WebSocket conn, Handshakedata handshake ) {
 		try {
 			this.sendToAll( conn + " entered the room!" );
 		} catch ( InterruptedException ex ) {
@@ -31,7 +31,7 @@ public class ChatServer extends WebSocketServer {
 		System.out.println( conn + " entered the room!" );
 	}
 
-	public void onClientClose( WebSocket conn, int code, String reason, boolean remote ) {
+	public void onClose( WebSocket conn, int code, String reason, boolean remote ) {
 		try {
 			this.sendToAll( conn + " has left the room!" );
 		} catch ( InterruptedException ex ) {
@@ -40,7 +40,7 @@ public class ChatServer extends WebSocketServer {
 		System.out.println( conn + " has left the room!" );
 	}
 
-	public void onClientMessage( WebSocket conn, String message ) {
+	public void onMessage( WebSocket conn, String message ) {
 		try {
 			this.sendToAll( conn + ": " + message );
 		} catch ( InterruptedException ex ) {

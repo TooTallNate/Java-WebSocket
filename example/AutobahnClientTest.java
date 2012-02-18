@@ -135,9 +135,9 @@ public class AutobahnClientTest extends WebSocketClient {
 	}
 
 	@Override
-	public void onMessage( WebSocket conn, byte[] blob ) {
+	public void onMessage( byte[] blob ) {
 		try {
-			conn.send( blob );
+			getConnection().send( blob );
 		} catch ( InterruptedException e ) {
 			e.printStackTrace();
 		}

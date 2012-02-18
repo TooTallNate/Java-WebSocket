@@ -219,7 +219,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 			selector = Selector.open();
 			server.register( selector, server.validOps() );
 		} catch ( IOException ex ) {
-			onError( null, ex );
+			onWebsocketError( null, ex );
 			return;
 		}
 
@@ -276,7 +276,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 			} catch ( IOException ex ) {
 				if( key != null )
 					key.cancel();
-				onError( conn, ex );// conn may be null here
+				onWebsocketError( conn, ex );// conn may be null here
 				if( conn != null ) {
 					conn.close( CloseFrame.ABNROMAL_CLOSE );
 				}
@@ -302,37 +302,49 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	}
 
 	@Override
-	public void onMessage( WebSocket conn, String message ) {
-		onClientMessage( conn, message );
+	public final void onWebsocketMessage( WebSocket conn, String message ) {
+		onMessage( conn, message );
 	}
 
 	@Override
-	public void onOpen( WebSocket conn, Handshakedata handshake ) {
+	public final void onWebsocketMessage( WebSocket conn, byte[] blob ) {
+		onMessage( conn, blob );
+	}
+
+	@Override
+	public final void onWebsocketOpen( WebSocket conn, Handshakedata handshake ) {
 		if( this.connections.add( conn ) ) {
-			onClientOpen( conn, handshake );
+			onOpen( conn, handshake );
 		}
 	}
 
 	@Override
-	public void onClose( WebSocket conn, int code, String reason, boolean remote ) {
+	public final void onWebsocketClose( WebSocket conn, int code, String reason, boolean remote ) {
 		if( this.connections.remove( conn ) ) {
-			onClientClose( conn, code, reason, remote );
+			onClose( conn, code, reason, remote );
 		}
 	}
 
-	@Override
-	public void onWriteDemand( WebSocket conn ) {
-		selector.wakeup();
-	}
-
-	// ABTRACT METHODS /////////////////////////////////////////////////////////
-	public abstract void onClientOpen( WebSocket conn, Handshakedata handshake );
-	public abstract void onClientClose( WebSocket conn, int code, String reason, boolean remote );
-	public abstract void onClientMessage( WebSocket conn, String message );
 	/**
 	 * @param conn
 	 *            may be null if the error does not belong to a single connection
 	 */
+	@Override
+	public final void onWebsocketError( WebSocket conn, Exception ex ) {
+		onError( conn, ex );
+	}
+
+	@Override
+	public final void onWriteDemand( WebSocket conn ) {
+		selector.wakeup();
+	}
+
+	// ABTRACT METHODS /////////////////////////////////////////////////////////
+	public abstract void onOpen( WebSocket conn, Handshakedata handshake );
+	public abstract void onClose( WebSocket conn, int code, String reason, boolean remote );
+	public abstract void onMessage( WebSocket conn, String message );
 	public abstract void onError( WebSocket conn, Exception ex );
+	public void onMessage( WebSocket conn, byte[] message ) {
+	};
 
 }

@@ -8,66 +8,66 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	/**
 	 * This default implementation does not do anything. Go ahead and overwrite it.
 	 * 
-	 * @see net.tootallnate.websocket.WebSocketListener#onHandshakeRecievedAsServer(net.tootallnate.websocket.WebSocket, net.tootallnate.websocket.Draft, net.tootallnate.websocket.Handshakedata)
+	 * @see net.tootallnate.websocket.WebSocketListener#onWebsocketHandshakeRecievedAsServer(net.tootallnate.websocket.WebSocket, net.tootallnate.websocket.Draft, net.tootallnate.websocket.Handshakedata)
 	 */
 	@Override
-	public HandshakeBuilder onHandshakeRecievedAsServer( WebSocket conn, Draft draft, Handshakedata request ) throws InvalidDataException {
+	public HandshakeBuilder onWebsocketHandshakeRecievedAsServer( WebSocket conn, Draft draft, Handshakedata request ) throws InvalidDataException {
 		return new HandshakedataImpl1();
 	}
 
 	/**
 	 * This default implementation does not do anything which will cause connections to be accepted. Go ahead and overwrite it.
 	 * 
-	 * @see net.tootallnate.websocket.WebSocketListener#onHandshakeRecievedAsClient(net.tootallnate.websocket.WebSocket, net.tootallnate.websocket.Handshakedata, net.tootallnate.websocket.Handshakedata)
+	 * @see net.tootallnate.websocket.WebSocketListener#onWebsocketHandshakeRecievedAsClient(net.tootallnate.websocket.WebSocket, net.tootallnate.websocket.Handshakedata, net.tootallnate.websocket.Handshakedata)
 	 */
 	@Override
-	public void onHandshakeRecievedAsClient( WebSocket conn, Handshakedata request, Handshakedata response ) throws InvalidDataException {
+	public void onWebsocketHandshakeRecievedAsClient( WebSocket conn, Handshakedata request, Handshakedata response ) throws InvalidDataException {
 	}
 
 	/**
 	 * This default implementation does not do anything. Go ahead and overwrite it.
 	 * 
-	 * @see net.tootallnate.websocket.WebSocketListener#onMessage(net.tootallnate.websocket.WebSocket, java.lang.String)
+	 * @see net.tootallnate.websocket.WebSocketListener#onWebsocketMessage(net.tootallnate.websocket.WebSocket, java.lang.String)
 	 */
 	@Override
-	public void onMessage( WebSocket conn, String message ) {
+	public void onWebsocketMessage( WebSocket conn, String message ) {
 	}
 
 	/**
 	 * This default implementation does not do anything. Go ahead and overwrite it.
 	 * 
-	 * @see net.tootallnate.websocket.WebSocketListener#onOpen(net.tootallnate.websocket.WebSocket, net.tootallnate.websocket.Handshakedata)
+	 * @see net.tootallnate.websocket.WebSocketListener#onWebsocketOpen(net.tootallnate.websocket.WebSocket, net.tootallnate.websocket.Handshakedata)
 	 */
 	@Override
-	public void onOpen( WebSocket conn, Handshakedata handshake ) {
+	public void onWebsocketOpen( WebSocket conn, Handshakedata handshake ) {
 	}
 
 	/**
 	 * This default implementation does not do anything. Go ahead and overwrite it.
 	 * 
-	 * @see net.tootallnate.websocket.WebSocketListener#onClose(net.tootallnate.websocket.WebSocket, int, java.lang.String, boolean)
+	 * @see net.tootallnate.websocket.WebSocketListener#onWebsocketClose(net.tootallnate.websocket.WebSocket, int, java.lang.String, boolean)
 	 */
 	@Override
-	public void onClose( WebSocket conn, int code, String reason, boolean remote ) {
+	public void onWebsocketClose( WebSocket conn, int code, String reason, boolean remote ) {
 	}
 
 	/**
 	 * This default implementation does not do anything. Go ahead and overwrite it.
 	 * 
-	 * @see net.tootallnate.websocket.WebSocketListener#onMessage(net.tootallnate.websocket.WebSocket, byte[])
+	 * @see net.tootallnate.websocket.WebSocketListener#onWebsocketMessage(net.tootallnate.websocket.WebSocket, byte[])
 	 */
 	@Override
-	public void onMessage( WebSocket conn, byte[] blob ) {
+	public void onWebsocketMessage( WebSocket conn, byte[] blob ) {
 	}
 
 	/**
 	 * This default implementation will send a pong in response to the received ping.
 	 * The pong frame will have the same payload as the ping frame.
 	 * 
-	 * @see net.tootallnate.websocket.WebSocketListener#onPing(net.tootallnate.websocket.WebSocket, net.tootallnate.websocket.Framedata)
+	 * @see net.tootallnate.websocket.WebSocketListener#onWebsocketPing(net.tootallnate.websocket.WebSocket, net.tootallnate.websocket.Framedata)
 	 */
 	@Override
-	public void onPing( WebSocket conn, Framedata f ) {
+	public void onWebsocketPing( WebSocket conn, Framedata f ) {
 		FramedataImpl1 resp = new FramedataImpl1 ( f );
 		resp.setOptcode( Opcode.PONG );
 		try {
@@ -80,10 +80,10 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	/**
 	 * This default implementation does not do anything. Go ahead and overwrite it.
 	 * 
-	 * @see net.tootallnate.websocket.WebSocketListener#onPong(net.tootallnate.websocket.WebSocket, net.tootallnate.websocket.Framedata)
+	 * @see net.tootallnate.websocket.WebSocketListener#onWebsocketPong(net.tootallnate.websocket.WebSocket, net.tootallnate.websocket.Framedata)
 	 */
 	@Override
-	public void onPong( WebSocket conn, Framedata f ) {
+	public void onWebsocketPong( WebSocket conn, Framedata f ) {
 	}
 
 	/**
@@ -106,10 +106,10 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 
 	/**
 	 * This default implementation does not do anything. Go ahead and overwrite it.
-	 * @see net.tootallnate.websocket.WebSocketListener#onError(net.tootallnate.websocket.WebSocket, java.lang.Exception)
+	 * @see net.tootallnate.websocket.WebSocketListener#onWebsocketError(net.tootallnate.websocket.WebSocket, java.lang.Exception)
 	 */
 	@Override
-	public void onError( WebSocket conn, Exception ex ) {
+	public void onWebsocketError( WebSocket conn, Exception ex ) {
 	}
 
 }

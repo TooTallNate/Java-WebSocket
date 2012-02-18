@@ -21,7 +21,7 @@ public interface WebSocketListener {
 	 * @throws InvalidDataException
 	 *             Throwing this exception will cause this handshake to be rejected
 	 */
-	public HandshakeBuilder onHandshakeRecievedAsServer( WebSocket conn, Draft draft, Handshakedata request ) throws InvalidDataException;
+	public HandshakeBuilder onWebsocketHandshakeRecievedAsServer( WebSocket conn, Draft draft, Handshakedata request ) throws InvalidDataException;
 	/**
 	 * Called on the client side when the socket connection is first established, and the WebSocket
 	 * handshake response has been received.
@@ -33,7 +33,7 @@ public interface WebSocketListener {
 	 * @throws InvalidDataException
 	 *             Allows the client to reject the connection with the server in respect of its handshake response.
 	 */
-	public void onHandshakeRecievedAsClient( WebSocket conn, Handshakedata request, Handshakedata response ) throws InvalidDataException;
+	public void onWebsocketHandshakeRecievedAsClient( WebSocket conn, Handshakedata request, Handshakedata response ) throws InvalidDataException;
 
 	/**
 	 * Called when an entire text frame has been received. Do whatever you want
@@ -44,7 +44,7 @@ public interface WebSocketListener {
 	 * @param message
 	 *            The UTF-8 decoded message that was received.
 	 */
-	public void onMessage( WebSocket conn, String message );
+	public void onWebsocketMessage( WebSocket conn, String message );
 
 	/**
 	 * Called when an entire binary frame has been received. Do whatever you want
@@ -55,7 +55,7 @@ public interface WebSocketListener {
 	 * @param message
 	 *            The binary message that was received.
 	 */
-	public void onMessage( WebSocket conn, byte[] blob );
+	public void onWebsocketMessage( WebSocket conn, byte[] blob );
 
 	/**
 	 * Called after <var>onHandshakeRecieved</var> returns <var>true</var>.
@@ -65,7 +65,7 @@ public interface WebSocketListener {
 	 * @param conn
 	 *            The <tt>WebSocket</tt> instance this event is occuring on.
 	 */
-	public void onOpen( WebSocket conn, Handshakedata d );
+	public void onWebsocketOpen( WebSocket conn, Handshakedata d );
 
 	/**
 	 * Called after <tt>WebSocket#close</tt> is explicity called, or when the
@@ -74,7 +74,7 @@ public interface WebSocketListener {
 	 * @param conn
 	 *            The <tt>WebSocket</tt> instance this event is occuring on.
 	 */
-	public void onClose( WebSocket conn, int code, String reason, boolean remote );
+	public void onWebsocketClose( WebSocket conn, int code, String reason, boolean remote );
 
 	/**
 	 * Called if an exception worth noting occurred.
@@ -84,7 +84,7 @@ public interface WebSocketListener {
 	 *            The exception that occurred. <br>
 	 *            Might be null if the exception is not related to any specific connection. For example if the server port could not be bound.
 	 */
-	public void onError( WebSocket conn, Exception ex );
+	public void onWebsocketError( WebSocket conn, Exception ex );
 
 	/**
 	 * Called a ping frame has been received.
@@ -93,12 +93,12 @@ public interface WebSocketListener {
 	 * @param f
 	 *            The ping frame. Control frames may contain payload.
 	 */
-	public void onPing( WebSocket conn, Framedata f );
+	public void onWebsocketPing( WebSocket conn, Framedata f );
 
 	/**
 	 * Called when a pong frame is received.
 	 **/
-	public void onPong( WebSocket conn, Framedata f );
+	public void onWebsocketPong( WebSocket conn, Framedata f );
 
 	/**
 	 * Gets the XML string that should be returned if a client requests a Flash

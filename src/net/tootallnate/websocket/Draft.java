@@ -11,6 +11,9 @@ import net.tootallnate.websocket.exeptions.InvalidDataException;
 import net.tootallnate.websocket.exeptions.InvalidHandshakeException;
 import net.tootallnate.websocket.exeptions.LimitExedeedException;
 
+/**
+ * Base class for everything of a websocket specification which is not common such as the way the handshake is read or frames are transfered.
+ **/
 public abstract class Draft {
 
 	public enum HandshakeState {
@@ -20,12 +23,11 @@ public abstract class Draft {
 		NOT_MATCHED ,
 		/** Handshake matches this Draft but is not complete */
 		MATCHING
-		// ,/**Can not yet say anything*/
-		// PENDING not yet in use
 	}
 
 	public static final byte[] FLASH_POLICY_REQUEST = Charsetfunctions.utf8Bytes( "<policy-file-request/>\0" );
 
+	/** In some cases the handshake will be parsed different depending on whether */
 	protected Role role = null;
 	
 	public static ByteBuffer readLine( ByteBuffer buf ) {

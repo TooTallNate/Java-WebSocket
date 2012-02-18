@@ -19,17 +19,13 @@ public class AutobahnServerTest extends WebSocketServer {
 	}
 
 	@Override
-	public void onClientOpen( WebSocket conn, Handshakedata handshake ) {
+	public void onOpen( WebSocket conn, Handshakedata handshake ) {
 		counter++;
 		System.out.println( "///////////Opened connection number" + counter );
 	}
 
 	@Override
-	public void onClientClose( WebSocket conn, int code, String reason, boolean remote ) {
-	}
-
-	@Override
-	public void onClientMessage( WebSocket conn, String message ) {
+	public void onClose( WebSocket conn, int code, String reason, boolean remote ) {
 	}
 
 	@Override
