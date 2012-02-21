@@ -25,7 +25,7 @@ import net.tootallnate.websocket.exeptions.InvalidHandshakeException;
 /**
  * Represents one end (client or server) of a single WebSocket connection.
  * Takes care of the "handshake" phase, then allows for easy sending of
- * text frames, and recieving frames through an event-based model.
+ * text frames, and receiving frames through an event-based model.
  * 
  * This is an inner class, used by <tt>WebSocketClient</tt> and <tt>WebSocketServer</tt>, and should never need to be instantiated directly
  * by your code. However, instances are exposed in <tt>WebSocketServer</tt> through the <i>onClientOpen</i>, <i>onClientClose</i>,
@@ -93,11 +93,11 @@ public final class WebSocket {
 	 *            The {@link WebSocketListener} to notify of events when
 	 *            they occur.
 	 */
-	public WebSocket( WebSocketListener listener , Draft draft , SocketChannel sockchannel ) {
-		init( listener, draft, sockchannel );
+	public WebSocket( WebSocketListener listener , Draft draft , SocketChannel socketChannel ) {
+		init( listener, draft, socketChannel );
 	}
 
-	public WebSocket( WebSocketListener listener , List<Draft> drafts , SocketChannel sockchannel ) {
+	public WebSocket( WebSocketListener listener , List<Draft> drafts , SocketChannel socketChannel ) {
 		init( listener, null, sockchannel );
 		this.role = Role.SERVER;
 		if( known_drafts == null || known_drafts.isEmpty() ) {
