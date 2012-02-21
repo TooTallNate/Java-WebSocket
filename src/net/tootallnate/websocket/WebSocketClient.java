@@ -123,6 +123,18 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		}
 	}
 
+	/**
+     * Sends <var>data</var> to the connected WebSocket server.
+     *
+     * @param data
+     *            The Byte-Array of data to send to the WebSocket server.
+     */
+    public void send( byte[] data ) throws NotYetConnectedException , InterruptedException {
+        if( conn != null ) {
+            conn.send( data );
+        }
+    }
+
 	private void tryToConnect( InetSocketAddress remote ) throws IOException {
 		client = SocketChannel.open();
 		client.configureBlocking( false );

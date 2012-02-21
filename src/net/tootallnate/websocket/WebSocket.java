@@ -389,8 +389,9 @@ public final class WebSocket {
 	/**
 	 * @return True if all of the text was sent to the client by this thread or the given data is empty
 	 *         False if some of the text had to be buffered to be sent later.
-	 * @throws IOException
+	 * @throws IllegalArgumentException
 	 * @throws InterruptedException
+	 * @throws NotYetConnectedException
 	 */
 	public void send( String text ) throws IllegalArgumentException , NotYetConnectedException , InterruptedException {
 		if( text == null )
@@ -398,7 +399,13 @@ public final class WebSocket {
 		send( draft.createFrames( text, role == Role.CLIENT ) );
 	}
 
-	// TODO there should be a send for bytebuffers
+	/**
+     * @return True if all of the bytes was sent to the client by this thread or the given data is empty
+     *         False if some of the text had to be buffered to be sent later.
+     * @throws IllegalArgumentException
+	 * @throws InterruptedException
+	 * @throws NotYetConnectedException
+     */
 	public void send( byte[] bytes ) throws IllegalArgumentException , NotYetConnectedException , InterruptedException {
 		if( bytes == null )
 			throw new IllegalArgumentException( "Cannot send 'null' data to a WebSocket." );
