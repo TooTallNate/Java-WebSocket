@@ -412,7 +412,7 @@ public final class WebSocket {
 	/**
      * Send Binary data (plain bytes) to the other end.
      *
-     * @throws IllegalArgumentException
+	 * @throws IllegalArgumentException
 	 * @throws InterruptedException
 	 * @throws NotYetConnectedException
      */
