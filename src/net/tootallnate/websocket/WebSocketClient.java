@@ -29,6 +29,11 @@ import net.tootallnate.websocket.exeptions.InvalidHandshakeException;
  */
 public abstract class WebSocketClient extends WebSocketAdapter implements Runnable {
 
+	public static final int READY_STATE_CONNECTING = 0;
+	public static final int READY_STATE_OPEN = 1;
+	public static final int READY_STATE_CLOSING = 2;
+	public static final int READY_STATE_CLOSED = 3;
+
 	// INSTANCE PROPERTIES /////////////////////////////////////////////////////
 	/**
 	 * The URI this client is supposed to connect to.
@@ -263,6 +268,43 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		handshake.setResourceDescriptor( path );
 		handshake.put( "Host", host );
 		conn.startHandshake( handshake );
+	}
+
+	/**
+	 * Retrieve the WebSocket 'readyState'.
+	 * This represents the state of the connection.
+	 * It returns a numerical value, as per W3C WebSockets specs.
+	 *
+	 * @return Returns '0 = CONNECTING', '1 = OPEN', '2 = CLOSING' or '3 = CLOSED'
+	 */
+	public int getReadyState() {
+		if (conn.isConnecting()) {
+			return READY_STATE_CONNECTING;
+		}
+		if (conn.isOpen()) {
+			return READY_STATE_OPEN;
+		}
+		if (conn.isClosing()) {
+			return READY_STATE_CLOSING;
+		}
+		if (conn.isClosed()) {
+			return READY_STATE_CLOSED;
+		}
+
+		return -1; //< This can't happen, by design!
+	}
+
+	/**
+	 * Amount of data buffered/queued but not sent yet.
+	 *
+	 * In details, it returns the number of bytes of application data (UTF-8 text and binary data)
+	 * that have been queued using send() but that, as of the last time the event loop
+	 * started executing a task, had not yet been transmitted to the network.
+	 *
+	 * @return Amount still buffered/queued but not sent yet.
+	 */
+	public long getBufferedAmount() {
+		return conn.bufferedDataAmount();
 	}
 
 	/**

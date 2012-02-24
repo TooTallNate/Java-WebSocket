@@ -48,14 +48,19 @@ public final class WebSocket {
 	public static/*final*/boolean DEBUG = false; // must be final in the future in order to take advantage of VM optimization
 
 	/**
-	 * Internally used to determine whether to receive data as part of the
-	 * remote handshake, or as part of a text frame.
+	 * Determines whether to receive data as part of the
+	 * handshake, or as part of text/data frame transmitted over the websocket.
 	 */
 	private boolean handshakeComplete = false;
-
+    /**
+     * Determines whether we sent already a request to Close the connection or not.
+     */
 	private boolean closeHandshakeSent = false;
+    /**
+     * Determines wheter the connection is open or not
+     */
 	private boolean connectionClosed = false;
-	private boolean isClosePending = false;
+
 	/**
 	 * The listener to notify of WebSocket events.
 	 */
@@ -68,6 +73,11 @@ public final class WebSocket {
 	 * Queue of buffers that need to be sent to the client.
 	 */
 	private BlockingQueue<ByteBuffer> bufferQueue;
+	/**
+	 * The amount of bytes still in queue to be sent, at every given time.
+	 * It's updated at every send/sent operation.
+	 */
+	private long bufferQueueTotalAmount = 0;
 
 	private Draft draft = null;
 
@@ -437,6 +447,15 @@ public final class WebSocket {
 	}
 
 	/**
+	 * The amount of data in Queue, ready to be sent.
+	 *
+	 * @return Amount of Data still in Queue and not sent yet of the socket
+	 */
+	long bufferedDataAmount() {
+		return bufferQueueTotalAmount;
+	}
+
+	/**
 	 * @return True if all data has been sent to the client, false if there
 	 *         is still some buffered.
 	 */
@@ -447,6 +466,7 @@ public final class WebSocket {
 			if( buffer.remaining() > 0 ) {
 				continue;
 			} else {
+				bufferQueueTotalAmount -= buffer.limit(); //< subtract this amount of data to the total queued
 				this.bufferQueue.poll(); // Buffer finished. Remove it.
 				buffer = this.bufferQueue.peek();
 			}
@@ -482,6 +502,7 @@ public final class WebSocket {
 		if( DEBUG )
 			System.out.println( "write(" + buf.limit() + "): {" + ( buf.limit() > 1000 ? "too big to display" : new String( buf.array() ) ) + "}" );
 		buf.rewind();
+		bufferQueueTotalAmount += buf.limit(); //< add up the number of bytes to the total
 		bufferQueue.put( buf );
 		wsl.onWriteDemand( this );
 	}
@@ -526,6 +547,18 @@ public final class WebSocket {
 
 	public InetSocketAddress getLocalSocketAddress() {
 		return (InetSocketAddress) sockchannel.socket().getLocalSocketAddress();
+	}
+
+	public boolean isConnecting() {
+		return (!connectionClosed && !closeHandshakeSent && !handshakeComplete);
+	}
+
+	public boolean isOpen() {
+		return (!connectionClosed && !closeHandshakeSent && handshakeComplete);
+	}
+
+	public boolean isClosing() {
+		return (!connectionClosed && closeHandshakeSent);
 	}
 
 	public boolean isClosed() {
