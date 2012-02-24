@@ -397,8 +397,8 @@ public final class WebSocket {
 	}
 
 	/**
-	 * @return True if all of the text was sent to the client by this thread or the given data is empty
-	 *         False if some of the text had to be buffered to be sent later.
+	 * Send Text data to the other end.
+	 *
 	 * @throws IllegalArgumentException
 	 * @throws InterruptedException
 	 * @throws NotYetConnectedException
@@ -410,8 +410,8 @@ public final class WebSocket {
 	}
 
 	/**
-     * @return True if all of the bytes was sent to the client by this thread or the given data is empty
-     *         False if some of the text had to be buffered to be sent later.
+     * Send Binary data (plain bytes) to the other end.
+     *
      * @throws IllegalArgumentException
 	 * @throws InterruptedException
 	 * @throws NotYetConnectedException
@@ -456,8 +456,7 @@ public final class WebSocket {
 	}
 
 	/**
-	 * @return True if all data has been sent to the client, false if there
-	 *         is still some buffered.
+	 * Empty the internal buffer, sending all the pending data before continuing.
 	 */
 	public void flush() throws IOException {
 		ByteBuffer buffer = this.bufferQueue.peek();

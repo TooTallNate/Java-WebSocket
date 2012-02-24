@@ -51,29 +51,28 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	// CONSTRUCTORS ////////////////////////////////////////////////////////////
 	/**
 	 * Nullary constructor. Creates a WebSocketServer that will attempt to
-	 * listen on port WebSocket.DEFAULT_PORT.
+	 * listen on port <var>ebSocket.DEFAULT_PORT</var>.
 	 */
 	public WebSocketServer() throws UnknownHostException {
 		this( new InetSocketAddress( InetAddress.getLocalHost(), WebSocket.DEFAULT_PORT ) , null );
 	}
 
 	/**
-	 * Creates a WebSocketServer that will attempt to listen on port
-	 * <var>port</var>.
+	 * Creates a WebSocketServer that will attempt to bind/listen on the given <var>address</var>.
 	 *
-	 * @param port
-	 *            The port number this server should listen on.
+	 * @param address
+	 *            The address (host:port) this server should listen on.
 	 */
 	public WebSocketServer( InetSocketAddress address ) {
 		this( address, null );
 	}
 
 	/**
-	 * Creates a WebSocketServer that will attempt to listen on port <var>port</var>,
+	 * Creates a WebSocketServer that will attempt to bind/listen on the given <var>address</var>,
 	 * and comply with <tt>Draft</tt> version <var>draft</var>.
 	 *
-	 * @param port
-	 *            The port number this server should listen on.
+	 * @param address
+	 *            The address (host:port) this server should listen on.
 	 * @param draft
 	 *            The version of the WebSocket protocol that this server
 	 *            instance should comply to.
@@ -238,10 +237,10 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	}
 
 	/**
-	 * Sets the port that this WebSocketServer should listen on.
+	 * Sets the address (host:port) that this WebSocketServer should listen on.
 	 * 
-	 * @param port
-	 *            The port number to listen on.
+	 * @param address
+	 *            The address (host:port) to listen on.
 	 */
 	public void setAddress( InetSocketAddress address ) {
 		this.address = address;
