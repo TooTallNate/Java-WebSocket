@@ -1,3 +1,6 @@
 *.class
 *.svn
 *~
+doc/
+dist/
+build/
