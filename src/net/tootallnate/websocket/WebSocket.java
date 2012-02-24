@@ -25,7 +25,7 @@ import net.tootallnate.websocket.exeptions.InvalidHandshakeException;
 /**
  * Represents one end (client or server) of a single WebSocket connection.
  * Takes care of the "handshake" phase, then allows for easy sending of
- * text frames, and recieving frames through an event-based model.
+ * text frames, and receiving frames through an event-based model.
  * 
  * This is an inner class, used by <tt>WebSocketClient</tt> and <tt>WebSocketServer</tt>, and should never need to be instantiated directly
  * by your code. However, instances are exposed in <tt>WebSocketServer</tt> through the <i>onClientOpen</i>, <i>onClientClose</i>,
@@ -48,14 +48,19 @@ public final class WebSocket {
 	public static/*final*/boolean DEBUG = false; // must be final in the future in order to take advantage of VM optimization
 
 	/**
-	 * Internally used to determine whether to receive data as part of the
-	 * remote handshake, or as part of a text frame.
+	 * Determines whether to receive data as part of the
+	 * handshake, or as part of text/data frame transmitted over the websocket.
 	 */
 	private boolean handshakeComplete = false;
-
+    /**
+     * Determines whether we sent already a request to Close the connection or not.
+     */
 	private boolean closeHandshakeSent = false;
+    /**
+     * Determines wheter the connection is open or not
+     */
 	private boolean connectionClosed = false;
-	private boolean isClosePending = false;
+
 	/**
 	 * The listener to notify of WebSocket events.
 	 */
@@ -68,6 +73,11 @@ public final class WebSocket {
 	 * Queue of buffers that need to be sent to the client.
 	 */
 	private BlockingQueue<ByteBuffer> bufferQueue;
+	/**
+	 * The amount of bytes still in queue to be sent, at every given time.
+	 * It's updated at every send/sent operation.
+	 */
+	private long bufferQueueTotalAmount = 0;
 
 	private Draft draft = null;
 
@@ -93,11 +103,11 @@ public final class WebSocket {
 	 *            The {@link WebSocketListener} to notify of events when
 	 *            they occur.
 	 */
-	public WebSocket( WebSocketListener listener , Draft draft , SocketChannel sockchannel ) {
-		init( listener, draft, sockchannel );
+	public WebSocket( WebSocketListener listener , Draft draft , SocketChannel socketChannel ) {
+		init( listener, draft, socketChannel );
 	}
 
-	public WebSocket( WebSocketListener listener , List<Draft> drafts , SocketChannel sockchannel ) {
+	public WebSocket( WebSocketListener listener , List<Draft> drafts , SocketChannel socketChannel ) {
 		init( listener, null, sockchannel );
 		this.role = Role.SERVER;
 		if( known_drafts == null || known_drafts.isEmpty() ) {
@@ -387,10 +397,11 @@ public final class WebSocket {
 	}
 
 	/**
-	 * @return True if all of the text was sent to the client by this thread or the given data is empty
-	 *         False if some of the text had to be buffered to be sent later.
-	 * @throws IOException
+	 * Send Text data to the other end.
+	 *
+	 * @throws IllegalArgumentException
 	 * @throws InterruptedException
+	 * @throws NotYetConnectedException
 	 */
 	public void send( String text ) throws IllegalArgumentException , NotYetConnectedException , InterruptedException {
 		if( text == null )
@@ -398,7 +409,13 @@ public final class WebSocket {
 		send( draft.createFrames( text, role == Role.CLIENT ) );
 	}
 
-	// TODO there should be a send for bytebuffers
+	/**
+     * Send Binary data (plain bytes) to the other end.
+     *
+     * @throws IllegalArgumentException
+	 * @throws InterruptedException
+	 * @throws NotYetConnectedException
+     */
 	public void send( byte[] bytes ) throws IllegalArgumentException , NotYetConnectedException , InterruptedException {
 		if( bytes == null )
 			throw new IllegalArgumentException( "Cannot send 'null' data to a WebSocket." );
@@ -430,8 +447,16 @@ public final class WebSocket {
 	}
 
 	/**
-	 * @return True if all data has been sent to the client, false if there
-	 *         is still some buffered.
+	 * The amount of data in Queue, ready to be sent.
+	 *
+	 * @return Amount of Data still in Queue and not sent yet of the socket
+	 */
+	long bufferedDataAmount() {
+		return bufferQueueTotalAmount;
+	}
+
+	/**
+	 * Empty the internal buffer, sending all the pending data before continuing.
 	 */
 	public void flush() throws IOException {
 		ByteBuffer buffer = this.bufferQueue.peek();
@@ -440,6 +465,7 @@ public final class WebSocket {
 			if( buffer.remaining() > 0 ) {
 				continue;
 			} else {
+				bufferQueueTotalAmount -= buffer.limit(); //< subtract this amount of data to the total queued
 				this.bufferQueue.poll(); // Buffer finished. Remove it.
 				buffer = this.bufferQueue.peek();
 			}
@@ -475,6 +501,7 @@ public final class WebSocket {
 		if( DEBUG )
 			System.out.println( "write(" + buf.limit() + "): {" + ( buf.limit() > 1000 ? "too big to display" : new String( buf.array() ) ) + "}" );
 		buf.rewind();
+		bufferQueueTotalAmount += buf.limit(); //< add up the number of bytes to the total
 		bufferQueue.put( buf );
 		wsl.onWriteDemand( this );
 	}
@@ -519,6 +546,18 @@ public final class WebSocket {
 
 	public InetSocketAddress getLocalSocketAddress() {
 		return (InetSocketAddress) sockchannel.socket().getLocalSocketAddress();
+	}
+
+	public boolean isConnecting() {
+		return (!connectionClosed && !closeHandshakeSent && !handshakeComplete);
+	}
+
+	public boolean isOpen() {
+		return (!connectionClosed && !closeHandshakeSent && handshakeComplete);
+	}
+
+	public boolean isClosing() {
+		return (!connectionClosed && closeHandshakeSent);
 	}
 
 	public boolean isClosed() {
