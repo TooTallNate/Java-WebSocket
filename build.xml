@@ -23,6 +23,8 @@
   
   <target name="clean">
     <delete dir="build"/>
+    <delete dir="dist"/>
+    <delete dir="doc"/>
   </target>
 
 </project>
