@@ -492,9 +492,21 @@ public final class WebSocket {
 
 	public void startHandshake( HandshakeBuilder handshakedata ) throws InvalidHandshakeException , InterruptedException {
 		if( handshakeComplete )
-			throw new IllegalStateException( "Handshake has allready been sent." );
-		this.handshakerequest = handshakedata;
-		channelWrite( draft.createHandshake( draft.postProcessHandshakeRequestAsClient( handshakedata ), role ) );
+			throw new IllegalStateException( "Handshake has already been sent." );
+
+		// Store the Handshake Request we are about to send
+		this.handshakerequest = draft.postProcessHandshakeRequestAsClient( handshakedata );
+
+		// Notify Listener
+		try {
+			wsl.onHandshakeSentAsClient( this, this.handshakerequest );
+		} catch (InvalidDataException e) {
+			// Stop if the client code throws an exception
+			throw new InvalidHandshakeException( "Handshake data rejected by client." );
+		}
+
+		// Send
+		channelWrite( draft.createHandshake( this.handshakerequest, role ) );
 	}
 
 	private void channelWrite( ByteBuffer buf ) throws InterruptedException {

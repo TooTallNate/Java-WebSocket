@@ -8,20 +8,29 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	/**
 	 * This default implementation does not do anything. Go ahead and overwrite it.
 	 * 
-	 * @see net.tootallnate.websocket.WebSocketListener#onHandshakeRecievedAsServer(net.tootallnate.websocket.WebSocket, net.tootallnate.websocket.Draft, net.tootallnate.websocket.Handshakedata)
+	 * @see net.tootallnate.websocket.WebSocketListener#onHandshakeReceivedAsServer(net.tootallnate.websocket.WebSocket, net.tootallnate.websocket.Draft, net.tootallnate.websocket.Handshakedata)
 	 */
 	@Override
-	public HandshakeBuilder onHandshakeRecievedAsServer( WebSocket conn, Draft draft, Handshakedata request ) throws InvalidDataException {
+	public HandshakeBuilder onHandshakeReceivedAsServer(WebSocket conn, Draft draft, Handshakedata request) throws InvalidDataException {
 		return new HandshakedataImpl1();
 	}
 
 	/**
 	 * This default implementation does not do anything which will cause connections to be accepted. Go ahead and overwrite it.
 	 * 
-	 * @see net.tootallnate.websocket.WebSocketListener#onHandshakeRecievedAsClient(net.tootallnate.websocket.WebSocket, net.tootallnate.websocket.Handshakedata, net.tootallnate.websocket.Handshakedata)
+	 * @see net.tootallnate.websocket.WebSocketListener#onHandshakeReceivedAsClient(net.tootallnate.websocket.WebSocket, net.tootallnate.websocket.Handshakedata, net.tootallnate.websocket.Handshakedata)
 	 */
 	@Override
-	public void onHandshakeRecievedAsClient( WebSocket conn, Handshakedata request, Handshakedata response ) throws InvalidDataException {
+	public void onHandshakeReceivedAsClient(WebSocket conn, Handshakedata request, Handshakedata response) throws InvalidDataException {
+	}
+
+	/**
+	 * This default implementation does not do anything which will cause the connections to always progress.
+	 *
+	 * @see net.tootallnate.websocket.WebSocketListener#onHandshakeSentAsClient(net.tootallnate.websocket.WebSocket, net.tootallnate.websocket.Handshakedata)
+	 */
+	@Override
+	public void onHandshakeSentAsClient( WebSocket conn, Handshakedata request ) throws InvalidDataException {
 	}
 
 	/**
