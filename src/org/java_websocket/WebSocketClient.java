@@ -121,6 +121,18 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		}
 	}
 
+	/**
+	 * Sends <var>data</var> to the connected WebSocket server.
+	 * 
+	 * @param data
+	 *            The Byte-Array of data to send to the WebSocket server.
+	 */
+	public void send( byte[] data ) throws NotYetConnectedException , InterruptedException {
+		if( conn != null ) {
+			conn.send( data );
+		}
+	}
+
 	private void tryToConnect( InetSocketAddress remote ) throws IOException {
 		client = SocketChannel.open();
 		client.configureBlocking( false );
@@ -249,6 +261,17 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		handshake.setResourceDescriptor( path );
 		handshake.put( "Host", host );
 		conn.startHandshake( handshake );
+	}
+
+	/**
+	 * Retrieve the WebSocket 'readyState'.
+	 * This represents the state of the connection.
+	 * It returns a numerical value, as per W3C WebSockets specs.
+	 * 
+	 * @return Returns '0 = CONNECTING', '1 = OPEN', '2 = CLOSING' or '3 = CLOSED'
+	 */
+	public int getReadyState() {
+		return conn.getReadyState();
 	}
 
 	/**

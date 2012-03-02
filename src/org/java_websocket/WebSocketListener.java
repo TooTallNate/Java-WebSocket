@@ -52,7 +52,7 @@ public interface WebSocketListener {
 	 * 
 	 * @param conn
 	 *            The <tt>WebSocket</tt> instance this event is occurring on.
-	 * @param message
+	 * @param blob
 	 *            The binary message that was received.
 	 */
 	public void onWebsocketMessage( WebSocket conn, byte[] blob );
