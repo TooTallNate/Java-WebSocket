@@ -1,4 +1,4 @@
-package net.tootallnate.websocket;
+package org.java_websocket;
 
 public interface HandshakeBuilder extends Handshakedata {
 

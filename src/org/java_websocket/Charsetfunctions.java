@@ -1,4 +1,4 @@
-package net.tootallnate.websocket;
+package org.java_websocket;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
@@ -7,7 +7,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CodingErrorAction;
 
-import net.tootallnate.websocket.exeptions.InvalidDataException;
+import org.java_websocket.exeptions.InvalidDataException;
 
 public class Charsetfunctions {
 

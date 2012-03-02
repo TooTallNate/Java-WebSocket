@@ -1,4 +1,4 @@
-package net.tootallnate.websocket;
+package org.java_websocket;
 
 import java.io.IOException;
 import java.net.InetAddress;

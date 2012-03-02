@@ -1,6 +1,6 @@
-package net.tootallnate.websocket.exeptions;
+package org.java_websocket.exeptions;
 
-import net.tootallnate.websocket.CloseFrame;
+import org.java_websocket.CloseFrame;
 
 public class InvalidFrameException extends InvalidDataException {
 

@@ -1,6 +1,6 @@
-package net.tootallnate.websocket;
+package org.java_websocket;
 
-import net.tootallnate.websocket.exeptions.InvalidDataException;
+import org.java_websocket.exeptions.InvalidDataException;
 
 /**
  * Implemented by <tt>WebSocketClient</tt> and <tt>WebSocketServer</tt>.

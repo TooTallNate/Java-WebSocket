@@ -3,11 +3,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
 
-import net.tootallnate.websocket.Draft;
-import net.tootallnate.websocket.Handshakedata;
-import net.tootallnate.websocket.WebSocket;
-import net.tootallnate.websocket.WebSocketClient;
-import net.tootallnate.websocket.drafts.Draft_17;
+import org.java_websocket.Draft;
+import org.java_websocket.Handshakedata;
+import org.java_websocket.WebSocket;
+import org.java_websocket.WebSocketClient;
+import org.java_websocket.drafts.Draft_17;
 
 public class AutobahnClientTest extends WebSocketClient {
 

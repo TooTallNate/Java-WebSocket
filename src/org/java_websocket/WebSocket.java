@@ -1,4 +1,4 @@
-package net.tootallnate.websocket;
+package org.java_websocket;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -11,16 +11,16 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import net.tootallnate.websocket.Draft.HandshakeState;
-import net.tootallnate.websocket.Framedata.Opcode;
-import net.tootallnate.websocket.drafts.Draft_10;
-import net.tootallnate.websocket.drafts.Draft_17;
-import net.tootallnate.websocket.drafts.Draft_75;
-import net.tootallnate.websocket.drafts.Draft_76;
-import net.tootallnate.websocket.exeptions.IncompleteHandshakeException;
-import net.tootallnate.websocket.exeptions.InvalidDataException;
-import net.tootallnate.websocket.exeptions.InvalidFrameException;
-import net.tootallnate.websocket.exeptions.InvalidHandshakeException;
+import org.java_websocket.Draft.HandshakeState;
+import org.java_websocket.Framedata.Opcode;
+import org.java_websocket.drafts.Draft_10;
+import org.java_websocket.drafts.Draft_17;
+import org.java_websocket.drafts.Draft_75;
+import org.java_websocket.drafts.Draft_76;
+import org.java_websocket.exeptions.IncompleteHandshakeException;
+import org.java_websocket.exeptions.InvalidDataException;
+import org.java_websocket.exeptions.InvalidFrameException;
+import org.java_websocket.exeptions.InvalidHandshakeException;
 
 /**
  * Represents one end (client or server) of a single WebSocket connection.

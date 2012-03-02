@@ -1,6 +1,6 @@
-package net.tootallnate.websocket;
+package org.java_websocket;
 
-import net.tootallnate.websocket.exeptions.InvalidFrameException;
+import org.java_websocket.exeptions.InvalidFrameException;
 
 public interface Framedata {
 	enum Opcode {

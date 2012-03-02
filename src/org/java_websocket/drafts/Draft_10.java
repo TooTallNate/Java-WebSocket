@@ -1,4 +1,4 @@
-package net.tootallnate.websocket.drafts;
+package org.java_websocket.drafts;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
@@ -8,22 +8,22 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
-import net.tootallnate.websocket.Base64;
-import net.tootallnate.websocket.Charsetfunctions;
-import net.tootallnate.websocket.CloseFrameBuilder;
-import net.tootallnate.websocket.Draft;
-import net.tootallnate.websocket.FrameBuilder;
-import net.tootallnate.websocket.Framedata;
-import net.tootallnate.websocket.Framedata.Opcode;
-import net.tootallnate.websocket.FramedataImpl1;
-import net.tootallnate.websocket.HandshakeBuilder;
-import net.tootallnate.websocket.Handshakedata;
-import net.tootallnate.websocket.WebSocket.Role;
-import net.tootallnate.websocket.exeptions.InvalidDataException;
-import net.tootallnate.websocket.exeptions.InvalidFrameException;
-import net.tootallnate.websocket.exeptions.InvalidHandshakeException;
-import net.tootallnate.websocket.exeptions.LimitExedeedException;
-import net.tootallnate.websocket.exeptions.NotSendableException;
+import org.java_websocket.Base64;
+import org.java_websocket.Charsetfunctions;
+import org.java_websocket.CloseFrameBuilder;
+import org.java_websocket.Draft;
+import org.java_websocket.FrameBuilder;
+import org.java_websocket.Framedata;
+import org.java_websocket.Framedata.Opcode;
+import org.java_websocket.FramedataImpl1;
+import org.java_websocket.HandshakeBuilder;
+import org.java_websocket.Handshakedata;
+import org.java_websocket.WebSocket.Role;
+import org.java_websocket.exeptions.InvalidDataException;
+import org.java_websocket.exeptions.InvalidFrameException;
+import org.java_websocket.exeptions.InvalidHandshakeException;
+import org.java_websocket.exeptions.LimitExedeedException;
+import org.java_websocket.exeptions.NotSendableException;
 
 public class Draft_10 extends Draft {
 

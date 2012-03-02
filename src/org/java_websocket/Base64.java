@@ -1,4 +1,4 @@
-package net.tootallnate.websocket;
+package org.java_websocket;
 
 /**
  * <p>Encodes and decodes to and from Base64 notation.</p>

@@ -1,11 +1,9 @@
-package net.tootallnate.websocket.drafts;
+package org.java_websocket.drafts;
 
-import java.nio.ByteBuffer;
-
-import net.tootallnate.websocket.Framedata;
-import net.tootallnate.websocket.HandshakeBuilder;
-import net.tootallnate.websocket.Handshakedata;
-import net.tootallnate.websocket.exeptions.InvalidHandshakeException;
+import org.java_websocket.Draft.HandshakeState;
+import org.java_websocket.HandshakeBuilder;
+import org.java_websocket.Handshakedata;
+import org.java_websocket.exeptions.InvalidHandshakeException;
 
 public class Draft_17 extends Draft_10 {
 	@Override

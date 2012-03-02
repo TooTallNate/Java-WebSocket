@@ -1,4 +1,4 @@
-package net.tootallnate.websocket;
+package org.java_websocket;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -14,8 +14,8 @@ import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import net.tootallnate.websocket.drafts.Draft_10;
-import net.tootallnate.websocket.exeptions.InvalidHandshakeException;
+import org.java_websocket.drafts.Draft_10;
+import org.java_websocket.exeptions.InvalidHandshakeException;
 
 /**
  * The <tt>WebSocketClient</tt> is an abstract class that expects a valid

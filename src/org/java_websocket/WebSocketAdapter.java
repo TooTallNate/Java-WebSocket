@@ -1,7 +1,7 @@
-package net.tootallnate.websocket;
+package org.java_websocket;
 
-import net.tootallnate.websocket.Framedata.Opcode;
-import net.tootallnate.websocket.exeptions.InvalidDataException;
+import org.java_websocket.Framedata.Opcode;
+import org.java_websocket.exeptions.InvalidDataException;
 
 public abstract class WebSocketAdapter implements WebSocketListener {
 

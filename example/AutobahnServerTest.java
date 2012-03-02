@@ -1,11 +1,11 @@
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
-import net.tootallnate.websocket.Draft;
-import net.tootallnate.websocket.Handshakedata;
-import net.tootallnate.websocket.WebSocket;
-import net.tootallnate.websocket.WebSocketServer;
-import net.tootallnate.websocket.drafts.Draft_17;
+import org.java_websocket.Draft;
+import org.java_websocket.Handshakedata;
+import org.java_websocket.WebSocket;
+import org.java_websocket.WebSocketServer;
+import org.java_websocket.drafts.Draft_17;
 
 public class AutobahnServerTest extends WebSocketServer {
 	private static int counter = 0;

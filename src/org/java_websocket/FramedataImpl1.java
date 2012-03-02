@@ -1,9 +1,9 @@
-package net.tootallnate.websocket;
+package org.java_websocket;
 
 import java.nio.ByteBuffer;
 
-import net.tootallnate.websocket.exeptions.InvalidDataException;
-import net.tootallnate.websocket.exeptions.InvalidFrameException;
+import org.java_websocket.exeptions.InvalidDataException;
+import org.java_websocket.exeptions.InvalidFrameException;
 
 public class FramedataImpl1 implements FrameBuilder {
 	protected static byte[] emptyarray = {};

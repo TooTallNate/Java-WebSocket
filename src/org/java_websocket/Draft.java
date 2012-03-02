@@ -1,4 +1,4 @@
-package net.tootallnate.websocket;
+package org.java_websocket;
 
 import java.nio.ByteBuffer;
 import java.util.Collections;
@@ -6,10 +6,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
-import net.tootallnate.websocket.WebSocket.Role;
-import net.tootallnate.websocket.exeptions.InvalidDataException;
-import net.tootallnate.websocket.exeptions.InvalidHandshakeException;
-import net.tootallnate.websocket.exeptions.LimitExedeedException;
+import org.java_websocket.WebSocket.Role;
+import org.java_websocket.exeptions.InvalidDataException;
+import org.java_websocket.exeptions.InvalidHandshakeException;
+import org.java_websocket.exeptions.LimitExedeedException;
 
 /**
  * Base class for everything of a websocket specification which is not common such as the way the handshake is read or frames are transfered.

@@ -1,4 +1,4 @@
-package net.tootallnate.websocket.drafts;
+package org.java_websocket.drafts;
 
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
@@ -7,12 +7,12 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Random;
 
-import net.tootallnate.websocket.HandshakeBuilder;
-import net.tootallnate.websocket.Handshakedata;
-import net.tootallnate.websocket.HandshakedataImpl1;
-import net.tootallnate.websocket.WebSocket.Role;
-import net.tootallnate.websocket.exeptions.IncompleteHandshakeException;
-import net.tootallnate.websocket.exeptions.InvalidHandshakeException;
+import org.java_websocket.HandshakeBuilder;
+import org.java_websocket.Handshakedata;
+import org.java_websocket.HandshakedataImpl1;
+import org.java_websocket.WebSocket.Role;
+import org.java_websocket.exeptions.IncompleteHandshakeException;
+import org.java_websocket.exeptions.InvalidHandshakeException;
 
 public class Draft_76 extends Draft_75 {
 
