@@ -113,64 +113,6 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	}
 
 	/**
-	 * Sends <var>text</var> to all currently connected WebSocket clients.
-	 * 
-	 * @param text
-	 *            The String to send across the network.
-	 * @throws InterruptedException
-	 *             When socket related I/O errors occur.
-	 */
-	public void sendToAll( String text ) throws InterruptedException {
-		for( WebSocket c : this.connections ) {
-			c.send( text );
-		}
-	}
-
-	/**
-	 * Sends <var>text</var> to all currently connected WebSocket clients,
-	 * except for the specified <var>connection</var>.
-	 * 
-	 * @param connection
-	 *            The {@link WebSocket} connection to ignore.
-	 * @param text
-	 *            The String to send to every connection except <var>connection</var>.
-	 * @throws IOException
-	 *             When socket related I/O errors occur.
-	 */
-	public void sendToAllExcept( WebSocket connection, String text ) throws InterruptedException {
-		if( connection == null ) {
-			throw new NullPointerException( "'connection' cannot be null" );
-		}
-
-		for( WebSocket c : this.connections ) {
-			if( !connection.equals( c ) ) {
-				c.send( text );
-			}
-		}
-	}
-
-	/**
-	 * Sends <var>text</var> to all currently connected WebSocket clients,
-	 * except for those found in the Set <var>connections</var>.
-	 * 
-	 * @param connections
-	 * @param text
-	 * @throws IOException
-	 *             When socket related I/O errors occur.
-	 */
-	public void sendToAllExcept( Set<WebSocket> connections, String text ) throws InterruptedException {
-		if( connections == null ) {
-			throw new NullPointerException( "'connections' cannot be null" );
-		}
-
-		for( WebSocket c : this.connections ) {
-			if( !connections.contains( c ) ) {
-				c.send( text );
-			}
-		}
-	}
-
-	/**
 	 * Returns a WebSocket[] of currently connected clients.
 	 * 
 	 * @return The currently connected clients in a WebSocket[].

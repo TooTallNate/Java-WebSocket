@@ -71,4 +71,18 @@ public class ChatServer extends WebSocketServer {
 	public void onError( WebSocket conn, Exception ex ) {
 		ex.printStackTrace();
 	}
+
+	/**
+	 * Sends <var>text</var> to all currently connected WebSocket clients.
+	 * 
+	 * @param text
+	 *            The String to send across the network.
+	 * @throws InterruptedException
+	 *             When socket related I/O errors occur.
+	 */
+	public void sendToAll( String text ) throws InterruptedException {
+		for( WebSocket c : connections() ) {
+			c.send( text );
+		}
+	}
 }
