@@ -53,7 +53,7 @@ public abstract class Draft {
 		return b == null ? null : Charsetfunctions.stringAscii( b.array(), 0, b.limit() );
 	}
 
-	public static HandshakeBuilder translateHandshakeHttp( ByteBuffer buf ) throws InvalidHandshakeException {
+	public static HandshakeBuilder translateHandshakeHttp( ByteBuffer buf , Role role) throws InvalidHandshakeException {
 		HandshakedataImpl1 draft = new HandshakedataImpl1();
 
 		String line = readStringLine( buf );
@@ -61,10 +61,20 @@ public abstract class Draft {
 			throw new InvalidHandshakeException( "could not match http status line" );
 
 		String[] firstLineTokens = line.split( " " );// eg. GET / HTTP/1.1
-		if( firstLineTokens.length < 3 ) {
+
+		if ( role == Role.CLIENT && firstLineTokens.length == 4 ) {
+			// translating/parsing the response from the SERVER
+			draft.setHttpVersion( firstLineTokens[ 0 ] );
+			draft.setHttpStatus( Short.parseShort( firstLineTokens[ 1 ] ) );
+			draft.setHttpStatusMessage( firstLineTokens[ 2 ] + ' ' + firstLineTokens[ 3 ] );
+		} else if ( role == Role.SERVER && firstLineTokens.length == 3 ) {
+			// translating/parsing the request from the CLIENT
+			draft.setMethod( firstLineTokens[ 0 ] );
+			draft.setResourceDescriptor( firstLineTokens[ 1 ] );
+			draft.setHttpVersion( firstLineTokens[ 2 ] );
+		} else {
 			throw new InvalidHandshakeException( "could not match http status line" );
 		}
-		draft.setResourceDescriptor( firstLineTokens[ 1 ] );
 
 		line = readStringLine( buf );
 		while ( line != null && line.length() > 0 ) {
@@ -136,8 +146,8 @@ public abstract class Draft {
 
 	public abstract List<Framedata> translateFrame( ByteBuffer buffer ) throws InvalidDataException;
 
-	public Handshakedata translateHandshake( ByteBuffer buf ) throws InvalidHandshakeException {
-		return translateHandshakeHttp( buf );
+	public Handshakedata translateHandshake( ByteBuffer buf , Role role) throws InvalidHandshakeException {
+		return translateHandshakeHttp( buf , role );
 	}
 
 	public int checkAlloc( int bytecount ) throws LimitExedeedException , InvalidDataException {

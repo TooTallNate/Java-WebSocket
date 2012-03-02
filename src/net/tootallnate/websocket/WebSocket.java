@@ -175,12 +175,12 @@ public final class WebSocket {
 								try {
 									d.setParseMode( role );
 									socketBuffer.reset();
-									handshake = d.translateHandshake( socketBuffer );
+									handshake = d.translateHandshake( socketBuffer, role );
 									handshakestate = d.acceptHandshakeAsServer( handshake );
 									if( handshakestate == HandshakeState.MATCHED ) {
 										HandshakeBuilder response;
 										try {
-											response = wsl.onHandshakeRecievedAsServer( this, d, handshake );
+											response = wsl.onHandshakeReceivedAsServer(this, d, handshake);
 										} catch ( InvalidDataException e ) {
 											closeConnection( e.getCloseCode(), e.getMessage(), false );
 											return;
@@ -214,7 +214,7 @@ public final class WebSocket {
 							return;
 						} else {
 							// special case for multiple step handshakes
-							handshake = draft.translateHandshake( socketBuffer );
+							handshake = draft.translateHandshake( socketBuffer, role );
 							handshakestate = draft.acceptHandshakeAsServer( handshake );
 
 							if( handshakestate == HandshakeState.MATCHED ) {
@@ -227,11 +227,11 @@ public final class WebSocket {
 						}
 					} else if( role == Role.CLIENT ) {
 						draft.setParseMode( role );
-						handshake = draft.translateHandshake( socketBuffer );
+						handshake = draft.translateHandshake( socketBuffer, role );
 						handshakestate = draft.acceptHandshakeAsClient( handshakerequest, handshake );
 						if( handshakestate == HandshakeState.MATCHED ) {
 							try {
-								wsl.onHandshakeRecievedAsClient( this, handshakerequest, handshake );
+								wsl.onHandshakeReceivedAsClient(this, handshakerequest, handshake);
 							} catch ( InvalidDataException e ) {
 								closeConnection( e.getCloseCode(), e.getMessage(), false );
 								return;
