@@ -146,8 +146,8 @@ public abstract class Draft {
 
 	public abstract List<Framedata> translateFrame( ByteBuffer buffer ) throws InvalidDataException;
 
-	public Handshakedata translateHandshake( ByteBuffer buf , Role role) throws InvalidHandshakeException {
-		return translateHandshakeHttp( buf , role );
+	public Handshakedata translateHandshake( ByteBuffer buf ) throws InvalidHandshakeException {
+		return translateHandshakeHttp( buf, role );
 	}
 
 	public int checkAlloc( int bytecount ) throws LimitExedeedException , InvalidDataException {

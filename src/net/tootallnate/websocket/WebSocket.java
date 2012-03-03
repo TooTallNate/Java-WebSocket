@@ -175,7 +175,7 @@ public final class WebSocket {
 								try {
 									d.setParseMode( role );
 									socketBuffer.reset();
-									handshake = d.translateHandshake( socketBuffer, role );
+									handshake = d.translateHandshake( socketBuffer );
 									handshakestate = d.acceptHandshakeAsServer( handshake );
 									if( handshakestate == HandshakeState.MATCHED ) {
 										HandshakeBuilder response;
@@ -214,7 +214,7 @@ public final class WebSocket {
 							return;
 						} else {
 							// special case for multiple step handshakes
-							handshake = draft.translateHandshake( socketBuffer, role );
+							handshake = draft.translateHandshake( socketBuffer );
 							handshakestate = draft.acceptHandshakeAsServer( handshake );
 
 							if( handshakestate == HandshakeState.MATCHED ) {
@@ -227,7 +227,7 @@ public final class WebSocket {
 						}
 					} else if( role == Role.CLIENT ) {
 						draft.setParseMode( role );
-						handshake = draft.translateHandshake( socketBuffer, role );
+						handshake = draft.translateHandshake( socketBuffer );
 						handshakestate = draft.acceptHandshakeAsClient( handshakerequest, handshake );
 						if( handshakestate == HandshakeState.MATCHED ) {
 							try {
