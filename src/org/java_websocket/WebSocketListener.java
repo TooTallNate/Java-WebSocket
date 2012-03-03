@@ -13,6 +13,8 @@ public interface WebSocketListener {
 	 * Called on the server side when the socket connection is first established, and the WebSocket
 	 * handshake has been received.
 	 * 
+	 * @param conn
+	 *            The WebSocket related to this event
 	 * @param draft
 	 *            The protocol draft the client uses to connect
 	 * @param request
@@ -21,11 +23,14 @@ public interface WebSocketListener {
 	 * @throws InvalidDataException
 	 *             Throwing this exception will cause this handshake to be rejected
 	 */
-	public HandshakeBuilder onWebsocketHandshakeRecievedAsServer( WebSocket conn, Draft draft, Handshakedata request ) throws InvalidDataException;
+	public HandshakeBuilder onWebsocketHandshakeReceivedAsServer( WebSocket conn, Draft draft, Handshakedata request ) throws InvalidDataException;
+
 	/**
 	 * Called on the client side when the socket connection is first established, and the WebSocket
 	 * handshake response has been received.
 	 * 
+	 * @param conn
+	 *            The WebSocket related to this event
 	 * @param request
 	 *            The handshake initially send out to the server by this websocket.
 	 * @param response
@@ -33,7 +38,20 @@ public interface WebSocketListener {
 	 * @throws InvalidDataException
 	 *             Allows the client to reject the connection with the server in respect of its handshake response.
 	 */
-	public void onWebsocketHandshakeRecievedAsClient( WebSocket conn, Handshakedata request, Handshakedata response ) throws InvalidDataException;
+	public void onWebsocketHandshakeReceivedAsClient( WebSocket conn, Handshakedata request, Handshakedata response ) throws InvalidDataException;
+
+	/**
+	 * Called on the client side when the socket connection is first established, and the WebSocket
+	 * handshake has just been sent.
+	 * 
+	 * @param conn
+	 *            The WebSocket related to this event
+	 * @param request
+	 *            The handshake sent to the server by this websocket
+	 * @throws InvalidDataException
+	 *             Allows the client to stop the connection from progressing
+	 */
+	public void onWebsocketHandshakeSentAsClient( WebSocket conn, Handshakedata request ) throws InvalidDataException;
 
 	/**
 	 * Called when an entire text frame has been received. Do whatever you want
@@ -58,9 +76,9 @@ public interface WebSocketListener {
 	public void onWebsocketMessage( WebSocket conn, byte[] blob );
 
 	/**
-	 * Called after <var>onHandshakeRecieved</var> returns <var>true</var>.
+	 * Called after <var>onHandshakeReceived</var> returns <var>true</var>.
 	 * Indicates that a complete WebSocket connection has been established,
-	 * and we are ready to send/recieve data.
+	 * and we are ready to send/receive data.
 	 * 
 	 * @param conn
 	 *            The <tt>WebSocket</tt> instance this event is occuring on.

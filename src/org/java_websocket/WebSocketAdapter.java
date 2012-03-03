@@ -11,7 +11,7 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	 * @see org.java_websocket.WebSocketListener#onWebsocketHandshakeRecievedAsServer(org.java_websocket.WebSocket, org.java_websocket.Draft, org.java_websocket.Handshakedata)
 	 */
 	@Override
-	public HandshakeBuilder onWebsocketHandshakeRecievedAsServer( WebSocket conn, Draft draft, Handshakedata request ) throws InvalidDataException {
+	public HandshakeBuilder onWebsocketHandshakeReceivedAsServer( WebSocket conn, Draft draft, Handshakedata request ) throws InvalidDataException {
 		return new HandshakedataImpl1();
 	}
 
@@ -21,7 +21,16 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	 * @see org.java_websocket.WebSocketListener#onWebsocketHandshakeRecievedAsClient(org.java_websocket.WebSocket, org.java_websocket.Handshakedata, org.java_websocket.Handshakedata)
 	 */
 	@Override
-	public void onWebsocketHandshakeRecievedAsClient( WebSocket conn, Handshakedata request, Handshakedata response ) throws InvalidDataException {
+	public void onWebsocketHandshakeReceivedAsClient( WebSocket conn, Handshakedata request, Handshakedata response ) throws InvalidDataException {
+	}
+
+	/**
+	 * This default implementation does not do anything which will cause the connections to always progress.
+	 * 
+	 * @see net.tootallnate.websocket.WebSocketListener#onHandshakeSentAsClient(net.tootallnate.websocket.WebSocket, net.tootallnate.websocket.Handshakedata)
+	 */
+	@Override
+	public void onWebsocketHandshakeSentAsClient( WebSocket conn, Handshakedata request ) throws InvalidDataException {
 	}
 
 	/**
@@ -68,10 +77,10 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	 */
 	@Override
 	public void onWebsocketPing( WebSocket conn, Framedata f ) {
-		FramedataImpl1 resp = new FramedataImpl1 ( f );
+		FramedataImpl1 resp = new FramedataImpl1( f );
 		resp.setOptcode( Opcode.PONG );
 		try {
-			conn.sendFrame ( resp );
+			conn.sendFrame( resp );
 		} catch ( InterruptedException e ) {
 			e.printStackTrace();
 		}
@@ -106,6 +115,7 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 
 	/**
 	 * This default implementation does not do anything. Go ahead and overwrite it.
+	 * 
 	 * @see org.java_websocket.WebSocketListener#onWebsocketError(org.java_websocket.WebSocket, java.lang.Exception)
 	 */
 	@Override
