@@ -96,7 +96,7 @@ public final class WebSocket {
 	/**
 	 * Used in {@link WebSocketServer} and {@link WebSocketClient}.
 	 * 
-	 * @param socketChannel
+	 * @param socketchannel
 	 *            The <tt>SocketChannel</tt> instance to read and
 	 *            write to. The channel should already be registered
 	 *            with a Selector before construction of this object.
@@ -104,12 +104,12 @@ public final class WebSocket {
 	 *            The {@link WebSocketListener} to notify of events when
 	 *            they occur.
 	 */
-	public WebSocket( WebSocketListener listener , Draft draft , SocketChannel socketChannel ) {
-		init( listener, draft, socketChannel );
+	public WebSocket( WebSocketListener listener , Draft draft , SocketChannel socketchannel ) {
+		init( listener, draft, socketchannel );
 	}
 
-	public WebSocket( WebSocketListener listener , List<Draft> drafts , SocketChannel socketChannel ) {
-		init( listener, null, sockchannel );
+	public WebSocket( WebSocketListener listener , List<Draft> drafts , SocketChannel socketchannel ) {
+		init( listener, null, socketchannel );
 		this.role = Role.SERVER;
 		if( known_drafts == null || known_drafts.isEmpty() ) {
 			known_drafts = new ArrayList<Draft>( 1 );
@@ -122,8 +122,8 @@ public final class WebSocket {
 		}
 	}
 
-	private void init( WebSocketListener listener, Draft draft, SocketChannel sockchannel ) {
-		this.sockchannel = sockchannel;
+	private void init( WebSocketListener listener, Draft draft, SocketChannel socketchannel ) {
+		this.sockchannel = socketchannel;
 		this.bufferQueue = new LinkedBlockingQueue<ByteBuffer>( 10 );
 		this.socketBuffer = ByteBuffer.allocate( 65558 );
 		socketBuffer.flip();
