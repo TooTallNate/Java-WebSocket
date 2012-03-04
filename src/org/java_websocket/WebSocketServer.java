@@ -13,6 +13,11 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
+import org.java_websocket.drafts.Draft;
+import org.java_websocket.framing.CloseFrame;
+import org.java_websocket.handshake.ClientHandshake;
+import org.java_websocket.handshake.Handshakedata;
+
 /**
  * <tt>WebSocketServer</tt> is an abstract class that only takes care of the
  * HTTP handshake portion of WebSockets. It's up to a subclass to add

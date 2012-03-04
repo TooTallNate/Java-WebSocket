@@ -1,4 +1,4 @@
-package org.java_websocket;
+package org.java_websocket.handshake;
 
 public interface HandshakeBuilder extends Handshakedata {
 	public abstract void setContent( byte[] content );

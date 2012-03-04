@@ -1,4 +1,4 @@
-package org.java_websocket;
+package org.java_websocket.handshake;
 
 import java.util.Collections;
 import java.util.Iterator;

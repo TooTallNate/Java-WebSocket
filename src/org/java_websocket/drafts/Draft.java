@@ -1,4 +1,4 @@
-package org.java_websocket;
+package org.java_websocket.drafts;
 
 import java.nio.ByteBuffer;
 import java.util.Collections;
@@ -11,6 +11,17 @@ import org.java_websocket.WebSocket.Role;
 import org.java_websocket.exeptions.InvalidDataException;
 import org.java_websocket.exeptions.InvalidHandshakeException;
 import org.java_websocket.exeptions.LimitExedeedException;
+import org.java_websocket.framing.CloseFrame;
+import org.java_websocket.framing.Framedata;
+import org.java_websocket.handshake.ClientHandshake;
+import org.java_websocket.handshake.ClientHandshakeBuilder;
+import org.java_websocket.handshake.HandshakeBuilder;
+import org.java_websocket.handshake.HandshakeImpl1Client;
+import org.java_websocket.handshake.HandshakeImpl1Server;
+import org.java_websocket.handshake.Handshakedata;
+import org.java_websocket.handshake.ServerHandshake;
+import org.java_websocket.handshake.ServerHandshakeBuilder;
+import org.java_websocket.util.Charsetfunctions;
 
 /**
  * Base class for everything of a websocket specification which is not common such as the way the handshake is read or frames are transfered.

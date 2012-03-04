@@ -1,4 +1,4 @@
-package org.java_websocket;
+package org.java_websocket.handshake;
 
 public class HandshakeImpl1Client extends HandshakedataImpl1 implements ClientHandshakeBuilder {
 	private String resourcedescriptor;

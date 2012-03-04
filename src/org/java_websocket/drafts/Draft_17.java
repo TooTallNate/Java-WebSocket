@@ -1,9 +1,8 @@
 package org.java_websocket.drafts;
 
-import org.java_websocket.ClientHandshake;
-import org.java_websocket.ClientHandshakeBuilder;
-import org.java_websocket.Draft.HandshakeState;
 import org.java_websocket.exeptions.InvalidHandshakeException;
+import org.java_websocket.handshake.ClientHandshake;
+import org.java_websocket.handshake.ClientHandshakeBuilder;
 
 public class Draft_17 extends Draft_10 {
 	@Override

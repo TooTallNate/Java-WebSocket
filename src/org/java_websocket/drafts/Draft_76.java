@@ -7,15 +7,15 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Random;
 
-import org.java_websocket.ClientHandshake;
-import org.java_websocket.ClientHandshakeBuilder;
-import org.java_websocket.HandshakeBuilder;
-import org.java_websocket.Handshakedata;
-import org.java_websocket.ServerHandshake;
-import org.java_websocket.ServerHandshakeBuilder;
 import org.java_websocket.WebSocket.Role;
 import org.java_websocket.exeptions.IncompleteHandshakeException;
 import org.java_websocket.exeptions.InvalidHandshakeException;
+import org.java_websocket.handshake.ClientHandshake;
+import org.java_websocket.handshake.ClientHandshakeBuilder;
+import org.java_websocket.handshake.HandshakeBuilder;
+import org.java_websocket.handshake.Handshakedata;
+import org.java_websocket.handshake.ServerHandshake;
+import org.java_websocket.handshake.ServerHandshakeBuilder;
 
 public class Draft_76 extends Draft_75 {
 	private boolean failed = false;

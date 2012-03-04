@@ -1,4 +1,4 @@
-package org.java_websocket;
+package org.java_websocket.framing;
 
 import org.java_websocket.exeptions.InvalidDataException;
 

@@ -1,7 +1,15 @@
 package org.java_websocket;
 
-import org.java_websocket.Framedata.Opcode;
+import org.java_websocket.drafts.Draft;
 import org.java_websocket.exeptions.InvalidDataException;
+import org.java_websocket.framing.Framedata;
+import org.java_websocket.framing.Framedata.Opcode;
+import org.java_websocket.framing.FramedataImpl1;
+import org.java_websocket.handshake.ClientHandshake;
+import org.java_websocket.handshake.HandshakeImpl1Server;
+import org.java_websocket.handshake.Handshakedata;
+import org.java_websocket.handshake.ServerHandshake;
+import org.java_websocket.handshake.ServerHandshakeBuilder;
 
 public abstract class WebSocketAdapter implements WebSocketListener {
 

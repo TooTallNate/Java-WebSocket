@@ -8,26 +8,25 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
-import org.java_websocket.Base64;
-import org.java_websocket.Charsetfunctions;
-import org.java_websocket.ClientHandshake;
-import org.java_websocket.ClientHandshakeBuilder;
-import org.java_websocket.CloseFrameBuilder;
-import org.java_websocket.Draft;
-import org.java_websocket.FrameBuilder;
-import org.java_websocket.Framedata;
-import org.java_websocket.Framedata.Opcode;
-import org.java_websocket.FramedataImpl1;
-import org.java_websocket.HandshakeBuilder;
-import org.java_websocket.Handshakedata;
-import org.java_websocket.ServerHandshake;
-import org.java_websocket.ServerHandshakeBuilder;
 import org.java_websocket.WebSocket.Role;
 import org.java_websocket.exeptions.InvalidDataException;
 import org.java_websocket.exeptions.InvalidFrameException;
 import org.java_websocket.exeptions.InvalidHandshakeException;
 import org.java_websocket.exeptions.LimitExedeedException;
 import org.java_websocket.exeptions.NotSendableException;
+import org.java_websocket.framing.CloseFrameBuilder;
+import org.java_websocket.framing.FrameBuilder;
+import org.java_websocket.framing.Framedata;
+import org.java_websocket.framing.Framedata.Opcode;
+import org.java_websocket.framing.FramedataImpl1;
+import org.java_websocket.handshake.ClientHandshake;
+import org.java_websocket.handshake.ClientHandshakeBuilder;
+import org.java_websocket.handshake.HandshakeBuilder;
+import org.java_websocket.handshake.Handshakedata;
+import org.java_websocket.handshake.ServerHandshake;
+import org.java_websocket.handshake.ServerHandshakeBuilder;
+import org.java_websocket.util.Base64;
+import org.java_websocket.util.Charsetfunctions;
 
 public class Draft_10 extends Draft {
 

@@ -1,9 +1,10 @@
-package org.java_websocket;
+package org.java_websocket.framing;
 
 import java.nio.ByteBuffer;
 
 import org.java_websocket.exeptions.InvalidDataException;
 import org.java_websocket.exeptions.InvalidFrameException;
+import org.java_websocket.util.Charsetfunctions;
 
 public class CloseFrameBuilder extends FramedataImpl1 implements CloseFrame {
 

@@ -1,9 +1,9 @@
-package org.java_websocket;
+package org.java_websocket.framing;
 
 import org.java_websocket.exeptions.InvalidFrameException;
 
 public interface Framedata {
-	enum Opcode {
+	public enum Opcode {
 		CONTINIOUS , TEXT , BINARY , PING , PONG , CLOSING
 		// more to come
 	}

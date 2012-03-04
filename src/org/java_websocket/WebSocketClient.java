@@ -14,8 +14,13 @@ import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft_10;
 import org.java_websocket.exeptions.InvalidHandshakeException;
+import org.java_websocket.framing.CloseFrame;
+import org.java_websocket.handshake.HandshakeImpl1Client;
+import org.java_websocket.handshake.Handshakedata;
+import org.java_websocket.handshake.ServerHandshake;
 
 /**
  * The <tt>WebSocketClient</tt> is an abstract class that expects a valid

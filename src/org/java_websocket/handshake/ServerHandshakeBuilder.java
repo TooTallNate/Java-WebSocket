@@ -1,4 +1,4 @@
-package org.java_websocket;
+package org.java_websocket.handshake;
 
 public interface ServerHandshakeBuilder extends HandshakeBuilder, ServerHandshake {
 	public void setHttpStatus( short status );
