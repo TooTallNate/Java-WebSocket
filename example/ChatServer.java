@@ -5,7 +5,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
-import org.java_websocket.Handshakedata;
+import org.java_websocket.ClientHandshake;
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketServer;
 
@@ -22,7 +22,8 @@ public class ChatServer extends WebSocketServer {
 		super( address );
 	}
 
-	public void onOpen( WebSocket conn, Handshakedata handshake ) {
+	@Override
+	public void onOpen( WebSocket conn, ClientHandshake handshake ) {
 		try {
 			this.sendToAll( conn + " entered the room!" );
 		} catch ( InterruptedException ex ) {
@@ -31,6 +32,7 @@ public class ChatServer extends WebSocketServer {
 		System.out.println( conn + " entered the room!" );
 	}
 
+	@Override
 	public void onClose( WebSocket conn, int code, String reason, boolean remote ) {
 		try {
 			this.sendToAll( conn + " has left the room!" );
@@ -40,6 +42,7 @@ public class ChatServer extends WebSocketServer {
 		System.out.println( conn + " has left the room!" );
 	}
 
+	@Override
 	public void onMessage( WebSocket conn, String message ) {
 		try {
 			this.sendToAll( conn + ": " + message );

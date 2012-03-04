@@ -7,13 +7,16 @@ import java.util.List;
 import java.util.Random;
 
 import org.java_websocket.Charsetfunctions;
+import org.java_websocket.ClientHandshake;
+import org.java_websocket.ClientHandshakeBuilder;
 import org.java_websocket.Draft;
 import org.java_websocket.FrameBuilder;
 import org.java_websocket.Framedata;
 import org.java_websocket.Framedata.Opcode;
 import org.java_websocket.FramedataImpl1;
 import org.java_websocket.HandshakeBuilder;
-import org.java_websocket.Handshakedata;
+import org.java_websocket.ServerHandshake;
+import org.java_websocket.ServerHandshakeBuilder;
 import org.java_websocket.exeptions.InvalidDataException;
 import org.java_websocket.exeptions.InvalidHandshakeException;
 import org.java_websocket.exeptions.NotSendableException;
@@ -43,12 +46,12 @@ public class Draft_75 extends Draft {
 	private ByteBuffer currentFrame;
 
 	@Override
-	public HandshakeState acceptHandshakeAsClient( Handshakedata request, Handshakedata response ) {
+	public HandshakeState acceptHandshakeAsClient( ClientHandshake request, ServerHandshake response ) {
 		return request.getFieldValue( "WebSocket-Origin" ).equals( response.getFieldValue( "Origin" ) ) && basicAccept( response ) ? HandshakeState.MATCHED : HandshakeState.NOT_MATCHED;
 	}
 
 	@Override
-	public HandshakeState acceptHandshakeAsServer( Handshakedata handshakedata ) {
+	public HandshakeState acceptHandshakeAsServer( ClientHandshake handshakedata ) {
 		if( handshakedata.hasFieldValue( "Origin" ) && basicAccept( handshakedata ) ) {
 			return HandshakeState.MATCHED;
 		}
@@ -86,7 +89,7 @@ public class Draft_75 extends Draft {
 	}
 
 	@Override
-	public HandshakeBuilder postProcessHandshakeRequestAsClient( HandshakeBuilder request ) throws InvalidHandshakeException {
+	public ClientHandshakeBuilder postProcessHandshakeRequestAsClient( ClientHandshakeBuilder request ) throws InvalidHandshakeException {
 		request.put( "Upgrade", "WebSocket" );
 		request.put( "Connection", "Upgrade" );
 		if(!request.hasFieldValue( "Origin" )){
@@ -97,7 +100,7 @@ public class Draft_75 extends Draft {
 	}
 
 	@Override
-	public HandshakeBuilder postProcessHandshakeResponseAsServer( Handshakedata request, HandshakeBuilder response ) throws InvalidHandshakeException {
+	public HandshakeBuilder postProcessHandshakeResponseAsServer( ClientHandshake request, ServerHandshakeBuilder response ) throws InvalidHandshakeException {
 		response.setHttpStatusMessage( "Web Socket Protocol Handshake" );
 		response.put( "Upgrade", "WebSocket" );
 		response.put( "Connection", request.getFieldValue( "Connection" ) ); // to respond to a Connection keep alive

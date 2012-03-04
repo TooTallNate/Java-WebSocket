@@ -10,6 +10,8 @@ import java.util.Random;
 
 import org.java_websocket.Base64;
 import org.java_websocket.Charsetfunctions;
+import org.java_websocket.ClientHandshake;
+import org.java_websocket.ClientHandshakeBuilder;
 import org.java_websocket.CloseFrameBuilder;
 import org.java_websocket.Draft;
 import org.java_websocket.FrameBuilder;
@@ -18,6 +20,8 @@ import org.java_websocket.Framedata.Opcode;
 import org.java_websocket.FramedataImpl1;
 import org.java_websocket.HandshakeBuilder;
 import org.java_websocket.Handshakedata;
+import org.java_websocket.ServerHandshake;
+import org.java_websocket.ServerHandshakeBuilder;
 import org.java_websocket.WebSocket.Role;
 import org.java_websocket.exeptions.InvalidDataException;
 import org.java_websocket.exeptions.InvalidFrameException;
@@ -55,7 +59,7 @@ public class Draft_10 extends Draft {
 	private Framedata fragmentedframe = null;
 
 	@Override
-	public HandshakeState acceptHandshakeAsClient( Handshakedata request, Handshakedata response ) throws InvalidHandshakeException {
+	public HandshakeState acceptHandshakeAsClient( ClientHandshake request, ServerHandshake response ) throws InvalidHandshakeException {
 		if( !request.hasFieldValue( "Sec-WebSocket-Key" ) || !response.hasFieldValue( "Sec-WebSocket-Accept" ) )
 			return HandshakeState.NOT_MATCHED;
 
@@ -69,7 +73,7 @@ public class Draft_10 extends Draft {
 	}
 
 	@Override
-	public HandshakeState acceptHandshakeAsServer( Handshakedata handshakedata ) throws InvalidHandshakeException {
+	public HandshakeState acceptHandshakeAsServer( ClientHandshake handshakedata ) throws InvalidHandshakeException {
 		// Sec-WebSocket-Origin is only required for browser clients
 		int v = readVersion( handshakedata );
 		if( v == 7 || v == 8 )// g
@@ -175,7 +179,7 @@ public class Draft_10 extends Draft {
 	}
 
 	@Override
-	public HandshakeBuilder postProcessHandshakeRequestAsClient( HandshakeBuilder request ) {
+	public ClientHandshakeBuilder postProcessHandshakeRequestAsClient( ClientHandshakeBuilder request ) {
 		request.put( "Upgrade", "websocket" );
 		request.put( "Connection", "Upgrade" ); // to respond to a Connection keep alives
 		request.put( "Sec-WebSocket-Version", "8" );
@@ -188,7 +192,7 @@ public class Draft_10 extends Draft {
 	}
 
 	@Override
-	public HandshakeBuilder postProcessHandshakeResponseAsServer( Handshakedata request, HandshakeBuilder response ) throws InvalidHandshakeException {
+	public HandshakeBuilder postProcessHandshakeResponseAsServer( ClientHandshake request, ServerHandshakeBuilder response ) throws InvalidHandshakeException {
 		response.put( "Upgrade", "websocket" );
 		response.put( "Connection", request.getFieldValue( "Connection" ) ); // to respond to a Connection keep alives
 		response.setHttpStatusMessage( "Switching Protocols" );

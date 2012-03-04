@@ -7,14 +7,18 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Random;
 
+import org.java_websocket.ClientHandshake;
+import org.java_websocket.ClientHandshakeBuilder;
 import org.java_websocket.HandshakeBuilder;
 import org.java_websocket.Handshakedata;
-import org.java_websocket.HandshakedataImpl1;
+import org.java_websocket.ServerHandshake;
+import org.java_websocket.ServerHandshakeBuilder;
 import org.java_websocket.WebSocket.Role;
 import org.java_websocket.exeptions.IncompleteHandshakeException;
 import org.java_websocket.exeptions.InvalidHandshakeException;
 
 public class Draft_76 extends Draft_75 {
+	private boolean failed = false;
 
 	public static byte[] createChallenge( String key1, String key2, byte[] key3 ) throws InvalidHandshakeException {
 		byte[] part1 = getPart( key1 );
@@ -88,11 +92,8 @@ public class Draft_76 extends Draft_75 {
 		}
 	}
 
-	private HandshakeBuilder builder = null;
-	private boolean failed = false;
-
 	@Override
-	public HandshakeState acceptHandshakeAsClient( Handshakedata request, Handshakedata response ) {
+	public HandshakeState acceptHandshakeAsClient( ClientHandshake request, ServerHandshake response ) {
 		if( failed ) {
 			return HandshakeState.NOT_MATCHED;
 		}
@@ -103,7 +104,6 @@ public class Draft_76 extends Draft_75 {
 			}
 			byte[] content = response.getContent();
 			if( content == null || content.length == 0 ) {
-				builder = new HandshakedataImpl1( response );
 				return HandshakeState.MATCHING;
 			}
 			if( Arrays.equals( content, createChallenge( request.getFieldValue( "Sec-WebSocket-Key1" ), request.getFieldValue( "Sec-WebSocket-Key2" ), request.getContent() ) ) ) {
@@ -117,7 +117,7 @@ public class Draft_76 extends Draft_75 {
 	}
 
 	@Override
-	public HandshakeState acceptHandshakeAsServer( Handshakedata handshakedata ) {
+	public HandshakeState acceptHandshakeAsServer( ClientHandshake handshakedata ) {
 		if( handshakedata.getFieldValue( "Upgrade" ).equals( "WebSocket" ) && handshakedata.getFieldValue( "Connection" ).contains( "Upgrade" ) && handshakedata.getFieldValue( "Sec-WebSocket-Key1" ).length() > 0 && !handshakedata.getFieldValue( "Sec-WebSocket-Key2" ).isEmpty() && handshakedata.hasFieldValue( "Origin" )
 		/*new String ( handshakedata.getContent () ).endsWith ( "\r\n\r\n" )*/)
 			return HandshakeState.MATCHED;
@@ -125,7 +125,7 @@ public class Draft_76 extends Draft_75 {
 	}
 
 	@Override
-	public HandshakeBuilder postProcessHandshakeRequestAsClient( HandshakeBuilder request ) {
+	public ClientHandshakeBuilder postProcessHandshakeRequestAsClient( ClientHandshakeBuilder request ) {
 		request.put( "Upgrade", "WebSocket" );
 		request.put( "Connection", "Upgrade" );
 		request.put( "Sec-WebSocket-Key1", this.generateKey() );
@@ -143,7 +143,7 @@ public class Draft_76 extends Draft_75 {
 	}
 
 	@Override
-	public HandshakeBuilder postProcessHandshakeResponseAsServer( Handshakedata request, HandshakeBuilder response ) throws InvalidHandshakeException {
+	public HandshakeBuilder postProcessHandshakeResponseAsServer( ClientHandshake request, ServerHandshakeBuilder response ) throws InvalidHandshakeException {
 		response.setHttpStatusMessage( "WebSocket Protocol Handshake" );
 		response.put( "Upgrade", "WebSocket" );
 		response.put( "Connection", request.getFieldValue( "Connection" ) ); // to respond to a Connection keep alive

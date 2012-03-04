@@ -257,7 +257,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		int port = getPort();
 		String host = uri.getHost() + ( port != WebSocket.DEFAULT_PORT ? ":" + port : "" );
 
-		HandshakedataImpl1 handshake = new HandshakedataImpl1();
+		HandshakeImpl1Client handshake = new HandshakeImpl1Client();
 		handshake.setResourceDescriptor( path );
 		handshake.put( "Host", host );
 		conn.startHandshake( handshake );
@@ -297,7 +297,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 */
 	@Override
 	public final void onWebsocketOpen( WebSocket conn, Handshakedata handshake ) {
-		onOpen( handshake );
+		onOpen( (ServerHandshake) handshake );
 	}
 
 	/**
@@ -331,7 +331,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	}
 
 	// ABTRACT METHODS /////////////////////////////////////////////////////////
-	public abstract void onOpen( Handshakedata handshakedata );
+	public abstract void onOpen( ServerHandshake handshakedata );
 	public abstract void onMessage( String message );
 	public abstract void onClose( int code, String reason, boolean remote );
 	public abstract void onError( Exception ex );

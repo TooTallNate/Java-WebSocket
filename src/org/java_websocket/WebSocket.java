@@ -86,7 +86,7 @@ public final class WebSocket {
 
 	private Framedata currentframe;
 
-	private Handshakedata handshakerequest = null;
+	private ClientHandshake handshakerequest = null;
 
 	public List<Draft> known_drafts;
 
@@ -155,8 +155,6 @@ public final class WebSocket {
 			if( DEBUG )
 				System.out.println( "process(" + socketBuffer.remaining() + "): {" + ( socketBuffer.remaining() > 1000 ? "too big to display" : new String( socketBuffer.array(), socketBuffer.position(), socketBuffer.remaining() ) ) + "}" );
 			if( !handshakeComplete ) {
-				Handshakedata handshake;
-
 				if( draft == null ) {
 					HandshakeState isflashedgecase = isFlashEdgeCase( socketBuffer );
 					if( isflashedgecase == HandshakeState.MATCHED ) {
@@ -176,10 +174,15 @@ public final class WebSocket {
 								try {
 									d.setParseMode( role );
 									socketBuffer.reset();
-									handshake = d.translateHandshake( socketBuffer );
+									Handshakedata tmphandshake = d.translateHandshake( socketBuffer );
+									if( tmphandshake instanceof ClientHandshake == false ) {
+										closeConnection( CloseFrame.PROTOCOL_ERROR, "wrong http function", false );
+										return;
+									}
+									ClientHandshake handshake = (ClientHandshake) tmphandshake;
 									handshakestate = d.acceptHandshakeAsServer( handshake );
 									if( handshakestate == HandshakeState.MATCHED ) {
-										HandshakeBuilder response;
+										ServerHandshakeBuilder response;
 										try {
 											response = wsl.onWebsocketHandshakeReceivedAsServer( this, d, handshake );
 										} catch ( InvalidDataException e ) {
@@ -215,7 +218,12 @@ public final class WebSocket {
 							return;
 						} else {
 							// special case for multiple step handshakes
-							handshake = draft.translateHandshake( socketBuffer );
+							Handshakedata tmphandshake = draft.translateHandshake( socketBuffer );
+							if( tmphandshake instanceof ClientHandshake == false ) {
+								closeConnection( CloseFrame.PROTOCOL_ERROR, "wrong http function", false );
+								return;
+							}
+							ClientHandshake handshake = (ClientHandshake) tmphandshake;
 							handshakestate = draft.acceptHandshakeAsServer( handshake );
 
 							if( handshakestate == HandshakeState.MATCHED ) {
@@ -228,7 +236,12 @@ public final class WebSocket {
 						}
 					} else if( role == Role.CLIENT ) {
 						draft.setParseMode( role );
-						handshake = draft.translateHandshake( socketBuffer );
+						Handshakedata tmphandshake = draft.translateHandshake( socketBuffer );
+						if( tmphandshake instanceof ServerHandshake == false ) {
+							closeConnection( CloseFrame.PROTOCOL_ERROR, "Wwrong http function", false );
+							return;
+						}
+						ServerHandshake handshake = (ServerHandshake) tmphandshake;
 						handshakestate = draft.acceptHandshakeAsClient( handshakerequest, handshake );
 						if( handshakestate == HandshakeState.MATCHED ) {
 							try {
@@ -481,7 +494,7 @@ public final class WebSocket {
 		}
 	}
 
-	public void startHandshake( HandshakeBuilder handshakedata ) throws InvalidHandshakeException , InterruptedException {
+	public void startHandshake( ClientHandshakeBuilder handshakedata ) throws InvalidHandshakeException , InterruptedException {
 		if( handshakeComplete )
 			throw new IllegalStateException( "Handshake has already been sent." );
 

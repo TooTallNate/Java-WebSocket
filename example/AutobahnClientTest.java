@@ -4,7 +4,7 @@ import java.io.InputStreamReader;
 import java.net.URI;
 
 import org.java_websocket.Draft;
-import org.java_websocket.Handshakedata;
+import org.java_websocket.ServerHandshake;
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketClient;
 import org.java_websocket.drafts.Draft_17;
@@ -150,7 +150,7 @@ public class AutobahnClientTest extends WebSocketClient {
 	}
 
 	@Override
-	public void onOpen( Handshakedata handshake ) {
+	public void onOpen( ServerHandshake handshake ) {
 	}
 
 	@Override

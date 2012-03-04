@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 import org.java_websocket.WebSocket.Role;
 import org.java_websocket.exeptions.InvalidDataException;
@@ -26,6 +27,8 @@ public abstract class Draft {
 	}
 
 	public static final byte[] FLASH_POLICY_REQUEST = Charsetfunctions.utf8Bytes( "<policy-file-request/>\0" );
+	private static Pattern getpattern = Pattern.compile( "" ); // GET / HTTP/1.1
+	private static Pattern statuspattern = Pattern.compile( "" ); // HTTP/1.1 101 Switching Protocols
 
 	/** In some cases the handshake will be parsed different depending on whether */
 	protected Role role = null;
@@ -56,26 +59,26 @@ public abstract class Draft {
 	}
 
 	public static HandshakeBuilder translateHandshakeHttp( ByteBuffer buf, Role role ) throws InvalidHandshakeException {
-		HandshakedataImpl1 draft = new HandshakedataImpl1();
+		HandshakeBuilder handshake;
 
 		String line = readStringLine( buf );
 		if( line == null )
 			throw new InvalidHandshakeException( "could not match http status line" );
 
-		String[] firstLineTokens = line.split( " " );// eg. GET / HTTP/1.1
+		String[] firstLineTokens = line.split( " ", 3 );// eg. HTTP/1.1 101 Switching the Protocols
+		if( firstLineTokens.length != 3 ) {
+			throw new InvalidHandshakeException();
+		}
 
-		if( role == Role.CLIENT && firstLineTokens.length == 4 ) {
-			// translating/parsing the response from the SERVER
-			draft.setHttpVersion( firstLineTokens[ 0 ] );
-			draft.setHttpStatus( Short.parseShort( firstLineTokens[ 1 ] ) );
-			draft.setHttpStatusMessage( firstLineTokens[ 2 ] + ' ' + firstLineTokens[ 3 ] );
-		} else if( role == Role.SERVER && firstLineTokens.length == 3 ) {
-			// translating/parsing the request from the CLIENT
-			draft.setMethod( firstLineTokens[ 0 ] );
-			draft.setResourceDescriptor( firstLineTokens[ 1 ] );
-			draft.setHttpVersion( firstLineTokens[ 2 ] );
-		} else {
-			throw new InvalidHandshakeException( "could not match http status line" );
+		if( role == Role.CLIENT ) {// translating/parsing the response from the SERVER
+			handshake = new HandshakeImpl1Server();
+			ServerHandshakeBuilder serverhandshake = (ServerHandshakeBuilder) handshake;
+			serverhandshake.setHttpStatus( Short.parseShort( firstLineTokens[ 1 ] ) );
+			serverhandshake.setHttpStatusMessage( firstLineTokens[ 2 ] );
+		} else {// translating/parsing the request from the CLIENT
+			ClientHandshakeBuilder clienthandshake = new HandshakeImpl1Client();
+			clienthandshake.setResourceDescriptor( firstLineTokens[ 1 ] );
+			handshake = clienthandshake;
 		}
 
 		line = readStringLine( buf );
@@ -83,15 +86,15 @@ public abstract class Draft {
 			String[] pair = line.split( ":", 2 );
 			if( pair.length != 2 )
 				throw new InvalidHandshakeException( "not an http header" );
-			draft.put( pair[ 0 ], pair[ 1 ].replaceFirst( "^ +", "" ) );
+			handshake.put( pair[ 0 ], pair[ 1 ].replaceFirst( "^ +", "" ) );
 			line = readStringLine( buf );
 		}
-		return draft;
+		return handshake;
 	}
 
-	public abstract HandshakeState acceptHandshakeAsClient( Handshakedata request, Handshakedata response ) throws InvalidHandshakeException;
+	public abstract HandshakeState acceptHandshakeAsClient( ClientHandshake request, ServerHandshake response ) throws InvalidHandshakeException;
 
-	public abstract HandshakeState acceptHandshakeAsServer( Handshakedata handshakedata ) throws InvalidHandshakeException;
+	public abstract HandshakeState acceptHandshakeAsServer( ClientHandshake handshakedata ) throws InvalidHandshakeException;
 
 	protected boolean basicAccept( Handshakedata handshakedata ) {
 		return handshakedata.getFieldValue( "Upgrade" ).equalsIgnoreCase( "websocket" ) && handshakedata.getFieldValue( "Connection" ).toLowerCase( Locale.ENGLISH ).contains( "upgrade" );
@@ -111,12 +114,12 @@ public abstract class Draft {
 
 	public List<ByteBuffer> createHandshake( Handshakedata handshakedata, Role ownrole, boolean withcontent ) {
 		StringBuilder bui = new StringBuilder( 100 );
-		if( ownrole == Role.CLIENT ) {
+		if( handshakedata instanceof ClientHandshake ) {
 			bui.append( "GET " );
-			bui.append( handshakedata.getResourceDescriptor() );
+			bui.append( ( (ClientHandshake) handshakedata ).getResourceDescriptor() );
 			bui.append( " HTTP/1.1" );
-		} else if( ownrole == Role.SERVER ) {
-			bui.append( "HTTP/1.1 101 " + handshakedata.getHttpStatusMessage() );
+		} else if( handshakedata instanceof ServerHandshake ) {
+			bui.append( "HTTP/1.1 101 " + ( (ServerHandshake) handshakedata ).getHttpStatusMessage() );
 		} else {
 			throw new RuntimeException( "unknow role" );
 		}
@@ -142,9 +145,9 @@ public abstract class Draft {
 		return Collections.singletonList( bytebuffer );
 	}
 
-	public abstract HandshakeBuilder postProcessHandshakeRequestAsClient( HandshakeBuilder request ) throws InvalidHandshakeException;
+	public abstract ClientHandshakeBuilder postProcessHandshakeRequestAsClient( ClientHandshakeBuilder request ) throws InvalidHandshakeException;
 
-	public abstract HandshakeBuilder postProcessHandshakeResponseAsServer( Handshakedata request, HandshakeBuilder response ) throws InvalidHandshakeException;
+	public abstract HandshakeBuilder postProcessHandshakeResponseAsServer( ClientHandshake request, ServerHandshakeBuilder response ) throws InvalidHandshakeException;
 
 	public abstract List<Framedata> translateFrame( ByteBuffer buffer ) throws InvalidDataException;
 

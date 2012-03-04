@@ -256,7 +256,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	@Override
 	public final void onWebsocketOpen( WebSocket conn, Handshakedata handshake ) {
 		if( this.connections.add( conn ) ) {
-			onOpen( conn, handshake );
+			onOpen( conn, (ClientHandshake) handshake );
 		}
 	}
 
@@ -282,7 +282,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	}
 
 	// ABTRACT METHODS /////////////////////////////////////////////////////////
-	public abstract void onOpen( WebSocket conn, Handshakedata handshake );
+	public abstract void onOpen( WebSocket conn, ClientHandshake handshake );
 	public abstract void onClose( WebSocket conn, int code, String reason, boolean remote );
 	public abstract void onMessage( WebSocket conn, String message );
 	public abstract void onError( WebSocket conn, Exception ex );

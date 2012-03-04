@@ -23,7 +23,7 @@ public interface WebSocketListener {
 	 * @throws InvalidDataException
 	 *             Throwing this exception will cause this handshake to be rejected
 	 */
-	public HandshakeBuilder onWebsocketHandshakeReceivedAsServer( WebSocket conn, Draft draft, Handshakedata request ) throws InvalidDataException;
+	public ServerHandshakeBuilder onWebsocketHandshakeReceivedAsServer( WebSocket conn, Draft draft, ClientHandshake request ) throws InvalidDataException;
 
 	/**
 	 * Called on the client side when the socket connection is first established, and the WebSocket
@@ -38,7 +38,7 @@ public interface WebSocketListener {
 	 * @throws InvalidDataException
 	 *             Allows the client to reject the connection with the server in respect of its handshake response.
 	 */
-	public void onWebsocketHandshakeReceivedAsClient( WebSocket conn, Handshakedata request, Handshakedata response ) throws InvalidDataException;
+	public void onWebsocketHandshakeReceivedAsClient( WebSocket conn, ClientHandshake request, ServerHandshake response ) throws InvalidDataException;
 
 	/**
 	 * Called on the client side when the socket connection is first established, and the WebSocket
@@ -51,7 +51,7 @@ public interface WebSocketListener {
 	 * @throws InvalidDataException
 	 *             Allows the client to stop the connection from progressing
 	 */
-	public void onWebsocketHandshakeSentAsClient( WebSocket conn, Handshakedata request ) throws InvalidDataException;
+	public void onWebsocketHandshakeSentAsClient( WebSocket conn, ClientHandshake request ) throws InvalidDataException;
 
 	/**
 	 * Called when an entire text frame has been received. Do whatever you want

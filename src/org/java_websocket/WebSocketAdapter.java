@@ -11,8 +11,8 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	 * @see org.java_websocket.WebSocketListener#onWebsocketHandshakeRecievedAsServer(org.java_websocket.WebSocket, org.java_websocket.Draft, org.java_websocket.Handshakedata)
 	 */
 	@Override
-	public HandshakeBuilder onWebsocketHandshakeReceivedAsServer( WebSocket conn, Draft draft, Handshakedata request ) throws InvalidDataException {
-		return new HandshakedataImpl1();
+	public ServerHandshakeBuilder onWebsocketHandshakeReceivedAsServer( WebSocket conn, Draft draft, ClientHandshake request ) throws InvalidDataException {
+		return new HandshakeImpl1Server();
 	}
 
 	/**
@@ -21,7 +21,7 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	 * @see org.java_websocket.WebSocketListener#onWebsocketHandshakeRecievedAsClient(org.java_websocket.WebSocket, org.java_websocket.Handshakedata, org.java_websocket.Handshakedata)
 	 */
 	@Override
-	public void onWebsocketHandshakeReceivedAsClient( WebSocket conn, Handshakedata request, Handshakedata response ) throws InvalidDataException {
+	public void onWebsocketHandshakeReceivedAsClient( WebSocket conn, ClientHandshake request, ServerHandshake response ) throws InvalidDataException {
 	}
 
 	/**
@@ -30,7 +30,7 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	 * @see net.tootallnate.websocket.WebSocketListener#onHandshakeSentAsClient(net.tootallnate.websocket.WebSocket, net.tootallnate.websocket.Handshakedata)
 	 */
 	@Override
-	public void onWebsocketHandshakeSentAsClient( WebSocket conn, Handshakedata request ) throws InvalidDataException {
+	public void onWebsocketHandshakeSentAsClient( WebSocket conn, ClientHandshake request ) throws InvalidDataException {
 	}
 
 	/**

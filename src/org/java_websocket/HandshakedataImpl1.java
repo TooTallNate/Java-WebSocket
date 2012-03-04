@@ -5,12 +5,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 
 public class HandshakedataImpl1 implements HandshakeBuilder {
-
-	private String httpversion;
-	private String method;
-	private short httpstatus;
-	private String httpstatusmessage;
-	private String resourcedescriptor;
 	private byte[] content;
 	private LinkedHashMap<String,String> map;
 
@@ -18,7 +12,7 @@ public class HandshakedataImpl1 implements HandshakeBuilder {
 		map = new LinkedHashMap<String,String>();
 	}
 
-	public HandshakedataImpl1( Handshakedata h ) {
+	/*public HandshakedataImpl1( Handshakedata h ) {
 		httpstatusmessage = h.getHttpStatusMessage();
 		resourcedescriptor = h.getResourceDescriptor();
 		content = h.getContent();
@@ -28,13 +22,7 @@ public class HandshakedataImpl1 implements HandshakeBuilder {
 			String key = (String) it.next();
 			map.put( key, h.getFieldValue( key ) );
 		}
-	}
-
-	@Override
-	public String getResourceDescriptor() {
-		// validate resourcedescriptor
-		return resourcedescriptor == null || (resourcedescriptor.length() == 0) ? "" : resourcedescriptor;
-	}
+	}*/
 
 	@Override
 	public Iterator<String> iterateHttpFields() {
@@ -61,11 +49,6 @@ public class HandshakedataImpl1 implements HandshakeBuilder {
 	}
 
 	@Override
-	public void setResourceDescriptor( String resourcedescriptor ) throws IllegalArgumentException {
-		this.resourcedescriptor = resourcedescriptor;
-	}
-
-	@Override
 	public void put( String name, String value ) {
 		map.put( name, value );
 	}
@@ -74,43 +57,4 @@ public class HandshakedataImpl1 implements HandshakeBuilder {
 	public boolean hasFieldValue( String name ) {
 		return map.containsKey( name );
 	}
-
-	@Override
-	public String getHttpStatusMessage() {
-		return httpstatusmessage;
-	}
-
-	@Override
-	public void setHttpStatusMessage( String message ) {
-		this.httpstatusmessage = message;
-
-	}
-
-	@Override
-	public short getHttpStatus() {
-		return httpstatus;
-	}
-
-	@Override
-	public void setHttpStatus( short status ) {
-		httpstatus = status;
-	}
-
-	@Override
-	public String getHttpVersion() {
-		return httpversion;
-	}
-
-	public void setHttpVersion( String version ) {
-		httpversion = version;
-	}
-
-	public String getMethod() {
-		return method;
-	}
-
-	public void setMethod( String method ) {
-		this.method = method;
-	}
-
 }
