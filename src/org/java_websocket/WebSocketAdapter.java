@@ -16,7 +16,7 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	/**
 	 * This default implementation does not do anything. Go ahead and overwrite it.
 	 * 
-	 * @see org.java_websocket.WebSocketListener#onWebsocketHandshakeRecievedAsServer(org.java_websocket.WebSocket, org.java_websocket.Draft, org.java_websocket.Handshakedata)
+	 * @see org.java_websocket.WebSocketListener#onWebsocketHandshakeReceivedAsServer(WebSocket, Draft, ClientHandshake)
 	 */
 	@Override
 	public ServerHandshakeBuilder onWebsocketHandshakeReceivedAsServer( WebSocket conn, Draft draft, ClientHandshake request ) throws InvalidDataException {
@@ -26,7 +26,7 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	/**
 	 * This default implementation does not do anything which will cause connections to be accepted. Go ahead and overwrite it.
 	 * 
-	 * @see org.java_websocket.WebSocketListener#onWebsocketHandshakeRecievedAsClient(org.java_websocket.WebSocket, org.java_websocket.Handshakedata, org.java_websocket.Handshakedata)
+	 * @see org.java_websocket.WebSocketListener#onWebsocketHandshakeReceivedAsClient(WebSocket, ClientHandshake, ServerHandshake)
 	 */
 	@Override
 	public void onWebsocketHandshakeReceivedAsClient( WebSocket conn, ClientHandshake request, ServerHandshake response ) throws InvalidDataException {
@@ -35,7 +35,7 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	/**
 	 * This default implementation does not do anything which will cause the connections to always progress.
 	 * 
-	 * @see net.tootallnate.websocket.WebSocketListener#onHandshakeSentAsClient(net.tootallnate.websocket.WebSocket, net.tootallnate.websocket.Handshakedata)
+	 * @see org.java_websocket.WebSocketListener#onWebsocketHandshakeSentAsClient(WebSocket, ClientHandshake)
 	 */
 	@Override
 	public void onWebsocketHandshakeSentAsClient( WebSocket conn, ClientHandshake request ) throws InvalidDataException {
@@ -44,7 +44,7 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	/**
 	 * This default implementation does not do anything. Go ahead and overwrite it.
 	 * 
-	 * @see org.java_websocket.WebSocketListener#onWebsocketMessage(org.java_websocket.WebSocket, java.lang.String)
+	 * @see org.java_websocket.WebSocketListener#onWebsocketMessage(WebSocket, String)
 	 */
 	@Override
 	public void onWebsocketMessage( WebSocket conn, String message ) {
@@ -53,7 +53,7 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	/**
 	 * This default implementation does not do anything. Go ahead and overwrite it.
 	 * 
-	 * @see org.java_websocket.WebSocketListener#onWebsocketOpen(org.java_websocket.WebSocket, org.java_websocket.Handshakedata)
+	 * @see @see org.java_websocket.WebSocketListener#onWebsocketOpen(WebSocket, Handshakedata)
 	 */
 	@Override
 	public void onWebsocketOpen( WebSocket conn, Handshakedata handshake ) {
@@ -62,7 +62,7 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	/**
 	 * This default implementation does not do anything. Go ahead and overwrite it.
 	 * 
-	 * @see org.java_websocket.WebSocketListener#onWebsocketClose(org.java_websocket.WebSocket, int, java.lang.String, boolean)
+	 * @see @see org.java_websocket.WebSocketListener#onWebsocketClose(WebSocket, int, String, boolean)
 	 */
 	@Override
 	public void onWebsocketClose( WebSocket conn, int code, String reason, boolean remote ) {
@@ -71,7 +71,7 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	/**
 	 * This default implementation does not do anything. Go ahead and overwrite it.
 	 * 
-	 * @see org.java_websocket.WebSocketListener#onWebsocketMessage(org.java_websocket.WebSocket, byte[])
+	 * @see @see org.java_websocket.WebSocketListener#onWebsocketMessage(WebSocket, byte[])
 	 */
 	@Override
 	public void onWebsocketMessage( WebSocket conn, byte[] blob ) {
@@ -81,7 +81,7 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	 * This default implementation will send a pong in response to the received ping.
 	 * The pong frame will have the same payload as the ping frame.
 	 * 
-	 * @see org.java_websocket.WebSocketListener#onWebsocketPing(org.java_websocket.WebSocket, org.java_websocket.Framedata)
+	 * @see @see org.java_websocket.WebSocketListener#onWebsocketPing(WebSocket, Framedata)
 	 */
 	@Override
 	public void onWebsocketPing( WebSocket conn, Framedata f ) {
@@ -97,7 +97,7 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	/**
 	 * This default implementation does not do anything. Go ahead and overwrite it.
 	 * 
-	 * @see org.java_websocket.WebSocketListener#onWebsocketPong(org.java_websocket.WebSocket, org.java_websocket.Framedata)
+	 * @see @see org.java_websocket.WebSocketListener#onWebsocketPong(WebSocket, Framedata)
 	 */
 	@Override
 	public void onWebsocketPong( WebSocket conn, Framedata f ) {
@@ -124,7 +124,7 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	/**
 	 * This default implementation does not do anything. Go ahead and overwrite it.
 	 * 
-	 * @see org.java_websocket.WebSocketListener#onWebsocketError(org.java_websocket.WebSocket, java.lang.Exception)
+	 * @see @see org.java_websocket.WebSocketListener#onWebsocketError(WebSocket, Exception)
 	 */
 	@Override
 	public void onWebsocketError( WebSocket conn, Exception ex ) {
