@@ -5,9 +5,9 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
-import net.tootallnate.websocket.Handshakedata;
-import net.tootallnate.websocket.WebSocket;
-import net.tootallnate.websocket.WebSocketServer;
+import org.java_websocket.WebSocket;
+import org.java_websocket.WebSocketServer;
+import org.java_websocket.handshake.ClientHandshake;
 
 /**
  * A simple WebSocketServer implementation. Keeps track of a "chatroom".
@@ -22,7 +22,8 @@ public class ChatServer extends WebSocketServer {
 		super( address );
 	}
 
-	public void onClientOpen( WebSocket conn, Handshakedata handshake ) {
+	@Override
+	public void onOpen( WebSocket conn, ClientHandshake handshake ) {
 		try {
 			this.sendToAll( conn + " entered the room!" );
 		} catch ( InterruptedException ex ) {
@@ -31,7 +32,8 @@ public class ChatServer extends WebSocketServer {
 		System.out.println( conn + " entered the room!" );
 	}
 
-	public void onClientClose( WebSocket conn, int code, String reason, boolean remote ) {
+	@Override
+	public void onClose( WebSocket conn, int code, String reason, boolean remote ) {
 		try {
 			this.sendToAll( conn + " has left the room!" );
 		} catch ( InterruptedException ex ) {
@@ -40,7 +42,8 @@ public class ChatServer extends WebSocketServer {
 		System.out.println( conn + " has left the room!" );
 	}
 
-	public void onClientMessage( WebSocket conn, String message ) {
+	@Override
+	public void onMessage( WebSocket conn, String message ) {
 		try {
 			this.sendToAll( conn + ": " + message );
 		} catch ( InterruptedException ex ) {
@@ -70,5 +73,19 @@ public class ChatServer extends WebSocketServer {
 	@Override
 	public void onError( WebSocket conn, Exception ex ) {
 		ex.printStackTrace();
+	}
+
+	/**
+	 * Sends <var>text</var> to all currently connected WebSocket clients.
+	 * 
+	 * @param text
+	 *            The String to send across the network.
+	 * @throws InterruptedException
+	 *             When socket related I/O errors occur.
+	 */
+	public void sendToAll( String text ) throws InterruptedException {
+		for( WebSocket c : connections() ) {
+			c.send( text );
+		}
 	}
 }

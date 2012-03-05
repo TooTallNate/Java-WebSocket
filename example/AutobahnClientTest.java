@@ -3,11 +3,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
 
-import net.tootallnate.websocket.Draft;
-import net.tootallnate.websocket.Handshakedata;
-import net.tootallnate.websocket.WebSocket;
-import net.tootallnate.websocket.WebSocketClient;
-import net.tootallnate.websocket.drafts.Draft_17;
+import org.java_websocket.WebSocket;
+import org.java_websocket.WebSocketClient;
+import org.java_websocket.drafts.Draft;
+import org.java_websocket.drafts.Draft_17;
+import org.java_websocket.handshake.ServerHandshake;
 
 public class AutobahnClientTest extends WebSocketClient {
 
@@ -135,9 +135,9 @@ public class AutobahnClientTest extends WebSocketClient {
 	}
 
 	@Override
-	public void onMessage( WebSocket conn, byte[] blob ) {
+	public void onMessage( byte[] blob ) {
 		try {
-			conn.send( blob );
+			getConnection().send( blob );
 		} catch ( InterruptedException e ) {
 			e.printStackTrace();
 		}
@@ -150,7 +150,7 @@ public class AutobahnClientTest extends WebSocketClient {
 	}
 
 	@Override
-	public void onOpen( Handshakedata handshake ) {
+	public void onOpen( ServerHandshake handshake ) {
 	}
 
 	@Override
