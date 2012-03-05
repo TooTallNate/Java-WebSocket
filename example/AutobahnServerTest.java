@@ -1,11 +1,11 @@
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
-import net.tootallnate.websocket.Draft;
-import net.tootallnate.websocket.Handshakedata;
-import net.tootallnate.websocket.WebSocket;
-import net.tootallnate.websocket.WebSocketServer;
-import net.tootallnate.websocket.drafts.Draft_17;
+import org.java_websocket.WebSocket;
+import org.java_websocket.WebSocketServer;
+import org.java_websocket.drafts.Draft;
+import org.java_websocket.drafts.Draft_17;
+import org.java_websocket.handshake.ClientHandshake;
 
 public class AutobahnServerTest extends WebSocketServer {
 	private static int counter = 0;
@@ -19,17 +19,13 @@ public class AutobahnServerTest extends WebSocketServer {
 	}
 
 	@Override
-	public void onClientOpen( WebSocket conn, Handshakedata handshake ) {
+	public void onOpen( WebSocket conn, ClientHandshake handshake ) {
 		counter++;
 		System.out.println( "///////////Opened connection number" + counter );
 	}
 
 	@Override
-	public void onClientClose( WebSocket conn, int code, String reason, boolean remote ) {
-	}
-
-	@Override
-	public void onClientMessage( WebSocket conn, String message ) {
+	public void onClose( WebSocket conn, int code, String reason, boolean remote ) {
 	}
 
 	@Override
@@ -46,6 +42,7 @@ public class AutobahnServerTest extends WebSocketServer {
 			e.printStackTrace();
 		}
 	}
+
 	@Override
 	public void onMessage( WebSocket conn, byte[] blob ) {
 		try {

@@ -13,14 +13,14 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-import net.tootallnate.websocket.Draft;
-import net.tootallnate.websocket.Handshakedata;
-import net.tootallnate.websocket.WebSocket;
-import net.tootallnate.websocket.WebSocketClient;
-import net.tootallnate.websocket.drafts.Draft_10;
-import net.tootallnate.websocket.drafts.Draft_17;
-import net.tootallnate.websocket.drafts.Draft_75;
-import net.tootallnate.websocket.drafts.Draft_76;
+import org.java_websocket.WebSocket;
+import org.java_websocket.WebSocketClient;
+import org.java_websocket.drafts.Draft;
+import org.java_websocket.drafts.Draft_10;
+import org.java_websocket.drafts.Draft_17;
+import org.java_websocket.drafts.Draft_75;
+import org.java_websocket.drafts.Draft_76;
+import org.java_websocket.handshake.ServerHandshake;
 
 public class ChatClient extends JFrame implements ActionListener {
 	private static final long serialVersionUID = -6056260699202978657L;
@@ -104,16 +104,19 @@ public class ChatClient extends JFrame implements ActionListener {
 				// cc = new ChatClient(new URI(uriField.getText()), area, ( Draft ) draft.getSelectedItem() );
 				cc = new WebSocketClient( new URI( uriField.getText() ), (Draft) draft.getSelectedItem() ) {
 
+					@Override
 					public void onMessage( String message ) {
 						ta.append( "got: " + message + "\n" );
 						ta.setCaretPosition( ta.getDocument().getLength() );
 					}
 
-					public void onOpen( Handshakedata handshake ) {
+					@Override
+					public void onOpen( ServerHandshake handshake ) {
 						ta.append( "You are connected to ChatServer: " + getURI() + "\n" );
 						ta.setCaretPosition( ta.getDocument().getLength() );
 					}
 
+					@Override
 					public void onClose( int code, String reason, boolean remote ) {
 						ta.append( "You have been disconnected from: " + getURI() + "; Code: " + code + " " + reason + "\n" );
 						ta.setCaretPosition( ta.getDocument().getLength() );
@@ -123,6 +126,7 @@ public class ChatClient extends JFrame implements ActionListener {
 						close.setEnabled( false );
 					}
 
+					@Override
 					public void onError( Exception ex ) {
 						ta.append( "Exception occured ...\n" + ex + "\n" );
 						ta.setCaretPosition( ta.getDocument().getLength() );
