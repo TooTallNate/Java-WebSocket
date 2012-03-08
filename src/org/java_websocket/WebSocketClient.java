@@ -3,12 +3,7 @@ package org.java_websocket;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
-import java.nio.channels.ClosedByInterruptException;
-import java.nio.channels.NotYetConnectedException;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.SocketChannel;
-import java.nio.channels.UnresolvedAddressException;
+import java.nio.channels.*;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
@@ -277,6 +272,19 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 */
 	public int getReadyState() {
 		return conn.getReadyState();
+	}
+
+	/**
+	 * Amount of data buffered/queued but not sent yet.
+	 *
+	 * In details, it returns the number of bytes of application data (UTF-8 text and binary data)
+	 * that have been queued using send() but that, as of the last time the event loop
+	 * started executing a task, had not yet been transmitted to the network.
+	 *
+	 * @return Amount still buffered/queued but not sent yet.
+	 */
+	public long getBufferedAmount() {
+		return conn.bufferedDataAmount();
 	}
 
 	/**

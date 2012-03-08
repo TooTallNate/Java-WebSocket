@@ -89,6 +89,11 @@ public final class WebSocket {
 	 * Queue of buffers that need to be sent to the client.
 	 */
 	private BlockingQueue<ByteBuffer> bufferQueue;
+	/**
+	 * The amount of bytes still in queue to be sent, at every given time.
+	 * It's updated at every send/sent operation.
+	 */
+	private Long bufferQueueTotalAmount = (long) 0;
 
 	private Draft draft = null;
 
@@ -471,6 +476,15 @@ public final class WebSocket {
 	}
 
 	/**
+	 * The amount of data in Queue, ready to be sent.
+	 *
+	 * @return Amount of Data still in Queue and not sent yet of the socket
+	 */
+	long bufferedDataAmount() {
+		return bufferQueueTotalAmount;
+	}
+
+	/**
 	 * Empty the internal buffer, sending all the pending data before continuing.
 	 */
 	public void flush() throws IOException {
@@ -480,6 +494,10 @@ public final class WebSocket {
 			if( buffer.remaining() > 0 ) {
 				continue;
 			} else {
+				synchronized (bufferQueueTotalAmount) {
+					// subtract this amount of data from the total queued (synchronized over this object)
+					bufferQueueTotalAmount -= buffer.limit();
+				}
 				this.bufferQueue.poll(); // Buffer finished. Remove it.
 				buffer = this.bufferQueue.peek();
 			}
@@ -527,6 +545,10 @@ public final class WebSocket {
 		if( DEBUG )
 			System.out.println( "write(" + buf.limit() + "): {" + ( buf.limit() > 1000 ? "too big to display" : new String( buf.array() ) ) + "}" );
 		buf.rewind();
+		synchronized (bufferQueueTotalAmount) {
+			// add up the number of bytes to the total queued (synchronized over this object)
+			bufferQueueTotalAmount += buf.limit();
+		}
 		bufferQueue.put( buf );
 		wsl.onWriteDemand( this );
 	}

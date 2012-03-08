@@ -81,12 +81,14 @@ public abstract class Draft {
 			throw new InvalidHandshakeException();
 		}
 
-		if( role == Role.CLIENT ) {// translating/parsing the response from the SERVER
+		if( role == Role.CLIENT ) {
+		    // translating/parsing the response from the SERVER
 			handshake = new HandshakeImpl1Server();
 			ServerHandshakeBuilder serverhandshake = (ServerHandshakeBuilder) handshake;
 			serverhandshake.setHttpStatus( Short.parseShort( firstLineTokens[ 1 ] ) );
 			serverhandshake.setHttpStatusMessage( firstLineTokens[ 2 ] );
-		} else {// translating/parsing the request from the CLIENT
+		} else {
+		    // translating/parsing the request from the CLIENT
 			ClientHandshakeBuilder clienthandshake = new HandshakeImpl1Client();
 			clienthandshake.setResourceDescriptor( firstLineTokens[ 1 ] );
 			handshake = clienthandshake;
