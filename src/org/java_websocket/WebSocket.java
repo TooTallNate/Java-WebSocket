@@ -93,7 +93,7 @@ public final class WebSocket {
 	 * The amount of bytes still in queue to be sent, at every given time.
 	 * It's updated at every send/sent operation.
 	 */
-	private long bufferQueueTotalAmount = 0;
+	private Long bufferQueueTotalAmount = (long) 0;
 
 	private Draft draft = null;
 
@@ -494,7 +494,7 @@ public final class WebSocket {
 			if( buffer.remaining() > 0 ) {
 				continue;
 			} else {
-				synchronized (this) {
+				synchronized (bufferQueueTotalAmount) {
 					// subtract this amount of data from the total queued (synchronized over this object)
 					bufferQueueTotalAmount -= buffer.limit();
 				}
@@ -545,7 +545,7 @@ public final class WebSocket {
 		if( DEBUG )
 			System.out.println( "write(" + buf.limit() + "): {" + ( buf.limit() > 1000 ? "too big to display" : new String( buf.array() ) ) + "}" );
 		buf.rewind();
-		synchronized (this) {
+		synchronized (bufferQueueTotalAmount) {
 			// add up the number of bytes to the total queued (synchronized over this object)
 			bufferQueueTotalAmount += buf.limit();
 		}
