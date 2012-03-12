@@ -544,12 +544,22 @@ public final class WebSocket {
 	private void channelWrite( ByteBuffer buf ) throws InterruptedException {
 		if( DEBUG )
 			System.out.println( "write(" + buf.limit() + "): {" + ( buf.limit() > 1000 ? "too big to display" : new String( buf.array() ) ) + "}" );
-		buf.rewind();
+		buf.rewind(); // TODO rewinding should not be nessesary
 		synchronized (bufferQueueTotalAmount) {
 			// add up the number of bytes to the total queued (synchronized over this object)
 			bufferQueueTotalAmount += buf.limit();
 		}
-		bufferQueue.put( buf );
+		if( !bufferQueue.offer( buf ) ) {
+			try {
+				flush();
+			} catch ( IOException e ) {
+				wsl.onWebsocketError( this, e );
+				closeConnection( CloseFrame.ABNROMAL_CLOSE, true );
+				return;
+			}
+			bufferQueue.put( buf );
+		}
+
 		wsl.onWriteDemand( this );
 	}
 
