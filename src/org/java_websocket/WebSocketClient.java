@@ -3,7 +3,12 @@ package org.java_websocket;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
-import java.nio.channels.*;
+import java.nio.channels.ClosedByInterruptException;
+import java.nio.channels.NotYetConnectedException;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.nio.channels.SocketChannel;
+import java.nio.channels.UnresolvedAddressException;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
@@ -242,6 +247,16 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		client.register( selector, SelectionKey.OP_READ );
 
 		sendHandshake();
+	}
+
+	public void flush() {
+		try {
+			conn.flush();
+		} catch ( IOException e ) {
+			onError( e );
+			conn.closeConnection( CloseFrame.ABNROMAL_CLOSE, true );
+			return;
+		}
 	}
 
 	private void sendHandshake() throws IOException , InvalidHandshakeException , InterruptedException {

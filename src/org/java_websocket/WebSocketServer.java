@@ -9,9 +9,9 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.framing.CloseFrame;
@@ -32,7 +32,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 * Holds the list of active WebSocket connections. "Active" means WebSocket
 	 * handshake is complete and socket can be written to, or read from.
 	 */
-	private final Set<WebSocket> connections = new HashSet<WebSocket>();
+	private final CopyOnWriteArraySet<WebSocket> connections;
 	/**
 	 * The port number that this WebSocket server should listen on. Default is
 	 * WebSocket.DEFAULT_PORT.
@@ -83,6 +83,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 *            instance should comply to.
 	 */
 	public WebSocketServer( InetSocketAddress address , Draft draft ) {
+		this.connections = new CopyOnWriteArraySet<WebSocket>();
 		this.draft = draft;
 		setAddress( address );
 	}
@@ -108,10 +109,8 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 *             When socket related I/O errors occur.
 	 */
 	public void stop() throws IOException {
-		synchronized ( connections ) {
-			for( WebSocket ws : connections ) {
-				ws.close( CloseFrame.NORMAL );
-			}
+		for( WebSocket ws : connections ) {
+			ws.close( CloseFrame.NORMAL );
 		}
 		thread.interrupt();
 		this.server.close();
@@ -120,13 +119,11 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 
 	/**
 	 * Returns a WebSocket[] of currently connected clients.
-	 * Its iterators will be failfast and its not judicious
-	 * to modify it.
 	 * 
-	 * @return The currently connected clients.
+	 * @return The currently connected clients in a WebSocket[].
 	 */
 	public Set<WebSocket> connections() {
-		return this.connections;
+		return Collections.unmodifiableSet( this.connections );
 	}
 
 	/**
@@ -211,18 +208,16 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 						key.channel().register( selector, SelectionKey.OP_READ, conn );
 					}
 				}
-				synchronized ( connections ) {
-					Iterator<WebSocket> it = this.connections.iterator();
-					while ( it.hasNext() ) {
-						// We have to do this check here, and not in the thread that
-						// adds the buffered data to the WebSocket, because the
-						// Selector is not thread-safe, and can only be accessed
-						// by this thread.
-						conn = it.next();
-						if( conn.hasBufferedData() ) {
-							conn.flush();
-							// key.channel().register( selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE, conn );
-						}
+				Iterator<WebSocket> it = this.connections.iterator();
+				while ( it.hasNext() ) {
+					// We have to do this check here, and not in the thread that
+					// adds the buffered data to the WebSocket, because the
+					// Selector is not thread-safe, and can only be accessed
+					// by this thread.
+					conn = it.next();
+					if( conn.hasBufferedData() ) {
+						conn.flush();
+						// key.channel().register( selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE, conn );
 					}
 				}
 			} catch ( IOException ex ) {
@@ -232,9 +227,6 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 				if( conn != null ) {
 					conn.close( CloseFrame.ABNROMAL_CLOSE );
 				}
-			} catch ( Throwable e ) {
-				System.out.println( e );
-				e.printStackTrace();
 			}
 		}
 	}
@@ -268,19 +260,15 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 
 	@Override
 	public final void onWebsocketOpen( WebSocket conn, Handshakedata handshake ) {
-		synchronized ( connections ) {
-			if( this.connections.add( conn ) ) {
-				onOpen( conn, (ClientHandshake) handshake );
-			}
+		if( this.connections.add( conn ) ) {
+			onOpen( conn, (ClientHandshake) handshake );
 		}
 	}
 
 	@Override
 	public final void onWebsocketClose( WebSocket conn, int code, String reason, boolean remote ) {
-		synchronized ( connections ) {
-			if( this.connections.remove( conn ) ) {
-				onClose( conn, code, reason, remote );
-			}
+		if( this.connections.remove( conn ) ) {
+			onClose( conn, code, reason, remote );
 		}
 	}
 
