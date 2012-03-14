@@ -4,6 +4,7 @@ import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.util.Set;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketServer;
@@ -17,7 +18,7 @@ public class ChatServer extends WebSocketServer {
 	public ChatServer( int port ) throws UnknownHostException {
 		super( new InetSocketAddress( InetAddress.getByName( "localhost" ), port ) );
 	}
-	
+
 	public ChatServer( InetSocketAddress address ) {
 		super( address );
 	}
@@ -84,8 +85,11 @@ public class ChatServer extends WebSocketServer {
 	 *             When socket related I/O errors occur.
 	 */
 	public void sendToAll( String text ) throws InterruptedException {
-		for( WebSocket c : connections() ) {
-			c.send( text );
+		Set<WebSocket> con = connections();
+		synchronized ( con ) {
+			for( WebSocket c : con ) {
+				c.send( text );
+			}
 		}
 	}
 }
