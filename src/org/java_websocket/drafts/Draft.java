@@ -36,6 +36,9 @@ public abstract class Draft {
 		/** Handshake matches this Draft but is not complete */
 		MATCHING
 	}
+	public enum CloseHandshakeType {
+		NONE, ONEWAY, TWOWAY
+	}
 
 	public static final byte[] FLASH_POLICY_REQUEST = Charsetfunctions.utf8Bytes( "<policy-file-request/>\0" );
 	private static Pattern getpattern = Pattern.compile( "" ); // GET / HTTP/1.1
@@ -178,6 +181,6 @@ public abstract class Draft {
 		this.role = role;
 	}
 
-	public abstract boolean hasCloseHandshake();
+	public abstract CloseHandshakeType getCloseHandshakeType();
 
 }

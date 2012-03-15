@@ -5,11 +5,19 @@ import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Random;
 
 import org.java_websocket.WebSocket.Role;
 import org.java_websocket.exeptions.IncompleteHandshakeException;
+import org.java_websocket.exeptions.InvalidDataException;
+import org.java_websocket.exeptions.InvalidFrameException;
 import org.java_websocket.exeptions.InvalidHandshakeException;
+import org.java_websocket.framing.CloseFrame;
+import org.java_websocket.framing.CloseFrameBuilder;
+import org.java_websocket.framing.Framedata;
+import org.java_websocket.framing.Framedata.Opcode;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.handshake.ClientHandshakeBuilder;
 import org.java_websocket.handshake.HandshakeBuilder;
@@ -19,6 +27,7 @@ import org.java_websocket.handshake.ServerHandshakeBuilder;
 
 public class Draft_76 extends Draft_75 {
 	private boolean failed = false;
+	private static final byte[] closehandshake = { -1, 0 };
 
 	public static byte[] createChallenge( String key1, String key2, byte[] key3 ) throws InvalidHandshakeException {
 		byte[] part1 = getPart( key1 );
@@ -176,5 +185,51 @@ public class Draft_76 extends Draft_75 {
 
 		}
 		return bui;
+	}
+
+	@Override
+	public List<Framedata> translateFrame( ByteBuffer buffer ) throws InvalidDataException {
+		buffer.mark();
+		List<Framedata> frames = super.translateRegularFrame( buffer );
+		if( frames == null ) {
+			buffer.reset();
+			frames = readyframes;
+			readingState = true;
+			if( currentFrame == null )
+				currentFrame = ByteBuffer.allocate( 2 );
+			else {
+				throw new InvalidFrameException();
+			}
+			if( buffer.remaining() > currentFrame.remaining() ) {
+				throw new InvalidFrameException();
+			} else {
+				currentFrame.put( buffer );
+			}
+			if( !currentFrame.hasRemaining() ) {
+				if( Arrays.equals( currentFrame.array(), closehandshake ) ) {
+					frames.add( new CloseFrameBuilder( CloseFrame.NORMAL ) );
+					return frames;
+				}
+				else{
+					throw new InvalidFrameException();
+				}
+			} else {
+				readyframes = new LinkedList<Framedata>();
+				return frames;
+			}
+		} else {
+			return frames;
+		}
+	}
+	@Override
+	public ByteBuffer createBinaryFrame( Framedata framedata ) {
+		if( framedata.getOpcode() == Opcode.CLOSING )
+			return ByteBuffer.wrap( closehandshake );
+		return super.createBinaryFrame( framedata );
+	}
+
+	@Override
+	public CloseHandshakeType getCloseHandshakeType() {
+		return CloseHandshakeType.ONEWAY;
 	}
 }

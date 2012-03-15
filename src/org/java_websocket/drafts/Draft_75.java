@@ -9,6 +9,7 @@ import java.util.Random;
 import org.java_websocket.exeptions.InvalidDataException;
 import org.java_websocket.exeptions.InvalidHandshakeException;
 import org.java_websocket.exeptions.NotSendableException;
+import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.FrameBuilder;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.framing.Framedata.Opcode;
@@ -39,10 +40,10 @@ public class Draft_75 extends Draft {
 	 */
 	public static final byte END_OF_FRAME = (byte) 0xFF;
 
-	private boolean readingState = false;
+	protected boolean readingState = false;
 	private boolean inframe = false;
-
-	private ByteBuffer currentFrame;
+	protected List<Framedata> readyframes = new LinkedList<Framedata>();
+	protected ByteBuffer currentFrame;
 
 	@Override
 	public HandshakeState acceptHandshakeAsClient( ClientHandshake request, ServerHandshake response ) {
@@ -59,6 +60,10 @@ public class Draft_75 extends Draft {
 
 	@Override
 	public ByteBuffer createBinaryFrame( Framedata framedata ) {
+		if( framedata.getOpcode() != Opcode.TEXT ) {
+			throw new RuntimeException( "only text frames supported" );
+		}
+
 		byte[] pay = framedata.getPayloadData();
 		ByteBuffer b = ByteBuffer.allocate( pay.length + 2 );
 		b.put( START_OF_FRAME );
@@ -91,10 +96,10 @@ public class Draft_75 extends Draft {
 	public ClientHandshakeBuilder postProcessHandshakeRequestAsClient( ClientHandshakeBuilder request ) throws InvalidHandshakeException {
 		request.put( "Upgrade", "WebSocket" );
 		request.put( "Connection", "Upgrade" );
-		if(!request.hasFieldValue( "Origin" )){
-			request.put( "Origin",	"random"+new Random().nextInt() );
+		if( !request.hasFieldValue( "Origin" ) ) {
+			request.put( "Origin", "random" + new Random().nextInt() );
 		}
-		
+
 		return request;
 	}
 
@@ -110,15 +115,16 @@ public class Draft_75 extends Draft {
 		return response;
 	}
 
-	@Override
-	public List<Framedata> translateFrame( ByteBuffer buffer ) throws InvalidDataException {
-		List<Framedata> frames = new LinkedList<Framedata>();
+	protected List<Framedata> translateRegularFrame( ByteBuffer buffer ) throws InvalidDataException {
 		while ( buffer.hasRemaining() ) {
 			byte newestByte = buffer.get();
-			if( newestByte == START_OF_FRAME && !readingState ) { // Beginning of Frame
-				this.currentFrame = null;
+			if( newestByte == START_OF_FRAME ) { // Beginning of Frame
+				if( readingState )
+					return null;
 				readingState = true;
-			} else if( newestByte == END_OF_FRAME && readingState ) { // End of Frame
+			} else if( newestByte == END_OF_FRAME ) { // End of Frame
+				if( !readingState )
+					return null;
 				// currentFrame will be null if END_OF_FRAME was send directly after
 				// START_OF_FRAME, thus we will send 'null' as the sent message.
 				if( this.currentFrame != null ) {
@@ -126,11 +132,13 @@ public class Draft_75 extends Draft {
 					curframe.setPayload( currentFrame.array() );
 					curframe.setFin( true );
 					curframe.setOptcode( inframe ? Opcode.CONTINIOUS : Opcode.TEXT );
-					frames.add( curframe );
+					readyframes.add( curframe );
+					this.currentFrame = null;
+					buffer.mark();
 				}
 				readingState = false;
 				inframe = false;
-			} else { // Regular frame data, add to current frame buffer //TODO This code is very expensive and slow
+			} else if( readingState ) { // Regular frame data, add to current frame buffer //TODO This code is very expensive and slow
 				ByteBuffer frame = ByteBuffer.allocate( checkAlloc( ( this.currentFrame != null ? this.currentFrame.capacity() : 0 ) + 1 ) );
 				if( this.currentFrame != null ) {
 					this.currentFrame.rewind();
@@ -138,6 +146,8 @@ public class Draft_75 extends Draft {
 				}
 				frame.put( newestByte );
 				this.currentFrame = frame;
+			} else {
+				return null;
 			}
 		}
 		if( readingState ) {
@@ -146,7 +156,20 @@ public class Draft_75 extends Draft {
 			curframe.setFin( false );
 			curframe.setOptcode( inframe ? Opcode.CONTINIOUS : Opcode.TEXT );
 			inframe = true;
-			frames.add( curframe );
+			readyframes.add( curframe );
+		}
+
+		List<Framedata> frames = readyframes;
+		readyframes = new LinkedList<Framedata>();
+		this.currentFrame = null;
+		return frames;
+	}
+
+	@Override
+	public List<Framedata> translateFrame( ByteBuffer buffer ) throws InvalidDataException {
+		List<Framedata> frames = translateRegularFrame( buffer );
+		if( frames == null ) {
+			throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR );
 		}
 		return frames;
 	}
@@ -156,10 +179,10 @@ public class Draft_75 extends Draft {
 		readingState = false;
 		this.currentFrame = null;
 	}
-	
+
 	@Override
-	public boolean hasCloseHandshake() {
-		return false;
+	public CloseHandshakeType getCloseHandshakeType() {
+		return CloseHandshakeType.NONE;
 	}
 
 }

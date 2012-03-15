@@ -379,7 +379,7 @@ public class Draft_10 extends Draft {
 	}
 
 	@Override
-	public boolean hasCloseHandshake() {
-		return true;
+	public CloseHandshakeType getCloseHandshakeType() {
+		return CloseHandshakeType.TWOWAY;
 	}
 }
