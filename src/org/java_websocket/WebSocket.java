@@ -12,6 +12,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.java_websocket.drafts.Draft;
+import org.java_websocket.drafts.Draft.CloseHandshakeType;
 import org.java_websocket.drafts.Draft.HandshakeState;
 import org.java_websocket.drafts.Draft_10;
 import org.java_websocket.drafts.Draft_17;
@@ -139,7 +140,7 @@ public final class WebSocket {
 
 	private void init( WebSocketListener listener, Draft draft, SocketChannel socketchannel ) {
 		this.sockchannel = socketchannel;
-		this.bufferQueue = new LinkedBlockingQueue<ByteBuffer>( 10 );
+		this.bufferQueue = new LinkedBlockingQueue<ByteBuffer>( 3 );
 		this.socketBuffer = ByteBuffer.allocate( 65558 );
 		socketBuffer.flip();
 		this.wsl = listener;
@@ -160,7 +161,19 @@ public final class WebSocket {
 			socketBuffer.rewind();
 			socketBuffer.limit( socketBuffer.capacity() );
 			if( sockchannel.read( socketBuffer ) == -1 ) {
-				close( CloseFrame.ABNROMAL_CLOSE );
+				if( draft == null ) {
+					closeConnection( CloseFrame.ABNROMAL_CLOSE, true );
+				} else if( draft.getCloseHandshakeType() == CloseHandshakeType.NONE ) {
+					closeConnection( CloseFrame.NORMAL, true );
+				} else if( draft.getCloseHandshakeType() == CloseHandshakeType.ONEWAY ) {
+					if( role == Role.SERVER )
+						closeConnection( CloseFrame.ABNROMAL_CLOSE, true );
+					else
+						closeConnection( CloseFrame.NORMAL, true );
+				} else {
+					closeConnection( CloseFrame.ABNROMAL_CLOSE, true );
+				}
+
 			}
 
 			socketBuffer.flip();
@@ -298,7 +311,8 @@ public final class WebSocket {
 								closeConnection( code, reason, true );
 							} else {
 								// echo close handshake
-								close( code, reason );
+								if( draft.getCloseHandshakeType() == CloseHandshakeType.TWOWAY )
+									close( code, reason );
 								closeConnection( code, reason, false );
 							}
 							continue;
@@ -363,7 +377,7 @@ public final class WebSocket {
 					return;
 				}
 				flush();
-				if( draft.hasCloseHandshake() ) {
+				if( draft.getCloseHandshakeType() != CloseHandshakeType.NONE ) {
 					try {
 						sendFrameDirect( new CloseFrameBuilder( code, message ) );
 					} catch ( InvalidDataException e ) {
@@ -477,7 +491,7 @@ public final class WebSocket {
 
 	/**
 	 * The amount of data in Queue, ready to be sent.
-	 *
+	 * 
 	 * @return Amount of Data still in Queue and not sent yet of the socket
 	 */
 	long bufferedDataAmount() {
@@ -494,7 +508,7 @@ public final class WebSocket {
 			if( buffer.remaining() > 0 ) {
 				continue;
 			} else {
-				synchronized (bufferQueueTotalAmount) {
+				synchronized ( bufferQueueTotalAmount ) {
 					// subtract this amount of data from the total queued (synchronized over this object)
 					bufferQueueTotalAmount -= buffer.limit();
 				}
@@ -545,7 +559,7 @@ public final class WebSocket {
 		if( DEBUG )
 			System.out.println( "write(" + buf.limit() + "): {" + ( buf.limit() > 1000 ? "too big to display" : new String( buf.array() ) ) + "}" );
 		buf.rewind(); // TODO rewinding should not be nessesary
-		synchronized (bufferQueueTotalAmount) {
+		synchronized ( bufferQueueTotalAmount ) {
 			// add up the number of bytes to the total queued (synchronized over this object)
 			bufferQueueTotalAmount += buf.limit();
 		}
