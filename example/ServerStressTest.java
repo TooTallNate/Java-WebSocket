@@ -92,7 +92,6 @@ public class ServerStressTest extends JFrame {
 				while ( !websockets.isEmpty() )
 					websockets.remove( 0 ).close();
 
-
 			}
 		} );
 		joinrate = new JSlider( 0, 5000 );
@@ -160,6 +159,7 @@ public class ServerStressTest extends JFrame {
 				@Override
 				public void onClose( int code, String reason, boolean remote ) {
 					System.out.println( "Closed duo " + code + " " + reason );
+					clients.setValue( websockets.size() );
 					websockets.remove( this );
 				}
 			};
@@ -174,11 +174,9 @@ public class ServerStressTest extends JFrame {
 		}
 		timer = new Timer( true );
 		timer.scheduleAtFixedRate( new TimerTask() {
-
 			@Override
 			public void run() {
 				send();
-
 			}
 		}, 0, interval.getValue() );
 
@@ -203,7 +201,7 @@ public class ServerStressTest extends JFrame {
 				try {
 					cl.send( payload );
 					cl.flush();
-				} catch ( NotYetConnectedException e ) 
+				} catch ( NotYetConnectedException e ) {
 					notyetconnected++;
 				} catch ( InterruptedException e ) {
 					e.printStackTrace();
