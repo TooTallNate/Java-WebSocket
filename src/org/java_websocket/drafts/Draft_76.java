@@ -28,6 +28,9 @@ import org.java_websocket.handshake.ServerHandshakeBuilder;
 public class Draft_76 extends Draft_75 {
 	private boolean failed = false;
 	private static final byte[] closehandshake = { -1, 0 };
+	
+	private final Random reuseableRandom = new Random();
+	
 
 	public static byte[] createChallenge( String key1, String key2, byte[] key3 ) throws InvalidHandshakeException {
 		byte[] part1 = getPart( key1 );
@@ -137,15 +140,15 @@ public class Draft_76 extends Draft_75 {
 	public ClientHandshakeBuilder postProcessHandshakeRequestAsClient( ClientHandshakeBuilder request ) {
 		request.put( "Upgrade", "WebSocket" );
 		request.put( "Connection", "Upgrade" );
-		request.put( "Sec-WebSocket-Key1", this.generateKey() );
-		request.put( "Sec-WebSocket-Key2", this.generateKey() );
+		request.put( "Sec-WebSocket-Key1", generateKey() );
+		request.put( "Sec-WebSocket-Key2", generateKey() );
 
 		if( !request.hasFieldValue( "Origin" ) ) {
-			request.put( "Origin", "random" + new Random().nextInt() );
+			request.put( "Origin", "random" + reuseableRandom.nextInt() );
 		}
 
 		byte[] key3 = new byte[ 8 ];
-		new Random().nextBytes( key3 );
+		reuseableRandom.nextBytes( key3 );
 		request.setContent( key3 );
 		return request;
 
