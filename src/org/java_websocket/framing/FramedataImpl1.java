@@ -1,6 +1,7 @@
 package org.java_websocket.framing;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import org.java_websocket.exeptions.InvalidDataException;
 import org.java_websocket.exeptions.InvalidFrameException;
@@ -84,7 +85,7 @@ public class FramedataImpl1 implements FrameBuilder {
 
 	@Override
 	public String toString() {
-		return "Framedata{ optcode:" + getOpcode() + ", fin:" + isFin() + ", payloadlength:" + unmaskedpayload.limit() + ", payload:" + Charsetfunctions.utf8Bytes( new String( unmaskedpayload.array() ) ) + "}";
+		return "Framedata{ optcode:" + getOpcode() + ", fin:" + isFin() + ", payloadlength:" + unmaskedpayload.limit() + ", payload:" + Arrays.toString(Charsetfunctions.utf8Bytes( new String( unmaskedpayload.array() ) ) ) + "}";
 	}
 
 }

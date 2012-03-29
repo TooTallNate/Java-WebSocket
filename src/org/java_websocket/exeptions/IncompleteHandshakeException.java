@@ -2,6 +2,11 @@ package org.java_websocket.exeptions;
 
 public class IncompleteHandshakeException extends RuntimeException {
 
+	/**
+	 * Serializable
+	 */
+	private static final long serialVersionUID = 7906596804233893092L;
+
 	public IncompleteHandshakeException() {
 		super();
 	}

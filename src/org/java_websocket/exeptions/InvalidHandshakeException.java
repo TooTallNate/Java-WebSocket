@@ -4,6 +4,11 @@ import org.java_websocket.framing.CloseFrame;
 
 public class InvalidHandshakeException extends InvalidDataException {
 
+	/**
+	 * Serializable
+	 */
+	private static final long serialVersionUID = -1426533877490484964L;
+
 	public InvalidHandshakeException() {
 		super( CloseFrame.PROTOCOL_ERROR );
 	}
