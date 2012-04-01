@@ -1,5 +1,7 @@
 package org.java_websocket;
 
+import java.nio.ByteBuffer;
+
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.exeptions.InvalidDataException;
 import org.java_websocket.framing.Framedata;
@@ -74,7 +76,7 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	 * @see @see org.java_websocket.WebSocketListener#onWebsocketMessage(WebSocket, byte[])
 	 */
 	@Override
-	public void onWebsocketMessage( WebSocket conn, byte[] blob ) {
+	public void onWebsocketMessage( WebSocket conn, ByteBuffer blob ) {
 	}
 
 	/**

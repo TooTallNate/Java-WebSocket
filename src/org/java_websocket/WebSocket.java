@@ -446,7 +446,7 @@ public final class WebSocket {
 	 * @throws InterruptedException
 	 * @throws NotYetConnectedException
 	 */
-	public void send( String text ) throws IllegalArgumentException , NotYetConnectedException , InterruptedException {
+	public void send( String text ) throws NotYetConnectedException , InterruptedException {
 		if( text == null )
 			throw new IllegalArgumentException( "Cannot send 'null' data to a WebSocket." );
 		send( draft.createFrames( text, role == Role.CLIENT ) );
@@ -459,10 +459,14 @@ public final class WebSocket {
 	 * @throws InterruptedException
 	 * @throws NotYetConnectedException
 	 */
-	public void send( byte[] bytes ) throws IllegalArgumentException , NotYetConnectedException , InterruptedException {
+	public void send( ByteBuffer bytes ) throws IllegalArgumentException , NotYetConnectedException , InterruptedException {
 		if( bytes == null )
 			throw new IllegalArgumentException( "Cannot send 'null' data to a WebSocket." );
 		send( draft.createFrames( bytes, role == Role.CLIENT ) );
+	}
+
+	public void send( byte[] bytes ) throws IllegalArgumentException , NotYetConnectedException , InterruptedException {
+		send( ByteBuffer.wrap( bytes ) );
 	}
 
 	private void send( Collection<Framedata> frames ) throws InterruptedException {
@@ -504,13 +508,13 @@ public final class WebSocket {
 	public void flush() throws IOException {
 		ByteBuffer buffer = this.bufferQueue.peek();
 		while ( buffer != null ) {
-			sockchannel.write( buffer );
+			int written = sockchannel.write( buffer );
 			if( buffer.remaining() > 0 ) {
 				continue;
 			} else {
 				synchronized ( bufferQueueTotalAmount ) {
 					// subtract this amount of data from the total queued (synchronized over this object)
-					bufferQueueTotalAmount -= buffer.limit();
+					bufferQueueTotalAmount -= written;
 				}
 				this.bufferQueue.poll(); // Buffer finished. Remove it.
 				buffer = this.bufferQueue.peek();
@@ -557,11 +561,10 @@ public final class WebSocket {
 
 	private void channelWrite( ByteBuffer buf ) throws InterruptedException {
 		if( DEBUG )
-			System.out.println( "write(" + buf.limit() + "): {" + ( buf.limit() > 1000 ? "too big to display" : new String( buf.array() ) ) + "}" );
-		buf.rewind(); // TODO rewinding should not be nessesary
+			System.out.println( "write(" + buf.remaining() + "): {" + ( buf.remaining() > 1000 ? "too big to display" : new String( buf.array() ) ) + "}" );
 		synchronized ( bufferQueueTotalAmount ) {
 			// add up the number of bytes to the total queued (synchronized over this object)
-			bufferQueueTotalAmount += buf.limit();
+			bufferQueueTotalAmount += buf.remaining();
 		}
 		if( !bufferQueue.offer( buf ) ) {
 			try {

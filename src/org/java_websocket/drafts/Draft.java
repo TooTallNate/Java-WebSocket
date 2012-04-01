@@ -40,6 +40,9 @@ public abstract class Draft {
 		NONE, ONEWAY, TWOWAY
 	}
 
+	public static int MAX_FAME_SIZE = 1000 * 1;
+	public static int INITIAL_FAMESIZE = 64;
+
 	public static final byte[] FLASH_POLICY_REQUEST = Charsetfunctions.utf8Bytes( "<policy-file-request/>\0" );
 	private static Pattern getpattern = Pattern.compile( "" ); // GET / HTTP/1.1
 	private static Pattern statuspattern = Pattern.compile( "" ); // HTTP/1.1 101 Switching Protocols
@@ -118,7 +121,7 @@ public abstract class Draft {
 
 	public abstract ByteBuffer createBinaryFrame( Framedata framedata ); // TODO Allow to send data on the base of an Iterator or InputStream
 
-	public abstract List<Framedata> createFrames( byte[] binary, boolean mask );
+	public abstract List<Framedata> createFrames( ByteBuffer binary, boolean mask );
 
 	public abstract List<Framedata> createFrames( String text, boolean mask );
 
@@ -167,6 +170,8 @@ public abstract class Draft {
 
 	public abstract List<Framedata> translateFrame( ByteBuffer buffer ) throws InvalidDataException;
 
+	public abstract CloseHandshakeType getCloseHandshakeType();
+
 	public Handshakedata translateHandshake( ByteBuffer buf ) throws InvalidHandshakeException {
 		return translateHandshakeHttp( buf, role );
 	}
@@ -180,7 +185,5 @@ public abstract class Draft {
 	public void setParseMode( Role role ) {
 		this.role = role;
 	}
-
-	public abstract CloseHandshakeType getCloseHandshakeType();
 
 }

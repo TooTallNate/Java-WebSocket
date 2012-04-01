@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
@@ -258,7 +259,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	}
 
 	@Override
-	public final void onWebsocketMessage( WebSocket conn, byte[] blob ) {
+	public final void onWebsocketMessage( WebSocket conn, ByteBuffer blob ) {
 		onMessage( conn, blob );
 	}
 
@@ -299,7 +300,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	public abstract void onClose( WebSocket conn, int code, String reason, boolean remote );
 	public abstract void onMessage( WebSocket conn, String message );
 	public abstract void onError( WebSocket conn, Exception ex );
-	public void onMessage( WebSocket conn, byte[] message ) {
+	public void onMessage( WebSocket conn, ByteBuffer message ) {
 	};
 
 }

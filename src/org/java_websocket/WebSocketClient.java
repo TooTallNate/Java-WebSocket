@@ -3,6 +3,7 @@ package org.java_websocket;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.nio.ByteBuffer;
 import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.NotYetConnectedException;
 import java.nio.channels.SelectionKey;
@@ -314,7 +315,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	}
 
 	@Override
-	public final void onWebsocketMessage( WebSocket conn, byte[] blob ) {
+	public final void onWebsocketMessage( WebSocket conn, ByteBuffer blob ) {
 		onMessage( blob );
 	}
 
@@ -363,6 +364,6 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	public abstract void onMessage( String message );
 	public abstract void onClose( int code, String reason, boolean remote );
 	public abstract void onError( Exception ex );
-	public void onMessage( byte[] bytes ) {
+	public void onMessage( ByteBuffer bytes ) {
 	};
 }

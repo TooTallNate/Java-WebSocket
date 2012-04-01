@@ -1,5 +1,6 @@
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketServer;
@@ -44,7 +45,7 @@ public class AutobahnServerTest extends WebSocketServer {
 	}
 
 	@Override
-	public void onMessage( WebSocket conn, byte[] blob ) {
+	public void onMessage( WebSocket conn, ByteBuffer blob ) {
 		try {
 			conn.send( blob );
 		} catch ( InterruptedException e ) {

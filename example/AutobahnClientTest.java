@@ -2,6 +2,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.nio.ByteBuffer;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketClient;
@@ -135,7 +136,7 @@ public class AutobahnClientTest extends WebSocketClient {
 	}
 
 	@Override
-	public void onMessage( byte[] blob ) {
+	public void onMessage( ByteBuffer blob ) {
 		try {
 			getConnection().send( blob );
 		} catch ( InterruptedException e ) {

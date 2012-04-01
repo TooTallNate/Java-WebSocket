@@ -8,6 +8,8 @@ import org.java_websocket.util.Charsetfunctions;
 
 public class CloseFrameBuilder extends FramedataImpl1 implements CloseFrame {
 
+	static final ByteBuffer emptybytebuffer = ByteBuffer.allocate( 0 );
+
 	private int code;
 	private String reason;
 
@@ -36,16 +38,18 @@ public class CloseFrameBuilder extends FramedataImpl1 implements CloseFrame {
 		ByteBuffer pay = ByteBuffer.allocate( 2 + by.length );
 		pay.put( buf );
 		pay.put( by );
-		setPayload( pay.array() );
+		pay.rewind();
+		setPayload( pay );
 	}
 
 	private void initCloseCode() throws InvalidFrameException {
 		code = CloseFrame.NOCODE;
-		byte[] payload = getPayloadData();
-		if( payload.length >= 2 ) {
+		ByteBuffer payload = getPayloadData();
+		payload.mark();
+		if( payload.remaining() >= 2 ) {
 			ByteBuffer bb = ByteBuffer.allocate( 4 );
 			bb.position( 2 );
-			bb.put( payload, 0, 2 );
+			bb.putShort( payload.getShort() );
 			bb.position( 0 );
 			code = bb.getInt();
 			if( code < 0 || code > Short.MAX_VALUE )
@@ -54,6 +58,7 @@ public class CloseFrameBuilder extends FramedataImpl1 implements CloseFrame {
 				throw new InvalidFrameException( "bad code " + code );
 			}
 		}
+		payload.reset();
 	}
 
 	@Override
@@ -65,8 +70,16 @@ public class CloseFrameBuilder extends FramedataImpl1 implements CloseFrame {
 		if( code == CloseFrame.NOCODE ) {
 			reason = Charsetfunctions.stringUtf8( getPayloadData() );
 		} else {
-			byte[] payload = getPayloadData();
-			reason = Charsetfunctions.stringUtf8( payload, 2, payload.length - 2 );
+			ByteBuffer b = getPayloadData();
+			b.mark();
+			try {
+				b.position( b.position() + 2 );
+			} catch ( IllegalArgumentException e ) {
+				throw new InvalidFrameException( e );
+			} finally {
+				b.reset();
+			}
+			reason = Charsetfunctions.stringUtf8( getPayloadData() );
 		}
 	}
 
@@ -81,15 +94,15 @@ public class CloseFrameBuilder extends FramedataImpl1 implements CloseFrame {
 	}
 
 	@Override
-	public void setPayload( byte[] payload ) throws InvalidDataException {
+	public void setPayload( ByteBuffer payload ) throws InvalidDataException {
 		super.setPayload( payload );
 		initCloseCode();
 		initMessage();
 	}
 	@Override
-	public byte[] getPayloadData() {
+	public ByteBuffer getPayloadData() {
 		if( code == NOCODE )
-			return new byte[ 0 ];
+			return emptybytebuffer;
 		return super.getPayloadData();
 	}
 

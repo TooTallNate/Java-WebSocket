@@ -21,10 +21,14 @@ public class FramedataImpl1 implements FrameBuilder {
 		unmaskedpayload = ByteBuffer.wrap( emptyarray );
 	}
 
+	/**
+	 * Helper constructor which helps to create "echo" frames.
+	 * The new object will use the same underlying payload data.
+	 **/
 	public FramedataImpl1( Framedata f ) {
 		fin = f.isFin();
 		optcode = f.getOpcode();
-		unmaskedpayload = ByteBuffer.wrap( f.getPayloadData() );
+		unmaskedpayload = f.getPayloadData();
 		transferemasked = f.getTransfereMasked();
 	}
 
@@ -44,8 +48,8 @@ public class FramedataImpl1 implements FrameBuilder {
 	}
 
 	@Override
-	public byte[] getPayloadData() {
-		return unmaskedpayload.array();
+	public ByteBuffer getPayloadData() {
+		return unmaskedpayload;
 	}
 
 	@Override
@@ -59,8 +63,8 @@ public class FramedataImpl1 implements FrameBuilder {
 	}
 
 	@Override
-	public void setPayload( byte[] payload ) throws InvalidDataException {
-		unmaskedpayload = ByteBuffer.wrap( payload );
+	public void setPayload( ByteBuffer payload ) throws InvalidDataException {
+		unmaskedpayload = payload;
 	}
 
 	@Override
@@ -70,14 +74,28 @@ public class FramedataImpl1 implements FrameBuilder {
 
 	@Override
 	public void append( Framedata nextframe ) throws InvalidFrameException {
+		ByteBuffer b = nextframe.getPayloadData();
 		if( unmaskedpayload == null ) {
-			unmaskedpayload = ByteBuffer.wrap( nextframe.getPayloadData() );
+			unmaskedpayload = ByteBuffer.allocate( b.remaining() );
+			b.mark();
+			unmaskedpayload.put( b );
+			b.reset();
 		} else {
-			// TODO might be inefficient. Cosider a global buffer pool
-			ByteBuffer tmp = ByteBuffer.allocate( nextframe.getPayloadData().length + unmaskedpayload.capacity() );
-			tmp.put( unmaskedpayload.array() );
-			tmp.put( nextframe.getPayloadData() );
-			unmaskedpayload = tmp;
+			b.mark();
+			unmaskedpayload.position( unmaskedpayload.limit() );
+			unmaskedpayload.limit( unmaskedpayload.capacity() );
+			if( unmaskedpayload.hasRemaining() )
+				unmaskedpayload.put( b );
+			if( b.hasRemaining() ) {
+				ByteBuffer tmp = ByteBuffer.allocate( b.remaining() + unmaskedpayload.capacity() );
+				unmaskedpayload.flip();
+				tmp.put( unmaskedpayload );
+				tmp.put( b );
+				unmaskedpayload = tmp;
+
+			}
+			unmaskedpayload.rewind();
+			b.reset();
 		}
 		fin = nextframe.isFin();
 	}
