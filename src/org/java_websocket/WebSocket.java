@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft.CloseHandshakeType;
@@ -90,12 +91,13 @@ public final class WebSocket {
 	 * Queue of buffers that need to be sent to the client.
 	 */
 	private BlockingQueue<ByteBuffer> bufferQueue;
+	
 	/**
 	 * The amount of bytes still in queue to be sent, at every given time.
 	 * It's updated at every send/sent operation.
 	 */
-	private Long bufferQueueTotalAmount = (long) 0;
-
+	private AtomicLong bufferQueueTotalAmount = new AtomicLong(0l);
+	
 	private Draft draft = null;
 
 	private Role role;
@@ -495,7 +497,7 @@ public final class WebSocket {
 	 * @return Amount of Data still in Queue and not sent yet of the socket
 	 */
 	long bufferedDataAmount() {
-		return bufferQueueTotalAmount;
+		return bufferQueueTotalAmount.get();
 	}
 
 	/**
@@ -508,10 +510,9 @@ public final class WebSocket {
 			if( buffer.remaining() > 0 ) {
 				continue;
 			} else {
-				synchronized ( bufferQueueTotalAmount ) {
-					// subtract this amount of data from the total queued (synchronized over this object)
-					bufferQueueTotalAmount -= buffer.limit();
-				}
+				// subtract this amount of data from the total queued (synchronized over this object)
+				bufferQueueTotalAmount.addAndGet(-buffer.limit());
+		
 				this.bufferQueue.poll(); // Buffer finished. Remove it.
 				buffer = this.bufferQueue.peek();
 			}
@@ -559,10 +560,10 @@ public final class WebSocket {
 		if( DEBUG )
 			System.out.println( "write(" + buf.limit() + "): {" + ( buf.limit() > 1000 ? "too big to display" : new String( buf.array() ) ) + "}" );
 		buf.rewind(); // TODO rewinding should not be nessesary
-		synchronized ( bufferQueueTotalAmount ) {
-			// add up the number of bytes to the total queued (synchronized over this object)
-			bufferQueueTotalAmount += buf.limit();
-		}
+
+		// add up the number of bytes to the total queued (synchronized over this object)
+		bufferQueueTotalAmount.addAndGet(buf.limit());
+		
 		if( !bufferQueue.offer( buf ) ) {
 			try {
 				flush();
