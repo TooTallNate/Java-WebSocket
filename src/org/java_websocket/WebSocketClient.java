@@ -108,9 +108,12 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		if( thread != null ) {
 			thread.interrupt();
 			closelock.lock();
-			if( selector != null )
-				selector.wakeup();
-			closelock.unlock();
+			try {
+				if( selector != null )
+					selector.wakeup();
+			} finally {
+				closelock.unlock();
+			}
 		}
 
 	}

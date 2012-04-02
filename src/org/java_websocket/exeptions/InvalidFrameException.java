@@ -4,6 +4,11 @@ import org.java_websocket.framing.CloseFrame;
 
 public class InvalidFrameException extends InvalidDataException {
 
+	/**
+	 * Serializable
+	 */
+	private static final long serialVersionUID = -9016496369828887591L;
+
 	public InvalidFrameException() {
 		super( CloseFrame.PROTOCOL_ERROR );
 	}

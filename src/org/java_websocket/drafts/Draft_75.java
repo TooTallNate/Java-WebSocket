@@ -44,6 +44,10 @@ public class Draft_75 extends Draft {
 	private boolean inframe = false;
 	protected List<Framedata> readyframes = new LinkedList<Framedata>();
 	protected ByteBuffer currentFrame;
+	
+	
+	private final Random reuseableRandom = new Random();
+	
 
 	@Override
 	public HandshakeState acceptHandshakeAsClient( ClientHandshake request, ServerHandshake response ) {
@@ -99,7 +103,7 @@ public class Draft_75 extends Draft {
 		request.put( "Upgrade", "WebSocket" );
 		request.put( "Connection", "Upgrade" );
 		if( !request.hasFieldValue( "Origin" ) ) {
-			request.put( "Origin", "random" + new Random().nextInt() );
+			request.put( "Origin", "random" + reuseableRandom.nextInt() );
 		}
 
 		return request;
