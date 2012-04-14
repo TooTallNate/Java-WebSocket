@@ -56,6 +56,8 @@ public final class WebSocket {
 	public static final int READY_STATE_CLOSING = 2;
 	public static final int READY_STATE_CLOSED = 3;
 
+	public static int BUFFERSIZE = 512;
+
 	/**
 	 * The default port of WebSockets, as defined in the spec. If the nullary
 	 * constructor is used, DEFAULT_PORT will be the port the WebSocketServer
@@ -91,13 +93,13 @@ public final class WebSocket {
 	 * Queue of buffers that need to be sent to the client.
 	 */
 	private BlockingQueue<ByteBuffer> bufferQueue;
-	
+
 	/**
 	 * The amount of bytes still in queue to be sent, at every given time.
 	 * It's updated at every send/sent operation.
 	 */
-	private AtomicLong bufferQueueTotalAmount = new AtomicLong(0l);
-	
+	private AtomicLong bufferQueueTotalAmount = new AtomicLong( 0l );
+
 	private Draft draft = null;
 
 	private Role role;
@@ -143,7 +145,7 @@ public final class WebSocket {
 	private void init( WebSocketListener listener, Draft draft, SocketChannel socketchannel ) {
 		this.sockchannel = socketchannel;
 		this.bufferQueue = new LinkedBlockingQueue<ByteBuffer>( 3 );
-		this.socketBuffer = ByteBuffer.allocate( 65558 );
+		this.socketBuffer = ByteBuffer.allocate( BUFFERSIZE );
 		socketBuffer.flip();
 		this.wsl = listener;
 		this.role = Role.CLIENT;
@@ -516,7 +518,7 @@ public final class WebSocket {
 			} else {
 				// subtract this amount of data from the total queued (synchronized over this object)
 				bufferQueueTotalAmount.addAndGet( -written );
-		
+
 				this.bufferQueue.poll(); // Buffer finished. Remove it.
 				buffer = this.bufferQueue.peek();
 			}
@@ -565,8 +567,8 @@ public final class WebSocket {
 			System.out.println( "write(" + buf.remaining() + "): {" + ( buf.remaining() > 1000 ? "too big to display" : new String( buf.array() ) ) + "}" );
 
 		// add up the number of bytes to the total queued (synchronized over this object)
-		bufferQueueTotalAmount.addAndGet(buf.remaining());
-		
+		bufferQueueTotalAmount.addAndGet( buf.remaining() );
+
 		if( !bufferQueue.offer( buf ) ) {
 			try {
 				flush();
