@@ -1,7 +1,6 @@
 package org.java_websocket;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
@@ -34,7 +33,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	public int DECODERS = Runtime.getRuntime().availableProcessors();
 
 	/**
-	 * Holds the list of active_websocktes WebSocket connections. "Active" means WebSocket
+	 * Holds the list of active WebSocket connections. "Active" means WebSocket
 	 * handshake is complete and socket can be written to, or read from.
 	 */
 	private final Set<WebSocket> connections = new HashSet<WebSocket>();
@@ -59,10 +58,10 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	private Thread selectorthread;
 
 	private ExecutorService decoders = Executors.newFixedThreadPool( DECODERS );
-	private ExecutorService flusher = Executors.newSingleThreadExecutor();
+	// private ExecutorService flusher = Executors.newSingleThreadExecutor();
 
 	private Set<WebSocket> active_websocktes = new HashSet<WebSocket>();
-	private Set<WebSocket> write_demands = new HashSet<WebSocket>();
+	// private Set<WebSocket> write_demands = new HashSet<WebSocket>();
 
 	// CONSTRUCTORS ////////////////////////////////////////////////////////////
 	/**
@@ -70,7 +69,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 * listen on port <var>WebSocket.DEFAULT_PORT</var>.
 	 */
 	public WebSocketServer() throws UnknownHostException {
-		this( new InetSocketAddress( InetAddress.getLocalHost(), WebSocket.DEFAULT_PORT ), null );
+		this( new InetSocketAddress( WebSocket.DEFAULT_PORT ), null );
 	}
 
 	/**
@@ -100,7 +99,10 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 
 	/**
 	 * Starts the server selectorthread that binds to the currently set port number and
-	 * listeners for WebSocket connection requests.
+	 * listeners for WebSocket connection requests. Creates a fixed thread pool with the size {@link WebSocketServer#DECODERS}<br>
+	 * May only be called once.
+	 * 
+	 * Alternatively you can call {@link WebSocketServer#run()} directly.
 	 * 
 	 * @throws IllegalStateException
 	 */
@@ -356,28 +358,4 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 			return true;
 		}
 	}
-
-	class WebsocketWriteTask implements Callable<Boolean> {
-
-		private WebSocket ws;
-
-		private WebsocketWriteTask( WebSocket ws ) {
-			this.ws = ws;
-		}
-
-		@Override
-		public Boolean call() throws Exception {
-			try {
-				ws.flush();
-			} catch ( IOException e ) {
-				handleIOException( ws, e );
-			} finally {
-			}
-			synchronized ( write_demands ) {
-				write_demands.remove( ws );
-			}
-			return true;
-		}
-	}
-
 }
