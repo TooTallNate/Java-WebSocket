@@ -38,6 +38,9 @@ Java chat client (a `WebSocketClient` subclass):
 java -cp build/examples:dist/WebSocket.jar ChatClient
 ```
 
+__Note:__ If you're on Windows, then replace the `:` (colon) in the classpath
+in the commands above with a `;` (semicolon).
+
 The chat client is a simple Swing GUI application that allows you to send
 messages to all other connected clients, and receive messages from others in a
 text box.
