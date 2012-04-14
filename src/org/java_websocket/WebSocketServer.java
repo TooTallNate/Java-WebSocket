@@ -13,6 +13,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.framing.CloseFrame;
@@ -27,9 +30,10 @@ import org.java_websocket.handshake.Handshakedata;
  */
 public abstract class WebSocketServer extends WebSocketAdapter implements Runnable {
 
-	// INSTANCE PROPERTIES /////////////////////////////////////////////////////
+	public int DECODERS = Runtime.getRuntime().availableProcessors();
+
 	/**
-	 * Holds the list of active WebSocket connections. "Active" means WebSocket
+	 * Holds the list of active_websocktes WebSocket connections. "Active" means WebSocket
 	 * handshake is complete and socket can be written to, or read from.
 	 */
 	private final Set<WebSocket> connections = new HashSet<WebSocket>();
@@ -51,7 +55,13 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 */
 	private Draft draft;
 
-	private Thread thread;
+	private Thread selectorthread;
+
+	private ExecutorService decoders = Executors.newFixedThreadPool( DECODERS );
+	private ExecutorService flusher = Executors.newSingleThreadExecutor();
+
+	private Set<WebSocket> active_websocktes = new HashSet<WebSocket>();
+	private Set<WebSocket> write_demands = new HashSet<WebSocket>();
 
 	// CONSTRUCTORS ////////////////////////////////////////////////////////////
 	/**
@@ -88,20 +98,20 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	}
 
 	/**
-	 * Starts the server thread that binds to the currently set port number and
+	 * Starts the server selectorthread that binds to the currently set port number and
 	 * listeners for WebSocket connection requests.
 	 * 
 	 * @throws IllegalStateException
 	 */
 	public void start() {
-		if( thread != null )
+		if( selectorthread != null )
 			throw new IllegalStateException( "Already started" );
 		new Thread( this ).start();
 	}
 
 	/**
 	 * Closes all connected clients sockets, then closes the underlying
-	 * ServerSocketChannel, effectively killing the server socket thread and
+	 * ServerSocketChannel, effectively killing the server socket selectorthread and
 	 * freeing the port the server was bound to.
 	 * 
 	 * @throws IOException
@@ -113,7 +123,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 				ws.close( CloseFrame.NORMAL );
 			}
 		}
-		thread.interrupt();
+		selectorthread.interrupt();
 		this.server.close();
 
 	}
@@ -158,9 +168,9 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 
 	// Runnable IMPLEMENTATION /////////////////////////////////////////////////
 	public void run() {
-		if( thread != null )
+		if( selectorthread != null )
 			throw new IllegalStateException( "This instance of " + getClass().getSimpleName() + " can only be started once the same time." );
-		thread = Thread.currentThread();
+		selectorthread = Thread.currentThread();
 		try {
 			server = ServerSocketChannel.open();
 			server.configureBlocking( false );
@@ -172,67 +182,82 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 			onWebsocketError( null, ex );
 			return;
 		}
+		try {
+			while ( !selectorthread.isInterrupted() ) {
+				SelectionKey key = null;
+				WebSocket conn = null;
+				try {
+					selector.select();
+					Set<SelectionKey> keys = selector.selectedKeys();
+					Iterator<SelectionKey> i = keys.iterator();
 
-		while ( !thread.isInterrupted() ) {
-			SelectionKey key = null;
-			WebSocket conn = null;
-			try {
-				selector.select();
-				Set<SelectionKey> keys = selector.selectedKeys();
-				Iterator<SelectionKey> i = keys.iterator();
+					while ( i.hasNext() ) {
+						key = i.next();
 
-				while ( i.hasNext() ) {
-					key = i.next();
-
-					// Remove the current key
-					i.remove();
-
-					// if isAcceptable == true
-					// then a client required a connection
-					if( key.isAcceptable() ) {
-						SocketChannel client = server.accept();
-						client.configureBlocking( false );
-						WebSocket c = new WebSocket( this, Collections.singletonList( draft ), client );
-						client.register( selector, SelectionKey.OP_READ, c );
-					}
-
-					// if isReadable == true
-					// then the server is ready to read
-					if( key.isReadable() ) {
-						conn = (WebSocket) key.attachment();
-						conn.handleRead();
-					}
-
-					// if isWritable == true
-					// then we need to send the rest of the data to the client
-					if( key.isValid() && key.isWritable() ) {
-						conn = (WebSocket) key.attachment();
-						conn.flush();
-						key.channel().register( selector, SelectionKey.OP_READ, conn );
-					}
-				}
-				synchronized ( connections ) {
-					Iterator<WebSocket> it = this.connections.iterator();
-					while ( it.hasNext() ) {
-						// We have to do this check here, and not in the thread that
-						// adds the buffered data to the WebSocket, because the
-						// Selector is not thread-safe, and can only be accessed
-						// by this thread.
-						conn = it.next();
-						if( conn.hasBufferedData() ) {
-							conn.flush();
-							// key.channel().register( selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE, conn );
+						i.remove();
+						if( !key.isValid() ) {
+							continue;
 						}
+
+						if( key.isAcceptable() ) {
+							SocketChannel client = server.accept();
+							client.configureBlocking( false );
+							WebSocket c = new WebSocket( this, Collections.singletonList( draft ), client );
+							client.register( selector, SelectionKey.OP_READ, c );
+						}
+
+						// if isReadable == true
+						// then the server is ready to read
+						if( key.isReadable() ) {
+							conn = (WebSocket) key.attachment();
+							asyncQueueRead( conn );
+							// conn.handleRead();
+						}
+
+						// if isWritable == true
+						// then we need to send the rest of the data to the client
+						/*if( key.isValid() && key.isWritable() ) {
+							conn = (WebSocket) key.attachment();
+							conn.flush();
+							key.channel().register( selector, SelectionKey.OP_READ, conn );
+						}*/
 					}
-				}
-			} catch ( IOException ex ) {
-				if( key != null )
-					key.cancel();
-				onWebsocketError( conn, ex );// conn may be null here
-				if( conn != null ) {
-					conn.close( CloseFrame.ABNROMAL_CLOSE );
+					/*synchronized ( connections ) {
+						Iterator<WebSocket> it = this.connections.iterator();
+						while ( it.hasNext() ) {
+							// We have to do this check here, and not in the selectorthread that
+							// adds the buffered data to the WebSocket, because the
+							// Selector is not selectorthread-safe, and can only be accessed
+							// by this selectorthread.
+							conn = it.next();
+							if( conn.hasBufferedData() ) {
+								conn.flush();
+								// key.channel().register( selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE, conn );
+							}
+						}
+					}*/
+				} catch ( IOException ex ) {
+					if( key != null )
+						key.cancel();
+					handleIOException( conn, ex );
 				}
 			}
+		} catch ( RuntimeException e ) {
+			// should hopefully never occur
+			onError( null, e );
+			try {
+				selector.close();
+			} catch ( IOException e1 ) {
+				onError( null, e1 );
+			}
+			decoders.shutdown();
+		}
+	}
+
+	private void handleIOException( WebSocket conn, IOException ex ) {
+		onWebsocketError( conn, ex );// conn may be null here
+		if( conn != null ) {
+			conn.close( CloseFrame.ABNROMAL_CLOSE );
 		}
 	}
 
@@ -292,7 +317,17 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 
 	@Override
 	public final void onWriteDemand( WebSocket conn ) {
-		selector.wakeup();
+		try {
+			conn.flush();
+		} catch ( IOException e ) {
+			handleIOException( conn, e );
+		}
+		/*synchronized ( write_demands ) {
+			if( !write_demands.contains( conn ) ) {
+				write_demands.add( conn );
+				flusher.submit( new WebsocketWriteTask( conn ) );
+			}
+		}*/
 	}
 
 	// ABTRACT METHODS /////////////////////////////////////////////////////////
@@ -302,5 +337,63 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	public abstract void onError( WebSocket conn, Exception ex );
 	public void onMessage( WebSocket conn, ByteBuffer message ) {
 	};
+
+	private boolean asyncQueueRead( WebSocket ws ) {
+		synchronized ( active_websocktes ) {
+			if( active_websocktes.contains( ws ) ) {
+				return false;
+			}
+			active_websocktes.add( ws );// will add ws only if it is not already added
+			decoders.submit( new WebsocketReadTask( ws ) );
+			return true;
+		}
+	}
+	class WebsocketReadTask implements Callable<Boolean> {
+
+		private WebSocket ws;
+
+		private WebsocketReadTask( WebSocket ws ) {
+			this.ws = ws;
+		}
+
+		@Override
+		public Boolean call() throws Exception {
+			try {
+				ws.handleRead();
+			} catch ( IOException e ) {
+				e.printStackTrace();
+				return false;
+			} finally {
+				synchronized ( active_websocktes ) {
+					active_websocktes.remove( ws );
+				}
+				selector.wakeup();
+			}
+			return true;
+		}
+	}
+
+	class WebsocketWriteTask implements Callable<Boolean> {
+
+		private WebSocket ws;
+
+		private WebsocketWriteTask( WebSocket ws ) {
+			this.ws = ws;
+		}
+
+		@Override
+		public Boolean call() throws Exception {
+			try {
+				ws.flush();
+			} catch ( IOException e ) {
+				handleIOException( ws, e );
+			} finally {
+			}
+			synchronized ( write_demands ) {
+				write_demands.remove( ws );
+			}
+			return true;
+		}
+	}
 
 }
