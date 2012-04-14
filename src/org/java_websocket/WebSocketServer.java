@@ -194,8 +194,8 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 					while ( i.hasNext() ) {
 						key = i.next();
 
-						i.remove();
 						if( !key.isValid() ) {
+							// Object o = key.attachment();
 							continue;
 						}
 
@@ -204,38 +204,14 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 							client.configureBlocking( false );
 							WebSocket c = new WebSocket( this, Collections.singletonList( draft ), client );
 							client.register( selector, SelectionKey.OP_READ, c );
-						}
-
-						// if isReadable == true
-						// then the server is ready to read
-						if( key.isReadable() ) {
+							i.remove();
+						} else if( key.isReadable() ) {
 							conn = (WebSocket) key.attachment();
-							asyncQueueRead( conn );
-							// conn.handleRead();
-						}
-
-						// if isWritable == true
-						// then we need to send the rest of the data to the client
-						/*if( key.isValid() && key.isWritable() ) {
-							conn = (WebSocket) key.attachment();
-							conn.flush();
-							key.channel().register( selector, SelectionKey.OP_READ, conn );
-						}*/
-					}
-					/*synchronized ( connections ) {
-						Iterator<WebSocket> it = this.connections.iterator();
-						while ( it.hasNext() ) {
-							// We have to do this check here, and not in the selectorthread that
-							// adds the buffered data to the WebSocket, because the
-							// Selector is not selectorthread-safe, and can only be accessed
-							// by this selectorthread.
-							conn = it.next();
-							if( conn.hasBufferedData() ) {
-								conn.flush();
-								// key.channel().register( selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE, conn );
+							if( asyncQueueRead( conn ) ) {
+								i.remove();
 							}
 						}
-					}*/
+					}
 				} catch ( IOException ex ) {
 					if( key != null )
 						key.cancel();
@@ -244,13 +220,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 			}
 		} catch ( RuntimeException e ) {
 			// should hopefully never occur
-			onError( null, e );
-			try {
-				selector.close();
-			} catch ( IOException e1 ) {
-				onError( null, e1 );
-			}
-			decoders.shutdown();
+			handleFatal( null, e );
 		}
 	}
 
@@ -259,6 +229,16 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		if( conn != null ) {
 			conn.close( CloseFrame.ABNROMAL_CLOSE );
 		}
+	}
+
+	private void handleFatal( WebSocket conn, RuntimeException e ) {
+		onError( conn, e );
+		try {
+			selector.close();
+		} catch ( IOException e1 ) {
+			onError( null, e1 );
+		}
+		decoders.shutdown();
 	}
 
 	/**
@@ -361,8 +341,9 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 			try {
 				ws.handleRead();
 			} catch ( IOException e ) {
-				e.printStackTrace();
-				return false;
+				handleIOException( ws, e );
+			} catch ( RuntimeException e ) {
+				handleFatal( ws, e );
 			} finally {
 				synchronized ( active_websocktes ) {
 					active_websocktes.remove( ws );
