@@ -5,6 +5,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.nio.channels.CancelledKeyException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
@@ -212,6 +213,8 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 							}
 						}
 					}
+				} catch ( CancelledKeyException e ) {
+					// an other thread may cancel the key
 				} catch ( IOException ex ) {
 					if( key != null )
 						key.cancel();
