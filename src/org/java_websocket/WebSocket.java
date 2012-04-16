@@ -160,7 +160,7 @@ public final class WebSocket {
 	 *             When socket related I/O errors occur.
 	 * @throws InterruptedException
 	 */
-	/*package public*/void handleRead() throws IOException {
+	/*package public*/synchronized void handleRead() throws IOException {
 		if( !socketBuffer.hasRemaining() ) {
 			socketBuffer.rewind();
 			socketBuffer.limit( socketBuffer.capacity() );

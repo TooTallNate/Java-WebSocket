@@ -14,7 +14,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Callable;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -32,7 +32,7 @@ import org.java_websocket.handshake.Handshakedata;
  */
 public abstract class WebSocketServer extends WebSocketAdapter implements Runnable {
 
-	public static int DECODERS = 1;
+	public static int DECODERS = Runtime.getRuntime().availableProcessors();
 
 	/**
 	 * Holds the list of active WebSocket connections. "Active" means WebSocket
@@ -61,8 +61,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 
 	private ExecutorService decoders;
 
-	private Set<WebSocket> active_websocktes = new HashSet<WebSocket>();
-	// private Set<WebSocket> write_demands = new HashSet<WebSocket>();
+	private ArrayBlockingQueue<WebSocket> queue;
 
 	// CONSTRUCTORS ////////////////////////////////////////////////////////////
 	/**
@@ -107,7 +106,11 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		else
 			this.drafts = drafts;
 		setAddress( address );
+		queue = new ArrayBlockingQueue<WebSocket>( decodercount );
 		this.decoders = Executors.newFixedThreadPool( decodercount, new WebsocketThreadFactory() );
+		for( int i = 0 ; i < decodercount ; i++ ) {
+			decoders.submit( new WebsocketWorker() );
+		}
 	}
 
 	/**
@@ -191,7 +194,6 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 			server = ServerSocketChannel.open();
 			server.configureBlocking( false );
 			server.socket().bind( address );
-			// InetAddress.getLocalHost()
 			selector = Selector.open();
 			server.register( selector, server.validOps() );
 		} catch ( IOException ex ) {
@@ -223,9 +225,8 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 							i.remove();
 						} else if( key.isReadable() ) {
 							conn = (WebSocket) key.attachment();
-							if( asyncQueueRead( conn ) ) {
-								i.remove();
-							}
+							queue.put( conn );
+							i.remove();
 						}
 					}
 				} catch ( CancelledKeyException e ) {
@@ -234,6 +235,8 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 					if( key != null )
 						key.cancel();
 					handleIOException( conn, ex );
+				} catch ( InterruptedException e ) {
+					return;
 				}
 			}
 		} catch ( RuntimeException e ) {
@@ -338,43 +341,25 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	public void onMessage( WebSocket conn, ByteBuffer message ) {
 	};
 
-	private boolean asyncQueueRead( WebSocket ws ) {
-		synchronized ( active_websocktes ) {
-			if( active_websocktes.contains( ws ) ) {
-				System.out.println( "queue failed" );
-				return false;
-			}
-			active_websocktes.add( ws );// will add ws only if it is not already added
-			decoders.submit( new WebsocketReadTask( ws ) );
-			return true;
-		}
-	}
-
-	private class WebsocketReadTask implements Callable<Boolean> {
-
-		private WebSocket ws;
-
-		private WebsocketReadTask( WebSocket ws ) {
-			this.ws = ws;
-		}
+	private class WebsocketWorker implements Runnable {
 
 		@Override
-		public Boolean call() throws Exception {
+		public void run() {
+			WebSocket ws = null;
 			try {
-				ws.handleRead();
-				ws.flush();
-				System.out.println( "Assync Complete" );
-			} catch ( IOException e ) {
-				handleIOException( ws, e );
+				while ( true ) {
+					try {
+						ws = queue.take();
+						ws.handleRead();
+						ws.flush();
+					} catch ( IOException e ) {
+						handleIOException( ws, e );
+					}
+				}
 			} catch ( RuntimeException e ) {
 				handleFatal( ws, e );
-			} finally {
-				synchronized ( active_websocktes ) {
-					active_websocktes.remove( ws );
-				}
-				selector.wakeup();
+			} catch ( InterruptedException e ) {
 			}
-			return true;
 		}
 	}
 
