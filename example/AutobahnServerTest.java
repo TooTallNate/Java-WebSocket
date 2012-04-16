@@ -1,6 +1,7 @@
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.util.Collections;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketServer;
@@ -11,12 +12,12 @@ import org.java_websocket.handshake.ClientHandshake;
 public class AutobahnServerTest extends WebSocketServer {
 	private static int counter = 0;
 	
-	public AutobahnServerTest( int port, Draft d ) throws UnknownHostException {
-		super( new InetSocketAddress( "localhost", port ), d );
+	public AutobahnServerTest( int port , Draft d ) throws UnknownHostException {
+		super( new InetSocketAddress( port ), Collections.singletonList( d ) );
 	}
 	
 	public AutobahnServerTest( InetSocketAddress address, Draft d ) {
-		super( address, d );
+		super( address, Collections.singletonList( d ) );
 	}
 
 	@Override

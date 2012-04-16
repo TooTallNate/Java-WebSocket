@@ -12,10 +12,12 @@ import java.nio.channels.SocketChannel;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.framing.CloseFrame;
@@ -30,7 +32,7 @@ import org.java_websocket.handshake.Handshakedata;
  */
 public abstract class WebSocketServer extends WebSocketAdapter implements Runnable {
 
-	public int DECODERS = Runtime.getRuntime().availableProcessors();
+	public static int DECODERS = 1;
 
 	/**
 	 * Holds the list of active WebSocket connections. "Active" means WebSocket
@@ -53,12 +55,11 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	/**
 	 * The Draft of the WebSocket protocol the Server is adhering to.
 	 */
-	private Draft draft;
+	private List<Draft> drafts;
 
 	private Thread selectorthread;
 
-	private ExecutorService decoders = Executors.newFixedThreadPool( DECODERS );
-	// private ExecutorService flusher = Executors.newSingleThreadExecutor();
+	private ExecutorService decoders;
 
 	private Set<WebSocket> active_websocktes = new HashSet<WebSocket>();
 	// private Set<WebSocket> write_demands = new HashSet<WebSocket>();
@@ -69,7 +70,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 * listen on port <var>WebSocket.DEFAULT_PORT</var>.
 	 */
 	public WebSocketServer() throws UnknownHostException {
-		this( new InetSocketAddress( WebSocket.DEFAULT_PORT ), null );
+		this( new InetSocketAddress( WebSocket.DEFAULT_PORT ), DECODERS, null );
 	}
 
 	/**
@@ -79,7 +80,11 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 *            The address (host:port) this server should listen on.
 	 */
 	public WebSocketServer( InetSocketAddress address ) {
-		this( address, null );
+		this( address, DECODERS, null );
+	}
+
+	public WebSocketServer( InetSocketAddress address , int decoders ) {
+		this( address, decoders, null );
 	}
 
 	/**
@@ -92,9 +97,17 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 *            The version of the WebSocket protocol that this server
 	 *            instance should comply to.
 	 */
-	public WebSocketServer( InetSocketAddress address , Draft draft ) {
-		this.draft = draft;
+	public WebSocketServer( InetSocketAddress address , List<Draft> drafts ) {
+		this( address, DECODERS, drafts );
+	}
+
+	public WebSocketServer( InetSocketAddress address , int decodercount , List<Draft> drafts ) {
+		if( drafts == null )
+			this.drafts = Collections.emptyList();
+		else
+			this.drafts = drafts;
 		setAddress( address );
+		this.decoders = Executors.newFixedThreadPool( decodercount, new WebsocketThreadFactory() );
 	}
 
 	/**
@@ -165,8 +178,8 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		return getAddress().getPort();
 	}
 
-	public Draft getDraft() {
-		return this.draft;
+	public List<Draft> getDraft() {
+		return Collections.unmodifiableList( drafts );
 	}
 
 	// Runnable IMPLEMENTATION /////////////////////////////////////////////////
@@ -205,7 +218,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 						if( key.isAcceptable() ) {
 							SocketChannel client = server.accept();
 							client.configureBlocking( false );
-							WebSocket c = new WebSocket( this, Collections.singletonList( draft ), client );
+							WebSocket c = new WebSocket( this, drafts, client );
 							client.register( selector, SelectionKey.OP_READ, c );
 							i.remove();
 						} else if( key.isReadable() ) {
@@ -302,10 +315,12 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 
 	@Override
 	public final void onWriteDemand( WebSocket conn ) {
-		try {
-			conn.flush();
-		} catch ( IOException e ) {
-			handleIOException( conn, e );
+		if( Thread.currentThread() instanceof WebsocketExecutorThread == false ) {
+			try {
+				conn.flush();
+			} catch ( IOException e ) {
+				handleIOException( conn, e );
+			}
 		}
 		/*synchronized ( write_demands ) {
 			if( !write_demands.contains( conn ) ) {
@@ -326,6 +341,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	private boolean asyncQueueRead( WebSocket ws ) {
 		synchronized ( active_websocktes ) {
 			if( active_websocktes.contains( ws ) ) {
+				System.out.println( "queue failed" );
 				return false;
 			}
 			active_websocktes.add( ws );// will add ws only if it is not already added
@@ -333,7 +349,8 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 			return true;
 		}
 	}
-	class WebsocketReadTask implements Callable<Boolean> {
+
+	private class WebsocketReadTask implements Callable<Boolean> {
 
 		private WebSocket ws;
 
@@ -345,6 +362,8 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		public Boolean call() throws Exception {
 			try {
 				ws.handleRead();
+				ws.flush();
+				System.out.println( "Assync Complete" );
 			} catch ( IOException e ) {
 				handleIOException( ws, e );
 			} catch ( RuntimeException e ) {
@@ -356,6 +375,26 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 				selector.wakeup();
 			}
 			return true;
+		}
+	}
+
+	private class WebsocketThreadFactory implements ThreadFactory {
+
+		@Override
+		public Thread newThread( Runnable r ) {
+			return new WebsocketExecutorThread( r );
+		}
+	}
+
+	private class WebsocketExecutorThread extends Thread {
+		private Runnable r;
+		WebsocketExecutorThread( Runnable r ) {
+			this.r = r;
+
+		}
+		@Override
+		public void run() {
+			r.run();
 		}
 	}
 }
