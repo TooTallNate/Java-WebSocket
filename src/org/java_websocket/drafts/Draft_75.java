@@ -6,9 +6,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
-import org.java_websocket.exeptions.InvalidDataException;
-import org.java_websocket.exeptions.InvalidHandshakeException;
-import org.java_websocket.exeptions.NotSendableException;
+import org.java_websocket.exceptions.InvalidDataException;
+import org.java_websocket.exceptions.InvalidHandshakeException;
+import org.java_websocket.exceptions.NotSendableException;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.FrameBuilder;
 import org.java_websocket.framing.Framedata;

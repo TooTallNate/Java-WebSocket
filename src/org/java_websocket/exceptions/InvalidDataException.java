@@ -1,4 +1,4 @@
-package org.java_websocket.exeptions;
+package org.java_websocket.exceptions;
 
 public class InvalidDataException extends Exception {
 	/**

@@ -19,10 +19,10 @@ import org.java_websocket.drafts.Draft_10;
 import org.java_websocket.drafts.Draft_17;
 import org.java_websocket.drafts.Draft_75;
 import org.java_websocket.drafts.Draft_76;
-import org.java_websocket.exeptions.IncompleteHandshakeException;
-import org.java_websocket.exeptions.InvalidDataException;
-import org.java_websocket.exeptions.InvalidFrameException;
-import org.java_websocket.exeptions.InvalidHandshakeException;
+import org.java_websocket.exceptions.IncompleteHandshakeException;
+import org.java_websocket.exceptions.InvalidDataException;
+import org.java_websocket.exceptions.InvalidFrameException;
+import org.java_websocket.exceptions.InvalidHandshakeException;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.CloseFrameBuilder;
 import org.java_websocket.framing.Framedata;
@@ -166,16 +166,16 @@ public final class WebSocket {
 			socketBuffer.limit( socketBuffer.capacity() );
 			if( sockchannel.read( socketBuffer ) == -1 ) {
 				if( draft == null ) {
-					closeConnection( CloseFrame.ABNROMAL_CLOSE, true );
+					closeConnection( CloseFrame.ABNOROMAL_CLOSE, true );
 				} else if( draft.getCloseHandshakeType() == CloseHandshakeType.NONE ) {
 					closeConnection( CloseFrame.NORMAL, true );
 				} else if( draft.getCloseHandshakeType() == CloseHandshakeType.ONEWAY ) {
 					if( role == Role.SERVER )
-						closeConnection( CloseFrame.ABNROMAL_CLOSE, true );
+						closeConnection( CloseFrame.ABNOROMAL_CLOSE, true );
 					else
 						closeConnection( CloseFrame.NORMAL, true );
 				} else {
-					closeConnection( CloseFrame.ABNROMAL_CLOSE, true );
+					closeConnection( CloseFrame.ABNOROMAL_CLOSE, true );
 				}
 
 			}
@@ -368,14 +368,14 @@ public final class WebSocket {
 		try {
 			closeDirect( code, message );
 		} catch ( IOException e ) {
-			closeConnection( CloseFrame.ABNROMAL_CLOSE, true );
+			closeConnection( CloseFrame.ABNOROMAL_CLOSE, true );
 		}
 	}
 
 	public void closeDirect( int code, String message ) throws IOException {
 		if( !closeHandshakeSent ) {
 			if( handshakeComplete ) {
-				if( code == CloseFrame.ABNROMAL_CLOSE ) {
+				if( code == CloseFrame.ABNOROMAL_CLOSE ) {
 					closeConnection( code, true );
 					closeHandshakeSent = true;
 					return;
@@ -386,7 +386,7 @@ public final class WebSocket {
 						sendFrameDirect( new CloseFrameBuilder( code, message ) );
 					} catch ( InvalidDataException e ) {
 						wsl.onWebsocketError( this, e );
-						closeConnection( CloseFrame.ABNROMAL_CLOSE, "generated frame is invalid", false );
+						closeConnection( CloseFrame.ABNOROMAL_CLOSE, "generated frame is invalid", false );
 					}
 				} else {
 					closeConnection( code, false );
@@ -574,7 +574,7 @@ public final class WebSocket {
 				flush();
 			} catch ( IOException e ) {
 				wsl.onWebsocketError( this, e );
-				closeConnection( CloseFrame.ABNROMAL_CLOSE, true );
+				closeConnection( CloseFrame.ABNOROMAL_CLOSE, true );
 				return;
 			}
 			bufferQueue.put( buf );

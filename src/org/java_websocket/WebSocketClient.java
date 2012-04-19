@@ -17,7 +17,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft_10;
-import org.java_websocket.exeptions.InvalidHandshakeException;
+import org.java_websocket.exceptions.InvalidHandshakeException;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.handshake.HandshakeImpl1Client;
 import org.java_websocket.handshake.Handshakedata;
@@ -212,7 +212,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			}
 		} catch ( IOException e ) {
 			onError( e );
-			conn.close( CloseFrame.ABNROMAL_CLOSE );
+			conn.close( CloseFrame.ABNOROMAL_CLOSE );
 			return;
 		} catch ( RuntimeException e ) {
 			// this catch case covers internal errors only and indicates a bug in this websocket implementation
@@ -258,7 +258,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			conn.flush();
 		} catch ( IOException e ) {
 			onError( e );
-			conn.closeConnection( CloseFrame.ABNROMAL_CLOSE, true );
+			conn.closeConnection( CloseFrame.ABNOROMAL_CLOSE, true );
 			return;
 		}
 	}

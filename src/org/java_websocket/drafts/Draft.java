@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.Locale;
 
 import org.java_websocket.WebSocket.Role;
-import org.java_websocket.exeptions.InvalidDataException;
-import org.java_websocket.exeptions.InvalidHandshakeException;
-import org.java_websocket.exeptions.LimitExedeedException;
+import org.java_websocket.exceptions.InvalidDataException;
+import org.java_websocket.exceptions.InvalidHandshakeException;
+import org.java_websocket.exceptions.LimitExedeedException;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.handshake.ClientHandshake;
