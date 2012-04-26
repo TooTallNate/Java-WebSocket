@@ -68,6 +68,10 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 * must call <var>connect</var> first to initiate the socket connection.
 	 */
 	public WebSocketClient( URI serverUri , Draft draft ) {
+		this(serverUri, draft, null);
+	}
+
+	public WebSocketClient( URI serverUri , Draft draft, Map<String, String> headers) {
 		if( serverUri == null ) {
 			throw new IllegalArgumentException();
 		}
@@ -76,6 +80,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		}
 		this.uri = serverUri;
 		this.draft = draft;
+		this.headers = headers;
 	}
 
 	/**
@@ -279,6 +284,11 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		HandshakeImpl1Client handshake = new HandshakeImpl1Client();
 		handshake.setResourceDescriptor( path );
 		handshake.put( "Host", host );
+		if (headers != null) {
+			for (Map.Entry<String, String> kv : headers.entrySet()) {
+				handshake.put(kv.getKey(), kv.getValue());
+			}
+		}
 		conn.startHandshake( handshake );
 	}
 
