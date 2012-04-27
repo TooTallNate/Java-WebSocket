@@ -11,6 +11,7 @@ import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.UnresolvedAddressException;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -57,6 +58,8 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	private Draft draft;
 
 	private final Lock closelock = new ReentrantLock();
+
+	private Map<String, String> headers;
 
 	public WebSocketClient( URI serverURI ) {
 		this( serverURI, new Draft_10() );
