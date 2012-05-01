@@ -132,7 +132,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 * @param text
 	 *            The String to send to the WebSocket server.
 	 */
-	public void send( String text ) throws NotYetConnectedException , InterruptedException {
+	public void send( String text ) throws NotYetConnectedException {
 		if( conn != null ) {
 			conn.send( text );
 		}

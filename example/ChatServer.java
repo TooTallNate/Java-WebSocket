@@ -26,7 +26,7 @@ public class ChatServer extends WebSocketServer {
 	@Override
 	public void onOpen( WebSocket conn, ClientHandshake handshake ) {
 		try {
-			this.sendToAll( "new" );
+			this.sendToAll( "\0" );
 		} catch ( InterruptedException ex ) {
 			ex.printStackTrace();
 		}

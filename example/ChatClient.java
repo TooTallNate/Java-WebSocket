@@ -90,13 +90,9 @@ public class ChatClient extends JFrame implements ActionListener {
 
 		if( e.getSource() == chatField ) {
 			if( cc != null ) {
-				try {
-					cc.send( chatField.getText() );
-					chatField.setText( "" );
-					chatField.requestFocus();
-				} catch ( InterruptedException ex ) {
-					ex.printStackTrace();
-				}
+				cc.send( chatField.getText() );
+				chatField.setText( "" );
+				chatField.requestFocus();
 			}
 
 		} else if( e.getSource() == connect ) {
@@ -114,6 +110,7 @@ public class ChatClient extends JFrame implements ActionListener {
 					public void onOpen( ServerHandshake handshake ) {
 						ta.append( "You are connected to ChatServer: " + getURI() + "\n" );
 						ta.setCaretPosition( ta.getDocument().getLength() );
+						send( "\0" );
 					}
 
 					@Override

@@ -81,4 +81,10 @@ public class Charsetfunctions {
 		}
 		return s;
 	}
+
+	public static void main( String[] args ) throws InvalidDataException {
+		stringUtf8( utf8Bytes( "\0" ) );
+		stringAscii( asciiBytes( "\0" ) );
+	}
+
 }

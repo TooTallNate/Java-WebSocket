@@ -203,8 +203,6 @@ public class ServerStressTest extends JFrame {
 					cl.flush();
 				} catch ( NotYetConnectedException e ) {
 					notyetconnected++;
-				} catch ( InterruptedException e ) {
-					e.printStackTrace();
 				}
 			}
 		}
