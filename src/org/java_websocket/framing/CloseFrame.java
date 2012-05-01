@@ -41,7 +41,7 @@ public interface CloseFrame extends Framedata {
 		 * connection was closed abnormally, e.g. without sending or
 		 * receiving a Close control frame.
 		 */
-		public static final int ABNOROMAL_CLOSE = 1006;
+		public static final int ABNORMAL_CLOSE = 1006;
 		/**
 		 * 1007 indicates that an endpoint is terminating the connection
 		 * because it has received data within a message that was not

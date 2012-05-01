@@ -38,11 +38,7 @@ public class AutobahnServerTest extends WebSocketServer {
 
 	@Override
 	public void onMessage( WebSocket conn, String message ) {
-		try {
-			conn.send( message );
-		} catch ( InterruptedException e ) {
-			e.printStackTrace();
-		}
+		conn.send( message );
 	}
 
 	@Override

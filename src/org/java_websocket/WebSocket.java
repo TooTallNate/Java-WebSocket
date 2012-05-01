@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.java_websocket.drafts.Draft;
@@ -112,6 +113,8 @@ public final class WebSocket {
 
 	private SocketChannel sockchannel;
 
+	public AtomicBoolean hasWrite = new AtomicBoolean( false );
+
 	// CONSTRUCTOR /////////////////////////////////////////////////////////////
 	/**
 	 * Used in {@link WebSocketServer} and {@link WebSocketClient}.
@@ -144,7 +147,7 @@ public final class WebSocket {
 
 	private void init( WebSocketListener listener, Draft draft, SocketChannel socketchannel ) {
 		this.sockchannel = socketchannel;
-		this.bufferQueue = new LinkedBlockingQueue<ByteBuffer>( 3 );
+		this.bufferQueue = new LinkedBlockingQueue<ByteBuffer>();
 		this.socketBuffer = ByteBuffer.allocate( BUFFERSIZE );
 		socketBuffer.flip();
 		this.wsl = listener;
@@ -166,16 +169,16 @@ public final class WebSocket {
 			socketBuffer.limit( socketBuffer.capacity() );
 			if( sockchannel.read( socketBuffer ) == -1 ) {
 				if( draft == null ) {
-					closeConnection( CloseFrame.ABNOROMAL_CLOSE, true );
+					closeConnection( CloseFrame.ABNORMAL_CLOSE, true );
 				} else if( draft.getCloseHandshakeType() == CloseHandshakeType.NONE ) {
 					closeConnection( CloseFrame.NORMAL, true );
 				} else if( draft.getCloseHandshakeType() == CloseHandshakeType.ONEWAY ) {
 					if( role == Role.SERVER )
-						closeConnection( CloseFrame.ABNOROMAL_CLOSE, true );
+						closeConnection( CloseFrame.ABNORMAL_CLOSE, true );
 					else
 						closeConnection( CloseFrame.NORMAL, true );
 				} else {
-					closeConnection( CloseFrame.ABNOROMAL_CLOSE, true );
+					closeConnection( CloseFrame.ABNORMAL_CLOSE, true );
 				}
 
 			}
@@ -368,14 +371,14 @@ public final class WebSocket {
 		try {
 			closeDirect( code, message );
 		} catch ( IOException e ) {
-			closeConnection( CloseFrame.ABNOROMAL_CLOSE, true );
+			closeConnection( CloseFrame.ABNORMAL_CLOSE, true );
 		}
 	}
 
 	public void closeDirect( int code, String message ) throws IOException {
 		if( !closeHandshakeSent ) {
 			if( handshakeComplete ) {
-				if( code == CloseFrame.ABNOROMAL_CLOSE ) {
+				if( code == CloseFrame.ABNORMAL_CLOSE ) {
 					closeConnection( code, true );
 					closeHandshakeSent = true;
 					return;
@@ -386,7 +389,7 @@ public final class WebSocket {
 						sendFrameDirect( new CloseFrameBuilder( code, message ) );
 					} catch ( InvalidDataException e ) {
 						wsl.onWebsocketError( this, e );
-						closeConnection( CloseFrame.ABNOROMAL_CLOSE, "generated frame is invalid", false );
+						closeConnection( CloseFrame.ABNORMAL_CLOSE, "generated frame is invalid", false );
 					}
 				} else {
 					closeConnection( code, false );
@@ -450,7 +453,7 @@ public final class WebSocket {
 	 * @throws InterruptedException
 	 * @throws NotYetConnectedException
 	 */
-	public void send( String text ) throws NotYetConnectedException , InterruptedException {
+	public void send( String text ) throws NotYetConnectedException {
 		if( text == null )
 			throw new IllegalArgumentException( "Cannot send 'null' data to a WebSocket." );
 		send( draft.createFrames( text, role == Role.CLIENT ) );
@@ -473,7 +476,7 @@ public final class WebSocket {
 		send( ByteBuffer.wrap( bytes ) );
 	}
 
-	private void send( Collection<Framedata> frames ) throws InterruptedException {
+	private void send( Collection<Framedata> frames ) {
 		if( !this.handshakeComplete )
 			throw new NotYetConnectedException();
 		for( Framedata f : frames ) {
@@ -481,7 +484,7 @@ public final class WebSocket {
 		}
 	}
 
-	public void sendFrame( Framedata framedata ) throws InterruptedException {
+	public void sendFrame( Framedata framedata ) {
 		if( DEBUG )
 			System.out.println( "send frame: " + framedata );
 		channelWrite( draft.createBinaryFrame( framedata ) );
@@ -493,7 +496,7 @@ public final class WebSocket {
 		channelWriteDirect( draft.createBinaryFrame( framedata ) );
 	}
 
-	boolean hasBufferedData() {
+	public boolean hasBufferedData() {
 		return !this.bufferQueue.isEmpty();
 	}
 
@@ -502,14 +505,14 @@ public final class WebSocket {
 	 * 
 	 * @return Amount of Data still in Queue and not sent yet of the socket
 	 */
-	long bufferedDataAmount() {
+	public long bufferedDataAmount() {
 		return bufferQueueTotalAmount.get();
 	}
 
 	/**
 	 * Empty the internal buffer, sending all the pending data before continuing.
 	 */
-	public void flush() throws IOException {
+	public synchronized void flush() throws IOException {
 		ByteBuffer buffer = this.bufferQueue.peek();
 		while ( buffer != null ) {
 			int written = sockchannel.write( buffer );
@@ -523,6 +526,23 @@ public final class WebSocket {
 				buffer = this.bufferQueue.peek();
 			}
 		}
+	}
+
+	public boolean batch() throws IOException {
+		ByteBuffer buffer = this.bufferQueue.peek();
+		while ( buffer != null ) {
+			int written = sockchannel.write( buffer );
+			if( buffer.remaining() > 0 ) {
+				return false;
+			} else {
+				// subtract this amount of data from the total queued (synchronized over this object)
+				bufferQueueTotalAmount.addAndGet( -written );
+
+				this.bufferQueue.poll(); // Buffer finished. Remove it.
+				buffer = this.bufferQueue.peek();
+			}
+		}
+		return true;
 	}
 
 	public HandshakeState isFlashEdgeCase( ByteBuffer request ) {
@@ -562,24 +582,17 @@ public final class WebSocket {
 		channelWrite( draft.createHandshake( this.handshakerequest, role ) );
 	}
 
-	private void channelWrite( ByteBuffer buf ) throws InterruptedException {
+	private void channelWrite( ByteBuffer buf ) {
 		if( DEBUG )
 			System.out.println( "write(" + buf.remaining() + "): {" + ( buf.remaining() > 1000 ? "too big to display" : new String( buf.array() ) ) + "}" );
 
 		// add up the number of bytes to the total queued (synchronized over this object)
 		bufferQueueTotalAmount.addAndGet( buf.remaining() );
-
-		if( !bufferQueue.offer( buf ) ) {
-			try {
-				flush();
-			} catch ( IOException e ) {
-				wsl.onWebsocketError( this, e );
-				closeConnection( CloseFrame.ABNOROMAL_CLOSE, true );
-				return;
-			}
+		try {
 			bufferQueue.put( buf );
+		} catch ( InterruptedException e ) {
+			e.printStackTrace();
 		}
-
 		wsl.onWriteDemand( this );
 	}
 
@@ -593,11 +606,13 @@ public final class WebSocket {
 		while ( buf.hasRemaining() )
 			sockchannel.write( buf );
 	}
+
 	private void writeDirect( List<ByteBuffer> bufs ) throws IOException {
 		for( ByteBuffer b : bufs ) {
 			channelWriteDirect( b );
 		}
 	}
+
 	private void deliverMessage( Framedata d ) throws InvalidDataException {
 		if( d.getOpcode() == Opcode.TEXT ) {
 			wsl.onWebsocketMessage( this, Charsetfunctions.stringUtf8( d.getPayloadData() ) );

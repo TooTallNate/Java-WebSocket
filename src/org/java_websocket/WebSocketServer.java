@@ -248,7 +248,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	private void handleIOException( WebSocket conn, IOException ex ) {
 		onWebsocketError( conn, ex );// conn may be null here
 		if( conn != null ) {
-			conn.close( CloseFrame.ABNOROMAL_CLOSE );
+			conn.close( CloseFrame.ABNORMAL_CLOSE );
 		}
 	}
 
@@ -325,12 +325,6 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 				handleIOException( conn, e );
 			}
 		}
-		/*synchronized ( write_demands ) {
-			if( !write_demands.contains( conn ) ) {
-				write_demands.add( conn );
-				flusher.submit( new WebsocketWriteTask( conn ) );
-			}
-		}*/
 	}
 
 	// ABTRACT METHODS /////////////////////////////////////////////////////////

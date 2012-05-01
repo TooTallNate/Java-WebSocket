@@ -89,11 +89,7 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	public void onWebsocketPing( WebSocket conn, Framedata f ) {
 		FramedataImpl1 resp = new FramedataImpl1( f );
 		resp.setOptcode( Opcode.PONG );
-		try {
-			conn.sendFrame( resp );
-		} catch ( InterruptedException e ) {
-			e.printStackTrace();
-		}
+		conn.sendFrame( resp );
 	}
 
 	/**

@@ -212,7 +212,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			}
 		} catch ( IOException e ) {
 			onError( e );
-			conn.close( CloseFrame.ABNOROMAL_CLOSE );
+			conn.close( CloseFrame.ABNORMAL_CLOSE );
 			return;
 		} catch ( RuntimeException e ) {
 			// this catch case covers internal errors only and indicates a bug in this websocket implementation
@@ -258,7 +258,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			conn.flush();
 		} catch ( IOException e ) {
 			onError( e );
-			conn.closeConnection( CloseFrame.ABNOROMAL_CLOSE, true );
+			conn.closeConnection( CloseFrame.ABNORMAL_CLOSE, true );
 			return;
 		}
 	}
