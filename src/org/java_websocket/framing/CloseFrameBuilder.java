@@ -31,6 +31,9 @@ public class CloseFrameBuilder extends FramedataImpl1 implements CloseFrame {
 	}
 
 	private void setCodeAndMessage( int code, String m ) throws InvalidDataException {
+		if( m == null ) {
+			m = "";
+		}
 		byte[] by = Charsetfunctions.utf8Bytes( m );
 		ByteBuffer buf = ByteBuffer.allocate( 4 );
 		buf.putInt( code );
