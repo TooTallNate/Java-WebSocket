@@ -354,6 +354,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 				return;
 			}
 		}
+		selector.wakeup();
 	}
 
 	public final void setWebSocketFactory( WebSocketServerFactory wsf ) {
