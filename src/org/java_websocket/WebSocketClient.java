@@ -43,7 +43,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	/**
 	 * The WebSocket instance this client object wraps.
 	 */
-	private WebSocket conn = null;
+	private WebSocketImpl conn = null;
 	/**
 	 * The SocketChannel instance this client uses.
 	 */
@@ -182,7 +182,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			onWebsocketError( conn, e );
 			return;
 		}
-		conn = new WebSocket( this, draft, client );
+		conn = new WebSocketImpl( this, draft, client );
 		try/*IO*/{
 			while ( !conn.isClosed() ) {
 				if( Thread.interrupted() ) {

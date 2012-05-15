@@ -110,7 +110,6 @@ public class ChatClient extends JFrame implements ActionListener {
 					public void onOpen( ServerHandshake handshake ) {
 						ta.append( "You are connected to ChatServer: " + getURI() + "\n" );
 						ta.setCaretPosition( ta.getDocument().getLength() );
-						send( "\0" );
 					}
 
 					@Override
