@@ -3,7 +3,7 @@ package org.java_websocket;
 import java.nio.ByteBuffer;
 
 import org.java_websocket.drafts.Draft;
-import org.java_websocket.exeptions.InvalidDataException;
+import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.framing.Framedata.Opcode;
 import org.java_websocket.framing.FramedataImpl1;
@@ -89,11 +89,7 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	public void onWebsocketPing( WebSocket conn, Framedata f ) {
 		FramedataImpl1 resp = new FramedataImpl1( f );
 		resp.setOptcode( Opcode.PONG );
-		try {
-			conn.sendFrame( resp );
-		} catch ( InterruptedException e ) {
-			e.printStackTrace();
-		}
+		conn.sendFrame( resp );
 	}
 
 	/**

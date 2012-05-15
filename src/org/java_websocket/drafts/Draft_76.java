@@ -10,10 +10,10 @@ import java.util.List;
 import java.util.Random;
 
 import org.java_websocket.WebSocket.Role;
-import org.java_websocket.exeptions.IncompleteHandshakeException;
-import org.java_websocket.exeptions.InvalidDataException;
-import org.java_websocket.exeptions.InvalidFrameException;
-import org.java_websocket.exeptions.InvalidHandshakeException;
+import org.java_websocket.exceptions.IncompleteHandshakeException;
+import org.java_websocket.exceptions.InvalidDataException;
+import org.java_websocket.exceptions.InvalidFrameException;
+import org.java_websocket.exceptions.InvalidHandshakeException;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.CloseFrameBuilder;
 import org.java_websocket.framing.Framedata;

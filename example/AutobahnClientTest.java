@@ -127,12 +127,7 @@ public class AutobahnClientTest extends WebSocketClient {
 
 	@Override
 	public void onMessage( String message ) {
-		try {
-			send( message );
-		} catch ( InterruptedException e ) {
-			e.printStackTrace();
-		}
-
+		send( message );
 	}
 
 	@Override

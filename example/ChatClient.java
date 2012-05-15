@@ -90,13 +90,9 @@ public class ChatClient extends JFrame implements ActionListener {
 
 		if( e.getSource() == chatField ) {
 			if( cc != null ) {
-				try {
-					cc.send( chatField.getText() );
-					chatField.setText( "" );
-					chatField.requestFocus();
-				} catch ( InterruptedException ex ) {
-					ex.printStackTrace();
-				}
+				cc.send( chatField.getText() );
+				chatField.setText( "" );
+				chatField.requestFocus();
 			}
 
 		} else if( e.getSource() == connect ) {

@@ -7,7 +7,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CodingErrorAction;
 
-import org.java_websocket.exeptions.InvalidDataException;
+import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.framing.CloseFrame;
 
 public class Charsetfunctions {
@@ -81,4 +81,10 @@ public class Charsetfunctions {
 		}
 		return s;
 	}
+
+	public static void main( String[] args ) throws InvalidDataException {
+		stringUtf8( utf8Bytes( "\0" ) );
+		stringAscii( asciiBytes( "\0" ) );
+	}
+
 }

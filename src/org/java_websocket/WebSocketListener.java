@@ -3,7 +3,7 @@ package org.java_websocket;
 import java.nio.ByteBuffer;
 
 import org.java_websocket.drafts.Draft;
-import org.java_websocket.exeptions.InvalidDataException;
+import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.handshake.Handshakedata;
@@ -18,7 +18,7 @@ import org.java_websocket.handshake.ServerHandshakeBuilder;
 public interface WebSocketListener {
 
 	/**
-	 * Called on the server side when the socket connection is first established, and the WebSocket
+	 * Called on the server side when the socket connection is first established, and the WebSocketImpl
 	 * handshake has been received.
 	 * 
 	 * @param conn
@@ -34,7 +34,7 @@ public interface WebSocketListener {
 	public ServerHandshakeBuilder onWebsocketHandshakeReceivedAsServer( WebSocket conn, Draft draft, ClientHandshake request ) throws InvalidDataException;
 
 	/**
-	 * Called on the client side when the socket connection is first established, and the WebSocket
+	 * Called on the client side when the socket connection is first established, and the WebSocketImpl
 	 * handshake response has been received.
 	 * 
 	 * @param conn
@@ -49,7 +49,7 @@ public interface WebSocketListener {
 	public void onWebsocketHandshakeReceivedAsClient( WebSocket conn, ClientHandshake request, ServerHandshake response ) throws InvalidDataException;
 
 	/**
-	 * Called on the client side when the socket connection is first established, and the WebSocket
+	 * Called on the client side when the socket connection is first established, and the WebSocketImpl
 	 * handshake has just been sent.
 	 * 
 	 * @param conn
