@@ -18,7 +18,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft_10;
-import org.java_websocket.exeptions.InvalidHandshakeException;
+import org.java_websocket.exceptions.InvalidHandshakeException;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.handshake.HandshakeImpl1Client;
 import org.java_websocket.handshake.Handshakedata;
@@ -43,7 +43,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	/**
 	 * The WebSocket instance this client object wraps.
 	 */
-	private WebSocket conn = null;
+	private WebSocketImpl conn = null;
 	/**
 	 * The SocketChannel instance this client uses.
 	 */
@@ -132,7 +132,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 * @param text
 	 *            The String to send to the WebSocket server.
 	 */
-	public void send( String text ) throws NotYetConnectedException , InterruptedException {
+	public void send( String text ) throws NotYetConnectedException {
 		if( conn != null ) {
 			conn.send( text );
 		}
@@ -182,7 +182,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			onWebsocketError( conn, e );
 			return;
 		}
-		conn = new WebSocket( this, draft, client );
+		conn = new WebSocketImpl( this, draft, client );
 		try/*IO*/{
 			while ( !conn.isClosed() ) {
 				if( Thread.interrupted() ) {
@@ -220,7 +220,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			}
 		} catch ( IOException e ) {
 			onError( e );
-			conn.close( CloseFrame.ABNROMAL_CLOSE );
+			conn.close( CloseFrame.ABNORMAL_CLOSE );
 			return;
 		} catch ( RuntimeException e ) {
 			// this catch case covers internal errors only and indicates a bug in this websocket implementation
@@ -266,7 +266,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			conn.flush();
 		} catch ( IOException e ) {
 			onError( e );
-			conn.closeConnection( CloseFrame.ABNROMAL_CLOSE, true );
+			conn.closeConnection( CloseFrame.ABNORMAL_CLOSE, true );
 			return;
 		}
 	}

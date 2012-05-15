@@ -1,6 +1,6 @@
 package org.java_websocket.drafts;
 
-import org.java_websocket.exeptions.InvalidHandshakeException;
+import org.java_websocket.exceptions.InvalidHandshakeException;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.handshake.ClientHandshakeBuilder;
 

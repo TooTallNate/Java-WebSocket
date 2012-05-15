@@ -155,7 +155,7 @@ public class ServerStressTest extends JFrame {
 		}
 		int totalclients = clients.getValue();
 		while ( websockets.size() < totalclients ) {
-			WebSocketClient cl = new EmptyClient( uri ) {
+			WebSocketClient cl = new ExampleClient( uri ) {
 				@Override
 				public void onClose( int code, String reason, boolean remote ) {
 					System.out.println( "Closed duo " + code + " " + reason );
@@ -203,8 +203,6 @@ public class ServerStressTest extends JFrame {
 					cl.flush();
 				} catch ( NotYetConnectedException e ) {
 					notyetconnected++;
-				} catch ( InterruptedException e ) {
-					e.printStackTrace();
 				}
 			}
 		}

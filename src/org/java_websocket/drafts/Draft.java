@@ -5,12 +5,11 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.regex.Pattern;
 
 import org.java_websocket.WebSocket.Role;
-import org.java_websocket.exeptions.InvalidDataException;
-import org.java_websocket.exeptions.InvalidHandshakeException;
-import org.java_websocket.exeptions.LimitExedeedException;
+import org.java_websocket.exceptions.InvalidDataException;
+import org.java_websocket.exceptions.InvalidHandshakeException;
+import org.java_websocket.exceptions.LimitExedeedException;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.handshake.ClientHandshake;
@@ -44,8 +43,6 @@ public abstract class Draft {
 	public static int INITIAL_FAMESIZE = 64;
 
 	public static final byte[] FLASH_POLICY_REQUEST = Charsetfunctions.utf8Bytes( "<policy-file-request/>\0" );
-	private static Pattern getpattern = Pattern.compile( "" ); // GET / HTTP/1.1
-	private static Pattern statuspattern = Pattern.compile( "" ); // HTTP/1.1 101 Switching Protocols
 
 	/** In some cases the handshake will be parsed different depending on whether */
 	protected Role role = null;
