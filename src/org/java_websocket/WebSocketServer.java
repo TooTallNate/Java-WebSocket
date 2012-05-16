@@ -2,6 +2,7 @@ package org.java_websocket;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.ServerSocket;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.CancelledKeyException;
@@ -71,7 +72,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		}
 
 		@Override
-		public WebSocketImpl createWebSocket( WebSocketServer a, List<Draft> d, SocketChannel c ) {
+		public WebSocketImpl createWebSocket( WebSocketAdapter a, List<Draft> d, SocketChannel c ) {
 			return new WebSocketImpl( a, d, c );
 		}
 	};
@@ -206,7 +207,9 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		try {
 			server = ServerSocketChannel.open();
 			server.configureBlocking( false );
-			server.socket().bind( address );
+			ServerSocket socket = server.socket();
+			socket.setReceiveBufferSize( WebSocket.RCVBUF );
+			socket.bind( address );
 			selector = Selector.open();
 			server.register( selector, server.validOps() );
 		} catch ( IOException ex ) {
@@ -241,6 +244,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 
 						if( key.isReadable() ) {
 							conn = (WebSocketImpl) key.attachment();
+							conn.read();
 							queue.put( conn );
 							i.remove();
 						}
@@ -382,7 +386,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 				while ( true ) {
 					try {
 						ws = queue.take();
-						ws.handleRead();
+						ws.decode();
 						// ws.flush();
 					} catch ( IOException e ) {
 						handleIOException( ws, e );
@@ -419,6 +423,6 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		@Override
 		public WebSocketImpl createWebSocket( WebSocketAdapter a, Draft d, SocketChannel c );
 
-		public WebSocketImpl createWebSocket( WebSocketServer a, List<Draft> drafts, SocketChannel c );
+		public WebSocketImpl createWebSocket( WebSocketAdapter a, List<Draft> drafts, SocketChannel c );
 	}
 }

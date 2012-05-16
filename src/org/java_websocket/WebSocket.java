@@ -16,7 +16,7 @@ public abstract class WebSocket {
 		CLIENT, SERVER
 	}
 
-	public static int BUFFERSIZE = 512;
+	public static int RCVBUF = 512;
 
 	public static/*final*/boolean DEBUG = false; // must be final in the future in order to take advantage of VM optimization
 

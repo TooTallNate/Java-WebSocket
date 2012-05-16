@@ -7,5 +7,5 @@ import org.java_websocket.drafts.Draft;
 
 public interface WebSocketFactory {
 	public WebSocket createWebSocket( WebSocketAdapter a, Draft d, SocketChannel c );
-	public WebSocket createWebSocket( WebSocketServer a, List<Draft> drafts, SocketChannel c );
+	public WebSocket createWebSocket( WebSocketAdapter a, List<Draft> drafts, SocketChannel c );
 }

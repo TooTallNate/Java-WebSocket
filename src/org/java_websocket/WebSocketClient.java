@@ -11,6 +11,7 @@ import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.UnresolvedAddressException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
@@ -60,6 +61,18 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	private final Lock closelock = new ReentrantLock();
 
 	private Map<String, String> headers;
+
+	WebSocketFactory wf = new WebSocketFactory() {
+		@Override
+		public WebSocket createWebSocket( WebSocketAdapter a, Draft d, SocketChannel c ) {
+			return new WebSocketImpl( WebSocketClient.this, d, c );
+		}
+
+		@Override
+		public WebSocket createWebSocket( WebSocketAdapter a, List<Draft> d, SocketChannel c ) {
+			return new WebSocketImpl( WebSocketClient.this, d, c );
+		}
+	};
 
 	public WebSocketClient( URI serverURI ) {
 		this( serverURI, new Draft_10() );
@@ -182,7 +195,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			onWebsocketError( conn, e );
 			return;
 		}
-		conn = new WebSocketImpl( this, draft, client );
+		conn = (WebSocketImpl) wf.createWebSocket( this, draft, client );
 		try/*IO*/{
 			while ( !conn.isClosed() ) {
 				if( Thread.interrupted() ) {
@@ -197,7 +210,8 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 					key = i.next();
 					i.remove();
 					if( key.isReadable() ) {
-						conn.handleRead();
+						conn.read();
+						conn.decode();
 					}
 					if( !key.isValid() ) {
 						continue;
@@ -373,6 +387,14 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
 	public WebSocket getConnection() {
 		return conn;
+	}
+
+	public final void setWebSocketFactory( WebSocketFactory wsf ) {
+		this.wf = wsf;
+	}
+
+	public final WebSocketFactory getWebSocketFactory() {
+		return wf;
 	}
 
 	// ABTRACT METHODS /////////////////////////////////////////////////////////

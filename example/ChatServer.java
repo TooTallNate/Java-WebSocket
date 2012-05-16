@@ -1,7 +1,6 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Set;
@@ -16,7 +15,7 @@ import org.java_websocket.handshake.ClientHandshake;
 public class ChatServer extends WebSocketServer {
 
 	public ChatServer( int port ) throws UnknownHostException {
-		super( new InetSocketAddress( InetAddress.getByName( "localhost" ), port ) );
+		super( new InetSocketAddress( port ) );
 	}
 
 	public ChatServer( InetSocketAddress address ) {
@@ -55,7 +54,7 @@ public class ChatServer extends WebSocketServer {
 
 	public static void main( String[] args ) throws InterruptedException , IOException {
 		WebSocket.DEBUG = true;
-		int port = 8887;
+		int port = 8887; // 843 flash policy port
 		try {
 			port = Integer.parseInt( args[ 0 ] );
 		} catch ( Exception ex ) {
