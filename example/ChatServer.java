@@ -24,32 +24,23 @@ public class ChatServer extends WebSocketServer {
 
 	@Override
 	public void onOpen( WebSocket conn, ClientHandshake handshake ) {
-		try {
-			this.sendToAll( "new connection" );
-		} catch ( InterruptedException ex ) {
-			ex.printStackTrace();
-		}
+		this.sendToAll( "new connection" );
 		System.out.println( conn + " entered the room!" );
 	}
 
 	@Override
 	public void onClose( WebSocket conn, int code, String reason, boolean remote ) {
-		try {
-			this.sendToAll( conn + " has left the room!" );
-		} catch ( InterruptedException ex ) {
-			ex.printStackTrace();
-		}
+		this.sendToAll( conn + " has left the room!" );
 		System.out.println( conn + " has left the room!" );
 	}
 
 	@Override
 	public void onMessage( WebSocket conn, String message ) {
-		try {
+		this.sendToAll( message );
+
 			this.sendToAll( message );
-		} catch ( InterruptedException ex ) {
-			ex.printStackTrace();
-		}
-		System.out.println( conn + ": " + message );
+
+		// System.out.println( conn + ": " + message );
 	}
 
 	public static void main( String[] args ) throws InterruptedException , IOException {
@@ -83,7 +74,7 @@ public class ChatServer extends WebSocketServer {
 	 * @throws InterruptedException
 	 *             When socket related I/O errors occur.
 	 */
-	public void sendToAll( String text ) throws InterruptedException {
+	public void sendToAll( String text ) {
 		Set<WebSocket> con = connections();
 		synchronized ( con ) {
 			for( WebSocket c : con ) {

@@ -16,7 +16,7 @@ public abstract class WebSocket {
 		CLIENT, SERVER
 	}
 
-	public static int RCVBUF = 512;
+	public static int RCVBUF = 64;
 
 	public static/*final*/boolean DEBUG = false; // must be final in the future in order to take advantage of VM optimization
 
@@ -88,11 +88,6 @@ public abstract class WebSocket {
 	 * @return Amount of Data still in Queue and not sent yet of the socket
 	 */
 	public abstract long bufferedDataAmount();
-
-	/**
-	 * Empty the internal buffer, sending all the pending data before continuing.
-	 */
-	public abstract void flush() throws IOException;
 
 	/** Returns whether the batch process all available data */
 	public abstract boolean batch() throws IOException;

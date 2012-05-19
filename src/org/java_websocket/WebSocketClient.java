@@ -196,6 +196,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			return;
 		}
 		conn = (WebSocketImpl) wf.createWebSocket( this, draft, client );
+		ByteBuffer buff = ByteBuffer.allocate( WebSocket.RCVBUF );
 		try/*IO*/{
 			while ( !conn.isClosed() ) {
 				if( Thread.interrupted() ) {
@@ -209,9 +210,8 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 				while ( i.hasNext() ) {
 					key = i.next();
 					i.remove();
-					if( key.isReadable() ) {
-						conn.read();
-						conn.decode();
+					if( key.isReadable() && conn.read( buff ) ) {
+						conn.decode( buff );
 					}
 					if( !key.isValid() ) {
 						continue;

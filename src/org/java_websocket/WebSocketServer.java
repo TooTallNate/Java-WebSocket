@@ -11,15 +11,15 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.framing.CloseFrame;
@@ -61,9 +61,12 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 
 	private Thread selectorthread;
 
-	private ExecutorService decoders;
+	private List<WebSocketWorker> decoders;
 
-	private ArrayBlockingQueue<WebSocketImpl> queue;
+	private BlockingQueue<WebSocketImpl> oqueue;
+	private BlockingQueue<ByteBuffer> buffers;
+	private int queueinvokes = 0;
+	private AtomicInteger queuesize = new AtomicInteger( 0 );
 
 	private WebSocketServerFactory wsf = new WebSocketServerFactory() {
 		@Override
@@ -120,10 +123,15 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		else
 			this.drafts = drafts;
 		setAddress( address );
-		queue = new ArrayBlockingQueue<WebSocketImpl>( decodercount );
-		this.decoders = Executors.newFixedThreadPool( decodercount, new WebsocketThreadFactory() );
+
+		oqueue = new LinkedBlockingQueue<WebSocketImpl>();
+
+		decoders = new ArrayList<WebSocketWorker>( decodercount );
+		buffers = new LinkedBlockingQueue<ByteBuffer>();
 		for( int i = 0 ; i < decodercount ; i++ ) {
-			decoders.submit( new WebsocketWorker() );
+			WebSocketWorker ex = new WebSocketWorker();
+			decoders.add( ex );
+			ex.start();
 		}
 	}
 
@@ -204,6 +212,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		if( selectorthread != null )
 			throw new IllegalStateException( "This instance of " + getClass().getSimpleName() + " can only be started once the same time." );
 		selectorthread = Thread.currentThread();
+		selectorthread.setName( "WebsocketSelector" + selectorthread.getId() );
 		try {
 			server = ServerSocketChannel.open();
 			server.configureBlocking( false );
@@ -221,6 +230,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 				SelectionKey key = null;
 				WebSocketImpl conn = null;
 				try {
+					handleWrite();
 					selector.select();
 					Set<SelectionKey> keys = selector.selectedKeys();
 					Iterator<SelectionKey> i = keys.iterator();
@@ -237,24 +247,32 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 							SocketChannel channel = server.accept();
 							channel.configureBlocking( false );
 							WebSocketImpl c = wsf.createWebSocket( this, drafts, channel );
-							c.selectionkey = channel.register( selector, SelectionKey.OP_READ, c );
+							c.key = channel.register( selector, SelectionKey.OP_READ, c );
 							i.remove();
+							allocateBuffers( c );
 							continue;
 						}
 
 						if( key.isReadable() ) {
 							conn = (WebSocketImpl) key.attachment();
-							conn.read();
-							queue.put( conn );
-							i.remove();
+							ByteBuffer buf = takeBuffer();
+							try {
+								if( conn.read( buf ) ) {
+									conn.in.put( buf );
+									queue( conn );
+									i.remove();
+								} else {
+									pushBuffer( buf );
+								}
+							} catch ( IOException e ) {
+								pushBuffer( buf );// TODO handle runtimeexception thrown in this block
+								throw e;
+							}
 						}
 						if( key.isWritable() ) {
 							conn = (WebSocketImpl) key.attachment();
 							if( conn.batch() ) {
-								synchronized ( conn.writemonitor ) {
-									SelectionKey k = key.channel().register( selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE, key.attachment() );
-									assert ( k == conn.selectionkey );
-								}
+								key.channel().register( selector, SelectionKey.OP_READ, key.attachment() );
 							}
 						}
 					}
@@ -274,6 +292,49 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		}
 	}
 
+	protected void allocateBuffers( WebSocket c ) throws InterruptedException {
+		queuesize.incrementAndGet();
+		buffers.put( createBuffer() );
+	}
+	protected void releaseBuffers( WebSocket c ) throws InterruptedException {
+		queuesize.decrementAndGet();
+		// takeBuffer();
+	}
+
+	public ByteBuffer createBuffer() {
+		return ByteBuffer.allocate( WebSocket.RCVBUF );
+	}
+
+	private void queue( WebSocketImpl ws ) throws InterruptedException {
+		if( ws.worker == null ) {
+			ws.worker = decoders.get( queueinvokes % decoders.size() );
+			queueinvokes++;
+		}
+		ws.worker.put( ws );
+	}
+	private ByteBuffer takeBuffer() throws InterruptedException {
+		return buffers.take();
+	}
+	private void pushBuffer( ByteBuffer buf ) throws InterruptedException {
+		if( buffers.size() > queuesize.intValue() )
+			return;
+		buffers.put( buf );
+	}
+
+	private void handleWrite() {
+		int size = oqueue.size();
+		for( int i = 0 ; i < size ; i++ ) {
+			WebSocketImpl conn = oqueue.remove();
+			try {
+				conn.sockchannel.register( selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE, conn );
+			} catch ( ClosedChannelException ex ) {
+				onWebsocketError( null, ex );
+				conn.closeConnection( CloseFrame.ABNORMAL_CLOSE, "", true );
+				return;
+			}
+		}
+	}
+
 	private void handleIOException( WebSocket conn, IOException ex ) {
 		onWebsocketError( conn, ex );// conn may be null here
 		if( conn != null ) {
@@ -288,7 +349,9 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		} catch ( IOException e1 ) {
 			onError( null, e1 );
 		}
-		decoders.shutdown();
+		for( WebSocketWorker w : decoders ) {
+			w.interrupt();
+		}
 	}
 
 	/**
@@ -329,11 +392,21 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 
 	@Override
 	public final void onWebsocketClose( WebSocket conn, int code, String reason, boolean remote ) {
-		synchronized ( connections ) {
-			if( this.connections.remove( conn ) ) {
-				onClose( conn, code, reason, remote );
+		try {
+			synchronized ( connections ) {
+				if( this.connections.remove( conn ) ) {
+					onClose( conn, code, reason, remote );
+				}
+			}
+		} finally {
+			try {
+				releaseBuffers( conn );
+			} catch ( InterruptedException e ) {
+				e.printStackTrace();
+				// TODO handle InterruptedException
 			}
 		}
+
 	}
 
 	/**
@@ -348,16 +421,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	@Override
 	public final void onWriteDemand( WebSocket w ) {
 		WebSocketImpl conn = (WebSocketImpl) w;
-		synchronized ( conn.writemonitor ) {
-			try {
-				SelectionKey k = conn.sockchannel.register( selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE, conn );
-				assert ( k == conn.selectionkey );
-			} catch ( ClosedChannelException ex ) {
-				onWebsocketError( null, ex );
-				conn.closeConnection( CloseFrame.ABNORMAL_CLOSE, "", true );
-				return;
-			}
-		}
+		oqueue.add( conn );
 		selector.wakeup();
 	}
 
@@ -377,45 +441,49 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	public void onMessage( WebSocket conn, ByteBuffer message ) {
 	};
 
-	private class WebsocketWorker implements Runnable {
+	public class WebSocketWorker extends Thread {
+
+		private BlockingQueue<WebSocketImpl> iqueue;
+
+		public WebSocketWorker() {
+			iqueue = new LinkedBlockingQueue<WebSocketImpl>();
+			setName( "WebSocketWorker-" + getId() );
+			setUncaughtExceptionHandler( new UncaughtExceptionHandler() {
+				@Override
+				public void uncaughtException( Thread t, Throwable e ) {
+					getDefaultUncaughtExceptionHandler().uncaughtException( t, e );
+				}
+			} );
+		}
+
+		public void put( WebSocketImpl ws ) throws InterruptedException {
+			iqueue.put( ws );
+		}
 
 		@Override
 		public void run() {
 			WebSocketImpl ws = null;
 			try {
 				while ( true ) {
+					ByteBuffer buf = null;
+					ws = iqueue.take();
+					buf = ws.in.poll();
+					assert ( buf != null );
 					try {
-						ws = queue.take();
-						ws.decode();
+						ws.decode( buf );
 						// ws.flush();
 					} catch ( IOException e ) {
 						handleIOException( ws, e );
+					} finally {
+						pushBuffer( buf );
 					}
 				}
 			} catch ( RuntimeException e ) {
 				handleFatal( ws, e );
 			} catch ( InterruptedException e ) {
+			} catch ( Throwable e ) {
+				e.printStackTrace();
 			}
-		}
-	}
-
-	private class WebsocketThreadFactory implements ThreadFactory {
-
-		@Override
-		public Thread newThread( Runnable r ) {
-			return new WebsocketExecutorThread( r );
-		}
-	}
-
-	private class WebsocketExecutorThread extends Thread {
-		private Runnable r;
-		WebsocketExecutorThread( Runnable r ) {
-			this.r = r;
-
-		}
-		@Override
-		public void run() {
-			r.run();
 		}
 	}
 
