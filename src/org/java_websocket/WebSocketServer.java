@@ -293,11 +293,14 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	}
 
 	protected void allocateBuffers( WebSocket c ) throws InterruptedException {
+		if( queuesize.get() >= 2 * decoders.size() + 1 ) {
+			return;
+		}
 		queuesize.incrementAndGet();
 		buffers.put( createBuffer() );
 	}
 	protected void releaseBuffers( WebSocket c ) throws InterruptedException {
-		queuesize.decrementAndGet();
+		// queuesize.decrementAndGet();
 		// takeBuffer();
 	}
 
