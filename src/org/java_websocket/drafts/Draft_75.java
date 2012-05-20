@@ -158,6 +158,7 @@ public class Draft_75 extends Draft {
 		}
 		if( readingState ) {
 			FramedataImpl1 curframe = new FramedataImpl1();
+			currentFrame.flip();
 			curframe.setPayload( currentFrame );
 			curframe.setFin( false );
 			curframe.setOptcode( inframe ? Opcode.CONTINIOUS : Opcode.TEXT );
