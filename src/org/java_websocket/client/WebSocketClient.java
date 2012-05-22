@@ -1,4 +1,4 @@
-package org.java_websocket;
+package org.java_websocket.client;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -17,6 +17,10 @@ import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.java_websocket.WebSocket;
+import org.java_websocket.WebSocketAdapter;
+import org.java_websocket.WebSocketFactory;
+import org.java_websocket.WebSocketImpl;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft_10;
 import org.java_websocket.exceptions.InvalidHandshakeException;

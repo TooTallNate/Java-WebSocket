@@ -6,8 +6,8 @@ import java.net.UnknownHostException;
 import java.util.Set;
 
 import org.java_websocket.WebSocket;
-import org.java_websocket.WebSocketServer;
 import org.java_websocket.handshake.ClientHandshake;
+import org.java_websocket.server.WebSocketServer;
 
 /**
  * A simple WebSocketServer implementation. Keeps track of a "chatroom".
