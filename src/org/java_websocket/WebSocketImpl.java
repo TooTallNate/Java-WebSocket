@@ -207,6 +207,7 @@ public final class WebSocketImpl extends WebSocket {
 			tmpHandshakeBytes.flip();
 			socketBuffer = tmpHandshakeBytes;
 		}
+		socketBuffer.mark();
 		try {
 			if( draft == null ) {
 				HandshakeState isflashedgecase = isFlashEdgeCase( socketBuffer );
@@ -217,7 +218,7 @@ public final class WebSocketImpl extends WebSocket {
 				}
 			}
 			HandshakeState handshakestate = null;
-			socketBuffer.mark();
+
 			try {
 				if( role == Role.SERVER ) {
 					if( draft == null ) {
@@ -298,6 +299,7 @@ public final class WebSocketImpl extends WebSocket {
 			}
 		} catch ( IncompleteHandshakeException e ) {
 			if( tmpHandshakeBytes == null ) {
+				socketBuffer.reset();
 				int newsize = e.getPreferedSize();
 				if( newsize == 0 ) {
 					newsize = socketBuffer.capacity() + 16;
