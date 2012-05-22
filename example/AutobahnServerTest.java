@@ -28,6 +28,7 @@ public class AutobahnServerTest extends WebSocketServer {
 
 	@Override
 	public void onClose( WebSocket conn, int code, String reason, boolean remote ) {
+		System.out.println( "closed" );
 	}
 
 	@Override
