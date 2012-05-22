@@ -5,7 +5,6 @@ import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.NotYetConnectedException;
 
-import org.java_websocket.drafts.Draft.HandshakeState;
 import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.exceptions.InvalidHandshakeException;
 import org.java_websocket.framing.Framedata;
@@ -36,8 +35,6 @@ public abstract class WebSocket {
 	 * may be send in response to an other handshake.
 	 */
 	public abstract void close( int code, String message );
-
-	public abstract void closeDirect( int code, String message ) throws IOException;
 
 	/**
 	 * closes the socket no matter if the closing handshake completed.
@@ -91,8 +88,6 @@ public abstract class WebSocket {
 
 	/** Returns whether the batch process all available data */
 	public abstract boolean batch() throws IOException;
-
-	public abstract HandshakeState isFlashEdgeCase( ByteBuffer request );
 
 	public abstract void startHandshake( ClientHandshakeBuilder handshakedata ) throws InvalidHandshakeException , InterruptedException;
 

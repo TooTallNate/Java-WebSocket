@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.java_websocket.WebSocket.Role;
+import org.java_websocket.exceptions.IncompleteHandshakeException;
 import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.exceptions.InvalidHandshakeException;
 import org.java_websocket.exceptions.LimitExedeedException;
@@ -31,9 +32,7 @@ public abstract class Draft {
 		/** Handshake matched this Draft successfully */
 		MATCHED,
 		/** Handshake is does not match this Draft */
-		NOT_MATCHED,
-		/** Handshake matches this Draft but is not complete */
-		MATCHING
+		NOT_MATCHED
 	}
 	public enum CloseHandshakeType {
 		NONE, ONEWAY, TWOWAY
@@ -72,12 +71,12 @@ public abstract class Draft {
 		return b == null ? null : Charsetfunctions.stringAscii( b.array(), 0, b.limit() );
 	}
 
-	public static HandshakeBuilder translateHandshakeHttp( ByteBuffer buf, Role role ) throws InvalidHandshakeException {
+	public static HandshakeBuilder translateHandshakeHttp( ByteBuffer buf, Role role ) throws InvalidHandshakeException , IncompleteHandshakeException {
 		HandshakeBuilder handshake;
 
 		String line = readStringLine( buf );
 		if( line == null )
-			throw new InvalidHandshakeException( "could not match http status line" );
+			throw new IncompleteHandshakeException( buf.capacity() + 128 );
 
 		String[] firstLineTokens = line.split( " ", 3 );// eg. HTTP/1.1 101 Switching the Protocols
 		if( firstLineTokens.length != 3 ) {
@@ -105,6 +104,8 @@ public abstract class Draft {
 			handshake.put( pair[ 0 ], pair[ 1 ].replaceFirst( "^ +", "" ) );
 			line = readStringLine( buf );
 		}
+		if( line == null )
+			throw new IncompleteHandshakeException();
 		return handshake;
 	}
 

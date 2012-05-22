@@ -116,7 +116,7 @@ public class Draft_76 extends Draft_75 {
 			}
 			byte[] content = response.getContent();
 			if( content == null || content.length == 0 ) {
-				return HandshakeState.MATCHING;
+				throw new IncompleteHandshakeException();
 			}
 			if( Arrays.equals( content, createChallenge( request.getFieldValue( "Sec-WebSocket-Key1" ), request.getFieldValue( "Sec-WebSocket-Key2" ), request.getContent() ) ) ) {
 				return HandshakeState.MATCHED;
@@ -182,7 +182,7 @@ public class Draft_76 extends Draft_75 {
 			try {
 				buf.get( key3 );
 			} catch ( BufferUnderflowException e ) {
-				throw new IncompleteHandshakeException();
+				throw new IncompleteHandshakeException( buf.capacity() + 16 );
 			}
 			bui.setContent( key3 );
 
