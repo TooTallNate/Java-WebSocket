@@ -1,6 +1,5 @@
 package org.java_websocket;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.NotYetConnectedException;
@@ -85,9 +84,6 @@ public abstract class WebSocket {
 	 * @return Amount of Data still in Queue and not sent yet of the socket
 	 */
 	public abstract long bufferedDataAmount();
-
-	/** Returns whether the batch process all available data */
-	public abstract boolean batch() throws IOException;
 
 	public abstract void startHandshake( ClientHandshakeBuilder handshakedata ) throws InvalidHandshakeException , InterruptedException;
 

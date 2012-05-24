@@ -176,6 +176,7 @@ public final class WebSocketImpl extends WebSocket {
 	public void decode( ByteBuffer socketBuffer ) throws IOException {
 		if( !socketBuffer.hasRemaining() )
 			return;
+
 		if( DEBUG )
 			System.out.println( "process(" + socketBuffer.remaining() + "): {" + ( socketBuffer.remaining() > 1000 ? "too big to display" : new String( socketBuffer.array(), socketBuffer.position(), socketBuffer.remaining() ) ) + "}" );
 
@@ -214,8 +215,8 @@ public final class WebSocketImpl extends WebSocket {
 			if( draft == null ) {
 				HandshakeState isflashedgecase = isFlashEdgeCase( socketBuffer );
 				if( isflashedgecase == HandshakeState.MATCHED ) {
-					channelWriteDirect( ByteBuffer.wrap( Charsetfunctions.utf8Bytes( wsl.getFlashPolicy( this ) ) ) );
-					closeDirect( CloseFrame.FLASHPOLICY, "" );
+					write( ByteBuffer.wrap( Charsetfunctions.utf8Bytes( wsl.getFlashPolicy( this ) ) ) );
+					close( CloseFrame.FLASHPOLICY, "" );
 					return false;
 				}
 			}
@@ -243,7 +244,7 @@ public final class WebSocketImpl extends WebSocket {
 										closeConnection( e.getCloseCode(), e.getMessage(), false );
 										return false;
 									}
-									writeDirect( d.createHandshake( d.postProcessHandshakeResponseAsServer( handshake, response ), role ) );
+									write( d.createHandshake( d.postProcessHandshakeResponseAsServer( handshake, response ), role ) );
 									draft = d;
 									open( handshake );
 									return true;
@@ -382,22 +383,8 @@ public final class WebSocketImpl extends WebSocket {
 		}
 	}
 
-	// PUBLIC INSTANCE METHODS /////////////////////////////////////////////////
-
-	/**
-	 * sends the closing handshake.
-	 * may be send in response to an other handshake.
-	 */
 	@Override
 	public void close( int code, String message ) {
-		try {
-			closeDirect( code, message );
-		} catch ( IOException e ) {
-			closeConnection( CloseFrame.ABNORMAL_CLOSE, true );
-		}
-	}
-
-	public void closeDirect( int code, String message ) throws IOException {
 		if( !closeHandshakeSent ) {
 			if( handshakeComplete ) {
 				if( code == CloseFrame.ABNORMAL_CLOSE ) {
@@ -405,10 +392,9 @@ public final class WebSocketImpl extends WebSocket {
 					closeHandshakeSent = true;
 					return;
 				}
-				flush();
 				if( draft.getCloseHandshakeType() != CloseHandshakeType.NONE ) {
 					try {
-						sendFrameDirect( new CloseFrameBuilder( code, message ) );
+						sendFrame( new CloseFrameBuilder( code, message ) );
 					} catch ( InvalidDataException e ) {
 						wsl.onWebsocketError( this, e );
 						closeConnection( CloseFrame.ABNORMAL_CLOSE, "generated frame is invalid", false );
@@ -446,15 +432,12 @@ public final class WebSocketImpl extends WebSocket {
 			return;
 		}
 		connectionClosed = true;
-		try {
-			if( key != null ) {
-				key.attach( null );
-				key.cancel();
-			}
-			sockchannel.close();
-		} catch ( IOException e ) {
-			wsl.onWebsocketError( this, e );
+
+		if( key != null ) {
+			key.attach( null );
+			key.cancel();
 		}
+		// sockchannel.close();
 		this.wsl.onWebsocketClose( this, code, message, remote );
 		if( draft != null )
 			draft.reset();
@@ -522,13 +505,7 @@ public final class WebSocketImpl extends WebSocket {
 	public void sendFrame( Framedata framedata ) {
 		if( DEBUG )
 			System.out.println( "send frame: " + framedata );
-		channelWrite( draft.createBinaryFrame( framedata ) );
-	}
-
-	private void sendFrameDirect( Framedata framedata ) throws IOException {
-		if( DEBUG )
-			System.out.println( "send frame: " + framedata );
-		channelWriteDirect( draft.createBinaryFrame( framedata ) );
+		write( draft.createBinaryFrame( framedata ) );
 	}
 
 	@Override
@@ -548,24 +525,19 @@ public final class WebSocketImpl extends WebSocket {
 
 	/**
 	 * Empty the internal buffer, sending all the pending data before continuing.
-	 */
-	public synchronized void flush() throws IOException {
-		ByteBuffer buffer = this.outQueue.peek();
-		while ( buffer != null ) {
-			int written = sockchannel.write( buffer );
-			if( buffer.remaining() > 0 ) {
-				continue;
-			} else {
-				// subtract this amount of data from the total queued (synchronized over this object)
-				bufferQueueTotalAmount.addAndGet( -written );
+	 * 
+	 * @deprecated
+	 **/
 
-				this.outQueue.poll(); // Buffer finished. Remove it.
-				buffer = this.outQueue.peek();
+	public synchronized void flush() throws IOException {
+		// this method is garbage and must be removed as soon as possible
+		while ( !batch() )
+			try {
+				Thread.sleep( 10 );
+			} catch ( InterruptedException e ) {
 			}
-		}
 	}
 
-	@Override
 	public boolean batch() throws IOException {
 		ByteBuffer buffer = this.outQueue.peek();
 		while ( buffer != null ) {
@@ -578,6 +550,11 @@ public final class WebSocketImpl extends WebSocket {
 
 				this.outQueue.poll(); // Buffer finished. Remove it.
 				buffer = this.outQueue.peek();
+			}
+		}
+		if( connectionClosed ) {
+			synchronized ( this ) {
+				sockchannel.close();
 			}
 		}
 		return true;
@@ -618,10 +595,10 @@ public final class WebSocketImpl extends WebSocket {
 		}
 
 		// Send
-		channelWrite( draft.createHandshake( this.handshakerequest, role ) );
+		write( draft.createHandshake( this.handshakerequest, role ) );
 	}
 
-	private void channelWrite( ByteBuffer buf ) {
+	private void write( ByteBuffer buf ) {
 		if( DEBUG )
 			System.out.println( "write(" + buf.remaining() + "): {" + ( buf.remaining() > 1000 ? "too big to display" : new String( buf.array() ) ) + "}" );
 
@@ -635,20 +612,9 @@ public final class WebSocketImpl extends WebSocket {
 		wsl.onWriteDemand( this );
 	}
 
-	private void channelWrite( List<ByteBuffer> bufs ) throws InterruptedException {
+	private void write( List<ByteBuffer> bufs ) {
 		for( ByteBuffer b : bufs ) {
-			channelWrite( b );
-		}
-	}
-
-	private void channelWriteDirect( ByteBuffer buf ) throws IOException {
-		while ( buf.hasRemaining() )
-			sockchannel.write( buf );
-	}
-
-	private void writeDirect( List<ByteBuffer> bufs ) throws IOException {
-		for( ByteBuffer b : bufs ) {
-			channelWriteDirect( b );
+			write( b );
 		}
 	}
 

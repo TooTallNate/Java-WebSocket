@@ -279,16 +279,6 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		sendHandshake();
 	}
 
-	public void flush() {
-		try {
-			conn.flush();
-		} catch ( IOException e ) {
-			onError( e );
-			conn.closeConnection( CloseFrame.ABNORMAL_CLOSE, true );
-			return;
-		}
-	}
-
 	private void sendHandshake() throws IOException , InvalidHandshakeException , InterruptedException {
 		String path;
 		String part1 = uri.getPath();

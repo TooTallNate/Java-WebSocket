@@ -200,7 +200,6 @@ public class ServerStressTest extends JFrame {
 			for( WebSocketClient cl : websockets ) {
 				try {
 					cl.send( payload );
-					cl.flush();
 				} catch ( NotYetConnectedException e ) {
 					notyetconnected++;
 				}

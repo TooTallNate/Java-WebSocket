@@ -276,7 +276,8 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 						if( key.isWritable() ) {
 							conn = (WebSocketImpl) key.attachment();
 							if( conn.batch() ) {
-								key.channel().register( selector, SelectionKey.OP_READ, key.attachment() );
+								if( key.isValid() )
+									key.channel().register( selector, SelectionKey.OP_READ, key.attachment() );
 							}
 						}
 					}
