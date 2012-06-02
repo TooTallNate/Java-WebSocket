@@ -2,6 +2,7 @@ package org.java_websocket.client;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedByInterruptException;
@@ -17,6 +18,7 @@ import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.java_websocket.SocketChannelIOHelper;
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketAdapter;
 import org.java_websocket.WebSocketFactory;
@@ -42,17 +44,17 @@ import org.java_websocket.handshake.ServerHandshake;
 public abstract class WebSocketClient extends WebSocketAdapter implements Runnable {
 
 	/**
-	 * The URI this client is supposed to connect to.
+	 * The URI this channel is supposed to connect to.
 	 */
 	private URI uri = null;
 	/**
-	 * The WebSocket instance this client object wraps.
+	 * The WebSocket instance this channel object wraps.
 	 */
 	private WebSocketImpl conn = null;
 	/**
-	 * The SocketChannel instance this client uses.
+	 * The SocketChannel instance this channel uses.
 	 */
-	private SocketChannel client = null;
+	private SocketChannel channel = null;
 	/**
 	 * The 'Selector' used to get event keys from the underlying socket.
 	 */
@@ -68,13 +70,13 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
 	WebSocketFactory wf = new WebSocketFactory() {
 		@Override
-		public WebSocket createWebSocket( WebSocketAdapter a, Draft d, SocketChannel c ) {
-			return new WebSocketImpl( WebSocketClient.this, d, c );
+		public WebSocket createWebSocket( WebSocketAdapter a, Draft d, Socket s ) {
+			return new WebSocketImpl( WebSocketClient.this, d, s );
 		}
 
 		@Override
-		public WebSocket createWebSocket( WebSocketAdapter a, List<Draft> d, SocketChannel c ) {
-			return new WebSocketImpl( WebSocketClient.this, d, c );
+		public WebSocket createWebSocket( WebSocketAdapter a, List<Draft> d, Socket s ) {
+			return new WebSocketImpl( WebSocketClient.this, d, s );
 		}
 	};
 
@@ -84,7 +86,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
 	/**
 	 * Constructs a WebSocketClient instance and sets it to the connect to the
-	 * specified URI. The client does not attampt to connect automatically. You
+	 * specified URI. The channel does not attampt to connect automatically. You
 	 * must call <var>connect</var> first to initiate the socket connection.
 	 */
 	public WebSocketClient( URI serverUri , Draft draft ) {
@@ -112,7 +114,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		return uri;
 	}
 
-	/** Returns the protocol version this client uses. */
+	/** Returns the protocol version this channel uses. */
 	public Draft getDraft() {
 		return draft;
 	}
@@ -168,11 +170,11 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	}
 
 	private void tryToConnect( InetSocketAddress remote ) throws IOException {
-		client = SocketChannel.open();
-		client.configureBlocking( false );
-		client.connect( remote );
+		channel = SocketChannel.open();
+		channel.configureBlocking( false );
+		channel.connect( remote );
 		selector = Selector.open();
-		client.register( selector, SelectionKey.OP_CONNECT );
+		channel.register( selector, SelectionKey.OP_CONNECT );
 	}
 
 	// Runnable IMPLEMENTATION /////////////////////////////////////////////////
@@ -199,7 +201,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			onWebsocketError( conn, e );
 			return;
 		}
-		conn = (WebSocketImpl) wf.createWebSocket( this, draft, client );
+		conn = (WebSocketImpl) wf.createWebSocket( this, draft, channel.socket() );
 		ByteBuffer buff = ByteBuffer.allocate( WebSocket.RCVBUF );
 		try/*IO*/{
 			while ( !conn.isClosed() ) {
@@ -207,21 +209,18 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 					conn.close( CloseFrame.NORMAL );
 				}
 				SelectionKey key = null;
-				conn.flush();
+				SocketChannelIOHelper.batch( conn, channel );
 				selector.select();
 				Set<SelectionKey> keys = selector.selectedKeys();
 				Iterator<SelectionKey> i = keys.iterator();
 				while ( i.hasNext() ) {
 					key = i.next();
 					i.remove();
-					if( key.isReadable() && conn.read( buff ) ) {
+					if( key.isReadable() && SocketChannelIOHelper.read( buff, this.conn, channel ) ) {
 						conn.decode( buff );
 					}
 					if( !key.isValid() ) {
 						continue;
-					}
-					if( key.isWritable() ) {
-						conn.flush();
 					}
 					if( key.isConnectable() ) {
 						try {
@@ -231,7 +230,6 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 							break;
 						} catch ( InvalidHandshakeException e ) {
 							conn.close( e ); // http error
-							conn.flush();
 						}
 					}
 				}
@@ -239,12 +237,10 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		} catch ( IOException e ) {
 			onError( e );
 			conn.close( CloseFrame.ABNORMAL_CLOSE );
-			return;
 		} catch ( RuntimeException e ) {
 			// this catch case covers internal errors only and indicates a bug in this websocket implementation
 			onError( e );
-			conn.closeConnection( CloseFrame.BUGGYCLOSE, e.toString(), false );
-			return;
+			conn.eot( e );
 		}
 
 		try {
@@ -256,11 +252,11 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		selector = null;
 		closelock.unlock();
 		try {
-			client.close();
+			channel.close();
 		} catch ( IOException e ) {
 			onError( e );
 		}
-		client = null;
+		channel = null;
 	}
 
 	private int getPort() {
@@ -269,12 +265,12 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	}
 
 	private void finishConnect() throws IOException , InvalidHandshakeException , InterruptedException {
-		if( client.isConnectionPending() ) {
-			client.finishConnect();
+		if( channel.isConnectionPending() ) {
+			channel.finishConnect();
 		}
 
 		// Now that we're connected, re-register for only 'READ' keys.
-		client.register( selector, SelectionKey.OP_READ );
+		channel.register( selector, SelectionKey.OP_READ );
 
 		sendHandshake();
 	}
@@ -312,19 +308,6 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 */
 	public int getReadyState() {
 		return conn.getReadyState();
-	}
-
-	/**
-	 * Amount of data buffered/queued but not sent yet.
-	 *
-	 * In details, it returns the number of bytes of application data (UTF-8 text and binary data)
-	 * that have been queued using send() but that, as of the last time the event loop
-	 * started executing a task, had not yet been transmitted to the network.
-	 *
-	 * @return Amount still buffered/queued but not sent yet.
-	 */
-	public long getBufferedAmount() {
-		return conn.bufferedDataAmount();
 	}
 
 	/**
