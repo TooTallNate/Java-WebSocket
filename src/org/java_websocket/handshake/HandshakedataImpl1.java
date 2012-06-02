@@ -3,6 +3,7 @@ package org.java_websocket.handshake;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 
 public class HandshakedataImpl1 implements HandshakeBuilder {
 	private byte[] content;
@@ -31,7 +32,7 @@ public class HandshakedataImpl1 implements HandshakeBuilder {
 
 	@Override
 	public String getFieldValue( String name ) {
-		String s = map.get( name );
+		String s = map.get( name.toLowerCase( Locale.ENGLISH ) );
 		if( s == null ) {
 			return "";
 		}
@@ -50,7 +51,7 @@ public class HandshakedataImpl1 implements HandshakeBuilder {
 
 	@Override
 	public void put( String name, String value ) {
-		map.put( name, value );
+		map.put( name.toLowerCase( Locale.ENGLISH ), value );
 	}
 
 	@Override
