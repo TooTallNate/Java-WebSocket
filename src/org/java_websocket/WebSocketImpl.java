@@ -91,6 +91,7 @@ public final class WebSocketImpl extends WebSocket {
 	private ByteBuffer tmpHandshakeBytes;
 
 	public SocketChannel sockchannel;
+	public SSLSocketChannel sockchannel2;
 
 	public BlockingQueue<ByteBuffer> in;
 
@@ -137,6 +138,34 @@ public final class WebSocketImpl extends WebSocket {
 		this.draft = draft;
 	}
 
+        public WebSocketImpl( WebSocketListener listener , Draft draft , SSLSocketChannel socketchannel ) {
+		init( listener, draft, socketchannel );
+	}
+
+	public WebSocketImpl( WebSocketListener listener , List<Draft> drafts , SSLSocketChannel socketchannel ) {
+		init( listener, null, socketchannel );
+		this.role = Role.SERVER;
+		if( known_drafts == null || known_drafts.isEmpty() ) {
+			known_drafts = new ArrayList<Draft>( 1 );
+			known_drafts.add( new Draft_17() );
+			known_drafts.add( new Draft_10() );
+			known_drafts.add( new Draft_76() );
+			known_drafts.add( new Draft_75() );
+		} else {
+			known_drafts = drafts;
+		}
+	}
+
+	private void init( WebSocketListener listener, Draft draft, SSLSocketChannel socketchannel ) {
+	    this.sockchannel = null;
+	    this.sockchannel2 = socketchannel;
+		this.outQueue = new LinkedBlockingQueue<ByteBuffer>();
+		in = new LinkedBlockingQueue<ByteBuffer>();
+		this.wsl = listener;
+		this.role = Role.CLIENT;
+		this.draft = draft;
+	}
+
 	/**
 	 * Returns whether the buffer has been filled.
 	 * 
@@ -144,7 +173,9 @@ public final class WebSocketImpl extends WebSocket {
 	 **/
 	public boolean read( ByteBuffer buf ) throws IOException {
 		buf.clear();
-		int read = sockchannel.read( buf );
+		int read;
+		if(sockchannel != null) read = sockchannel.read( buf );
+		else read = sockchannel2.read(buf);
 		buf.flip();
 		if( read == -1 ) {
 			if( draft == null ) {
@@ -449,7 +480,8 @@ public final class WebSocketImpl extends WebSocket {
 				key.attach( null );
 				key.cancel();
 			}
-			sockchannel.close();
+			if(sockchannel != null) sockchannel.close();
+			else sockchannel2.close();
 		} catch ( IOException e ) {
 			wsl.onWebsocketError( this, e );
 		}
@@ -550,7 +582,9 @@ public final class WebSocketImpl extends WebSocket {
 	public synchronized void flush() throws IOException {
 		ByteBuffer buffer = this.outQueue.peek();
 		while ( buffer != null ) {
-			int written = sockchannel.write( buffer );
+		    int written;
+		    if(sockchannel != null) written = sockchannel.write( buffer );
+		    else written = sockchannel2.write(buffer);
 			if( buffer.remaining() > 0 ) {
 				continue;
 			} else {
@@ -567,7 +601,9 @@ public final class WebSocketImpl extends WebSocket {
 	public boolean batch() throws IOException {
 		ByteBuffer buffer = this.outQueue.peek();
 		while ( buffer != null ) {
-			int written = sockchannel.write( buffer );
+		    int written;
+		    if(sockchannel != null) written = sockchannel.write( buffer );
+		    else written = sockchannel2.write(buffer);
 			if( buffer.remaining() > 0 ) {
 				return false;
 			} else {
@@ -641,7 +677,8 @@ public final class WebSocketImpl extends WebSocket {
 
 	private void channelWriteDirect( ByteBuffer buf ) throws IOException {
 		while ( buf.hasRemaining() )
-			sockchannel.write( buf );
+		    if(sockchannel != null) sockchannel.write( buf );
+		    else sockchannel2.write(buf);
 	}
 
 	private void writeDirect( List<ByteBuffer> bufs ) throws IOException {
@@ -671,12 +708,14 @@ public final class WebSocketImpl extends WebSocket {
 
 	@Override
 	public InetSocketAddress getRemoteSocketAddress() {
-		return (InetSocketAddress) sockchannel.socket().getRemoteSocketAddress();
+	    if(sockchannel != null) return (InetSocketAddress) sockchannel.socket().getRemoteSocketAddress();
+	    else return (InetSocketAddress) sockchannel2.socket().getRemoteSocketAddress();
 	}
 
 	@Override
 	public InetSocketAddress getLocalSocketAddress() {
-		return (InetSocketAddress) sockchannel.socket().getLocalSocketAddress();
+	    if(sockchannel != null) return (InetSocketAddress) sockchannel.socket().getLocalSocketAddress();
+	    else return (InetSocketAddress) sockchannel2.socket().getLocalSocketAddress();
 	}
 
 	@Override
