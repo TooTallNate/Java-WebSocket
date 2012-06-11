@@ -3,8 +3,8 @@
   <target name="compile">
     <mkdir dir="build/classes" />
     <mkdir dir="build/examples" />
-    <javac includeantruntime="false" debug="on" srcdir="src" destdir="build/classes" />
-    <javac includeantruntime="false" srcdir="example" classpath="build/classes" destdir="build/examples" />
+    <javac includeantruntime="false" debug="on" srcdir="src" destdir="build/classes" target="1.5" source="1.5" />
+    <javac includeantruntime="false" srcdir="example" classpath="build/classes" destdir="build/examples" target="1.5" source="1.5" />
   </target>
 
   <target name="jar" depends="compile">
