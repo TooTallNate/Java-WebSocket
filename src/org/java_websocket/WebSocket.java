@@ -15,7 +15,7 @@ public abstract class WebSocket {
 		CLIENT, SERVER
 	}
 
-	public static int RCVBUF = 256;
+	public static int RCVBUF = 16384;
 
 	public static/*final*/boolean DEBUG = false; // must be final in the future in order to take advantage of VM optimization
 
