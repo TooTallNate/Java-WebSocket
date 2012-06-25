@@ -78,6 +78,11 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		public WebSocket createWebSocket( WebSocketAdapter a, List<Draft> d, Socket s ) {
 			return new WebSocketImpl( WebSocketClient.this, d, s );
 		}
+
+		@Override
+		public SocketChannel wrapChannel( SocketChannel c ) {
+			return c;
+		}
 	};
 
 	public WebSocketClient( URI serverURI ) {

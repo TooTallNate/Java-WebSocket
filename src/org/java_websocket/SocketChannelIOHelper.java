@@ -2,13 +2,13 @@ package org.java_websocket;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.SocketChannel;
+import java.nio.channels.ByteChannel;
 
 import org.java_websocket.drafts.Draft;
 
 public class SocketChannelIOHelper {
 
-	public static boolean read( final ByteBuffer buf, WebSocketImpl ws, SocketChannel channel ) throws IOException {
+	public static boolean read( final ByteBuffer buf, WebSocketImpl ws, ByteChannel channel ) throws IOException {
 		buf.clear();
 		int read = channel.read( buf );
 		buf.flip();
@@ -21,7 +21,7 @@ public class SocketChannelIOHelper {
 		return read != 0;
 	}
 
-	public static boolean batch( WebSocketImpl ws, SocketChannel sockchannel ) throws IOException {
+	public static boolean batch( WebSocketImpl ws, ByteChannel sockchannel ) throws IOException {
 		ByteBuffer buffer = ws.outQueue.peek();
 		while ( buffer != null ) {
 			/*int written = */sockchannel.write( buffer );

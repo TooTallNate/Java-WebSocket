@@ -6,6 +6,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.nio.channels.ByteChannel;
 import java.nio.channels.CancelledKeyException;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
@@ -83,6 +84,11 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		@Override
 		public WebSocketImpl createWebSocket( WebSocketAdapter a, List<Draft> d, Socket s ) {
 			return new WebSocketImpl( a, d, s );
+		}
+
+		@Override
+		public SocketChannel wrapChannel( SocketChannel c ) {
+			return c;
 		}
 	};
 
@@ -255,6 +261,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 							channel.configureBlocking( false );
 							WebSocketImpl c = wsf.createWebSocket( this, drafts, channel.socket() );
 							c.key = channel.register( selector, SelectionKey.OP_READ, c );
+							c.ioobject = wsf.wrapChannel( channel );
 							i.remove();
 							allocateBuffers( c );
 							continue;
@@ -264,7 +271,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 							conn = (WebSocketImpl) key.attachment();
 							ByteBuffer buf = takeBuffer();
 							try {
-								if( SocketChannelIOHelper.read( buf, conn, (SocketChannel) key.channel() ) ) {
+								if( SocketChannelIOHelper.read( buf, conn, (ByteChannel) conn.ioobject ) ) {
 									conn.in.put( buf );
 									queue( conn );
 									i.remove();
@@ -281,7 +288,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 						}
 						if( key.isWritable() ) {
 							conn = (WebSocketImpl) key.attachment();
-							if( SocketChannelIOHelper.batch( conn, (SocketChannel) key.channel() ) ) {
+							if( SocketChannelIOHelper.batch( conn, (ByteChannel) conn.ioobject ) ) {
 								if( key.isValid() )
 									key.channel().register( selector, SelectionKey.OP_READ, key.attachment() );
 							}

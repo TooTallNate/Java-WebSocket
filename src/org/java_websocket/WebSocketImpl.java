@@ -92,6 +92,8 @@ public class WebSocketImpl extends WebSocket {
 
 	public final Socket socket;
 
+	public Object ioobject;
+
 	// CONSTRUCTOR /////////////////////////////////////////////////////////////
 	/**
 	 * Used in {@link WebSocketServer} and {@link WebSocketClient}.
@@ -135,7 +137,9 @@ public class WebSocketImpl extends WebSocket {
 	 **/
 	/*public boolean read( final ByteBuffer buf ) throws IOException {
 		buf.clear();
-		int read = sockchannel.read( buf );
+		int read;
+		if(sockchannel != null) read = sockchannel.read( buf );
+		else read = sockchannel2.read(buf);
 		buf.flip();
 		if( read == -1 ) {
 			if( draft == null ) {
@@ -519,28 +523,6 @@ public class WebSocketImpl extends WebSocket {
 	public boolean hasBufferedData() {
 		return !this.outQueue.isEmpty();
 	}
-
-	/*public boolean batch() throws IOException {
-		ByteBuffer buffer = this.outQueue.peek();
-		while ( buffer != null ) {
-			int written = sockchannel.write( buffer );
-			if( buffer.remaining() > 0 ) {
-				return false;
-			} else {
-				// subtract this amount of data from the total queued (synchronized over this object)
-				bufferQueueTotalAmount.addAndGet( -written );
-
-				this.outQueue.poll(); // Buffer finished. Remove it.
-				buffer = this.outQueue.peek();
-			}
-		}
-		if( connectionClosed ) {
-			synchronized ( this ) {
-				sockchannel.close();
-			}
-		}
-		return true;
-	}*/
 
 	private HandshakeState isFlashEdgeCase( ByteBuffer request ) throws IncompleteHandshakeException {
 		request.mark();
