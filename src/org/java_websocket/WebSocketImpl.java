@@ -47,7 +47,7 @@ import org.java_websocket.util.Charsetfunctions;
  * <i>onClientMessage</i> callbacks.
  * 
  */
-public final class WebSocketImpl extends WebSocket {
+public class WebSocketImpl extends WebSocket {
 
 	/**
 	 * Determines whether to receive data as part of the
@@ -104,7 +104,6 @@ public final class WebSocketImpl extends WebSocket {
 	 *            The {@link WebSocketListener} to notify of events when
 	 *            they occur.
 	 */
-
 
 	public WebSocketImpl( WebSocketListener listener , List<Draft> drafts , Socket sock ) {
 		this( listener, (Draft) null, sock );
@@ -599,14 +598,18 @@ public final class WebSocketImpl extends WebSocket {
 	}
 
 	private void deliverMessage( Framedata d ) throws InvalidDataException {
-		if( d.getOpcode() == Opcode.TEXT ) {
-			wsl.onWebsocketMessage( this, Charsetfunctions.stringUtf8( d.getPayloadData() ) );
-		} else if( d.getOpcode() == Opcode.BINARY ) {
-			wsl.onWebsocketMessage( this, d.getPayloadData() );
-		} else {
-			if( DEBUG )
-				System.out.println( "Ignoring frame:" + d.toString() );
-			assert ( false );
+		try {
+			if( d.getOpcode() == Opcode.TEXT ) {
+				wsl.onWebsocketMessage( this, Charsetfunctions.stringUtf8( d.getPayloadData() ) );
+			} else if( d.getOpcode() == Opcode.BINARY ) {
+				wsl.onWebsocketMessage( this, d.getPayloadData() );
+			} else {
+				if( DEBUG )
+					System.out.println( "Ignoring frame:" + d.toString() );
+				assert ( false );
+			}
+		} catch ( RuntimeException e ) {
+			wsl.onWebsocketError( this, e );
 		}
 	}
 
