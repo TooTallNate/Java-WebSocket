@@ -56,6 +56,6 @@ public class HandshakedataImpl1 implements HandshakeBuilder {
 
 	@Override
 	public boolean hasFieldValue( String name ) {
-		return map.containsKey( name );
+		return map.containsKey( name.toLowerCase( Locale.ENGLISH ) );
 	}
 }
