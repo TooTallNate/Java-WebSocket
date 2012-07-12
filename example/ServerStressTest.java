@@ -21,7 +21,7 @@ import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.java_websocket.WebSocketClient;
+import org.java_websocket.client.WebSocketClient;
 
 public class ServerStressTest extends JFrame {
 	private JSlider clients;
@@ -200,7 +200,6 @@ public class ServerStressTest extends JFrame {
 			for( WebSocketClient cl : websockets ) {
 				try {
 					cl.send( payload );
-					cl.flush();
 				} catch ( NotYetConnectedException e ) {
 					notyetconnected++;
 				}
