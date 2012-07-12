@@ -416,6 +416,8 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 
 	@Override
 	public final void onWebsocketClose( WebSocket conn, int code, String reason, boolean remote ) {
+		oqueue.add( (WebSocketImpl) conn );// because the ostream will close the channel
+		selector.wakeup();
 		try {
 			synchronized ( connections ) {
 				if( this.connections.remove( conn ) ) {

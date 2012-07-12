@@ -209,13 +209,13 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		conn = (WebSocketImpl) wf.createWebSocket( this, draft, channel.socket() );
 		ByteBuffer buff = ByteBuffer.allocate( WebSocket.RCVBUF );
 		try/*IO*/{
-			while ( !conn.isClosed() ) {
+			while ( channel.isOpen() ) {
 				if( Thread.interrupted() ) {
 					conn.close( CloseFrame.NORMAL );
 				}
 				SelectionKey key = null;
-				SocketChannelIOHelper.batch( conn, channel );
 				selector.select();
+				SocketChannelIOHelper.batch( conn, channel );
 				Set<SelectionKey> keys = selector.selectedKeys();
 				Iterator<SelectionKey> i = keys.iterator();
 				while ( i.hasNext() ) {

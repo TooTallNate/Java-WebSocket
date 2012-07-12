@@ -167,7 +167,7 @@ public class WebSocketImpl extends WebSocket {
 	 * @throws InterruptedException
 	 */
 	public void decode( ByteBuffer socketBuffer ) throws IOException {
-		if( !socketBuffer.hasRemaining() )
+		if( !socketBuffer.hasRemaining() || connectionClosed )
 			return;
 
 		if( DEBUG )
