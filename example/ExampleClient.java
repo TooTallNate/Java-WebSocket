@@ -1,7 +1,7 @@
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.java_websocket.WebSocketClient;
+import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft_10;
 import org.java_websocket.handshake.ServerHandshake;

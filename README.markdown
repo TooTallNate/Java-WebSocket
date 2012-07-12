@@ -13,6 +13,7 @@ Implemented WebSocket protocol versions are:
  * [Hixie 76](http://tools.ietf.org/id/draft-hixie-thewebsocketprotocol-76.txt)
  * [Hybi 10](http://tools.ietf.org/id/draft-ietf-hybi-thewebsocketprotocol-10.txt)
  * [Hybi 17](http://tools.ietf.org/id/draft-ietf-hybi-thewebsocketprotocol-17.txt)
+ * [RFC 6455](http://tools.ietf.org/html/rfc6455)
 
 
 Running the Example

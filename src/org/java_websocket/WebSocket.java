@@ -1,10 +1,10 @@
 package org.java_websocket;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.NotYetConnectedException;
 
+import org.java_websocket.drafts.Draft;
 import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.exceptions.InvalidHandshakeException;
 import org.java_websocket.framing.Framedata;
@@ -15,7 +15,7 @@ public abstract class WebSocket {
 		CLIENT, SERVER
 	}
 
-	public static int RCVBUF = 256;
+	public static int RCVBUF = 16384;
 
 	public static/*final*/boolean DEBUG = false; // must be final in the future in order to take advantage of VM optimization
 
@@ -36,24 +36,9 @@ public abstract class WebSocket {
 	 */
 	public abstract void close( int code, String message );
 
-	/**
-	 * closes the socket no matter if the closing handshake completed.
-	 * Does not send any not yet written data before closing.
-	 * Calling this method more than once will have no effect.
-	 * 
-	 * @param remote
-	 *            Indicates who "generated" <code>code</code>.<br>
-	 *            <code>true</code> means that this endpoint received the <code>code</code> from the other endpoint.<br>
-	 *            false means this endpoint decided to send the given code,<br>
-	 *            <code>remote</code> may also be true if this endpoint started the closing handshake since the other endpoint may not simply echo the <code>code</code> but close the connection the same time this endpoint does do but with an other <code>code</code>. <br>
-	 **/
-	public abstract void closeConnection( int code, String message, boolean remote );
-
-	public abstract void closeConnection( int code, boolean remote );
-
 	public abstract void close( int code );
 
-	public abstract void close( InvalidDataException e );
+	protected abstract void close( InvalidDataException e );
 
 	/**
 	 * Send Text data to the other end.
@@ -79,16 +64,6 @@ public abstract class WebSocket {
 
 	public abstract boolean hasBufferedData();
 
-	/**
-	 * The amount of data in Queue, ready to be sent.
-	 * 
-	 * @return Amount of Data still in Queue and not sent yet of the socket
-	 */
-	public abstract long bufferedDataAmount();
-
-	/** Returns whether the batch process all available data */
-	public abstract boolean batch() throws IOException;
-
 	public abstract void startHandshake( ClientHandshakeBuilder handshakedata ) throws InvalidHandshakeException , InterruptedException;
 
 	public abstract InetSocketAddress getRemoteSocketAddress();
@@ -102,6 +77,8 @@ public abstract class WebSocket {
 	public abstract boolean isClosing();
 
 	public abstract boolean isClosed();
+	
+	public abstract Draft getDraft();
 
 	/**
 	 * Retrieve the WebSocket 'readyState'.

@@ -4,10 +4,10 @@ import java.nio.ByteBuffer;
 import java.util.Collections;
 
 import org.java_websocket.WebSocket;
-import org.java_websocket.WebSocketServer;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft_17;
 import org.java_websocket.handshake.ClientHandshake;
+import org.java_websocket.server.WebSocketServer;
 
 public class AutobahnServerTest extends WebSocketServer {
 	private static int counter = 0;
