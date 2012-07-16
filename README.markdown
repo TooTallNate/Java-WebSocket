@@ -55,7 +55,7 @@ implementation will be used, otherwise it will fall back to a
 Writing your own WebSocket Server
 ---------------------------------
 
-The `net.tootallnate.websocket.WebSocketServer` abstract class implements the
+The `org.java_websocket.server.WebSocketServer` abstract class implements the
 server-side of the
 [WebSocket Protocol](http://www.whatwg.org/specs/web-socket-protocol/).
 A WebSocket server by itself doesn't do anything except establish socket
@@ -65,12 +65,25 @@ connections though HTTP. After that it's up to **your** subclass to add purpose.
 Writing your own WebSocket Client
 ---------------------------------
 
-The `net.tootallnate.websocket.WebSocketClient` abstract class can connect to
+The `org.java_websocket.server.WebSocketClient` abstract class can connect to
 valid WebSocket servers. The constructor expects a valid `ws://` URI to
 connect to. Important events `onOpen`, `onClose`, `onMessage` and `onIOError` 
 get fired throughout the life of the WebSocketClient, and must be implemented 
 in **your** subclass.
 
+WSS Support
+---------------------------------
+
+WSS support is still VERY young ( https://github.com/TooTallNate/Java-WebSocket/pull/101 ).
+The only way to use wss is currently the one shown in the example. That also means that you have to switch between ws and wss. 
+You can not have both at the same time on the same port.
+
+If you do not have a valid certificate in place then you will have to create a self signed one.
+Browsers will simply refuse the connection in case of a bad certificate and will not ask the user to accept it.
+So the first step will be to make a browser to accept your self signed certificate. ( https://bugzilla.mozilla.org/show_bug.cgi?id=594502 )
+If the websocket server url is `wss://localhost:8000` visit the url `htts://localhost:8000` with your browser. The browser will recognize the handshake and allow you to accept the certificate.
+
+I ( @Davidiusdadi ) would be glad if you would give some feedback whether wss is working fine for you or not.
 
 Minimum Required JDK
 --------------------
