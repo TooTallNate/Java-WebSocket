@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.nio.channels.ByteChannel;
 import java.nio.channels.NotYetConnectedException;
 import java.nio.channels.SelectionKey;
 import java.util.ArrayList;
@@ -92,7 +93,7 @@ public class WebSocketImpl extends WebSocket {
 
 	public final Socket socket;
 
-	public Object ioobject;
+	public ByteChannel ioobject;
 
 	// CONSTRUCTOR /////////////////////////////////////////////////////////////
 	/**

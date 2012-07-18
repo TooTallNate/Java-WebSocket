@@ -2,9 +2,11 @@
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.nio.channels.ByteChannel;
 import java.nio.channels.SocketChannel;
 import java.security.KeyStore;
 import java.util.List;
@@ -34,6 +36,7 @@ public class SSLServer implements WebSocketServer.WebSocketServerFactory
     
     public static void main(String[] args) throws Exception
     {
+		WebSocket.DEBUG = true;
 	new SSLServer();
     }
 
@@ -66,7 +69,7 @@ public class SSLServer implements WebSocketServer.WebSocketServerFactory
 	loadFromFile();
 	
 	// create the web socket server
-	WebSocketSource wsgateway = new WebSocketSource(8001, InetAddress.getByName("127.0.0.1"));
+		WebSocketSource wsgateway = new WebSocketSource( 8887, InetAddress.getByName( "localhost" ) );
 	wsgateway.setWebSocketFactory(this);
 	wsgateway.start();
     }
@@ -89,16 +92,12 @@ public class SSLServer implements WebSocketServer.WebSocketServerFactory
     }
     
 	@Override
-	public SocketChannel wrapChannel( SocketChannel c ) {
-		if( sslContext != null )
-			try {
-				SSLEngine e = sslContext.createSSLEngine();
-				e.setUseClientMode( false );
-				new SSLSocketChannel( c, e );
-			} catch ( Exception e1 ) {
-			}
-
-		return c;
+	public ByteChannel wrapChannel( SocketChannel c ) throws IOException {
+		if( sslContext == null )
+			throw new IllegalArgumentException( "sslContext not initialized");
+		SSLEngine e = sslContext.createSSLEngine();
+		e.setUseClientMode( false );
+		return new SSLSocketChannel( c, e );
 	}
 
     class WebSocketSource extends WebSocketServer
