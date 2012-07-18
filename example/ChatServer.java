@@ -24,7 +24,7 @@ public class ChatServer extends WebSocketServer {
 
 	@Override
 	public void onOpen( WebSocket conn, ClientHandshake handshake ) {
-		this.sendToAll( "new connection" );
+		this.sendToAll( "new connection: " + handshake.getResourceDescriptor() );
 		System.out.println( conn + " entered the room!" );
 	}
 
