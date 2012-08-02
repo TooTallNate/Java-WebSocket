@@ -212,7 +212,11 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 * @return The port number.
 	 */
 	public int getPort() {
-		return getAddress().getPort();
+		int port = getAddress().getPort();
+		if( port == 0 && server != null ) {
+			port = server.socket().getLocalPort();
+		}
+		return port;
 	}
 
 	public List<Draft> getDraft() {
