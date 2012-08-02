@@ -187,10 +187,25 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		if( thread == null )
 			thread = Thread.currentThread();
 		interruptableRun();
+
+		try {
+			selector.close();
+		} catch ( IOException e ) {
+			onError( e );
+		}
+		closelock.lock();
+		selector = null;
+		closelock.unlock();
+		try {
+			channel.close();
+		} catch ( IOException e ) {
+			onError( e );
+		}
+		channel = null;
 		thread = null;
 	}
 
-	protected final void interruptableRun() {
+	private final void interruptableRun() {
 		try {
 			tryToConnect( new InetSocketAddress( uri.getHost(), getPort() ) );
 		} catch ( ClosedByInterruptException e ) {
@@ -247,21 +262,6 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			onError( e );
 			conn.eot( e );
 		}
-
-		try {
-			selector.close();
-		} catch ( IOException e ) {
-			onError( e );
-		}
-		closelock.lock();
-		selector = null;
-		closelock.unlock();
-		try {
-			channel.close();
-		} catch ( IOException e ) {
-			onError( e );
-		}
-		channel = null;
 	}
 
 	private int getPort() {
