@@ -239,11 +239,11 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 				while ( i.hasNext() ) {
 					key = i.next();
 					i.remove();
-					if( key.isReadable() && SocketChannelIOHelper.read( buff, this.conn, wrappedchannel ) ) {
-						conn.decode( buff );
-					}
 					if( !key.isValid() ) {
 						continue;
+					}
+					if( key.isReadable() && SocketChannelIOHelper.read( buff, this.conn, wrappedchannel ) ) {
+						conn.decode( buff );
 					}
 					if( key.isConnectable() ) {
 						try {
