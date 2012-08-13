@@ -5,6 +5,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URI;
 import java.nio.ByteBuffer;
+import java.nio.channels.ByteChannel;
 import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.NotYetConnectedException;
 import java.nio.channels.SelectionKey;
@@ -55,6 +56,8 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 * The SocketChannel instance this channel uses.
 	 */
 	private SocketChannel channel = null;
+
+	private ByteChannel wrappedchannel = null;
 	/**
 	 * The 'Selector' used to get event keys from the underlying socket.
 	 */
@@ -230,13 +233,13 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 				}
 				SelectionKey key = null;
 				selector.select();
-				SocketChannelIOHelper.batch( conn, channel );
+				SocketChannelIOHelper.batch( conn, wrappedchannel );
 				Set<SelectionKey> keys = selector.selectedKeys();
 				Iterator<SelectionKey> i = keys.iterator();
 				while ( i.hasNext() ) {
 					key = i.next();
 					i.remove();
-					if( key.isReadable() && SocketChannelIOHelper.read( buff, this.conn, channel ) ) {
+					if( key.isReadable() && SocketChannelIOHelper.read( buff, this.conn, wrappedchannel ) ) {
 						conn.decode( buff );
 					}
 					if( !key.isValid() ) {
@@ -273,7 +276,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		if( channel.isConnectionPending() ) {
 			channel.finishConnect();
 		}
-
+		wrappedchannel = wf.wrapChannel( channel );
 		// Now that we're connected, re-register for only 'READ' keys.
 		channel.register( selector, SelectionKey.OP_READ );
 
