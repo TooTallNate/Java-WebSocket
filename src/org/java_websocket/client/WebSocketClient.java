@@ -5,12 +5,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URI;
 import java.nio.ByteBuffer;
-import java.nio.channels.ClosedByInterruptException;
-import java.nio.channels.NotYetConnectedException;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.SocketChannel;
-import java.nio.channels.UnresolvedAddressException;
+import java.nio.channels.*;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -257,6 +252,10 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		} catch ( IOException e ) {
 			onError( e );
 			conn.close( CloseFrame.ABNORMAL_CLOSE );
+        } catch ( CancelledKeyException e ) {
+            // remote peer closed the channel abnormally, probably caused by server crash or network issue
+            onError( e );
+            conn.close( CloseFrame.ABNORMAL_CLOSE );
 		} catch ( RuntimeException e ) {
 			// this catch case covers internal errors only and indicates a bug in this websocket implementation
 			onError( e );
@@ -312,6 +311,9 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 * @return Returns '0 = CONNECTING', '1 = OPEN', '2 = CLOSING' or '3 = CLOSED'
 	 */
 	public int getReadyState() {
+        if (conn == null) {
+            return WebSocket.READY_STATE_CONNECTING;
+        }
 		return conn.getReadyState();
 	}
 
