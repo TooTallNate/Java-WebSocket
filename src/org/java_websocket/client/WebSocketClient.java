@@ -260,7 +260,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		} catch ( IOException e ) {
 			onError( e );
 			conn.close( CloseFrame.ABNORMAL_CLOSE );
-		} catch ( RuntimeException e ) {
+        } catch ( RuntimeException e ) {
 			// this catch case covers internal errors only and indicates a bug in this websocket implementation
 			onError( e );
 			conn.eot( e );
@@ -315,6 +315,9 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 * @return Returns '0 = CONNECTING', '1 = OPEN', '2 = CLOSING' or '3 = CLOSED'
 	 */
 	public int getReadyState() {
+        if (conn == null) {
+            return WebSocket.READY_STATE_CONNECTING;
+        }
 		return conn.getReadyState();
 	}
 
