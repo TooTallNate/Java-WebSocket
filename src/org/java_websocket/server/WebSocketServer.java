@@ -265,7 +265,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 							channel.configureBlocking( false );
 							WebSocketImpl c = wsf.createWebSocket( this, drafts, channel.socket() );
 							c.key = channel.register( selector, SelectionKey.OP_READ, c );
-							c.ioobject = wsf.wrapChannel( channel );
+							c.channel = wsf.wrapChannel( channel );
 							i.remove();
 							allocateBuffers( c );
 							continue;
@@ -275,8 +275,8 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 							conn = (WebSocketImpl) key.attachment();
 							ByteBuffer buf = takeBuffer();
 							try {
-								if( SocketChannelIOHelper.read( buf, conn, (ByteChannel) conn.ioobject ) ) {
-									conn.in.put( buf );
+								if( SocketChannelIOHelper.read( buf, conn, (ByteChannel) conn.channel ) ) {
+									conn.inQueue.put( buf );
 									queue( conn );
 									i.remove();
 								} else {
@@ -292,7 +292,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 						}
 						if( key.isWritable() ) {
 							conn = (WebSocketImpl) key.attachment();
-							if( SocketChannelIOHelper.batch( conn, (ByteChannel) conn.ioobject ) ) {
+							if( SocketChannelIOHelper.batch( conn, (ByteChannel) conn.channel ) ) {
 								if( key.isValid() )
 									key.channel().register( selector, SelectionKey.OP_READ, key.attachment() );
 							}
@@ -314,8 +314,6 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		}
 	}
 
-
-
 	protected void allocateBuffers( WebSocket c ) throws InterruptedException {
 		if( queuesize.get() >= 2 * decoders.size() + 1 ) {
 			return;
@@ -334,11 +332,11 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	}
 
 	private void queue( WebSocketImpl ws ) throws InterruptedException {
-		if( ws.worker == null ) {
-			ws.worker = decoders.get( queueinvokes % decoders.size() );
+		if( ws.workerThread == null ) {
+			ws.workerThread = decoders.get( queueinvokes % decoders.size() );
 			queueinvokes++;
 		}
-		ws.worker.put( ws );
+		ws.workerThread.put( ws );
 	}
 	private ByteBuffer takeBuffer() throws InterruptedException {
 		return buffers.take();
@@ -497,7 +495,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 				while ( true ) {
 					ByteBuffer buf = null;
 					ws = iqueue.take();
-					buf = ws.in.poll();
+					buf = ws.inQueue.poll();
 					assert ( buf != null );
 					try {
 						ws.decode( buf );

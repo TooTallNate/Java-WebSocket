@@ -50,6 +50,27 @@ import org.java_websocket.util.Charsetfunctions;
  */
 public class WebSocketImpl extends WebSocket {
 
+	public SelectionKey key;
+
+	/* only used to optain the socket addresses*/
+	public final Socket socket;
+	/** the possibly wrapped channel object whose selection is controlled by {@link #key} */
+	public ByteChannel channel;
+	/**
+	 * Queue of buffers that need to be sent to the client.
+	 */
+	public final BlockingQueue<ByteBuffer> outQueue;
+	/**
+	 * Queue of buffers that need to be processed
+	 */
+	public final BlockingQueue<ByteBuffer> inQueue;
+
+	/**
+	 * Helper variable ment to store the thread which ( exclusively ) triggers this objects decode method.
+	 **/
+	public volatile WebSocketWorker workerThread; // TODO reset worker?
+
+
 	/**
 	 * Determines whether to receive data as part of the
 	 * handshake, or as part of text/data frame transmitted over the websocket.
@@ -60,40 +81,31 @@ public class WebSocketImpl extends WebSocket {
 	 */
 	private volatile boolean closeHandshakeSent = false;
 	/**
-	 * Determines wheter the connection is open or not
+	 * Determines whether the connection is open or not
 	 */
 	private volatile boolean connectionClosed = false;
 
+
 	/**
-	 * The listener to notify of WebSocketImpl events.
+	 * The listener to notify of WebSocket events.
 	 */
 	private final WebSocketListener wsl;
-	/**
-	 * Queue of buffers that need to be sent to the client.
-	 */
-	public final BlockingQueue<ByteBuffer> outQueue;
+
+	private List<Draft> knownDrafts;
 
 	private Draft draft = null;
 
 	private Role role;
 
-	private Framedata currentframe;
+	/** used to join continuous frames */
+	private Framedata tempContiniousFrame;// FIXME out of mem risk
 
-	private ClientHandshake handshakerequest = null;
-
-	private List<Draft> known_drafts;
-
+	/** the bytes of an incomplete received handshake */
 	private ByteBuffer tmpHandshakeBytes;
 
-	public final BlockingQueue<ByteBuffer> in;
+	/** stores the handshake sent by this websocket ( Role.CLIENT only ) */
+	private ClientHandshake handshakerequest = null;
 
-	public volatile WebSocketWorker worker;
-
-	public SelectionKey key;
-
-	public final Socket socket;
-
-	public ByteChannel ioobject;
 
 	// CONSTRUCTOR /////////////////////////////////////////////////////////////
 	/**
@@ -111,54 +123,26 @@ public class WebSocketImpl extends WebSocket {
 	public WebSocketImpl( WebSocketListener listener , List<Draft> drafts , Socket sock ) {
 		this( listener, (Draft) null, sock );
 		this.role = Role.SERVER;
-		if( known_drafts == null || known_drafts.isEmpty() ) {
-			known_drafts = new ArrayList<Draft>( 1 );
-			known_drafts.add( new Draft_17() );
-			known_drafts.add( new Draft_10() );
-			known_drafts.add( new Draft_76() );
-			known_drafts.add( new Draft_75() );
+		if( knownDrafts == null || knownDrafts.isEmpty() ) {
+			knownDrafts = new ArrayList<Draft>( 1 );
+			knownDrafts.add( new Draft_17() );
+			knownDrafts.add( new Draft_10() );
+			knownDrafts.add( new Draft_76() );
+			knownDrafts.add( new Draft_75() );
 		} else {
-			known_drafts = drafts;
+			knownDrafts = drafts;
 		}
 	}
 
 	public WebSocketImpl( WebSocketListener listener , Draft draft , Socket sock ) {
 		this.outQueue = new LinkedBlockingQueue<ByteBuffer>();
-		in = new LinkedBlockingQueue<ByteBuffer>();
+		inQueue = new LinkedBlockingQueue<ByteBuffer>();
 		this.wsl = listener;
 		this.role = Role.CLIENT;
 		this.draft = draft;
 		this.socket = sock;
 	}
 
-	/**
-	 * Returns whether the buffer has been filled.
-	 * 
-	 * @throws IOException
-	 **/
-	/*public boolean read( final ByteBuffer buf ) throws IOException {
-		buf.clear();
-		int read;
-		if(sockchannel != null) read = sockchannel.read( buf );
-		else read = sockchannel2.read(buf);
-		buf.flip();
-		if( read == -1 ) {
-			if( draft == null ) {
-				closeConnection( CloseFrame.ABNORMAL_CLOSE, true );
-			} else if( draft.getCloseHandshakeType() == CloseHandshakeType.NONE ) {
-				closeConnection( CloseFrame.NORMAL, true );
-			} else if( draft.getCloseHandshakeType() == CloseHandshakeType.ONEWAY ) {
-				if( role == Role.SERVER )
-					closeConnection( CloseFrame.ABNORMAL_CLOSE, true );
-				else
-					closeConnection( CloseFrame.NORMAL, true );
-			} else {
-				closeConnection( CloseFrame.ABNORMAL_CLOSE, true );
-			}
-			return false;
-		}
-		return read != 0;
-	}*/
 	/**
 	 * Should be called when a Selector has a key that is writable for this
 	 * WebSocketImpl's SocketChannel connection.
@@ -219,7 +203,7 @@ public class WebSocketImpl extends WebSocket {
 			try {
 				if( role == Role.SERVER ) {
 					if( draft == null ) {
-						for( Draft d : known_drafts ) {
+						for( Draft d : knownDrafts ) {
 							try {
 								d.setParseMode( role );
 								socketBuffer.reset();
@@ -349,21 +333,21 @@ public class WebSocketImpl extends WebSocket {
 					continue;
 				} else {
 					// process non control frames
-					if( currentframe == null ) {
-						if( f.getOpcode() == Opcode.CONTINIOUS ) {
+					if( tempContiniousFrame == null ) {
+						if( f.getOpcode() == Opcode.CONTINUOUS ) {
 							throw new InvalidFrameException( "unexpected continious frame" );
 						} else if( f.isFin() ) {
 							// receive normal onframe message
 							deliverMessage( f );
 						} else {
 							// remember the frame whose payload is about to be continued
-							currentframe = f;
+							tempContiniousFrame = f;
 						}
-					} else if( f.getOpcode() == Opcode.CONTINIOUS ) {
-						currentframe.append( f );
+					} else if( f.getOpcode() == Opcode.CONTINUOUS ) {
+						tempContiniousFrame.append( f );
 						if( f.isFin() ) {
-							deliverMessage( currentframe );
-							currentframe = null;
+							deliverMessage( tempContiniousFrame );
+							tempContiniousFrame = null;
 						}
 					} else {
 						throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "non control or continious frame expected" );
@@ -435,7 +419,7 @@ public class WebSocketImpl extends WebSocket {
 		this.wsl.onWebsocketClose( this, code, message, remote );
 		if( draft != null )
 			draft.reset();
-		currentframe = null;
+		tempContiniousFrame = null;
 		handshakerequest = null;
 	}
 
