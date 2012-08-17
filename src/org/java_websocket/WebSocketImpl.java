@@ -54,24 +54,24 @@ public class WebSocketImpl extends WebSocket {
 	 * Determines whether to receive data as part of the
 	 * handshake, or as part of text/data frame transmitted over the websocket.
 	 */
-	private boolean handshakeComplete = false;
+	private volatile boolean handshakeComplete = false;
 	/**
 	 * Determines whether we sent already a request to Close the connection or not.
 	 */
-	private boolean closeHandshakeSent = false;
+	private volatile boolean closeHandshakeSent = false;
 	/**
 	 * Determines wheter the connection is open or not
 	 */
-	private boolean connectionClosed = false;
+	private volatile boolean connectionClosed = false;
 
 	/**
 	 * The listener to notify of WebSocketImpl events.
 	 */
-	private WebSocketListener wsl;
+	private final WebSocketListener wsl;
 	/**
 	 * Queue of buffers that need to be sent to the client.
 	 */
-	public BlockingQueue<ByteBuffer> outQueue;
+	public final BlockingQueue<ByteBuffer> outQueue;
 
 	private Draft draft = null;
 
@@ -85,7 +85,7 @@ public class WebSocketImpl extends WebSocket {
 
 	private ByteBuffer tmpHandshakeBytes;
 
-	public BlockingQueue<ByteBuffer> in;
+	public final BlockingQueue<ByteBuffer> in;
 
 	public volatile WebSocketWorker worker;
 
