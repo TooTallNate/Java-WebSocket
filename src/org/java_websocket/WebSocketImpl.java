@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft.CloseHandshakeType;
 import org.java_websocket.drafts.Draft.HandshakeState;
@@ -34,7 +33,6 @@ import org.java_websocket.handshake.ClientHandshakeBuilder;
 import org.java_websocket.handshake.Handshakedata;
 import org.java_websocket.handshake.ServerHandshake;
 import org.java_websocket.handshake.ServerHandshakeBuilder;
-import org.java_websocket.server.WebSocketServer;
 import org.java_websocket.server.WebSocketServer.WebSocketWorker;
 import org.java_websocket.util.Charsetfunctions;
 
@@ -106,20 +104,9 @@ public class WebSocketImpl extends WebSocket {
 	/** stores the handshake sent by this websocket ( Role.CLIENT only ) */
 	private ClientHandshake handshakerequest = null;
 
-
-	// CONSTRUCTOR /////////////////////////////////////////////////////////////
 	/**
-	 * Used in {@link WebSocketServer} and {@link WebSocketClient}.
-	 * 
-	 * @param socketchannel
-	 *            The <tt>SocketChannel</tt> instance to read and
-	 *            write to. The channel should already be registered
-	 *            with a Selector before construction of this object.
-	 * @param listener
-	 *            The {@link WebSocketListener} to notify of events when
-	 *            they occur.
+	 * crates a websocket with server role
 	 */
-
 	public WebSocketImpl( WebSocketListener listener , List<Draft> drafts , Socket sock ) {
 		this( listener, (Draft) null, sock );
 		this.role = Role.SERVER;
@@ -134,6 +121,9 @@ public class WebSocketImpl extends WebSocket {
 		}
 	}
 
+	/**
+	 * crates a websocket with client role
+	 */
 	public WebSocketImpl( WebSocketListener listener , Draft draft , Socket sock ) {
 		this.outQueue = new LinkedBlockingQueue<ByteBuffer>();
 		inQueue = new LinkedBlockingQueue<ByteBuffer>();

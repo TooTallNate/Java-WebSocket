@@ -8,7 +8,6 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
 import java.nio.channels.CancelledKeyException;
-import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
@@ -347,17 +346,11 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		buffers.put( buf );
 	}
 
-	private void registerWrite() {
+	private void registerWrite() throws CancelledKeyException {
 		int size = oqueue.size();
 		for( int i = 0 ; i < size ; i++ ) {
 			WebSocketImpl conn = oqueue.remove();
-			try {
-				conn.key.channel().register( selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE, conn );
-			} catch ( ClosedChannelException ex ) {
-				onWebsocketError( null, ex );
-				conn.eot( null );
-				return;
-			}
+			conn.key.interestOps( SelectionKey.OP_READ | SelectionKey.OP_WRITE );
 		}
 	}
 
