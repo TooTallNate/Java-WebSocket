@@ -83,8 +83,8 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		}
 
 		@Override
-		public SocketChannel wrapChannel( SocketChannel c ) {
-			return c;
+		public ByteChannel wrapChannel( SelectionKey c ) {
+			return (ByteChannel) c.channel();
 		}
 	};
 
@@ -247,7 +247,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 					}
 					if( key.isConnectable() ) {
 						try {
-							finishConnect();
+							finishConnect( key );
 						} catch ( InterruptedException e ) {
 							conn.close( CloseFrame.NEVERCONNECTED );// report error to only
 							break;
@@ -272,13 +272,13 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		return port == -1 ? WebSocket.DEFAULT_PORT : port;
 	}
 
-	private void finishConnect() throws IOException , InvalidHandshakeException , InterruptedException {
+	private void finishConnect( SelectionKey key ) throws IOException , InvalidHandshakeException , InterruptedException {
 		if( channel.isConnectionPending() ) {
 			channel.finishConnect();
 		}
-		wrappedchannel = wf.wrapChannel( channel );
+		wrappedchannel = wf.wrapChannel( key );
 		// Now that we're connected, re-register for only 'READ' keys.
-		channel.register( selector, SelectionKey.OP_READ );
+		key.interestOps( SelectionKey.OP_READ );
 
 		sendHandshake();
 	}

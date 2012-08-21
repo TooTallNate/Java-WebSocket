@@ -86,8 +86,8 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		}
 
 		@Override
-		public SocketChannel wrapChannel( SocketChannel c ) {
-			return c;
+		public SocketChannel wrapChannel( SelectionKey c ) {
+			return (SocketChannel) c.channel();
 		}
 	};
 
@@ -262,11 +262,11 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 						if( key.isAcceptable() ) {
 							SocketChannel channel = server.accept();
 							channel.configureBlocking( false );
-							WebSocketImpl c = wsf.createWebSocket( this, drafts, channel.socket() );
-							c.key = channel.register( selector, SelectionKey.OP_READ, c );
-							c.channel = wsf.wrapChannel( channel );
+							WebSocketImpl w = wsf.createWebSocket( this, drafts, channel.socket() );
+							w.key = channel.register( selector, SelectionKey.OP_READ, w );
+							w.channel = wsf.wrapChannel( w.key );
 							i.remove();
-							allocateBuffers( c );
+							allocateBuffers( w );
 							continue;
 						}
 
@@ -293,7 +293,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 							conn = (WebSocketImpl) key.attachment();
 							if( SocketChannelIOHelper.batch( conn, (ByteChannel) conn.channel ) ) {
 								if( key.isValid() )
-									key.channel().register( selector, SelectionKey.OP_READ, key.attachment() );
+									key.interestOps( SelectionKey.OP_READ );
 							}
 						}
 					}
