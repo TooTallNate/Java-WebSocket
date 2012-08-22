@@ -192,7 +192,8 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		interruptableRun();
 
 		try {
-			selector.close();
+			if (selector != null) // if the initialization in <code>tryToConnect</code> fails, it could be null
+				selector.close();
 		} catch ( IOException e ) {
 			onError( e );
 		}
