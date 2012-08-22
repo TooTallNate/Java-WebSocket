@@ -3,7 +3,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.channels.ByteChannel;
-import java.nio.channels.SocketChannel;
+import java.nio.channels.SelectionKey;
 import java.security.KeyStore;
 import java.util.List;
 
@@ -12,14 +12,14 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.TrustManagerFactory;
 
-import org.java_websocket.SSLSocketChannel;
+import org.java_websocket.SSLSocketChannel2;
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketAdapter;
 import org.java_websocket.WebSocketImpl;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.server.WebSocketServer;
 
-public class SSLExample {
+public class SSLServerExample {
 
 	/*
 	 * Keystore with certificate created like so (in JKS format):
@@ -64,10 +64,10 @@ class SSLWebSocketServerFactory implements WebSocketServer.WebSocketServerFactor
 	}
 
 	@Override
-	public ByteChannel wrapChannel( SocketChannel c ) throws IOException {
+	public ByteChannel wrapChannel( SelectionKey c ) throws IOException {
 		SSLEngine e = sslcontext.createSSLEngine();
 		e.setUseClientMode( false );
-		return new SSLSocketChannel( c, e );
+		return new SSLSocketChannel2( c, e );
 	}
 
 	@Override
