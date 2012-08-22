@@ -276,10 +276,10 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		if( channel.isConnectionPending() ) {
 			channel.finishConnect();
 		}
-		wrappedchannel = wf.wrapChannel( key );
 		// Now that we're connected, re-register for only 'READ' keys.
 		key.interestOps( SelectionKey.OP_READ );
 
+		wrappedchannel = wf.wrapChannel( key );
 		sendHandshake();
 	}
 
