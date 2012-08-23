@@ -402,7 +402,7 @@ public class WebSocketImpl extends WebSocket {
 		connectionClosed = true;
 
 		if( key != null ) {
-			key.attach( null );
+			// key.attach( null ); //see issue #114
 			key.cancel();
 		}
 		// sockchannel.close();
