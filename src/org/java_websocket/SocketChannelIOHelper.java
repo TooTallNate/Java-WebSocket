@@ -7,7 +7,7 @@ import java.nio.channels.ByteChannel;
 import org.java_websocket.drafts.Draft;
 
 public class SocketChannelIOHelper {
-	
+
 	private static ByteBuffer emptybuffer = ByteBuffer.allocate( 0 );
 
 	public static boolean read( final ByteBuffer buf, WebSocketImpl ws, ByteChannel channel ) throws IOException {
@@ -28,18 +28,26 @@ public class SocketChannelIOHelper {
 		ByteBuffer buffer = ws.outQueue.peek();
 
 		if( buffer == null ) {
-			return sockchannel.write( emptybuffer ) == 0;
+			if( sockchannel instanceof WrappedByteChannel ) {
+				WrappedByteChannel c = (WrappedByteChannel) sockchannel;
+				if( c.isNeedWrite() ) {
+					c.write();
+					return !c.isNeedWrite();
+				}
+				return true;
+			}
+		} else {
+			do {// FIXME writing as much as possible is unfair!!
+				/*int written = */sockchannel.write( buffer );
+				if( buffer.remaining() > 0 ) {
+					return false;
+				} else {
+					ws.outQueue.poll(); // Buffer finished. Remove it.
+					buffer = ws.outQueue.peek();
+				}
+			} while ( buffer != null );
 		}
 
-		while ( buffer != null ) {// FIXME writing as much as possible is unfair!!
-			/*int written = */sockchannel.write( buffer );
-			if( buffer.remaining() > 0 ) {
-				return false;
-			} else {
-				ws.outQueue.poll(); // Buffer finished. Remove it.
-				buffer = ws.outQueue.peek();
-			}
-		}
 		if( ws.isClosed() ) {
 			synchronized ( ws ) {
 				sockchannel.close();
@@ -47,4 +55,5 @@ public class SocketChannelIOHelper {
 		}
 		return true;
 	}
+
 }

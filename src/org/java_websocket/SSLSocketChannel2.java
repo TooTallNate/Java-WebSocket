@@ -16,88 +16,83 @@ import java.nio.channels.SocketChannel;
 
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLEngineResult;
+import javax.net.ssl.SSLEngineResult.HandshakeStatus;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSession;
 
 /**
  * Implements the relevant portions of the SocketChannel interface with the SSLEngine wrapper.
  */
-public class SSLSocketChannel2 implements ByteChannel {
+public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
+	private static ByteBuffer emptybuffer = ByteBuffer.allocate( 0 );
+
 	/** raw payload incomming */
-	private ByteBuffer clientIn;
-	/** raw payload outgoing */
-	private ByteBuffer clientOut;
+	private ByteBuffer inData;
 	/** encrypted data outgoing */
-	private ByteBuffer cTOs;
+	private ByteBuffer outCrypt;
 	/** encrypted data incoming */
-	private ByteBuffer sTOc;
+	private ByteBuffer inCrypt;
 
 	private SocketChannel sc;
 	private SelectionKey key;
 
 	private SSLEngineResult res;
 	private SSLEngine sslEngine;
-	private int SSL;
 
 	public SSLSocketChannel2( SelectionKey key , SSLEngine sslEngine ) throws IOException {
 		this.sc = (SocketChannel) key.channel();
 		this.key = key;
 		this.sslEngine = sslEngine;
-		SSL = 1;
-		try {
-			sslEngine.setEnableSessionCreation( true );
-			SSLSession session = sslEngine.getSession();
-			createBuffers( session );
-			// wrap
-			clientOut.clear();
-			sc.write( wrap( clientOut ) );
-			assert ( !clientOut.hasRemaining() );
-			while ( res.getHandshakeStatus() != SSLEngineResult.HandshakeStatus.FINISHED ) {
-				processHandshake();
-			}
-			clientIn.clear();
-			clientIn.flip();
-			SSL = 4;
-		} catch ( Exception e ) {
-			e.printStackTrace( System.out );
-			SSL = 0;
-		}
+
+		key.interestOps( key.interestOps() | SelectionKey.OP_WRITE );
+
+		sslEngine.setEnableSessionCreation( true );
+		SSLSession session = sslEngine.getSession();
+		createBuffers( session );
+
+		// there is not yet any user data
+		inData.flip();
+		inCrypt.flip();
+		outCrypt.flip();
+
+		wrap( emptybuffer );
+
+		processHandshake();
 	}
 
-	private void processHandshake() throws IOException {
-		assert ( res.getHandshakeStatus() != SSLEngineResult.HandshakeStatus.FINISHED );
+	private boolean processHandshake() throws IOException {
 		if( res.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.NEED_UNWRAP ) {
-			// unwrap
-			if( !sTOc.hasRemaining() )
-				sTOc.clear();
-			sc.read( sTOc );
-			sTOc.flip();
-			unwrap( sTOc );
+			if( !inCrypt.hasRemaining() )
+				inCrypt.clear();
+			sc.read( inCrypt );
+			inCrypt.flip();
+			unwrap();
 			if( res.getHandshakeStatus() != SSLEngineResult.HandshakeStatus.FINISHED ) {
-				clientOut.clear();
-				sc.write( wrap( clientOut ) );
+				// if( !outData.hasRemaining() )
+				// outData.clear();
+				sc.write( wrap( emptybuffer ) );
 			}
 		} else if( res.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.NEED_WRAP ) {
-			// wrap
-			clientOut.clear();
-			sc.write( wrap( clientOut ) );
+			sc.write( wrap( emptybuffer ) );
 		} else {
 			assert ( false );
 		}
 
+		return false;
 	}
 
 	private synchronized ByteBuffer wrap( ByteBuffer b ) throws SSLException {
-		cTOs.clear();
-		res = sslEngine.wrap( b, cTOs );
-		cTOs.flip();
-		return cTOs;
+		if( !outCrypt.hasRemaining() )
+			outCrypt.clear();
+		res = sslEngine.wrap( b, outCrypt );
+		outCrypt.flip();
+		return outCrypt;
 	}
 
-	private synchronized ByteBuffer unwrap( ByteBuffer b ) throws SSLException {
-		clientIn.clear();
-		while ( b.hasRemaining() ) {
-			res = sslEngine.unwrap( b, clientIn );
+	private synchronized ByteBuffer unwrap() throws SSLException {
+		inData.compact();
+		while ( inCrypt.hasRemaining() ) {
+			res = sslEngine.unwrap( inCrypt, inData );
 			if( res.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.NEED_TASK ) {
 				// Task
 				Runnable task;
@@ -105,81 +100,87 @@ public class SSLSocketChannel2 implements ByteChannel {
 					task.run();
 				}
 			} else if( res.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.FINISHED ) {
-				return clientIn;
+				break;
 			} else if( res.getStatus() == SSLEngineResult.Status.BUFFER_UNDERFLOW ) {
-				return clientIn;
+				break;
+			} else if( res.getStatus() == SSLEngineResult.Status.BUFFER_OVERFLOW ) {
+				assert ( false );
 			}
 		}
-		return clientIn;
+		inData.flip();
+		return inData;
 	}
 
 	private void createBuffers( SSLSession session ) {
 		int appBufferMax = session.getApplicationBufferSize();
 		int netBufferMax = session.getPacketBufferSize();
 
-		clientIn = ByteBuffer.allocate( 65536 );
-		clientOut = ByteBuffer.allocate( appBufferMax );
+		inData = ByteBuffer.allocate( 65536 );
 
-		cTOs = ByteBuffer.allocate( netBufferMax );
-		sTOc = ByteBuffer.allocate( netBufferMax );
+		outCrypt = ByteBuffer.allocate( netBufferMax );
+		inCrypt = ByteBuffer.allocate( netBufferMax );
 	}
 
 	public int write( ByteBuffer src ) throws IOException {
-		if( SSL == 4 ) {
+		if( !isHandShakeComplete() ) {
+			processHandshake();
+			return 0;
+		} else {
 			return sc.write( wrap( src ) );
 		}
-		return sc.write( src );
 	}
 
 	public int read( ByteBuffer dst ) throws IOException {
+		if( !isHandShakeComplete() ) {
+			processHandshake();
+			return 0;
+		}
 		int amount = 0, limit;
-		if( SSL == 4 ) {
-			// test if there was a buffer overflow in dst
-			if( clientIn.hasRemaining() ) {
-				limit = Math.min( clientIn.remaining(), dst.remaining() );
-				for( int i = 0 ; i < limit ; i++ ) {
-					dst.put( clientIn.get() );
-					amount++;
-				}
-				return amount;
-			}
-			// test if some bytes left from last read (e.g. BUFFER_UNDERFLOW)
-			if( sTOc.hasRemaining() ) {
-				unwrap( sTOc );
-				clientIn.flip();
-				limit = Math.min( clientIn.limit(), dst.remaining() );
-				for( int i = 0 ; i < limit ; i++ ) {
-					dst.put( clientIn.get() );
-					amount++;
-				}
-				if( res.getStatus() != SSLEngineResult.Status.BUFFER_UNDERFLOW ) {
-					sTOc.clear();
-					sTOc.flip();
-					return amount;
-				}
-			}
-			if( !sTOc.hasRemaining() )
-				sTOc.clear();
-			else
-				sTOc.compact();
-
-			if( sc.read( sTOc ) == -1 ) {
-				sTOc.clear();
-				sTOc.flip();
-				return -1;
-			}
-			sTOc.flip();
-			unwrap( sTOc );
-			// write in dst
-			clientIn.flip();
-			limit = Math.min( clientIn.limit(), dst.remaining() );
+		// test if there was a buffer overflow in dst
+		if( inData.hasRemaining() ) {
+			limit = Math.min( inData.remaining(), dst.remaining() );
 			for( int i = 0 ; i < limit ; i++ ) {
-				dst.put( clientIn.get() );
+				dst.put( inData.get() );
 				amount++;
 			}
 			return amount;
 		}
-		return sc.read( dst );
+		// test if some bytes left from last read (e.g. BUFFER_UNDERFLOW)
+		if( inCrypt.hasRemaining() ) {
+			unwrap();
+			inData.flip();
+			limit = Math.min( inData.limit(), dst.remaining() );
+			for( int i = 0 ; i < limit ; i++ ) {
+				dst.put( inData.get() );
+				amount++;
+			}
+			if( res.getStatus() != SSLEngineResult.Status.BUFFER_UNDERFLOW ) {
+				inCrypt.clear();
+				inCrypt.flip();
+				return amount;
+			}
+		}
+		if( !inCrypt.hasRemaining() )
+			inCrypt.clear();
+		else
+			inCrypt.compact();
+
+		if( sc.read( inCrypt ) == -1 ) {
+			inCrypt.clear();
+			inCrypt.flip();
+			return -1;
+		}
+		inCrypt.flip();
+		unwrap();
+		// write in dst
+		// inData.flip();
+		limit = Math.min( inData.limit(), dst.remaining() );
+		for( int i = 0 ; i < limit ; i++ ) {
+			dst.put( inData.get() );
+			amount++;
+		}
+		return amount;
+
 	}
 
 	public boolean isConnected() {
@@ -187,14 +188,16 @@ public class SSLSocketChannel2 implements ByteChannel {
 	}
 
 	public void close() throws IOException {
-		if( SSL == 4 ) {
-			sslEngine.closeOutbound();
-			sslEngine.getSession().invalidate();
-			clientOut.clear();
-			sc.write( wrap( clientOut ) );
-			sc.close();
-		} else
-			sc.close();
+		sslEngine.closeOutbound();
+		sslEngine.getSession().invalidate();
+		outCrypt.compact();
+		int wr = sc.write( wrap( emptybuffer ) );
+		sc.close();
+	}
+
+	private boolean isHandShakeComplete(){
+		HandshakeStatus status = res.getHandshakeStatus();
+		return status == SSLEngineResult.HandshakeStatus.FINISHED || status == SSLEngineResult.HandshakeStatus.NOT_HANDSHAKING;
 	}
 
 	public SelectableChannel configureBlocking( boolean b ) throws IOException {
@@ -220,5 +223,15 @@ public class SSLSocketChannel2 implements ByteChannel {
 	@Override
 	public boolean isOpen() {
 		return sc.isOpen();
+	}
+
+	@Override
+	public boolean isNeedWrite() {
+		return outCrypt.hasRemaining() || !isHandShakeComplete();
+	}
+
+	@Override
+	public void write() throws IOException {
+		write( emptybuffer );
 	}
 }
