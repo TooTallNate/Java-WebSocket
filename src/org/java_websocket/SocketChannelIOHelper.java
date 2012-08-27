@@ -4,11 +4,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
 
-import org.java_websocket.drafts.Draft;
-
 public class SocketChannelIOHelper {
-
-	private static ByteBuffer emptybuffer = ByteBuffer.allocate( 0 );
 
 	public static boolean read( final ByteBuffer buf, WebSocketImpl ws, ByteChannel channel ) throws IOException {
 		buf.clear();
@@ -16,7 +12,6 @@ public class SocketChannelIOHelper {
 		buf.flip();
 
 		if( read == -1 ) {
-			Draft draft = ws.getDraft();
 			ws.eot( null );
 			return false;
 		}
@@ -31,7 +26,7 @@ public class SocketChannelIOHelper {
 			if( sockchannel instanceof WrappedByteChannel ) {
 				WrappedByteChannel c = (WrappedByteChannel) sockchannel;
 				if( c.isNeedWrite() ) {
-					c.write();
+					c.writeMore();
 					return !c.isNeedWrite();
 				}
 				return true;
@@ -53,7 +48,7 @@ public class SocketChannelIOHelper {
 				sockchannel.close();
 			}
 		}
-		return true;
+		return sockchannel instanceof WrappedByteChannel == true ? !( (WrappedByteChannel) sockchannel ).isNeedWrite() : true;
 	}
 
 }

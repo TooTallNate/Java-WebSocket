@@ -6,6 +6,8 @@ import java.nio.channels.ByteChannel;
 import java.nio.channels.SelectionKey;
 import java.security.KeyStore;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -59,6 +61,8 @@ public class SSLServerExample {
 
 class SSLWebSocketServerFactory implements WebSocketServer.WebSocketServerFactory {
 	private SSLContext sslcontext;
+	private ExecutorService exec = Executors.newSingleThreadScheduledExecutor();
+
 	SSLWebSocketServerFactory( SSLContext sslContext ) {
 		this.sslcontext = sslContext;
 	}
@@ -67,7 +71,7 @@ class SSLWebSocketServerFactory implements WebSocketServer.WebSocketServerFactor
 	public ByteChannel wrapChannel( SelectionKey c ) throws IOException {
 		SSLEngine e = sslcontext.createSSLEngine();
 		e.setUseClientMode( false );
-		return new SSLSocketChannel2( c, e );
+		return new SSLSocketChannel2( c, e, exec );
 	}
 
 	@Override

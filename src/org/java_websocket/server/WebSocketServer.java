@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
@@ -27,6 +28,7 @@ import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketAdapter;
 import org.java_websocket.WebSocketFactory;
 import org.java_websocket.WebSocketImpl;
+import org.java_websocket.WrappedByteChannel;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.handshake.ClientHandshake;
@@ -70,6 +72,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	private List<WebSocketWorker> decoders;
 
 	private BlockingQueue<WebSocketImpl> oqueue;
+	private List<WebSocketImpl> iqueue;
 	private BlockingQueue<ByteBuffer> buffers;
 	private int queueinvokes = 0;
 	private AtomicInteger queuesize = new AtomicInteger( 0 );
@@ -136,6 +139,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		setAddress( address );
 
 		oqueue = new LinkedBlockingQueue<WebSocketImpl>();
+		iqueue = new LinkedList<WebSocketImpl>();
 
 		decoders = new ArrayList<WebSocketWorker>( decodercount );
 		buffers = new LinkedBlockingQueue<ByteBuffer>();
@@ -278,6 +282,11 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 									conn.inQueue.put( buf );
 									queue( conn );
 									i.remove();
+									if( conn.channel instanceof WrappedByteChannel ) {
+										if( ( (WrappedByteChannel) conn.channel ).isNeedRead() ) {
+											iqueue.add( conn );
+										}
+									}
 								} else {
 									pushBuffer( buf );
 								}
@@ -297,6 +306,18 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 							}
 						}
 					}
+					while ( !iqueue.isEmpty() ) {
+						conn = iqueue.remove( 0 );
+						WrappedByteChannel c = ( (WrappedByteChannel) conn.channel );
+						ByteBuffer buf = takeBuffer();
+						buf.clear();
+						c.readMore( buf );
+						buf.flip();
+						conn.inQueue.put( buf );
+						queue( conn );
+						if(c.isNeedRead())
+							iqueue.add( conn );
+					}
 				} catch ( CancelledKeyException e ) {
 					// an other thread may cancel the key
 				} catch ( IOException ex ) {
@@ -304,7 +325,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 						key.cancel();
 					handleIOException( conn, ex );
 				} catch ( InterruptedException e ) {
-					return;
+					return;// FIXME controlled shutdown
 				}
 			}
 		} catch ( RuntimeException e ) {

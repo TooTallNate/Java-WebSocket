@@ -13,6 +13,7 @@ import java.nio.channels.ByteChannel;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
+import java.util.concurrent.ExecutorService;
 
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLEngineResult;
@@ -25,6 +26,8 @@ import javax.net.ssl.SSLSession;
  */
 public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 	private static ByteBuffer emptybuffer = ByteBuffer.allocate( 0 );
+
+	private ExecutorService exec;
 
 	/** raw payload incomming */
 	private ByteBuffer inData;
@@ -39,12 +42,13 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 	private SSLEngineResult res;
 	private SSLEngine sslEngine;
 
-	public SSLSocketChannel2( SelectionKey key , SSLEngine sslEngine ) throws IOException {
+	public SSLSocketChannel2( SelectionKey key , SSLEngine sslEngine , ExecutorService exec ) throws IOException {
 		this.sc = (SocketChannel) key.channel();
 		this.key = key;
 		this.sslEngine = sslEngine;
+		this.exec = exec;
 
-		key.interestOps( key.interestOps() | SelectionKey.OP_WRITE );
+		this.key.interestOps( key.interestOps() | SelectionKey.OP_WRITE );
 
 		sslEngine.setEnableSessionCreation( true );
 		SSLSession session = sslEngine.getSession();
@@ -55,21 +59,18 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 		inCrypt.flip();
 		outCrypt.flip();
 
-		wrap( emptybuffer );
+		sc.write( wrap( emptybuffer ) );
 
 		processHandshake();
 	}
 
 	private boolean processHandshake() throws IOException {
 		if( res.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.NEED_UNWRAP ) {
-			if( !inCrypt.hasRemaining() )
-				inCrypt.clear();
+			inCrypt.compact();
 			sc.read( inCrypt );
 			inCrypt.flip();
 			unwrap();
 			if( res.getHandshakeStatus() != SSLEngineResult.HandshakeStatus.FINISHED ) {
-				// if( !outData.hasRemaining() )
-				// outData.clear();
 				sc.write( wrap( emptybuffer ) );
 			}
 		} else if( res.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.NEED_WRAP ) {
@@ -82,8 +83,7 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 	}
 
 	private synchronized ByteBuffer wrap( ByteBuffer b ) throws SSLException {
-		if( !outCrypt.hasRemaining() )
-			outCrypt.clear();
+		outCrypt.compact();
 		res = sslEngine.wrap( b, outCrypt );
 		outCrypt.flip();
 		return outCrypt;
@@ -94,7 +94,6 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 		while ( inCrypt.hasRemaining() ) {
 			res = sslEngine.unwrap( inCrypt, inData );
 			if( res.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.NEED_TASK ) {
-				// Task
 				Runnable task;
 				while ( ( task = sslEngine.getDelegatedTask() ) != null ) {
 					task.run();
@@ -104,19 +103,18 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 			} else if( res.getStatus() == SSLEngineResult.Status.BUFFER_UNDERFLOW ) {
 				break;
 			} else if( res.getStatus() == SSLEngineResult.Status.BUFFER_OVERFLOW ) {
-				assert ( false );
+				throw new RuntimeException( "destenation buffer to small" );
 			}
 		}
 		inData.flip();
 		return inData;
 	}
 
-	private void createBuffers( SSLSession session ) {
+	protected void createBuffers( SSLSession session ) {
 		int appBufferMax = session.getApplicationBufferSize();
 		int netBufferMax = session.getPacketBufferSize();
 
-		inData = ByteBuffer.allocate( 65536 );
-
+		inData = ByteBuffer.allocate( appBufferMax );
 		outCrypt = ByteBuffer.allocate( netBufferMax );
 		inCrypt = ByteBuffer.allocate( netBufferMax );
 	}
@@ -138,27 +136,12 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 		int amount = 0, limit;
 		// test if there was a buffer overflow in dst
 		if( inData.hasRemaining() ) {
-			limit = Math.min( inData.remaining(), dst.remaining() );
-			for( int i = 0 ; i < limit ; i++ ) {
-				dst.put( inData.get() );
-				amount++;
-			}
-			return amount;
+			return transfereTo( inData, dst );
 		}
 		// test if some bytes left from last read (e.g. BUFFER_UNDERFLOW)
 		if( inCrypt.hasRemaining() ) {
 			unwrap();
-			inData.flip();
-			limit = Math.min( inData.limit(), dst.remaining() );
-			for( int i = 0 ; i < limit ; i++ ) {
-				dst.put( inData.get() );
-				amount++;
-			}
-			if( res.getStatus() != SSLEngineResult.Status.BUFFER_UNDERFLOW ) {
-				inCrypt.clear();
-				inCrypt.flip();
-				return amount;
-			}
+			amount += transfereTo( inData, dst );
 		}
 		if( !inCrypt.hasRemaining() )
 			inCrypt.clear();
@@ -166,19 +149,11 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 			inCrypt.compact();
 
 		if( sc.read( inCrypt ) == -1 ) {
-			inCrypt.clear();
-			inCrypt.flip();
 			return -1;
 		}
 		inCrypt.flip();
 		unwrap();
-		// write in dst
-		// inData.flip();
-		limit = Math.min( inData.limit(), dst.remaining() );
-		for( int i = 0 ; i < limit ; i++ ) {
-			dst.put( inData.get() );
-			amount++;
-		}
+		amount += transfereTo( inData, dst );
 		return amount;
 
 	}
@@ -190,12 +165,11 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 	public void close() throws IOException {
 		sslEngine.closeOutbound();
 		sslEngine.getSession().invalidate();
-		outCrypt.compact();
 		int wr = sc.write( wrap( emptybuffer ) );
 		sc.close();
 	}
 
-	private boolean isHandShakeComplete(){
+	private boolean isHandShakeComplete() {
 		HandshakeStatus status = res.getHandshakeStatus();
 		return status == SSLEngineResult.HandshakeStatus.FINISHED || status == SSLEngineResult.HandshakeStatus.NOT_HANDSHAKING;
 	}
@@ -231,7 +205,35 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 	}
 
 	@Override
-	public void write() throws IOException {
+	public void writeMore() throws IOException {
 		write( emptybuffer );
 	}
+
+	@Override
+	public boolean isNeedRead() {
+		return inData.hasRemaining();
+	}
+
+	@Override
+	public int readMore( ByteBuffer dst ) {
+		return transfereTo( inData, dst );
+	}
+
+	private int transfereTo( ByteBuffer from, ByteBuffer to ) {
+		int fremain = from.remaining();
+		int toremain = to.remaining();
+		if( fremain > toremain ) {
+			// FIXME there should be a more efficient transfer method
+			int limit = Math.min( fremain, toremain );
+			for( int i = 0 ; i < limit ; i++ ) {
+				to.put( from.get() );
+			}
+			return limit;
+		} else {
+			to.put( from );
+			return fremain;
+		}
+
+	}
+
 }
