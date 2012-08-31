@@ -206,7 +206,7 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 
 	@Override
 	public void writeMore() throws IOException {
-		write( emptybuffer );
+		write( outCrypt );
 	}
 
 	@Override
