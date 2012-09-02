@@ -13,11 +13,16 @@ import java.nio.channels.ByteChannel;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLEngineResult;
 import javax.net.ssl.SSLEngineResult.HandshakeStatus;
+import javax.net.ssl.SSLEngineResult.Status;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSession;
 
@@ -25,22 +30,24 @@ import javax.net.ssl.SSLSession;
  * Implements the relevant portions of the SocketChannel interface with the SSLEngine wrapper.
  */
 public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
-	private static ByteBuffer emptybuffer = ByteBuffer.allocate( 0 );
+	protected static ByteBuffer emptybuffer = ByteBuffer.allocate( 0 );
 
-	private ExecutorService exec;
+	protected ExecutorService exec;
+
+	protected List<Future<?>> tasks;
 
 	/** raw payload incomming */
-	private ByteBuffer inData;
+	protected ByteBuffer inData;
 	/** encrypted data outgoing */
-	private ByteBuffer outCrypt;
+	protected ByteBuffer outCrypt;
 	/** encrypted data incoming */
-	private ByteBuffer inCrypt;
+	protected ByteBuffer inCrypt;
 
-	private SocketChannel sc;
-	private SelectionKey key;
+	protected SocketChannel sc;
+	protected SelectionKey key;
 
-	private SSLEngineResult res;
-	private SSLEngine sslEngine;
+	protected SSLEngineResult res;
+	protected SSLEngine sslEngine;
 
 	public SSLSocketChannel2( SelectionKey key , SSLEngine sslEngine , ExecutorService exec ) throws IOException {
 		this.sc = (SocketChannel) key.channel();
@@ -48,38 +55,43 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 		this.sslEngine = sslEngine;
 		this.exec = exec;
 
+		tasks = new ArrayList<Future<?>>( 3 );
+
 		this.key.interestOps( key.interestOps() | SelectionKey.OP_WRITE );
 
 		sslEngine.setEnableSessionCreation( true );
 		SSLSession session = sslEngine.getSession();
 		createBuffers( session );
 
-		// there is not yet any user data
-		inData.flip();
-		inCrypt.flip();
-		outCrypt.flip();
-
-		sc.write( wrap( emptybuffer ) );
-
+		sc.write( wrap( emptybuffer ) );// initializes res
 		processHandshake();
 	}
 
-	private boolean processHandshake() throws IOException {
+	private void processHandshake() throws IOException {
+		if( !tasks.isEmpty() ) {
+			Iterator<Future<?>> it = tasks.iterator();
+			while ( it.hasNext() ) {
+				Future<?> f = it.next();
+				if( f.isDone() ) {
+					it.remove();
+				} else {
+					return;
+				}
+			}
+		}
+
 		if( res.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.NEED_UNWRAP ) {
 			inCrypt.compact();
 			sc.read( inCrypt );
 			inCrypt.flip();
+			inData.compact();
 			unwrap();
-			if( res.getHandshakeStatus() != SSLEngineResult.HandshakeStatus.FINISHED ) {
-				sc.write( wrap( emptybuffer ) );
-			}
-		} else if( res.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.NEED_WRAP ) {
+		}
+		consumeDelegatedTasks();
+		if( tasks.isEmpty() || res.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.NEED_WRAP ) {
 			sc.write( wrap( emptybuffer ) );
-		} else {
-			assert ( false );
 		}
 
-		return false;
 	}
 
 	private synchronized ByteBuffer wrap( ByteBuffer b ) throws SSLException {
@@ -90,24 +102,22 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 	}
 
 	private synchronized ByteBuffer unwrap() throws SSLException {
-		inData.compact();
-		while ( inCrypt.hasRemaining() ) {
+		int rem;
+		do{
+			rem = inData.remaining();
 			res = sslEngine.unwrap( inCrypt, inData );
-			if( res.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.NEED_TASK ) {
-				Runnable task;
-				while ( ( task = sslEngine.getDelegatedTask() ) != null ) {
-					task.run();
-				}
-			} else if( res.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.FINISHED ) {
-				break;
-			} else if( res.getStatus() == SSLEngineResult.Status.BUFFER_UNDERFLOW ) {
-				break;
-			} else if( res.getStatus() == SSLEngineResult.Status.BUFFER_OVERFLOW ) {
-				throw new RuntimeException( "destenation buffer to small" );
-			}
-		}
+		} while ( rem != inData.remaining() );
+		
 		inData.flip();
 		return inData;
+	}
+
+	protected void consumeDelegatedTasks() {
+		Runnable task;
+		while ( ( task = sslEngine.getDelegatedTask() ) != null ) {
+			tasks.add( exec.submit( task ) );
+			// task.run();
+		}
 	}
 
 	protected void createBuffers( SSLSession session ) {
@@ -117,15 +127,19 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 		inData = ByteBuffer.allocate( appBufferMax );
 		outCrypt = ByteBuffer.allocate( netBufferMax );
 		inCrypt = ByteBuffer.allocate( netBufferMax );
+		inData.flip();
+		inCrypt.flip();
+		outCrypt.flip();
 	}
 
 	public int write( ByteBuffer src ) throws IOException {
 		if( !isHandShakeComplete() ) {
 			processHandshake();
 			return 0;
-		} else {
-			return sc.write( wrap( src ) );
 		}
+		int num = sc.write( wrap( src ) );
+		return num;
+
 	}
 
 	public int read( ByteBuffer dst ) throws IOException {
@@ -133,16 +147,14 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 			processHandshake();
 			return 0;
 		}
-		int amount = 0, limit;
-		// test if there was a buffer overflow in dst
-		if( inData.hasRemaining() ) {
-			return transfereTo( inData, dst );
-		}
-		// test if some bytes left from last read (e.g. BUFFER_UNDERFLOW)
-		if( inCrypt.hasRemaining() ) {
-			unwrap();
-			amount += transfereTo( inData, dst );
-		}
+
+		int purged = readRemaining( dst );
+		if( purged != 0 )
+			return purged;
+
+		assert ( inData.position() == 0 );
+		inData.clear();
+
 		if( !inCrypt.hasRemaining() )
 			inCrypt.clear();
 		else
@@ -153,9 +165,26 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 		}
 		inCrypt.flip();
 		unwrap();
-		amount += transfereTo( inData, dst );
-		return amount;
+		return transfereTo( inData, dst );
 
+	}
+
+	private int readRemaining( ByteBuffer dst ) throws SSLException {
+		assert ( dst.hasRemaining() );
+
+		if( inData.hasRemaining() ) {
+			return transfereTo( inData, dst );
+		}
+		assert ( !inData.hasRemaining() );
+		inData.clear();
+		// test if some bytes left from last read (e.g. BUFFER_UNDERFLOW)
+		if( inCrypt.hasRemaining() ) {
+			unwrap();
+			int amount = transfereTo( inData, dst );
+			if( amount > 0 )
+				return amount;
+		}
+		return 0;
 	}
 
 	public boolean isConnected() {
@@ -211,12 +240,12 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 
 	@Override
 	public boolean isNeedRead() {
-		return inData.hasRemaining();
+		return inData.hasRemaining() || ( inCrypt.hasRemaining() && res.getStatus() != Status.BUFFER_UNDERFLOW );
 	}
 
 	@Override
-	public int readMore( ByteBuffer dst ) {
-		return transfereTo( inData, dst );
+	public int readMore( ByteBuffer dst ) throws SSLException {
+		return readRemaining( dst );
 	}
 
 	private int transfereTo( ByteBuffer from, ByteBuffer to ) {
