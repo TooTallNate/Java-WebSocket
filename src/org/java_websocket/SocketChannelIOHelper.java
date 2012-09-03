@@ -18,6 +18,18 @@ public class SocketChannelIOHelper {
 		return read != 0;
 	}
 
+	public static boolean readMore( final ByteBuffer buf, WebSocketImpl ws, WrappedByteChannel channel ) throws IOException {
+		buf.clear();
+		int read = channel.readMore( buf );
+		buf.flip();
+
+		if( read == -1 ) {
+			ws.eot( null );
+			return false;
+		}
+		return channel.isNeedRead();
+	}
+
 	/** Returns whether the whole outQueue has been flushed */
 	public static boolean batch( WebSocketImpl ws, ByteChannel sockchannel ) throws IOException {
 		ByteBuffer buffer = ws.outQueue.peek();

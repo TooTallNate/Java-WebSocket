@@ -310,13 +310,11 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 						conn = iqueue.remove( 0 );
 						WrappedByteChannel c = ( (WrappedByteChannel) conn.channel );
 						ByteBuffer buf = takeBuffer();
-						buf.clear();
-						c.readMore( buf );
-						buf.flip();
+						if(SocketChannelIOHelper.readMore( buf, conn, c ))
+							iqueue.add( conn );
 						conn.inQueue.put( buf );
 						queue( conn );
-						if(c.isNeedRead())
-							iqueue.add( conn );
+							
 					}
 				} catch ( CancelledKeyException e ) {
 					// an other thread may cancel the key
