@@ -1,29 +1,17 @@
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.Socket;
 import java.net.URI;
-import java.nio.channels.ByteChannel;
-import java.nio.channels.SelectionKey;
 import java.security.KeyStore;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLEngine;
 import javax.net.ssl.TrustManagerFactory;
 
-import org.java_websocket.SSLSocketChannel2;
 import org.java_websocket.WebSocket;
-import org.java_websocket.WebSocketAdapter;
-import org.java_websocket.WebSocketFactory;
-import org.java_websocket.WebSocketImpl;
+import org.java_websocket.client.DefaultSSLWebSocketClientFactory;
 import org.java_websocket.client.WebSocketClient;
-import org.java_websocket.drafts.Draft;
 import org.java_websocket.handshake.ServerHandshake;
 
 class WebSocketChatClient extends WebSocketClient {
@@ -90,7 +78,7 @@ public class SSLClientExample {
 		sslContext = SSLContext.getInstance( "TLS" );
 		sslContext.init( kmf.getKeyManagers(), tmf.getTrustManagers(), null );
 
-		chatclient.setWebSocketFactory( new SSLWebSocketClientFactory( sslContext ) );
+		chatclient.setWebSocketFactory( new DefaultSSLWebSocketClientFactory( sslContext ) );
 
 		chatclient.connect();
 
@@ -99,31 +87,5 @@ public class SSLClientExample {
 			chatclient.send( reader.readLine() );
 		}
 
-	}
-}
-
-class SSLWebSocketClientFactory implements WebSocketFactory {
-	private SSLContext sslcontext;
-	private ExecutorService exec = Executors.newSingleThreadScheduledExecutor();
-
-	SSLWebSocketClientFactory( SSLContext sslContext ) {
-		this.sslcontext = sslContext;
-	}
-
-	@Override
-	public ByteChannel wrapChannel( SelectionKey c ) throws IOException {
-		SSLEngine e = sslcontext.createSSLEngine();
-		e.setUseClientMode( true );
-		return new SSLSocketChannel2( c, e, exec );
-	}
-
-	@Override
-	public WebSocketImpl createWebSocket( WebSocketAdapter a, Draft d, Socket c ) {
-		return new WebSocketImpl( a, d, c );
-	}
-
-	@Override
-	public WebSocketImpl createWebSocket( WebSocketAdapter a, List<Draft> d, Socket s ) {
-		return new WebSocketImpl( a, d, s );
 	}
 }
