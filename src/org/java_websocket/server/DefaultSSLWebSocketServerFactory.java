@@ -1,4 +1,4 @@
-package org.java_websocket.client;
+package org.java_websocket.server;
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.channels.ByteChannel;
@@ -13,19 +13,18 @@ import javax.net.ssl.SSLEngine;
 import org.java_websocket.SSLSocketChannel2;
 import org.java_websocket.WebSocketAdapter;
 import org.java_websocket.WebSocketImpl;
-import org.java_websocket.client.WebSocketClient.WebSocketClientFactory;
 import org.java_websocket.drafts.Draft;
 
 
-public class DefaultSSLWebSocketClientFactory implements WebSocketClientFactory {
+public class DefaultSSLWebSocketServerFactory implements WebSocketServer.WebSocketServerFactory {
 	protected SSLContext sslcontext;
 	protected ExecutorService exec;
 
-	public DefaultSSLWebSocketClientFactory( SSLContext sslContext ) {
+	public DefaultSSLWebSocketServerFactory( SSLContext sslContext ) {
 		this( sslContext, Executors.newSingleThreadScheduledExecutor() );
 	}
 
-	public DefaultSSLWebSocketClientFactory( SSLContext sslContext , ExecutorService exec ) {
+	public DefaultSSLWebSocketServerFactory( SSLContext sslContext , ExecutorService exec ) {
 		if( sslContext == null || exec == null )
 			throw new IllegalArgumentException();
 		this.sslcontext = sslContext;
@@ -33,9 +32,9 @@ public class DefaultSSLWebSocketClientFactory implements WebSocketClientFactory 
 	}
 
 	@Override
-	public ByteChannel wrapChannel( SelectionKey c, String host, int port ) throws IOException {
-		SSLEngine e = sslcontext.createSSLEngine( host, port );
-		e.setUseClientMode( true );
+	public ByteChannel wrapChannel( SelectionKey c ) throws IOException {
+		SSLEngine e = sslcontext.createSSLEngine();
+		e.setUseClientMode( false );
 		return new SSLSocketChannel2( c, e, exec );
 	}
 

@@ -1,25 +1,15 @@
+
+
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
-import java.net.Socket;
-import java.nio.channels.ByteChannel;
-import java.nio.channels.SelectionKey;
 import java.security.KeyStore;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLEngine;
 import javax.net.ssl.TrustManagerFactory;
 
-import org.java_websocket.SSLSocketChannel2;
 import org.java_websocket.WebSocket;
-import org.java_websocket.WebSocketAdapter;
-import org.java_websocket.WebSocketImpl;
-import org.java_websocket.drafts.Draft;
-import org.java_websocket.server.WebSocketServer;
+import org.java_websocket.server.DefaultSSLWebSocketServerFactory;
 
 public class SSLServerExample {
 
@@ -52,35 +42,9 @@ public class SSLServerExample {
 		sslContext = SSLContext.getInstance( "TLS" );
 		sslContext.init( kmf.getKeyManagers(), tmf.getTrustManagers(), null );
 
-		chatserver.setWebSocketFactory( new SSLWebSocketServerFactory( sslContext ) );
+		chatserver.setWebSocketFactory( new DefaultSSLWebSocketServerFactory( sslContext ) );
 
 		chatserver.start();
 
-	}
-}
-
-class SSLWebSocketServerFactory implements WebSocketServer.WebSocketServerFactory {
-	private SSLContext sslcontext;
-	private ExecutorService exec = Executors.newSingleThreadScheduledExecutor();
-
-	SSLWebSocketServerFactory( SSLContext sslContext ) {
-		this.sslcontext = sslContext;
-	}
-
-	@Override
-	public ByteChannel wrapChannel( SelectionKey c ) throws IOException {
-		SSLEngine e = sslcontext.createSSLEngine();
-		e.setUseClientMode( false );
-		return new SSLSocketChannel2( c, e, exec );
-	}
-
-	@Override
-	public WebSocketImpl createWebSocket( WebSocketAdapter a, Draft d, Socket c ) {
-		return new WebSocketImpl( a, d, c );
-	}
-
-	@Override
-	public WebSocketImpl createWebSocket( WebSocketAdapter a, List<Draft> d, Socket s ) {
-		return new WebSocketImpl( a, d, s );
 	}
 }
