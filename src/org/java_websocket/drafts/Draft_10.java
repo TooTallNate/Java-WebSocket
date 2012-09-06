@@ -158,7 +158,7 @@ public class Draft_10 extends Draft {
 	}
 
 	private byte fromOpcode( Opcode opcode ) {
-		if( opcode == Opcode.CONTINIOUS )
+		if( opcode == Opcode.CONTINUOUS )
 			return 0;
 		else if( opcode == Opcode.TEXT )
 			return 1;
@@ -222,7 +222,7 @@ public class Draft_10 extends Draft {
 	private Opcode toOpcode( byte opcode ) throws InvalidFrameException {
 		switch ( opcode ) {
 			case 0:
-				return Opcode.CONTINIOUS;
+				return Opcode.CONTINUOUS;
 			case 1:
 				return Opcode.TEXT;
 			case 2:

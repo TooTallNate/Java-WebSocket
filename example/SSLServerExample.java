@@ -3,23 +3,25 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.channels.ByteChannel;
-import java.nio.channels.SocketChannel;
+import java.nio.channels.SelectionKey;
 import java.security.KeyStore;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.TrustManagerFactory;
 
-import org.java_websocket.SSLSocketChannel;
+import org.java_websocket.SSLSocketChannel2;
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketAdapter;
 import org.java_websocket.WebSocketImpl;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.server.WebSocketServer;
 
-public class SSLExample {
+public class SSLServerExample {
 
 	/*
 	 * Keystore with certificate created like so (in JKS format):
@@ -59,15 +61,17 @@ public class SSLExample {
 
 class SSLWebSocketServerFactory implements WebSocketServer.WebSocketServerFactory {
 	private SSLContext sslcontext;
+	private ExecutorService exec = Executors.newSingleThreadScheduledExecutor();
+
 	SSLWebSocketServerFactory( SSLContext sslContext ) {
 		this.sslcontext = sslContext;
 	}
 
 	@Override
-	public ByteChannel wrapChannel( SocketChannel c ) throws IOException {
+	public ByteChannel wrapChannel( SelectionKey c ) throws IOException {
 		SSLEngine e = sslcontext.createSSLEngine();
 		e.setUseClientMode( false );
-		return new SSLSocketChannel( c, e );
+		return new SSLSocketChannel2( c, e, exec );
 	}
 
 	@Override
