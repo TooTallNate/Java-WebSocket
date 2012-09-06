@@ -82,7 +82,10 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 
 		if( res.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.NEED_UNWRAP ) {
 			inCrypt.compact();
-			sc.read( inCrypt );
+			int read = sc.read( inCrypt );
+			if( read == -1 ) {
+				throw new IOException( "connection closed unexpectedly by peer" );
+			}
 			inCrypt.flip();
 			inData.compact();
 			unwrap();
