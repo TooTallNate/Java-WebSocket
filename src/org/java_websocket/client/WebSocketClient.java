@@ -72,7 +72,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
 	private Map<String,String> headers;
 
-	WebSocketFactory wf = new WebSocketFactory() {
+	WebSocketClientFactory wf = new WebSocketClientFactory() {
 		@Override
 		public WebSocket createWebSocket( WebSocketAdapter a, Draft d, Socket s ) {
 			return new WebSocketImpl( WebSocketClient.this, d, s );
@@ -84,7 +84,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		}
 
 		@Override
-		public ByteChannel wrapChannel( SelectionKey c ) {
+		public ByteChannel wrapChannel( SelectionKey c, String host, int port ) {
 			return (ByteChannel) c.channel();
 		}
 	};
@@ -286,7 +286,19 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
 	private int getPort() {
 		int port = uri.getPort();
-		return port == -1 ? WebSocket.DEFAULT_PORT : port;
+		if( port == -1 ) {
+			String scheme = uri.getScheme();
+			if( scheme.equals( "wss" ) ) {
+				return WebSocket.DEFAULT_WSS_PORT;
+			}
+			else if( scheme.equals( "ws" ) ) {
+				return WebSocket.DEFAULT_PORT;
+			}
+			else{
+				throw new RuntimeException( "unkonow scheme" + scheme );
+			}
+		}
+		return port;
 	}
 
 	private void finishConnect( SelectionKey key ) throws IOException , InvalidHandshakeException , InterruptedException {
@@ -296,7 +308,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		// Now that we're connected, re-register for only 'READ' keys.
 		key.interestOps( SelectionKey.OP_READ | SelectionKey.OP_WRITE );
 
-		wrappedchannel = wf.wrapChannel( key );
+		wrappedchannel = wf.wrapChannel( key, uri.getHost(), getPort() );
 		sendHandshake();
 	}
 
@@ -395,7 +407,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		return conn;
 	}
 
-	public final void setWebSocketFactory( WebSocketFactory wsf ) {
+	public final void setWebSocketFactory( WebSocketClientFactory wsf ) {
 		this.wf = wsf;
 	}
 
@@ -410,4 +422,10 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	public abstract void onError( Exception ex );
 	public void onMessage( ByteBuffer bytes ) {
 	};
+
+	public interface WebSocketClientFactory extends WebSocketFactory {
+		public ByteChannel wrapChannel( SelectionKey key, String host, int port ) throws IOException;
+	}
 }
+
+
