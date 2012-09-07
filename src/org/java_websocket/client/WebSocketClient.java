@@ -24,6 +24,7 @@ import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketAdapter;
 import org.java_websocket.WebSocketFactory;
 import org.java_websocket.WebSocketImpl;
+import org.java_websocket.WrappedByteChannel;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft_10;
 import org.java_websocket.exceptions.InvalidHandshakeException;
@@ -69,9 +70,9 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
 	private final Lock closelock = new ReentrantLock();
 
-	private Map<String, String> headers;
+	private Map<String,String> headers;
 
-	WebSocketFactory wf = new WebSocketFactory() {
+	WebSocketClientFactory wf = new WebSocketClientFactory() {
 		@Override
 		public WebSocket createWebSocket( WebSocketAdapter a, Draft d, Socket s ) {
 			return new WebSocketImpl( WebSocketClient.this, d, s );
@@ -83,8 +84,8 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		}
 
 		@Override
-		public SocketChannel wrapChannel( SocketChannel c ) {
-			return c;
+		public ByteChannel wrapChannel( SelectionKey c, String host, int port ) {
+			return (ByteChannel) c.channel();
 		}
 	};
 
@@ -98,10 +99,10 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 * must call <var>connect</var> first to initiate the socket connection.
 	 */
 	public WebSocketClient( URI serverUri , Draft draft ) {
-		this(serverUri, draft, null);
+		this( serverUri, draft, null );
 	}
 
-	public WebSocketClient( URI serverUri , Draft draft, Map<String, String> headers) {
+	public WebSocketClient( URI serverUri , Draft draft , Map<String,String> headers ) {
 		if( serverUri == null ) {
 			throw new IllegalArgumentException();
 		}
@@ -192,7 +193,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		interruptableRun();
 
 		try {
-			if (selector != null) // if the initialization in <code>tryToConnect</code> fails, it could be null
+			if( selector != null ) // if the initialization in <code>tryToConnect</code> fails, it could be null
 				selector.close();
 		} catch ( IOException e ) {
 			onError( e );
@@ -234,7 +235,6 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 				}
 				SelectionKey key = null;
 				selector.select();
-				SocketChannelIOHelper.batch( conn, wrappedchannel );
 				Set<SelectionKey> keys = selector.selectedKeys();
 				Iterator<SelectionKey> i = keys.iterator();
 				while ( i.hasNext() ) {
@@ -248,7 +248,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 					}
 					if( key.isConnectable() ) {
 						try {
-							finishConnect();
+							finishConnect( key );
 						} catch ( InterruptedException e ) {
 							conn.close( CloseFrame.NEVERCONNECTED );// report error to only
 							break;
@@ -256,12 +256,28 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 							conn.close( e ); // http error
 						}
 					}
+					if( key.isWritable() ) {
+						if( SocketChannelIOHelper.batch( conn, wrappedchannel ) ) {
+							if( key.isValid() )
+								key.interestOps( SelectionKey.OP_READ );
+						} else {
+							key.interestOps( SelectionKey.OP_READ | SelectionKey.OP_WRITE );
+						}
+					}
+				}
+				if( wrappedchannel instanceof WrappedByteChannel ) {
+					WrappedByteChannel w = (WrappedByteChannel) wrappedchannel;
+					if( w.isNeedRead() ) {
+						while ( SocketChannelIOHelper.read( buff, conn, w ) ) {
+							conn.decode( buff );
+						}
+					}
 				}
 			}
 		} catch ( IOException e ) {
 			onError( e );
 			conn.close( CloseFrame.ABNORMAL_CLOSE );
-        } catch ( RuntimeException e ) {
+		} catch ( RuntimeException e ) {
 			// this catch case covers internal errors only and indicates a bug in this websocket implementation
 			onError( e );
 			conn.eot( e );
@@ -270,17 +286,29 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
 	private int getPort() {
 		int port = uri.getPort();
-		return port == -1 ? WebSocket.DEFAULT_PORT : port;
+		if( port == -1 ) {
+			String scheme = uri.getScheme();
+			if( scheme.equals( "wss" ) ) {
+				return WebSocket.DEFAULT_WSS_PORT;
+			}
+			else if( scheme.equals( "ws" ) ) {
+				return WebSocket.DEFAULT_PORT;
+			}
+			else{
+				throw new RuntimeException( "unkonow scheme" + scheme );
+			}
+		}
+		return port;
 	}
 
-	private void finishConnect() throws IOException , InvalidHandshakeException , InterruptedException {
+	private void finishConnect( SelectionKey key ) throws IOException , InvalidHandshakeException , InterruptedException {
 		if( channel.isConnectionPending() ) {
 			channel.finishConnect();
 		}
-		wrappedchannel = wf.wrapChannel( channel );
 		// Now that we're connected, re-register for only 'READ' keys.
-		channel.register( selector, SelectionKey.OP_READ );
+		key.interestOps( SelectionKey.OP_READ | SelectionKey.OP_WRITE );
 
+		wrappedchannel = wf.wrapChannel( key, uri.getHost(), getPort() );
 		sendHandshake();
 	}
 
@@ -300,9 +328,9 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		HandshakeImpl1Client handshake = new HandshakeImpl1Client();
 		handshake.setResourceDescriptor( path );
 		handshake.put( "Host", host );
-		if (headers != null) {
-			for (Map.Entry<String, String> kv : headers.entrySet()) {
-				handshake.put(kv.getKey(), kv.getValue());
+		if( headers != null ) {
+			for( Map.Entry<String,String> kv : headers.entrySet() ) {
+				handshake.put( kv.getKey(), kv.getValue() );
 			}
 		}
 		conn.startHandshake( handshake );
@@ -316,9 +344,9 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 * @return Returns '0 = CONNECTING', '1 = OPEN', '2 = CLOSING' or '3 = CLOSED'
 	 */
 	public int getReadyState() {
-        if (conn == null) {
-            return WebSocket.READY_STATE_CONNECTING;
-        }
+		if( conn == null ) {
+			return WebSocket.READY_STATE_CONNECTING;
+		}
 		return conn.getReadyState();
 	}
 
@@ -371,6 +399,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
 	@Override
 	public final void onWriteDemand( WebSocket conn ) {
+		channel.keyFor( selector ).interestOps( SelectionKey.OP_READ | SelectionKey.OP_WRITE );
 		selector.wakeup();
 	}
 
@@ -378,7 +407,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		return conn;
 	}
 
-	public final void setWebSocketFactory( WebSocketFactory wsf ) {
+	public final void setWebSocketFactory( WebSocketClientFactory wsf ) {
 		this.wf = wsf;
 	}
 
@@ -393,4 +422,10 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	public abstract void onError( Exception ex );
 	public void onMessage( ByteBuffer bytes ) {
 	};
+
+	public interface WebSocketClientFactory extends WebSocketFactory {
+		public ByteChannel wrapChannel( SelectionKey key, String host, int port ) throws IOException;
+	}
 }
+
+

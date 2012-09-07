@@ -138,7 +138,7 @@ public class Draft_75 extends Draft {
 					FramedataImpl1 curframe = new FramedataImpl1();
 					curframe.setPayload( currentFrame );
 					curframe.setFin( true );
-					curframe.setOptcode( inframe ? Opcode.CONTINIOUS : Opcode.TEXT );
+					curframe.setOptcode( inframe ? Opcode.CONTINUOUS : Opcode.TEXT );
 					readyframes.add( curframe );
 					this.currentFrame = null;
 					buffer.mark();
@@ -161,7 +161,7 @@ public class Draft_75 extends Draft {
 			currentFrame.flip();
 			curframe.setPayload( currentFrame );
 			curframe.setFin( false );
-			curframe.setOptcode( inframe ? Opcode.CONTINIOUS : Opcode.TEXT );
+			curframe.setOptcode( inframe ? Opcode.CONTINUOUS : Opcode.TEXT );
 			inframe = true;
 			readyframes.add( curframe );
 		}

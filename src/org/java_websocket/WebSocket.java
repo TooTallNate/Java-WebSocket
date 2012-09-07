@@ -30,6 +30,8 @@ public abstract class WebSocket {
 	 */
 	public static final int DEFAULT_PORT = 80;
 
+	public static final int DEFAULT_WSS_PORT = 443;
+
 	/**
 	 * sends the closing handshake.
 	 * may be send in response to an other handshake.
