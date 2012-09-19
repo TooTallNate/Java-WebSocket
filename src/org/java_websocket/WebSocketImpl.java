@@ -542,11 +542,15 @@ public class WebSocketImpl extends WebSocket {
 	private void write( ByteBuffer buf ) {
 		if( DEBUG )
 			System.out.println( "write(" + buf.remaining() + "): {" + ( buf.remaining() > 1000 ? "too big to display" : new String( buf.array() ) ) + "}" );
-		try {
+		
+		outQueue.add( buf );
+		/*try {
 			outQueue.put( buf );
 		} catch ( InterruptedException e ) {
+			write( buf );
+			Thread.currentThread().interrupt(); // keep the interrupted status
 			e.printStackTrace();
-		}
+		}*/
 		wsl.onWriteDemand( this );
 	}
 
