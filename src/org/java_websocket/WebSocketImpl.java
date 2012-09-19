@@ -139,7 +139,6 @@ public class WebSocketImpl extends WebSocket {
 	 * 
 	 * @throws IOException
 	 *             When socket related I/O errors occur.
-	 * @throws InterruptedException
 	 */
 	public void decode( ByteBuffer socketBuffer ) throws IOException {
 		if( !socketBuffer.hasRemaining() || connectionClosed )
@@ -455,7 +454,6 @@ public class WebSocketImpl extends WebSocket {
 	 * Send Text data to the other end.
 	 * 
 	 * @throws IllegalArgumentException
-	 * @throws InterruptedException
 	 * @throws NotYetConnectedException
 	 */
 	@Override
@@ -469,18 +467,17 @@ public class WebSocketImpl extends WebSocket {
 	 * Send Binary data (plain bytes) to the other end.
 	 * 
 	 * @throws IllegalArgumentException
-	 * @throws InterruptedException
 	 * @throws NotYetConnectedException
 	 */
 	@Override
-	public void send( ByteBuffer bytes ) throws IllegalArgumentException , NotYetConnectedException , InterruptedException {
+	public void send( ByteBuffer bytes ) throws IllegalArgumentException , NotYetConnectedException {
 		if( bytes == null )
 			throw new IllegalArgumentException( "Cannot send 'null' data to a WebSocketImpl." );
 		send( draft.createFrames( bytes, role == Role.CLIENT ) );
 	}
 
 	@Override
-	public void send( byte[] bytes ) throws IllegalArgumentException , NotYetConnectedException , InterruptedException {
+	public void send( byte[] bytes ) throws IllegalArgumentException , NotYetConnectedException {
 		send( ByteBuffer.wrap( bytes ) );
 	}
 
@@ -523,7 +520,7 @@ public class WebSocketImpl extends WebSocket {
 	}
 
 	@Override
-	public void startHandshake( ClientHandshakeBuilder handshakedata ) throws InvalidHandshakeException , InterruptedException {
+	public void startHandshake( ClientHandshakeBuilder handshakedata ) throws InvalidHandshakeException {
 		if( handshakeComplete )
 			throw new IllegalStateException( "Handshake has already been sent." );
 

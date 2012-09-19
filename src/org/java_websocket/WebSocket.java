@@ -46,7 +46,6 @@ public abstract class WebSocket {
 	 * Send Text data to the other end.
 	 * 
 	 * @throws IllegalArgumentException
-	 * @throws InterruptedException
 	 * @throws NotYetConnectedException
 	 */
 	public abstract void send( String text ) throws NotYetConnectedException;
@@ -55,18 +54,17 @@ public abstract class WebSocket {
 	 * Send Binary data (plain bytes) to the other end.
 	 * 
 	 * @throws IllegalArgumentException
-	 * @throws InterruptedException
 	 * @throws NotYetConnectedException
 	 */
-	public abstract void send( ByteBuffer bytes ) throws IllegalArgumentException , NotYetConnectedException , InterruptedException;
+	public abstract void send( ByteBuffer bytes ) throws IllegalArgumentException , NotYetConnectedException;
 
-	public abstract void send( byte[] bytes ) throws IllegalArgumentException , NotYetConnectedException , InterruptedException;
+	public abstract void send( byte[] bytes ) throws IllegalArgumentException , NotYetConnectedException;
 
 	public abstract void sendFrame( Framedata framedata );
 
 	public abstract boolean hasBufferedData();
 
-	public abstract void startHandshake( ClientHandshakeBuilder handshakedata ) throws InvalidHandshakeException , InterruptedException;
+	public abstract void startHandshake( ClientHandshakeBuilder handshakedata ) throws InvalidHandshakeException;
 
 	public abstract InetSocketAddress getRemoteSocketAddress();
 

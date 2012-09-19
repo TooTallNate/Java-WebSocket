@@ -44,11 +44,7 @@ public class AutobahnServerTest extends WebSocketServer {
 
 	@Override
 	public void onMessage( WebSocket conn, ByteBuffer blob ) {
-		try {
-			conn.send( blob );
-		} catch ( InterruptedException e ) {
-			e.printStackTrace();
-		}
+		conn.send( blob );
 	}
 
 	public static void main( String[] args ) throws  UnknownHostException {

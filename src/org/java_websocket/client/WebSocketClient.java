@@ -172,7 +172,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 * @param data
 	 *            The Byte-Array of data to send to the WebSocket server.
 	 */
-	public void send( byte[] data ) throws NotYetConnectedException , InterruptedException {
+	public void send( byte[] data ) throws NotYetConnectedException {
 		if( conn != null ) {
 			conn.send( data );
 		}
@@ -249,9 +249,6 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 					if( key.isConnectable() ) {
 						try {
 							finishConnect( key );
-						} catch ( InterruptedException e ) {
-							conn.close( CloseFrame.NEVERCONNECTED );// report error to only
-							break;
 						} catch ( InvalidHandshakeException e ) {
 							conn.close( e ); // http error
 						}
@@ -301,7 +298,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		return port;
 	}
 
-	private void finishConnect( SelectionKey key ) throws IOException , InvalidHandshakeException , InterruptedException {
+	private void finishConnect( SelectionKey key ) throws IOException , InvalidHandshakeException {
 		if( channel.isConnectionPending() ) {
 			channel.finishConnect();
 		}
@@ -312,7 +309,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		sendHandshake();
 	}
 
-	private void sendHandshake() throws IOException , InvalidHandshakeException , InterruptedException {
+	private void sendHandshake() throws InvalidHandshakeException {
 		String path;
 		String part1 = uri.getPath();
 		String part2 = uri.getQuery();
