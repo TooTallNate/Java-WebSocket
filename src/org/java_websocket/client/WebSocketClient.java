@@ -6,6 +6,7 @@ import java.net.Socket;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
+import java.nio.channels.CancelledKeyException;
 import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.NotYetConnectedException;
 import java.nio.channels.SelectionKey;
@@ -16,8 +17,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import org.java_websocket.SocketChannelIOHelper;
 import org.java_websocket.WebSocket;
@@ -67,8 +66,6 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	private Thread thread;
 
 	private Draft draft;
-
-	private final Lock closelock = new ReentrantLock();
 
 	private Map<String,String> headers;
 
@@ -142,14 +139,14 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
 	public void close() {
 		if( thread != null ) {
-			thread.interrupt();
-			closelock.lock();
+			conn.close( CloseFrame.NORMAL );
+			/*closelock.lock();
 			try {
 				if( selector != null )
 					selector.wakeup();
 			} finally {
 				closelock.unlock();
-			}
+			}*/
 		}
 
 	}
@@ -191,6 +188,8 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		if( thread == null )
 			thread = Thread.currentThread();
 		interruptableRun();
+		
+		assert ( !channel.isOpen() );
 
 		try {
 			if( selector != null ) // if the initialization in <code>tryToConnect</code> fails, it could be null
@@ -198,16 +197,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		} catch ( IOException e ) {
 			onError( e );
 		}
-		closelock.lock();
-		selector = null;
-		closelock.unlock();
-		try {
-			channel.close();
-		} catch ( IOException e ) {
-			onError( e );
-		}
-		channel = null;
-		thread = null;
+
 	}
 
 	private final void interruptableRun() {
@@ -230,9 +220,6 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		ByteBuffer buff = ByteBuffer.allocate( WebSocket.RCVBUF );
 		try/*IO*/{
 			while ( channel.isOpen() ) {
-				if( Thread.interrupted() ) {
-					conn.close( CloseFrame.NORMAL );
-				}
 				SelectionKey key = null;
 				selector.select();
 				Set<SelectionKey> keys = selector.selectedKeys();
@@ -271,6 +258,8 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 					}
 				}
 			}
+
+		} catch ( CancelledKeyException e ) {
 		} catch ( IOException e ) {
 			onError( e );
 			conn.close( CloseFrame.ABNORMAL_CLOSE );
@@ -303,9 +292,9 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			channel.finishConnect();
 		}
 		// Now that we're connected, re-register for only 'READ' keys.
-		key.interestOps( SelectionKey.OP_READ | SelectionKey.OP_WRITE );
+		conn.key = key.interestOps( SelectionKey.OP_READ | SelectionKey.OP_WRITE );
 
-		wrappedchannel = wf.wrapChannel( key, uri.getHost(), getPort() );
+		conn.channel = wrappedchannel = wf.wrapChannel( key, uri.getHost(), getPort() );
 		sendHandshake();
 	}
 
