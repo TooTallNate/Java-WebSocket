@@ -143,11 +143,7 @@ public class ChatClient extends JFrame implements ActionListener {
 				ta.append( uriField.getText() + " is not a valid WebSocket URI\n" );
 			}
 		} else if( e.getSource() == close ) {
-			try {
-				cc.close();
-			} catch ( Exception ex ) {
-				ex.printStackTrace();
-			}
+			cc.close();
 		}
 	}
 

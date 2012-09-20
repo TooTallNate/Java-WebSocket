@@ -84,7 +84,12 @@ public class SSLClientExample {
 
 		BufferedReader reader = new BufferedReader( new InputStreamReader( System.in ) );
 		while ( true ) {
-			chatclient.send( reader.readLine() );
+			String line = reader.readLine();
+			if( line.equals( "close" ) ) {
+				chatclient.close();
+			} else {
+				chatclient.send( line );
+			}
 		}
 
 	}
