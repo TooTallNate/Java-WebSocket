@@ -197,7 +197,8 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 	public void close() throws IOException {
 		sslEngine.closeOutbound();
 		sslEngine.getSession().invalidate();
-		int wr = sc.write( wrap( emptybuffer ) );
+		if( sc.isOpen() )
+			sc.write( wrap( emptybuffer ) );// FIXME what if not all bytes can be written
 		sc.close();
 	}
 
