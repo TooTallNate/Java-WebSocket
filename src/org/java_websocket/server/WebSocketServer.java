@@ -264,6 +264,11 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 						}
 
 						if( key.isAcceptable() ) {
+							if( !onConnect( key ) ) {
+								key.cancel();
+								continue;
+							}
+
 							SocketChannel channel = server.accept();
 							channel.configureBlocking( false );
 							WebSocketImpl w = wsf.createWebSocket( this, drafts, channel.socket() );
@@ -310,11 +315,11 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 						conn = iqueue.remove( 0 );
 						WrappedByteChannel c = ( (WrappedByteChannel) conn.channel );
 						ByteBuffer buf = takeBuffer();
-						if(SocketChannelIOHelper.readMore( buf, conn, c ))
+						if( SocketChannelIOHelper.readMore( buf, conn, c ) )
 							iqueue.add( conn );
 						conn.inQueue.put( buf );
 						queue( conn );
-							
+
 					}
 				} catch ( CancelledKeyException e ) {
 					// an other thread may cancel the key
@@ -473,11 +478,49 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		return wsf;
 	}
 
-	// ABTRACT METHODS /////////////////////////////////////////////////////////
+	/**
+	 * Returns whether a new connection shall be accepted or not.<br>
+	 * Therefore method is well suited to implement some kind of connection limitation.<br>
+	 * 
+	 * @see {@link #onOpen(WebSocket, ClientHandshake)}, {@link #onWebsocketHandshakeReceivedAsServer(WebSocket, Draft, ClientHandshake)}
+	 **/
+	protected boolean onConnect( SelectionKey key ) {
+		return true;
+	}
+
+	/** Called after an opening handshake has been performed and the given websocket is ready to be written on. */
 	public abstract void onOpen( WebSocket conn, ClientHandshake handshake );
+	/**
+	 * Called after the websocket connection has been closed.
+	 * 
+	 * @param code
+	 *            The codes can be looked up here: {@link CloseFrame}
+	 * @param reason
+	 *            Additional information string
+	 * @param remote
+	 *            Returns whether or not the closing of the connection was initiated by the remote host.
+	 **/
 	public abstract void onClose( WebSocket conn, int code, String reason, boolean remote );
+	/**
+	 * Callback for string messages received from the remote host
+	 * 
+	 * @see #onMessage(WebSocket, ByteBuffer)
+	 **/
 	public abstract void onMessage( WebSocket conn, String message );
+	/**
+	 * Called when errors occurs. If an error causes the websocket connection to fail {@link #onClose(WebSocket, int, String, boolean)} will be called additionally.<br>
+	 * This method will be called primarily because of IO or protocol errors.<br>
+	 * If the given exception is an RuntimeException that probably means that you encountered a bug.<br>
+	 * 
+	 * @param con
+	 *            Can be null if there error does not belong to one specific websocket. For example if the servers port could not be bound.
+	 **/
 	public abstract void onError( WebSocket conn, Exception ex );
+	/**
+	 * Callback for binary messages received from the remote host
+	 * 
+	 * @see #onMessage(WebSocket, String)
+	 **/
 	public void onMessage( WebSocket conn, ByteBuffer message ) {
 	};
 
