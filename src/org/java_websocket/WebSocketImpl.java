@@ -403,12 +403,12 @@ public class WebSocketImpl extends WebSocket {
 		if( key != null ) {
 			// key.attach( null ); //see issue #114
 			key.cancel();
-			try {
-				channel.close();
-			} catch ( IOException e ) {
-				wsl.onWebsocketError( this, e );
-			}
-		}
+        }
+        try {
+            channel.close();
+        } catch ( IOException e ) {
+            wsl.onWebsocketError( this, e );
+        }
 		// sockchannel.close();
 		this.wsl.onWebsocketClose( this, code, message, remote );
 		if( draft != null )
