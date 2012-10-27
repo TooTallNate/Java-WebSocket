@@ -12,7 +12,7 @@ public class SocketChannelIOHelper {
 		buf.flip();
 
 		if( read == -1 ) {
-			ws.eot( null );
+			ws.eot();
 			return false;
 		}
 		return read != 0;
@@ -24,7 +24,7 @@ public class SocketChannelIOHelper {
 		buf.flip();
 
 		if( read == -1 ) {
-			ws.eot( null );
+			ws.eot();
 			return false;
 		}
 		return channel.isNeedRead();

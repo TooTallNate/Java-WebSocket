@@ -188,7 +188,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		if( thread == null )
 			thread = Thread.currentThread();
 		interruptableRun();
-		
+
 		assert ( !channel.isOpen() );
 
 		try {
@@ -228,6 +228,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 					key = i.next();
 					i.remove();
 					if( !key.isValid() ) {
+						conn.eot();
 						continue;
 					}
 					if( key.isReadable() && SocketChannelIOHelper.read( buff, this.conn, wrappedchannel ) ) {
@@ -260,13 +261,14 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			}
 
 		} catch ( CancelledKeyException e ) {
+			conn.eot();
 		} catch ( IOException e ) {
-			onError( e );
-			conn.close( CloseFrame.ABNORMAL_CLOSE );
+			// onError( e );
+			conn.eot();
 		} catch ( RuntimeException e ) {
 			// this catch case covers internal errors only and indicates a bug in this websocket implementation
 			onError( e );
-			conn.eot( e );
+			conn.close( CloseFrame.ABNORMAL_CLOSE );
 		}
 	}
 
@@ -276,11 +278,9 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			String scheme = uri.getScheme();
 			if( scheme.equals( "wss" ) ) {
 				return WebSocket.DEFAULT_WSS_PORT;
-			}
-			else if( scheme.equals( "ws" ) ) {
+			} else if( scheme.equals( "ws" ) ) {
 				return WebSocket.DEFAULT_PORT;
-			}
-			else{
+			} else {
 				throw new RuntimeException( "unkonow scheme" + scheme );
 			}
 		}
@@ -413,5 +413,3 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		public ByteChannel wrapChannel( SelectionKey key, String host, int port ) throws IOException;
 	}
 }
-
-

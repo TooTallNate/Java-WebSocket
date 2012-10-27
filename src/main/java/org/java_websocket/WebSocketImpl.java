@@ -68,7 +68,6 @@ public class WebSocketImpl extends WebSocket {
 	 **/
 	public volatile WebSocketWorker workerThread; // TODO reset worker?
 
-
 	/**
 	 * Determines whether to receive data as part of the
 	 * handshake, or as part of text/data frame transmitted over the websocket.
@@ -82,7 +81,6 @@ public class WebSocketImpl extends WebSocket {
 	 * Determines whether the connection is open or not
 	 */
 	private volatile boolean connectionClosed = false;
-
 
 	/**
 	 * The listener to notify of WebSocket events.
@@ -421,22 +419,18 @@ public class WebSocketImpl extends WebSocket {
 		closeConnection( code, "", remote );
 	}
 
-	public void eot( Exception e ) {
-		if( e == null || e instanceof IOException ) {
-			if( draft == null ) {
+	public void eot() {
+		if( draft == null ) {
+			closeConnection( CloseFrame.ABNORMAL_CLOSE, true );
+		} else if( draft.getCloseHandshakeType() == CloseHandshakeType.NONE ) {
+			closeConnection( CloseFrame.NORMAL, true );
+		} else if( draft.getCloseHandshakeType() == CloseHandshakeType.ONEWAY ) {
+			if( role == Role.SERVER )
 				closeConnection( CloseFrame.ABNORMAL_CLOSE, true );
-			} else if( draft.getCloseHandshakeType() == CloseHandshakeType.NONE ) {
+			else
 				closeConnection( CloseFrame.NORMAL, true );
-			} else if( draft.getCloseHandshakeType() == CloseHandshakeType.ONEWAY ) {
-				if( role == Role.SERVER )
-					closeConnection( CloseFrame.ABNORMAL_CLOSE, true );
-				else
-					closeConnection( CloseFrame.NORMAL, true );
-			} else {
-				closeConnection( CloseFrame.ABNORMAL_CLOSE, true );
-			}
 		} else {
-			closeConnection( CloseFrame.BUGGYCLOSE, e.toString(), false );
+			closeConnection( CloseFrame.ABNORMAL_CLOSE, true );
 		}
 	}
 
@@ -542,7 +536,7 @@ public class WebSocketImpl extends WebSocket {
 	private void write( ByteBuffer buf ) {
 		if( DEBUG )
 			System.out.println( "write(" + buf.remaining() + "): {" + ( buf.remaining() > 1000 ? "too big to display" : new String( buf.array() ) ) + "}" );
-		
+
 		outQueue.add( buf );
 		/*try {
 			outQueue.put( buf );
