@@ -34,6 +34,13 @@ public class CloseFrameBuilder extends FramedataImpl1 implements CloseFrame {
 		if( m == null ) {
 			m = "";
 		}
+		if( code == CloseFrame.NOCODE ) {
+			if( !m.isEmpty() ) {
+				throw new InvalidDataException( PROTOCOL_ERROR, "A close frame must have a closecode if it has a reason" );
+			}
+			return;// empty payload
+		}
+
 		byte[] by = Charsetfunctions.utf8Bytes( m );
 		ByteBuffer buf = ByteBuffer.allocate( 4 );
 		buf.putInt( code );
@@ -47,7 +54,7 @@ public class CloseFrameBuilder extends FramedataImpl1 implements CloseFrame {
 
 	private void initCloseCode() throws InvalidFrameException {
 		code = CloseFrame.NOCODE;
-		ByteBuffer payload = getPayloadData();
+		ByteBuffer payload = super.getPayloadData();
 		payload.mark();
 		if( payload.remaining() >= 2 ) {
 			ByteBuffer bb = ByteBuffer.allocate( 4 );
@@ -71,18 +78,18 @@ public class CloseFrameBuilder extends FramedataImpl1 implements CloseFrame {
 
 	private void initMessage() throws InvalidDataException {
 		if( code == CloseFrame.NOCODE ) {
-			reason = Charsetfunctions.stringUtf8( getPayloadData() );
+			reason = Charsetfunctions.stringUtf8( super.getPayloadData() );
 		} else {
-			ByteBuffer b = getPayloadData();
-			b.mark();
+			ByteBuffer b = super.getPayloadData();
+			int mark = b.position();// because stringUtf8 also creates a mark
 			try {
 				b.position( b.position() + 2 );
+				reason = Charsetfunctions.stringUtf8( b );
 			} catch ( IllegalArgumentException e ) {
 				throw new InvalidFrameException( e );
 			} finally {
-				b.reset();
+				b.position( mark );
 			}
-			reason = Charsetfunctions.stringUtf8( getPayloadData() );
 		}
 	}
 
