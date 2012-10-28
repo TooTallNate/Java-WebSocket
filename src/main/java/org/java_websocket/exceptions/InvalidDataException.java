@@ -19,16 +19,12 @@ public class InvalidDataException extends Exception {
 
 	public InvalidDataException( int closecode , Throwable t ) {
 		super( t );
-		if( t instanceof InvalidDataException ) {
-			this.closecode = ( (InvalidDataException) t ).getCloseCode();
-		}
+		this.closecode = closecode;
 	}
 
 	public InvalidDataException( int closecode , String s , Throwable t ) {
 		super( s, t );
-		if( t instanceof InvalidDataException ) {
-			this.closecode = ( (InvalidDataException) t ).getCloseCode();
-		}
+		this.closecode = closecode;
 	}
 
 	public int getCloseCode() {
