@@ -140,8 +140,15 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	}
 
 	public void close() {
-		if( thread != null && conn != null ) {
+		if( thread != null ) {
 			conn.close( CloseFrame.NORMAL );
+			/*closelock.lock();
+			try {
+				if( selector != null )
+					selector.wakeup();
+			} finally {
+				closelock.unlock();
+			}*/
 		}
 
 	}
@@ -383,7 +390,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			key.interestOps( SelectionKey.OP_READ | SelectionKey.OP_WRITE );
 			selector.wakeup();
 		} catch ( CancelledKeyException e ) {
-			// since such an exception/event will also occur on the selector there is no need to do anything herec
+			// since such an exception/event will also occur on the selector there is no need to do anything here
 		}
 	}
 

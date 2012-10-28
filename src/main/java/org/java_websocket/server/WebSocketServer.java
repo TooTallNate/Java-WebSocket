@@ -161,8 +161,8 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 */
 	public void start() {
 		if( selectorthread != null )
-			throw new IllegalStateException( "Already started" );
-		new Thread( this ).start();
+			throw new IllegalStateException( getClass().getName() + " can only be started once." );
+		new Thread( this ).start();;
 	}
 
 	/**
@@ -171,15 +171,20 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 * freeing the port the server was bound to.
 	 * 
 	 * @throws IOException
-	 *             When socket related I/O errors occur.
+	 *             When {@link ServerSocketChannel}.close throws an IOException
+	 * @throws InterruptedException
 	 */
-	public void stop() throws IOException {
+	public void stop() throws IOException , InterruptedException {
 		synchronized ( connections ) {
 			for( WebSocket ws : connections ) {
 				ws.close( CloseFrame.NORMAL );
 			}
 		}
 		selectorthread.interrupt();
+		selectorthread.join();
+		for( WebSocketWorker w : decoders ) {
+			w.interrupt();
+		}
 		this.server.close();
 
 	}
@@ -228,9 +233,11 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 
 	// Runnable IMPLEMENTATION /////////////////////////////////////////////////
 	public void run() {
-		if( selectorthread != null )
-			throw new IllegalStateException( "This instance of " + getClass().getSimpleName() + " can only be started once the same time." );
-		selectorthread = Thread.currentThread();
+		synchronized ( this ) {
+			if( selectorthread != null )
+				throw new IllegalStateException( getClass().getName() + " can only be started once." );
+			selectorthread = Thread.currentThread();
+		}
 		selectorthread.setName( "WebsocketSelector" + selectorthread.getId() );
 		try {
 			server = ServerSocketChannel.open();
@@ -388,12 +395,11 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	private void handleFatal( WebSocket conn, RuntimeException e ) {
 		onError( conn, e );
 		try {
-			selector.close();
+			stop();
 		} catch ( IOException e1 ) {
 			onError( null, e1 );
-		}
-		for( WebSocketWorker w : decoders ) {
-			w.interrupt();
+		} catch ( InterruptedException e1 ) {
+			onError( null, e1 );
 		}
 	}
 
