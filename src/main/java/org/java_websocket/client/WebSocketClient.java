@@ -17,6 +17,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 
 import org.java_websocket.SocketChannelIOHelper;
 import org.java_websocket.WebSocket;
@@ -70,6 +71,10 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	private Draft draft;
 
 	private Map<String,String> headers;
+
+	private CountDownLatch connectLatch = new CountDownLatch( 1 );
+
+	private CountDownLatch closeLatch = new CountDownLatch( 1 );
 
 	WebSocketClientFactory wf = new WebSocketClientFactory() {
 		@Override
@@ -134,23 +139,30 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 */
 	public void connect() {
 		if( thread != null )
-			throw new IllegalStateException( "already/still connected" );
+			throw new IllegalStateException( "WebSocketClient objects are not reuseable" );
 		thread = new Thread( this );
 		thread.start();
 	}
 
-	public void close() {
-		if( thread != null ) {
-			conn.close( CloseFrame.NORMAL );
-			/*closelock.lock();
-			try {
-				if( selector != null )
-					selector.wakeup();
-			} finally {
-				closelock.unlock();
-			}*/
-		}
+	/**
+	 * Same as connect but blocks until the websocket connected or failed to do so.<br>
+	 * Returns whether it succeeded or not.
+	 **/
+	public boolean connectBlocking() throws InterruptedException {
+		connect();
+		connectLatch.await();
+		return conn.isOpen();
+	}
 
+	public void close() {
+		if( thread != null && conn != null ) {
+			conn.close( CloseFrame.NORMAL );
+		}
+	}
+
+	public void closeBlocking() throws InterruptedException {
+		close();
+		closeLatch.await();
 	}
 
 	/**
@@ -361,6 +373,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 */
 	@Override
 	public final void onWebsocketOpen( WebSocket conn, Handshakedata handshake ) {
+		connectLatch.countDown();
 		onOpen( (ServerHandshake) handshake );
 	}
 
@@ -371,6 +384,8 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 */
 	@Override
 	public final void onWebsocketClose( WebSocket conn, int code, String reason, boolean remote ) {
+		connectLatch.countDown();
+		closeLatch.countDown();
 		onClose( code, reason, remote );
 	}
 
@@ -390,7 +405,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			key.interestOps( SelectionKey.OP_READ | SelectionKey.OP_WRITE );
 			selector.wakeup();
 		} catch ( CancelledKeyException e ) {
-			// since such an exception/event will also occur on the selector there is no need to do anything here
+			// since such an exception/event will also occur on the selector there is no need to do anything herec
 		}
 	}
 

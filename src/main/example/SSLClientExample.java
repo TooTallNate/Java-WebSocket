@@ -80,7 +80,7 @@ public class SSLClientExample {
 
 		chatclient.setWebSocketFactory( new DefaultSSLWebSocketClientFactory( sslContext ) );
 
-		chatclient.connect();
+		chatclient.connectBlocking();
 
 		BufferedReader reader = new BufferedReader( new InputStreamReader( System.in ) );
 		while ( true ) {
