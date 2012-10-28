@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.java_websocket.SocketChannelIOHelper;
@@ -68,6 +69,8 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	private List<Draft> drafts;
 
 	private Thread selectorthread;
+
+	private volatile AtomicBoolean isclosed = new AtomicBoolean( false );
 
 	private List<WebSocketWorker> decoders;
 
@@ -167,26 +170,53 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 
 	/**
 	 * Closes all connected clients sockets, then closes the underlying
-	 * ServerSocketChannel, effectively killing the server socket selectorthread and
-	 * freeing the port the server was bound to.
+	 * ServerSocketChannel, effectively killing the server socket selectorthread,
+	 * freeing the port the server was bound to and stops all internal workerthreads.
+	 * 
+	 * If this method is called before the server is started it will never start.
+	 * 
+	 * Therefore
+	 * 
+	 * Additionally
+	 * 
+	 * @param timeout
+	 *            Specifies how many milliseconds shall pass between initiating the close handshakes with the connected clients and closing the servers socket channel.
 	 * 
 	 * @throws IOException
 	 *             When {@link ServerSocketChannel}.close throws an IOException
 	 * @throws InterruptedException
 	 */
-	public void stop() throws IOException , InterruptedException {
+	public void stop( int timeout ) throws IOException , InterruptedException {
+		if( !isclosed.compareAndSet( false, true ) ) {
+			return;
+		}
+
 		synchronized ( connections ) {
 			for( WebSocket ws : connections ) {
 				ws.close( CloseFrame.NORMAL );
 			}
 		}
-		selectorthread.interrupt();
-		selectorthread.join();
-		for( WebSocketWorker w : decoders ) {
-			w.interrupt();
-		}
-		this.server.close();
+		synchronized ( this ) {
+			if( selectorthread != null ) {
+				if( Thread.currentThread() != selectorthread ) {
 
+				}
+				selectorthread.interrupt();
+				selectorthread.join();
+			}
+			if( decoders != null ) {
+				for( WebSocketWorker w : decoders ) {
+					w.interrupt();
+				}
+			}
+			if( server != null ) {
+				server.close();
+			}
+		}
+	}
+
+	public void stop() throws IOException , InterruptedException {
+		stop( 0 );
 	}
 
 	/**
@@ -237,6 +267,9 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 			if( selectorthread != null )
 				throw new IllegalStateException( getClass().getName() + " can only be started once." );
 			selectorthread = Thread.currentThread();
+			if( isclosed.get() ) {
+				return;
+			}
 		}
 		selectorthread.setName( "WebsocketSelector" + selectorthread.getId() );
 		try {
