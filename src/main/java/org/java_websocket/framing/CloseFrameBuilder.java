@@ -34,6 +34,11 @@ public class CloseFrameBuilder extends FramedataImpl1 implements CloseFrame {
 		if( m == null ) {
 			m = "";
 		}
+		// CloseFrame.TLS_ERROR is not allowed to be transfered over the wire
+		if( code == CloseFrame.TLS_ERROR ) {
+			code = CloseFrame.NOCODE;
+			m = "";
+		}
 		if( code == CloseFrame.NOCODE ) {
 			if( !m.isEmpty() ) {
 				throw new InvalidDataException( PROTOCOL_ERROR, "A close frame must have a closecode if it has a reason" );
@@ -62,10 +67,9 @@ public class CloseFrameBuilder extends FramedataImpl1 implements CloseFrame {
 			bb.putShort( payload.getShort() );
 			bb.position( 0 );
 			code = bb.getInt();
-			if( code < 0 || code > Short.MAX_VALUE )
-				code = CloseFrame.NOCODE;
-			if( code < CloseFrame.NORMAL || code > CloseFrame.EXTENSION || code == NOCODE || code == 1004 ) {
-				throw new InvalidFrameException( "bad code " + code );
+
+			if( code == CloseFrame.ABNORMAL_CLOSE || code == CloseFrame.TLS_ERROR || code == CloseFrame.NOCODE || code > 4999 ) {
+				throw new InvalidFrameException( "closecode must not be sent over the wire " + code );
 			}
 		}
 		payload.reset();
