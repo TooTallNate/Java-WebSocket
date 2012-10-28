@@ -39,9 +39,7 @@ public class SocketChannelIOHelper {
 				WrappedByteChannel c = (WrappedByteChannel) sockchannel;
 				if( c.isNeedWrite() ) {
 					c.writeMore();
-					return !c.isNeedWrite();
 				}
-				return true;
 			}
 		} else {
 			do {// FIXME writing as much as possible is unfair!!

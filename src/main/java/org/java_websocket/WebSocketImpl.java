@@ -398,7 +398,7 @@ public class WebSocketImpl extends WebSocket {
 		}
 		connectionClosed = true;
 
-		if( key != null ) {
+		/*if( key != null ) {
 			// key.attach( null ); //see issue #114
 			key.cancel();
 			try {
@@ -406,8 +406,9 @@ public class WebSocketImpl extends WebSocket {
 			} catch ( IOException e ) {
 				wsl.onWebsocketError( this, e );
 			}
-		}
-		// sockchannel.close();
+		}*/
+		wsl.onWriteDemand( this ); // ensures that all outgoing frames are flushed before closing the connection
+
 		this.wsl.onWebsocketClose( this, code, message, remote );
 		if( draft != null )
 			draft.reset();

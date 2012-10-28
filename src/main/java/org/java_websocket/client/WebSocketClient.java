@@ -58,6 +58,8 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	private SocketChannel channel = null;
 
 	private ByteChannel wrappedchannel = null;
+
+	private SelectionKey key = null;
 	/**
 	 * The 'Selector' used to get event keys from the underlying socket.
 	 */
@@ -180,7 +182,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		channel.configureBlocking( false );
 		channel.connect( remote );
 		selector = Selector.open();
-		channel.register( selector, SelectionKey.OP_CONNECT );
+		key = channel.register( selector, SelectionKey.OP_CONNECT );
 	}
 
 	// Runnable IMPLEMENTATION /////////////////////////////////////////////////
@@ -369,7 +371,6 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 */
 	@Override
 	public final void onWebsocketClose( WebSocket conn, int code, String reason, boolean remote ) {
-		thread.interrupt();
 		onClose( code, reason, remote );
 	}
 
@@ -385,7 +386,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
 	@Override
 	public final void onWriteDemand( WebSocket conn ) {
-		channel.keyFor( selector ).interestOps( SelectionKey.OP_READ | SelectionKey.OP_WRITE );
+		key.interestOps( SelectionKey.OP_READ | SelectionKey.OP_WRITE );
 		selector.wakeup();
 	}
 
