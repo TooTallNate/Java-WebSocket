@@ -108,7 +108,7 @@ public class WebSocketImpl extends WebSocket {
 	public WebSocketImpl( WebSocketListener listener , List<Draft> drafts , Socket sock ) {
 		this( listener, (Draft) null, sock );
 		this.role = Role.SERVER;
-		if( knownDrafts == null || knownDrafts.isEmpty() ) {
+		if( knownDrafts == null || drafts.isEmpty() ) {
 			knownDrafts = new ArrayList<Draft>( 1 );
 			knownDrafts.add( new Draft_17() );
 			knownDrafts.add( new Draft_10() );
