@@ -1,28 +1,29 @@
-<project default="jar">
+<project default="all">
 
-  <target name="compile">
-    <mkdir dir="build/classes" />
-    <mkdir dir="build/examples" />
-    <javac includeantruntime="false" debug="on" srcdir="src" destdir="build/classes" />
-    <javac includeantruntime="false" srcdir="example" classpath="build/classes" destdir="build/examples" />
-  </target>
+	<target name="all" depends="doc,jar" />
 
-  <target name="jar" depends="compile">
-    <jar destfile="dist/WebSocket.jar"
-         basedir="build/classes"
-         includes="**/*.class"
-         />
-  </target>
+	<target name="compile">
+		<mkdir dir="build/classes" />
+		<mkdir dir="build/examples" />
+		<javac includeantruntime="false" debug="on" srcdir="src/main/java"
+			destdir="build/classes" />
+		<javac includeantruntime="false" srcdir="src/main/example/"
+			classpath="build/classes" destdir="build/examples" />
+	</target>
 
-  <target name="doc">
-    <delete dir="doc" />
-    <javadoc sourcepath="src"
-             destdir="doc"
-          />
-  </target>
-  
-  <target name="clean">
-    <delete dir="build"/>
-  </target>
+	<target name="jar" depends="compile">
+		<jar destfile="dist/java_websocket.jar">
+			<fileset dir="build/classes" includes="**/*.class" />
+		</jar>
+	</target>
+
+	<target name="doc">
+		<delete dir="doc" />
+		<javadoc sourcepath="src/main/java" destdir="doc" />
+	</target>
+
+	<target name="clean">
+		<delete dir="build" />
+	</target>
 
 </project>
