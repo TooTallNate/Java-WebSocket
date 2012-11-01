@@ -6,3 +6,5 @@ target
 .project
 .classpath
 bin
+
+/doc
