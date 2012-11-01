@@ -2,52 +2,65 @@ Java WebSockets
 ===============
 
 This repository contains a barebones WebSocket server and client implementation
-written in 100% Java. The underlying classes are implemented using the Java
-`ServerSocketChannel` and `SocketChannel` classes, which allows for a
+written in 100% Java. The underlying classes are implemented `java.nio`, which allows for a
 non-blocking event-driven model (similar to the
 [WebSocket API](http://dev.w3.org/html5/websockets/) for web browsers).
 
 Implemented WebSocket protocol versions are:
 
- * [Hixie 75](http://tools.ietf.org/id/draft-hixie-thewebsocketprotocol-75.txt)
- * [Hixie 76](http://tools.ietf.org/id/draft-hixie-thewebsocketprotocol-76.txt)
- * [Hybi 10](http://tools.ietf.org/id/draft-ietf-hybi-thewebsocketprotocol-10.txt)
- * [Hybi 17](http://tools.ietf.org/id/draft-ietf-hybi-thewebsocketprotocol-17.txt)
  * [RFC 6455](http://tools.ietf.org/html/rfc6455)
+ * [Hybi 17](http://tools.ietf.org/id/draft-ietf-hybi-thewebsocketprotocol-17.txt)
+ * [Hybi 10](http://tools.ietf.org/id/draft-ietf-hybi-thewebsocketprotocol-10.txt)
+ * [Hixie 76](http://tools.ietf.org/id/draft-hixie-thewebsocketprotocol-76.txt)
+ * [Hixie 75](http://tools.ietf.org/id/draft-hixie-thewebsocketprotocol-75.txt)
+
+[Here](https://github.com/TooTallNate/Java-WebSocket/wiki/Drafts) some more details about protocol versions/drafts. 
 
 
-Running the Example
+##Build
+There are 2 ways to build but automatically but there is nothing against just putting the source path ```src/main/java ``` on your buildpath.
+
+###Ant
+
+``` bash
+ant 
+```
+will
+
+ - create the javadoc of this library at ```doc/```
+ - build the library itself: ```dest/java_websocket.jar```
+
+To perform more distinct operations take a look at ```build.xml```.
+
+###Maven
+
+There is maven support. More documentation in that is yet to come...
+
+
+Running the Examples
 -------------------
 
-There's a simple chat server and client example located in the `example`
-folder. First, compile the example classes and JAR file:
+**Note:** If you're on Windows, then replace the `:` (colon) in the classpath
+in the commands below with a `;` (semicolon).
+
+After you build the library you can start the chat server (a `WebSocketServer` subclass):
 
 ``` bash
-ant
+java -cp build/examples:dist/java_websocket.jar ChatServer
 ```
 
-Then, start the chat server (a `WebSocketServer` subclass):
-
-``` bash
-java -cp build/examples:dist/WebSocket.jar ChatServer
-```
-
-Now that the server is started, we need to connect some clients. Run the
+Now that the server is started, you need to connect some clients. Run the
 Java chat client (a `WebSocketClient` subclass):
 
 ``` bash
-java -cp build/examples:dist/WebSocket.jar ChatClient
+java -cp build/examples:dist/java_websocket.jar ChatClient
 ```
-
-__Note:__ If you're on Windows, then replace the `:` (colon) in the classpath
-in the commands above with a `;` (semicolon).
 
 The chat client is a simple Swing GUI application that allows you to send
 messages to all other connected clients, and receive messages from others in a
 text box.
 
-There's also a simple HTML file chat client `chat.html`, which can be opened
-by any browser. If the browser natively supports the WebSocket API, then it's
+In the example folder is also a simple HTML file chat client `chat.html`, which can be opened by any browser. If the browser natively supports the WebSocket API, then it's
 implementation will be used, otherwise it will fall back to a
 [Flash-based WebSocket Implementation](http://github.com/gimite/web-socket-js).
 
@@ -73,15 +86,17 @@ in **your** subclass.
 
 WSS Support
 ---------------------------------
+This library supports wss.
+To see how to use wss please take a look at the examples.<br>
 
-WSS support is still VERY young ( https://github.com/TooTallNate/Java-WebSocket/pull/101 ).
-The only way to use wss is currently the one shown in the example. That also means that you have to switch between ws and wss. 
-You can not have both at the same time on the same port.
-
-If you do not have a valid certificate in place then you will have to create a self signed one.
+If you do not have a valid **certificate** in place then you will have to create a self signed one.
 Browsers will simply refuse the connection in case of a bad certificate and will not ask the user to accept it.
-So the first step will be to make a browser to accept your self signed certificate. ( https://bugzilla.mozilla.org/show_bug.cgi?id=594502 )
+So the first step will be to make a browser to accept your self signed certificate. ( https://bugzilla.mozilla.org/show_bug.cgi?id=594502 ).<br>
 If the websocket server url is `wss://localhost:8000` visit the url `htts://localhost:8000` with your browser. The browser will recognize the handshake and allow you to accept the certificate.
+
+The vm option `-Djavax.net.debug=all` can help to find out if there is a problem with the certificate.
+
+It is currently not possible to accept ws and wss conections at the same time via the same websocket server instance.
 
 I ( @Davidiusdadi ) would be glad if you would give some feedback whether wss is working fine for you or not.
 
@@ -128,7 +143,7 @@ Getting Support
 
 If you are looking for help using `Java-WebSocket` you might want to check out the
 [#java-websocket](http://webchat.freenode.net/?channels=java-websocket) IRC room
-on the FreeNode IRC network.
+on the FreeNode IRC network. 
 
 
 License
