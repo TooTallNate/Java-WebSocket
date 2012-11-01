@@ -18,23 +18,21 @@ Implemented WebSocket protocol versions are:
 
 
 ##Build
-There are 2 ways to build but automatically but there is nothing against just putting the source path ```src/main/java ``` on your buildpath.
+You can build using Ant or Maven but there is nothing against just putting the source path ```src/main/java ``` on your applications buildpath.
 
 ###Ant
 
 ``` bash
 ant 
 ```
-will
 
- - create the javadoc of this library at ```doc/```
- - build the library itself: ```dest/java_websocket.jar```
+will create the javadoc of this library at ```doc/``` and build the library itself: ```dest/java_websocket.jar```
 
-To perform more distinct operations take a look at ```build.xml```.
+The ant targets are: ```compile```, ```jar```, ```doc``` and ```clean```
 
 ###Maven
 
-There is maven support. More documentation in that is yet to come...
+Maven is supported. More documentation in that is yet to come...
 
 
 Running the Examples
@@ -96,7 +94,7 @@ If the websocket server url is `wss://localhost:8000` visit the url `htts://loca
 
 The vm option `-Djavax.net.debug=all` can help to find out if there is a problem with the certificate.
 
-It is currently not possible to accept ws and wss conections at the same time via the same websocket server instance.
+It is currently not possible to accept ws and wss connections at the same time via the same websocket server instance.
 
 I ( @Davidiusdadi ) would be glad if you would give some feedback whether wss is working fine for you or not.
 
