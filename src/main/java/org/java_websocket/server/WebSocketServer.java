@@ -175,10 +175,6 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 * 
 	 * If this method is called before the server is started it will never start.
 	 * 
-	 * Therefore
-	 * 
-	 * Additionally
-	 * 
 	 * @param timeout
 	 *            Specifies how many milliseconds shall pass between initiating the close handshakes with the connected clients and closing the servers socket channel.
 	 * 
@@ -432,6 +428,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		} catch ( IOException e1 ) {
 			onError( null, e1 );
 		} catch ( InterruptedException e1 ) {
+			Thread.currentThread().interrupt();
 			onError( null, e1 );
 		}
 	}
@@ -486,8 +483,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 			try {
 				releaseBuffers( conn );
 			} catch ( InterruptedException e ) {
-				e.printStackTrace();
-				// TODO handle InterruptedException
+				Thread.currentThread().interrupt();
 			}
 		}
 
