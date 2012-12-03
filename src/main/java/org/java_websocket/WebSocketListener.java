@@ -101,13 +101,13 @@ public interface WebSocketListener {
 	 * @param conn
 	 *            The <tt>WebSocket</tt> instance this event is occuring on.
 	 */
-	public void onWebsocketClose( WebSocket conn, int code, String reason, boolean remote );
+	public void onWebsocketClose( WebSocket ws, int code, String reason, boolean remote );
 
 	/** called as soon as no further frames are accepted */
-	public void onWebsocketClosing( WebSocket conn, int code, String reason, boolean remote );
+	public void onWebsocketClosing( WebSocket ws, int code, String reason, boolean remote );
 
 	/** send when this peer sends a close handshake */
-	public void onWebsocketCloseInitiated( WebSocket conn, int code, String reason );
+	public void onWebsocketCloseInitiated( WebSocket ws, int code, String reason );
 
 	/**
 	 * Called if an exception worth noting occurred.

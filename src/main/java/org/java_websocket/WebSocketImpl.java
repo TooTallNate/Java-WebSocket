@@ -24,6 +24,7 @@ import org.java_websocket.exceptions.IncompleteHandshakeException;
 import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.exceptions.InvalidFrameException;
 import org.java_websocket.exceptions.InvalidHandshakeException;
+import org.java_websocket.exceptions.WebsocketNotConnectedException;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.CloseFrameBuilder;
 import org.java_websocket.framing.Framedata;
@@ -291,7 +292,7 @@ public class WebSocketImpl extends WebSocket {
 	private void decodeFrames( ByteBuffer socketBuffer ) {
 		if( flushandclosestate )
 			return;
-		assert ( isOpen() );
+		assert ( !isClosed() );
 		List<Framedata> frames;
 		try {
 			frames = draft.translateFrame( socketBuffer );
@@ -316,7 +317,8 @@ public class WebSocketImpl extends WebSocket {
 						// echo close handshake
 						if( draft.getCloseHandshakeType() == CloseHandshakeType.TWOWAY )
 							close( code, reason, true );
-						flushAndClose( code, reason, false );
+						else
+							flushAndClose( code, reason, false );
 					}
 					continue;
 				} else if( curop == Opcode.PING ) {
@@ -355,7 +357,6 @@ public class WebSocketImpl extends WebSocket {
 		}
 	}
 
-
 	private void close( int code, String message, boolean remote ) {
 		if( !closeHandshakeSubmitted ) {
 			if( handshakeComplete ) {
@@ -367,15 +368,15 @@ public class WebSocketImpl extends WebSocket {
 				}
 				if( draft.getCloseHandshakeType() != CloseHandshakeType.NONE ) {
 					try {
+						if( !remote )
+							wsl.onWebsocketCloseInitiated( this, code, message );
 						sendFrame( new CloseFrameBuilder( code, message ) );
-						wsl.onWebsocketCloseInitiated( this, code, message );
 					} catch ( InvalidDataException e ) {
 						wsl.onWebsocketError( this, e );
 						flushAndClose( CloseFrame.ABNORMAL_CLOSE, "generated frame is invalid", false );
 					}
-				} else {
-					flushAndClose( code, message, false );
 				}
+				flushAndClose( code, message, remote );
 			} else if( code == CloseFrame.FLASHPOLICY ) {
 				assert ( remote );
 				flushAndClose( CloseFrame.FLASHPOLICY, message, true );
@@ -425,13 +426,13 @@ public class WebSocketImpl extends WebSocket {
 		handshakerequest = null;
 
 		isclosed = true;
-		
+
 	}
 
 	protected void closeConnection( int code, boolean remote ) {
 		closeConnection( code, "", remote );
 	}
-	
+
 	public void closeConnection() {
 		if( closedremotely == null ) {
 			throw new IllegalStateException( "this method must be used in conjuction with flushAndClose" );
@@ -455,7 +456,7 @@ public class WebSocketImpl extends WebSocket {
 
 		wsl.onWriteDemand( this ); // ensures that all outgoing frames are flushed before closing the connection
 
-		this.wsl.onWebsocketCloseInitiated( this, code, message );
+		this.wsl.onWebsocketClosing( this, code, message, remote );
 		if( draft != null )
 			draft.reset();
 		tempContiniousFrame = null;
@@ -494,7 +495,7 @@ public class WebSocketImpl extends WebSocket {
 	 * @throws NotYetConnectedException
 	 */
 	@Override
-	public void send( String text ) throws NotYetConnectedException {
+	public void send( String text ) throws WebsocketNotConnectedException {
 		if( text == null )
 			throw new IllegalArgumentException( "Cannot send 'null' data to a WebSocketImpl." );
 		send( draft.createFrames( text, role == Role.CLIENT ) );
@@ -507,20 +508,20 @@ public class WebSocketImpl extends WebSocket {
 	 * @throws NotYetConnectedException
 	 */
 	@Override
-	public void send( ByteBuffer bytes ) throws IllegalArgumentException , NotYetConnectedException {
+	public void send( ByteBuffer bytes ) throws IllegalArgumentException , WebsocketNotConnectedException {
 		if( bytes == null )
 			throw new IllegalArgumentException( "Cannot send 'null' data to a WebSocketImpl." );
 		send( draft.createFrames( bytes, role == Role.CLIENT ) );
 	}
 
 	@Override
-	public void send( byte[] bytes ) throws IllegalArgumentException , NotYetConnectedException {
+	public void send( byte[] bytes ) throws IllegalArgumentException , WebsocketNotConnectedException {
 		send( ByteBuffer.wrap( bytes ) );
 	}
 
 	private void send( Collection<Framedata> frames ) {
-		if( !this.handshakeComplete )
-			throw new NotYetConnectedException();
+		if( !isOpen() )
+			throw new WebsocketNotConnectedException();
 		for( Framedata f : frames ) {
 			sendFrame( f );
 		}

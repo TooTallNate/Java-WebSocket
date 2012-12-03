@@ -12,7 +12,6 @@ import java.nio.channels.NotYetConnectedException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
-import java.nio.channels.UnresolvedAddressException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -220,16 +219,11 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		} catch ( ClosedByInterruptException e ) {
 			onWebsocketError( null, e );
 			return;
-		} catch ( IOException e ) {//
+		} catch ( /*IOException | SecurityException | UnresolvedAddressException*/Exception e ) {//
 			onWebsocketError( conn, e );
+			conn.closeConnection( CloseFrame.NEVERCONNECTED, e.getMessage() );
 			return;
-		} catch ( SecurityException e ) {
-			onWebsocketError( conn, e );
-			return;
-		} catch ( UnresolvedAddressException e ) {
-			onWebsocketError( conn, e );
-			return;
-		}
+		}  
 		conn = (WebSocketImpl) wf.createWebSocket( this, draft, channel.socket() );
 		ByteBuffer buff = ByteBuffer.allocate( WebSocket.RCVBUF );
 		try/*IO*/{
