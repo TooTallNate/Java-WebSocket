@@ -40,6 +40,12 @@ public abstract class WebSocket {
 
 	public abstract void close( int code );
 
+	/**
+	 * This will close the connection immediately without a proper close handshake.
+	 * The code and the message therefore won't be transfered over the wire also they will be forwarded to onClose/onWebsocketClose.
+	 **/
+	public abstract void closeConnection( int code, String message );
+
 	protected abstract void close( InvalidDataException e );
 
 	/**
@@ -76,8 +82,10 @@ public abstract class WebSocket {
 
 	public abstract boolean isClosing();
 
+	public abstract boolean isFlushAndClose();
+
 	public abstract boolean isClosed();
-	
+
 	public abstract Draft getDraft();
 
 	/**

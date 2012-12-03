@@ -189,7 +189,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 
 		synchronized ( connections ) {
 			for( WebSocket ws : connections ) {
-				ws.close( CloseFrame.NORMAL );
+				ws.close( CloseFrame.GOING_AWAY );
 			}
 		}
 		synchronized ( this ) {
@@ -367,6 +367,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 					return;// FIXME controlled shutdown
 				}
 			}
+		
 		} catch ( RuntimeException e ) {
 			// should hopefully never occur
 			handleFatal( null, e );
@@ -397,9 +398,11 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		}
 		ws.workerThread.put( ws );
 	}
+
 	private ByteBuffer takeBuffer() throws InterruptedException {
 		return buffers.take();
 	}
+
 	private void pushBuffer( ByteBuffer buf ) throws InterruptedException {
 		if( buffers.size() > queuesize.intValue() )
 			return;
@@ -505,6 +508,24 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		selector.wakeup();
 	}
 
+	@Override
+	public void onWebsocketCloseInitiated( WebSocket conn, int code, String reason ) {
+		onCloseInitiated( conn, code, reason );
+	}
+
+	@Override
+	public void onWebsocketClosing( WebSocket conn, int code, String reason, boolean remote ) {
+		onClosing( conn, code, reason, remote );
+
+	}
+
+	public void onCloseInitiated( WebSocket conn, int code, String reason ) {
+	}
+
+	public void onClosing( WebSocket conn, int code, String reason, boolean remote ) {
+
+	}
+
 	public final void setWebSocketFactory( WebSocketServerFactory wsf ) {
 		this.wsf = wsf;
 	}
@@ -596,9 +617,9 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 						pushBuffer( buf );
 					}
 				}
+			} catch ( InterruptedException e ) {
 			} catch ( RuntimeException e ) {
 				handleFatal( ws, e );
-			} catch ( InterruptedException e ) {
 			} catch ( Throwable e ) {
 				e.printStackTrace();
 			}

@@ -103,6 +103,12 @@ public interface WebSocketListener {
 	 */
 	public void onWebsocketClose( WebSocket conn, int code, String reason, boolean remote );
 
+	/** called as soon as no further frames are accepted */
+	public void onWebsocketClosing( WebSocket conn, int code, String reason, boolean remote );
+
+	/** send when this peer sends a close handshake */
+	public void onWebsocketCloseInitiated( WebSocket conn, int code, String reason );
+
 	/**
 	 * Called if an exception worth noting occurred.
 	 * If an error causes the connection to fail onClose will be called additionally afterwards.

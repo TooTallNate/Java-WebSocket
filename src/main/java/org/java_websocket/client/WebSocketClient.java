@@ -277,12 +277,11 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		} catch ( CancelledKeyException e ) {
 			conn.eot();
 		} catch ( IOException e ) {
-			// onError( e );
 			conn.eot();
 		} catch ( RuntimeException e ) {
 			// this catch case covers internal errors only and indicates a bug in this websocket implementation
 			onError( e );
-			conn.close( CloseFrame.ABNORMAL_CLOSE );
+			conn.closeConnection( CloseFrame.ABNORMAL_CLOSE, e.getMessage() );
 		}
 	}
 
@@ -407,6 +406,22 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		} catch ( CancelledKeyException e ) {
 			// since such an exception/event will also occur on the selector there is no need to do anything herec
 		}
+	}
+
+	@Override
+	public void onWebsocketCloseInitiated( WebSocket conn, int code, String reason ) {
+		onCloseInitiated( code, reason );
+	}
+
+	@Override
+	public void onWebsocketClosing( WebSocket conn, int code, String reason, boolean remote ) {
+		onClosing( code, reason, remote );
+	}
+
+	public void onCloseInitiated( int code, String reason ) {
+	}
+
+	public void onClosing( int code, String reason, boolean remote ) {
 	}
 
 	public WebSocket getConnection() {
