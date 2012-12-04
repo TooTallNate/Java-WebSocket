@@ -44,7 +44,7 @@ import org.java_websocket.util.Charsetfunctions;
  * 
  */
 public class WebSocketImpl extends WebSocket {
-	
+
 	public static final List<Draft> defaultdraftlist = new ArrayList<Draft>( 4 );
 	static {
 		defaultdraftlist.add( new Draft_17() );
@@ -217,6 +217,10 @@ public class WebSocketImpl extends WebSocket {
 									} catch ( InvalidDataException e ) {
 										flushAndClose( e.getCloseCode(), e.getMessage(), false );
 										return false;
+									} catch ( RuntimeException e ) {
+										wsl.onWebsocketError( this, e );
+										flushAndClose( CloseFrame.NEVERCONNECTED, e.getMessage(), false );
+										return false;
 									}
 									write( d.createHandshake( d.postProcessHandshakeResponseAsServer( handshake, response ), role ) );
 									draft = d;
@@ -263,6 +267,10 @@ public class WebSocketImpl extends WebSocket {
 							wsl.onWebsocketHandshakeReceivedAsClient( this, handshakerequest, handshake );
 						} catch ( InvalidDataException e ) {
 							flushAndClose( e.getCloseCode(), e.getMessage(), false );
+							return false;
+						} catch ( RuntimeException e ) {
+							wsl.onWebsocketError( this, e );
+							flushAndClose( CloseFrame.NEVERCONNECTED, e.getMessage(), false );
 							return false;
 						}
 						open( handshake );
@@ -374,8 +382,13 @@ public class WebSocketImpl extends WebSocket {
 				}
 				if( draft.getCloseHandshakeType() != CloseHandshakeType.NONE ) {
 					try {
-						if( !remote )
-							wsl.onWebsocketCloseInitiated( this, code, message );
+						if( !remote ) {
+							try {
+								wsl.onWebsocketCloseInitiated( this, code, message );
+							} catch ( RuntimeException e ) {
+								wsl.onWebsocketError( this, e );
+							}
+						}
 						sendFrame( new CloseFrameBuilder( code, message ) );
 					} catch ( InvalidDataException e ) {
 						wsl.onWebsocketError( this, e );
@@ -425,7 +438,11 @@ public class WebSocketImpl extends WebSocket {
 				wsl.onWebsocketError( this, e );
 			}
 		}
-		this.wsl.onWebsocketClose( this, code, message, remote );
+		try {
+			this.wsl.onWebsocketClose( this, code, message, remote );
+		} catch ( RuntimeException e ) {
+			wsl.onWebsocketError( this, e );
+		}
 		if( draft != null )
 			draft.reset();
 		tempContiniousFrame = null;
@@ -461,8 +478,11 @@ public class WebSocketImpl extends WebSocket {
 		flushandclosestate = true;
 
 		wsl.onWriteDemand( this ); // ensures that all outgoing frames are flushed before closing the connection
-
-		this.wsl.onWebsocketClosing( this, code, message, remote );
+		try {
+			wsl.onWebsocketClosing( this, code, message, remote );
+		} catch ( RuntimeException e ) {
+			wsl.onWebsocketError( this, e );
+		}
 		if( draft != null )
 			draft.reset();
 		tempContiniousFrame = null;
@@ -577,6 +597,9 @@ public class WebSocketImpl extends WebSocket {
 		} catch ( InvalidDataException e ) {
 			// Stop if the client code throws an exception
 			throw new InvalidHandshakeException( "Handshake data rejected by client." );
+		} catch ( RuntimeException e ) {
+			wsl.onWebsocketError( this, e );
+			throw new InvalidHandshakeException( "rejected because of" + e );
 		}
 
 		// Send
@@ -624,7 +647,11 @@ public class WebSocketImpl extends WebSocket {
 		if( DEBUG )
 			System.out.println( "open using draft: " + draft.getClass().getSimpleName() );
 		handshakeComplete = true;
-		wsl.onWebsocketOpen( this, d );
+		try {
+			wsl.onWebsocketOpen( this, d );
+		} catch ( RuntimeException e ) {
+			wsl.onWebsocketError( this, e );
+		}
 	}
 
 	@Override
