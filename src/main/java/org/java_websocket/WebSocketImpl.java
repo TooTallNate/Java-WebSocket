@@ -44,6 +44,14 @@ import org.java_websocket.util.Charsetfunctions;
  * 
  */
 public class WebSocketImpl extends WebSocket {
+	
+	public static final List<Draft> defaultdraftlist = new ArrayList<Draft>( 4 );
+	static {
+		defaultdraftlist.add( new Draft_17() );
+		defaultdraftlist.add( new Draft_10() );
+		defaultdraftlist.add( new Draft_76() );
+		defaultdraftlist.add( new Draft_75() );
+	}
 
 	public SelectionKey key;
 
@@ -111,12 +119,9 @@ public class WebSocketImpl extends WebSocket {
 	public WebSocketImpl( WebSocketListener listener , List<Draft> drafts , Socket sock ) {
 		this( listener, (Draft) null, sock );
 		this.role = Role.SERVER;
+		// draft.copyInstance will be called when the draft is first needed
 		if( drafts == null || drafts.isEmpty() ) {
-			knownDrafts = new ArrayList<Draft>( 1 );
-			knownDrafts.add( new Draft_17() );
-			knownDrafts.add( new Draft_10() );
-			knownDrafts.add( new Draft_76() );
-			knownDrafts.add( new Draft_75() );
+			knownDrafts = defaultdraftlist;
 		} else {
 			knownDrafts = drafts;
 		}
@@ -130,7 +135,7 @@ public class WebSocketImpl extends WebSocket {
 		inQueue = new LinkedBlockingQueue<ByteBuffer>();
 		this.wsl = listener;
 		this.role = Role.CLIENT;
-		this.draft = draft;
+		this.draft = draft.copyInstance();
 		this.socket = sock;
 	}
 
@@ -194,6 +199,7 @@ public class WebSocketImpl extends WebSocket {
 				if( role == Role.SERVER ) {
 					if( draft == null ) {
 						for( Draft d : knownDrafts ) {
+							d = d.copyInstance();
 							try {
 								d.setParseMode( role );
 								socketBuffer.reset();
