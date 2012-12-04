@@ -1,6 +1,7 @@
 package org.java_websocket;
 
 import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.NotYetConnectedException;
 
@@ -72,8 +73,16 @@ public abstract class WebSocket {
 
 	public abstract void startHandshake( ClientHandshakeBuilder handshakedata ) throws InvalidHandshakeException;
 
+	/**
+	 * @returns null when connections is closed
+	 * @see Socket#getRemoteSocketAddress()
+	 */
 	public abstract InetSocketAddress getRemoteSocketAddress();
 
+	/**
+	 * @returns null when connections is closed
+	 * @see Socket#getLocalSocketAddress()
+	 */
 	public abstract InetSocketAddress getLocalSocketAddress();
 
 	public abstract boolean isConnecting();
