@@ -13,6 +13,7 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -20,6 +21,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -49,12 +51,12 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 * Holds the list of active WebSocket connections. "Active" means WebSocket
 	 * handshake is complete and socket can be written to, or read from.
 	 */
-	private final Set<WebSocket> connections = new HashSet<WebSocket>();
+	private final Collection<WebSocket> connections;
 	/**
 	 * The port number that this WebSocket server should listen on. Default is
 	 * WebSocket.DEFAULT_PORT.
 	 */
-	private InetSocketAddress address;
+	private final InetSocketAddress address;
 	/**
 	 * The socket channel for this WebSocket server.
 	 */
@@ -82,10 +84,11 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 
 	private WebSocketServerFactory wsf = new DefaultWebSocketServerFactory();
 
-	// CONSTRUCTORS ////////////////////////////////////////////////////////////
 	/**
-	 * Nullary constructor. Creates a WebSocketServer that will attempt to
+	 * Creates a WebSocketServer that will attempt to
 	 * listen on port <var>WebSocket.DEFAULT_PORT</var>.
+	 * 
+	 * @see #WebSocketServer(InetSocketAddress, int, List, Collection) more details here
 	 */
 	public WebSocketServer() throws UnknownHostException {
 		this( new InetSocketAddress( WebSocket.DEFAULT_PORT ), DECODERS, null );
@@ -94,15 +97,31 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	/**
 	 * Creates a WebSocketServer that will attempt to bind/listen on the given <var>address</var>.
 	 * 
-	 * @param address
-	 *            The address (host:port) this server should listen on.
+	 * @see #WebSocketServer(InetSocketAddress, int, List, Collection) more details here
 	 */
 	public WebSocketServer( InetSocketAddress address ) {
 		this( address, DECODERS, null );
 	}
 
+	/**
+	 * @see #WebSocketServer(InetSocketAddress, int, List, Collection) more details here
+	 */
 	public WebSocketServer( InetSocketAddress address , int decoders ) {
 		this( address, decoders, null );
+	}
+
+	/**
+	 * @see #WebSocketServer(InetSocketAddress, int, List, Collection) more details here
+	 */
+	public WebSocketServer( InetSocketAddress address , List<Draft> drafts ) {
+		this( address, DECODERS, drafts );
+	}
+
+	/**
+	 * @see #WebSocketServer(InetSocketAddress, int, List, Collection) more details here
+	 */
+	public WebSocketServer( InetSocketAddress address , int decodercount , List<Draft> drafts ) {
+		this( address, decodercount, drafts, new HashSet<WebSocket>() );
 	}
 
 	/**
@@ -111,20 +130,31 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 * 
 	 * @param address
 	 *            The address (host:port) this server should listen on.
-	 * @param draft
-	 *            The version of the WebSocket protocol that this server
-	 *            instance should comply to.
+	 * @param decodercount
+	 *            The number of {@link WebSocketWorker}s that will be used to process the incoming network data. By default this will be <code>Runtime.getRuntime().availableProcessors()</code>
+	 * @param drafts
+	 *            The versions of the WebSocket protocol that this server
+	 *            instance should comply to. Clients that use an other protocol version will be rejected.
+	 * 
+	 * @param connectionscontainer
+	 *            Allows to specify a collection that will be used to store the websockets in. <br>
+	 *            If you plan to often iterate through the currently connected websockets you may want to use a collection that does not require synchronization like a {@link CopyOnWriteArraySet}. In that case make sure that you overload {@link #removeConnection(WebSocket)} and {@link #addConnection(WebSocket)}.<br>By default a {@link HashSet} will be used.
+	 * 
+	 * @see #removeConnection(WebSocket) for more control over syncronized operation
+	 * @see <a href="https://github.com/TooTallNate/Java-WebSocket/wiki/Drafts" > more about drafts
 	 */
-	public WebSocketServer( InetSocketAddress address , List<Draft> drafts ) {
-		this( address, DECODERS, drafts );
-	}
-
-	public WebSocketServer( InetSocketAddress address , int decodercount , List<Draft> drafts ) {
+	public WebSocketServer( InetSocketAddress address , int decodercount , List<Draft> drafts , Collection<WebSocket> connectionscontainer ) {
+		if(address ==null || decodercount<1||connectionscontainer==null){
+			throw new IllegalArgumentException( "address and connectionscontainer must not be null and you need at least 1 decoder" );
+		}
+		
 		if( drafts == null )
 			this.drafts = Collections.emptyList();
 		else
 			this.drafts = drafts;
-		setAddress( address );
+
+		this.address = address;
+		this.connections = connectionscontainer;
 
 		oqueue = new LinkedBlockingQueue<WebSocketImpl>();
 		iqueue = new LinkedList<WebSocketImpl>();
@@ -207,18 +237,8 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 * 
 	 * @return The currently connected clients.
 	 */
-	public Set<WebSocket> connections() {
+	public Collection<WebSocket> connections() {
 		return this.connections;
-	}
-
-	/**
-	 * Sets the address (host:port) that this WebSocketServer should listen on.
-	 * 
-	 * @param address
-	 *            The address (host:port) to listen on.
-	 */
-	public void setAddress( InetSocketAddress address ) {
-		this.address = address;
 	}
 
 	public InetSocketAddress getAddress() {
@@ -352,7 +372,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 					return;// FIXME controlled shutdown
 				}
 			}
-		
+
 		} catch ( RuntimeException e ) {
 			// should hopefully never occur
 			handleFatal( null, e );
@@ -450,10 +470,8 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 
 	@Override
 	public final void onWebsocketOpen( WebSocket conn, Handshakedata handshake ) {
-		synchronized ( connections ) {
-			if( this.connections.add( conn ) ) {
-				onOpen( conn, (ClientHandshake) handshake );
-			}
+		if( addConnection( conn ) ) {
+			onOpen( conn, (ClientHandshake) handshake );
 		}
 	}
 
@@ -462,10 +480,8 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		oqueue.add( (WebSocketImpl) conn );// because the ostream will close the channel
 		selector.wakeup();
 		try {
-			synchronized ( connections ) {
-				if( this.connections.remove( conn ) ) {
-					onClose( conn, code, reason, remote );
-				}
+			if( removeConnection( conn ) ) {
+				onClose( conn, code, reason, remote );
 			}
 		} finally {
 			try {
@@ -475,6 +491,25 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 			}
 		}
 
+	}
+
+	/**
+	 * This method performs remove operations on the connection and therefore also gives control over whether the operation shall be synchronized
+	 * <p>
+	 * {@link #WebSocketServer(InetSocketAddress, int, List, Collection)} allows to specify a collection which will be used to store current connections in.<br>
+	 * Depending on the type on the connection, modifications of that collection may have to be synchronized.
+	 **/
+	protected boolean removeConnection( WebSocket ws ) {
+		synchronized ( connections ) {
+			return this.connections.remove( ws );
+		}
+	}
+
+	/** @see #removeConnection(WebSocket) */
+	protected boolean addConnection( WebSocket ws ) {
+		synchronized ( connections ) {
+			return this.connections.add( ws );
+		}
 	}
 
 	/**
