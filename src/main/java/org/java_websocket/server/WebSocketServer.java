@@ -80,22 +80,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	private int queueinvokes = 0;
 	private AtomicInteger queuesize = new AtomicInteger( 0 );
 
-	private WebSocketServerFactory wsf = new WebSocketServerFactory() {
-		@Override
-		public WebSocketImpl createWebSocket( WebSocketAdapter a, Draft d, Socket s ) {
-			return new WebSocketImpl( a, d, s );
-		}
-
-		@Override
-		public WebSocketImpl createWebSocket( WebSocketAdapter a, List<Draft> d, Socket s ) {
-			return new WebSocketImpl( a, d, s );
-		}
-
-		@Override
-		public SocketChannel wrapChannel( SelectionKey c ) {
-			return (SocketChannel) c.channel();
-		}
-	};
+	private WebSocketServerFactory wsf = new DefaultWebSocketServerFactory();
 
 	// CONSTRUCTORS ////////////////////////////////////////////////////////////
 	/**
