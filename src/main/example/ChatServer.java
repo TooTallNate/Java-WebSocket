@@ -3,7 +3,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.util.Set;
+import java.util.Collection;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
@@ -61,6 +61,9 @@ public class ChatServer extends WebSocketServer {
 	@Override
 	public void onError( WebSocket conn, Exception ex ) {
 		ex.printStackTrace();
+		if( websocket != null ) {
+			// some errors like port binding failed may not be assignable to a specific websocket
+		}
 	}
 
 	/**
@@ -72,7 +75,7 @@ public class ChatServer extends WebSocketServer {
 	 *             When socket related I/O errors occur.
 	 */
 	public void sendToAll( String text ) {
-		Set<WebSocket> con = connections();
+		Collection<WebSocket> con = connections();
 		synchronized ( con ) {
 			for( WebSocket c : con ) {
 				c.send( text );

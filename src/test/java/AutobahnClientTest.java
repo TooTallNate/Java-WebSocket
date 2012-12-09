@@ -8,6 +8,8 @@ import org.java_websocket.WebSocket;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft_17;
+import org.java_websocket.framing.FrameBuilder;
+import org.java_websocket.framing.Framedata;
 import org.java_websocket.handshake.ServerHandshake;
 
 public class AutobahnClientTest extends WebSocketClient {
@@ -120,7 +122,7 @@ public class AutobahnClientTest extends WebSocketClient {
 			e.printStackTrace();
 			System.out.println( "URI should look like ws://localhost:8887 or wss://echo.websocket.org" );
 		} catch ( IOException e ) {
-			e.printStackTrace();
+			e.printStackTrace(); // for System.in reader
 		}
 		System.exit( 0 );
 	}
@@ -148,6 +150,13 @@ public class AutobahnClientTest extends WebSocketClient {
 	@Override
 	public void onClose( int code, String reason, boolean remote ) {
 		System.out.println( "Closed: " + code + " " + reason );
+	}
+
+	@Override
+	public void onWebsocketMessageFragment( WebSocket conn, Framedata frame ) {
+		FrameBuilder builder = (FrameBuilder) frame;
+		builder.setTransferemasked( true );
+		getConnection().sendFrame( frame );
 	}
 
 }
