@@ -49,9 +49,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 * The URI this channel is supposed to connect to.
 	 */
 	private URI uri = null;
-	/**
-	 * The WebSocket instance this channel object wraps.
-	 */
+
 	private WebSocketImpl conn = null;
 	/**
 	 * The SocketChannel instance this channel uses.
@@ -415,6 +413,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
 	public void onClosing( int code, String reason, boolean remote ) {
 	}
+
 
 	public WebSocket getConnection() {
 		return conn;

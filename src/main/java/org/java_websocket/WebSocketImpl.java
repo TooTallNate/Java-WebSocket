@@ -22,7 +22,6 @@ import org.java_websocket.drafts.Draft_75;
 import org.java_websocket.drafts.Draft_76;
 import org.java_websocket.exceptions.IncompleteHandshakeException;
 import org.java_websocket.exceptions.InvalidDataException;
-import org.java_websocket.exceptions.InvalidFrameException;
 import org.java_websocket.exceptions.InvalidHandshakeException;
 import org.java_websocket.exceptions.WebsocketNotConnectedException;
 import org.java_websocket.framing.CloseFrame;
@@ -89,8 +88,7 @@ public class WebSocketImpl extends WebSocket {
 
 	private Role role;
 
-	/** used to join continuous frames */
-	private Framedata tempContiniousFrame;// FIXME out of mem risk
+	private Opcode current_continuous_frame_opcode = null;
 
 	/** the bytes of an incomplete received handshake */
 	private ByteBuffer tmpHandshakeBytes;
@@ -292,7 +290,7 @@ public class WebSocketImpl extends WebSocket {
 	private void decodeFrames( ByteBuffer socketBuffer ) {
 		if( flushandclosestate )
 			return;
-		assert ( !isClosed() );
+
 		List<Framedata> frames;
 		try {
 			frames = draft.translateFrame( socketBuffer );
@@ -302,6 +300,8 @@ public class WebSocketImpl extends WebSocket {
 				if( flushandclosestate )
 					return;
 				Opcode curop = f.getOpcode();
+				boolean fin = f.isFin();
+
 				if( curop == Opcode.CLOSING ) {
 					int code = CloseFrame.NOCODE;
 					String reason = "";
@@ -327,27 +327,40 @@ public class WebSocketImpl extends WebSocket {
 				} else if( curop == Opcode.PONG ) {
 					wsl.onWebsocketPong( this, f );
 					continue;
-				} else {
-					// process non control frames
-					if( tempContiniousFrame == null ) {
-						if( f.getOpcode() == Opcode.CONTINUOUS ) {
-							throw new InvalidFrameException( "unexpected continious frame" );
-						} else if( f.isFin() ) {
-							// receive normal onframe message
-							deliverMessage( f );
-						} else {
-							// remember the frame whose payload is about to be continued
-							tempContiniousFrame = f;
-						}
-					} else if( f.getOpcode() == Opcode.CONTINUOUS ) {
-						tempContiniousFrame.append( f );
-						if( f.isFin() ) {
-							deliverMessage( tempContiniousFrame );
-							tempContiniousFrame = null;
-						}
-					} else {
-						throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "non control or continious frame expected" );
+				} else if( !fin || curop == Opcode.CONTINUOUS ) {
+					if( curop != Opcode.CONTINUOUS ) {
+						if( current_continuous_frame_opcode != null )
+							throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "Previous continuous frame sequence not completed." );
+						current_continuous_frame_opcode = curop;
+					} else if( fin ) {
+						if( current_continuous_frame_opcode == null )
+							throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "Continuous frame sequence was not started." );
+						current_continuous_frame_opcode = null;
+					} else if( current_continuous_frame_opcode == null ) {
+						throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "Continuous frame sequence was not started." );
 					}
+					try {
+						wsl.onWebsocketMessageFragment( this, f );
+					} catch ( RuntimeException e ) {
+						wsl.onWebsocketError( this, e );
+					}
+
+				} else if( current_continuous_frame_opcode != null ) {
+					throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "Continuous frame sequence not completed." );
+				} else if( curop == Opcode.TEXT ) {
+					try {
+						wsl.onWebsocketMessage( this, Charsetfunctions.stringUtf8( f.getPayloadData() ) );
+					} catch ( RuntimeException e ) {
+						wsl.onWebsocketError( this, e );
+					}
+				} else if( curop == Opcode.BINARY ) {
+					try {
+						wsl.onWebsocketMessage( this, f.getPayloadData() );
+					} catch ( RuntimeException e ) {
+						wsl.onWebsocketError( this, e );
+					}
+				} else {
+					throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "non control or continious frame expected" );
 				}
 			}
 		} catch ( InvalidDataException e1 ) {
@@ -431,7 +444,6 @@ public class WebSocketImpl extends WebSocket {
 		}
 		if( draft != null )
 			draft.reset();
-		tempContiniousFrame = null;
 		handshakerequest = null;
 
 		readystate = READYSTATE.CLOSED;
@@ -471,7 +483,6 @@ public class WebSocketImpl extends WebSocket {
 		}
 		if( draft != null )
 			draft.reset();
-		tempContiniousFrame = null;
 		handshakerequest = null;
 	}
 
@@ -608,22 +619,6 @@ public class WebSocketImpl extends WebSocket {
 	private void write( List<ByteBuffer> bufs ) {
 		for( ByteBuffer b : bufs ) {
 			write( b );
-		}
-	}
-
-	private void deliverMessage( Framedata d ) throws InvalidDataException {
-		try {
-			if( d.getOpcode() == Opcode.TEXT ) {
-				wsl.onWebsocketMessage( this, Charsetfunctions.stringUtf8( d.getPayloadData() ) );
-			} else if( d.getOpcode() == Opcode.BINARY ) {
-				wsl.onWebsocketMessage( this, d.getPayloadData() );
-			} else {
-				if( DEBUG )
-					System.out.println( "Ignoring frame:" + d.toString() );
-				assert ( false );
-			}
-		} catch ( RuntimeException e ) {
-			wsl.onWebsocketError( this, e );
 		}
 	}
 
