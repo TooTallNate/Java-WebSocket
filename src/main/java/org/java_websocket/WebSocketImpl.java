@@ -55,7 +55,7 @@ public class WebSocketImpl extends WebSocket {
 
 	public SelectionKey key;
 
-	/* only used to optain the socket addresses*/
+	/* only used to obtain the socket addresses*/
 	public final Socket socket;
 	/** the possibly wrapped channel object whose selection is controlled by {@link #key} */
 	public ByteChannel channel;
@@ -69,25 +69,14 @@ public class WebSocketImpl extends WebSocket {
 	public final BlockingQueue<ByteBuffer> inQueue;
 
 	/**
-	 * Helper variable ment to store the thread which ( exclusively ) triggers this objects decode method.
+	 * Helper variable meant to store the thread which ( exclusively ) triggers this objects decode method.
 	 **/
 	public volatile WebSocketWorker workerThread; // TODO reset worker?
-
-	/**
-	 * Determines whether to receive data as part of the
-	 * handshake, or as part of text/data frame transmitted over the websocket.
-	 */
-	private volatile boolean handshakeComplete = false;
-	/**
-	 * Determines whether we sent already a request to Close the connection or not.
-	 */
-	private volatile boolean closeHandshakeSubmitted = false;
 
 	/** When true no further frames may be submitted to be sent */
 	private volatile boolean flushandclosestate = false;
 
-	/** When true the socket has been closed */
-	private volatile boolean isclosed = false;
+	private READYSTATE readystate = READYSTATE.NOTYETCONNECTED;
 
 	/**
 	 * The listener to notify of WebSocket events.
@@ -135,25 +124,22 @@ public class WebSocketImpl extends WebSocket {
 		inQueue = new LinkedBlockingQueue<ByteBuffer>();
 		this.wsl = listener;
 		this.role = Role.CLIENT;
-		this.draft = draft.copyInstance();
+		if( draft != null )
+			this.draft = draft.copyInstance();
 		this.socket = sock;
 	}
 
 	/**
-	 * Should be called when a Selector has a key that is writable for this
-	 * WebSocketImpl's SocketChannel connection.
 	 * 
-	 * @throws IOException
-	 *             When socket related I/O errors occur.
 	 */
-	public void decode( ByteBuffer socketBuffer ) throws IOException {
+	public void decode( ByteBuffer socketBuffer ) {
 		if( !socketBuffer.hasRemaining() || flushandclosestate )
 			return;
 
 		if( DEBUG )
 			System.out.println( "process(" + socketBuffer.remaining() + "): {" + ( socketBuffer.remaining() > 1000 ? "too big to display" : new String( socketBuffer.array(), socketBuffer.position(), socketBuffer.remaining() ) ) + "}" );
 
-		if( handshakeComplete ) {
+		if( readystate == READYSTATE.OPEN ) {
 			decodeFrames( socketBuffer );
 		} else {
 			if( decodeHandshake( socketBuffer ) ) {
@@ -167,7 +153,7 @@ public class WebSocketImpl extends WebSocket {
 	 * Returns whether the handshake phase has is completed.
 	 * In case of a broken handshake this will be never the case.
 	 **/
-	private boolean decodeHandshake( ByteBuffer socketBufferNew ) throws IOException {
+	private boolean decodeHandshake( ByteBuffer socketBufferNew ) {
 		ByteBuffer socketBuffer;
 		if( tmpHandshakeBytes == null ) {
 			socketBuffer = socketBufferNew;
@@ -324,7 +310,7 @@ public class WebSocketImpl extends WebSocket {
 						code = cf.getCloseCode();
 						reason = cf.getMessage();
 					}
-					if( closeHandshakeSubmitted ) {
+					if( readystate == READYSTATE.CLOSING ) {
 						// complete the close handshake by disconnecting
 						closeConnection( code, reason, true );
 					} else {
@@ -372,12 +358,12 @@ public class WebSocketImpl extends WebSocket {
 	}
 
 	private void close( int code, String message, boolean remote ) {
-		if( !closeHandshakeSubmitted ) {
-			if( handshakeComplete ) {
+		if( readystate != READYSTATE.CLOSING && readystate != READYSTATE.CLOSED ) {
+			if( readystate == READYSTATE.OPEN ) {
 				if( code == CloseFrame.ABNORMAL_CLOSE ) {
 					assert ( remote == false );
+					readystate = READYSTATE.CLOSING;
 					flushAndClose( code, message, false );
-					closeHandshakeSubmitted = true;
 					return;
 				}
 				if( draft.getCloseHandshakeType() != CloseHandshakeType.NONE ) {
@@ -404,7 +390,7 @@ public class WebSocketImpl extends WebSocket {
 			}
 			if( code == CloseFrame.PROTOCOL_ERROR )// this endpoint found a PROTOCOL_ERROR
 				flushAndClose( code, message, remote );
-			closeHandshakeSubmitted = true;
+			readystate = READYSTATE.CLOSING;
 			tmpHandshakeBytes = null;
 			return;
 		}
@@ -425,7 +411,7 @@ public class WebSocketImpl extends WebSocket {
 	 **/
 
 	protected synchronized void closeConnection( int code, String message, boolean remote ) {
-		if( isclosed ) {
+		if( readystate == READYSTATE.CLOSED ) {
 			return;
 		}
 
@@ -448,7 +434,7 @@ public class WebSocketImpl extends WebSocket {
 		tempContiniousFrame = null;
 		handshakerequest = null;
 
-		isclosed = true;
+		readystate = READYSTATE.CLOSED;
 
 	}
 
@@ -583,10 +569,8 @@ public class WebSocketImpl extends WebSocket {
 		}
 	}
 
-	@Override
 	public void startHandshake( ClientHandshakeBuilder handshakedata ) throws InvalidHandshakeException {
-		if( handshakeComplete )
-			throw new IllegalStateException( "Handshake has already been sent." );
+		assert ( readystate != READYSTATE.CONNECTING ) : "shall only be called once";
 
 		// Store the Handshake Request we are about to send
 		this.handshakerequest = draft.postProcessHandshakeRequestAsClient( handshakedata );
@@ -643,10 +627,10 @@ public class WebSocketImpl extends WebSocket {
 		}
 	}
 
-	private void open( Handshakedata d ) throws IOException {
+	private void open( Handshakedata d ) {
 		if( DEBUG )
 			System.out.println( "open using draft: " + draft.getClass().getSimpleName() );
-		handshakeComplete = true;
+		readystate = READYSTATE.OPEN;
 		try {
 			wsl.onWebsocketOpen( this, d );
 		} catch ( RuntimeException e ) {
@@ -656,17 +640,19 @@ public class WebSocketImpl extends WebSocket {
 
 	@Override
 	public boolean isConnecting() {
-		return ( !flushandclosestate && !closeHandshakeSubmitted && !handshakeComplete );
+		assert ( flushandclosestate ? readystate == READYSTATE.CONNECTING : true );
+		return readystate == READYSTATE.CONNECTING; // ifflushandclosestate
 	}
 
 	@Override
 	public boolean isOpen() {
-		return ( !flushandclosestate && !isclosed && !closeHandshakeSubmitted && handshakeComplete );
+		assert ( readystate == READYSTATE.OPEN ? !flushandclosestate : true );
+		return readystate == READYSTATE.OPEN;
 	}
 
 	@Override
 	public boolean isClosing() {
-		return ( !isclosed && closeHandshakeSubmitted );
+		return readystate == READYSTATE.CLOSING;
 	}
 
 	@Override
@@ -676,29 +662,12 @@ public class WebSocketImpl extends WebSocket {
 
 	@Override
 	public boolean isClosed() {
-		return isclosed;
+		return readystate == READYSTATE.CLOSED;
 	}
 
-	/**
-	 * Retrieve the WebSocketImpl 'readyState'.
-	 * This represents the state of the connection.
-	 * It returns a numerical value, as per W3C WebSockets specs.
-	 * 
-	 * @return Returns '0 = CONNECTING', '1 = OPEN', '2 = CLOSING' or '3 = CLOSED'
-	 */
 	@Override
-	public int getReadyState() {
-		if( isConnecting() ) {
-			return READY_STATE_CONNECTING;
-		} else if( isOpen() ) {
-			return READY_STATE_OPEN;
-		} else if( isClosing() ) {
-			return READY_STATE_CLOSING;
-		} else if( isFlushAndClose() ) {
-			return READY_STATE_CLOSED;
-		}
-		assert ( false );
-		return -1; // < This can't happen, by design!
+	public READYSTATE getReadyState() {
+		return readystate;
 	}
 
 	@Override

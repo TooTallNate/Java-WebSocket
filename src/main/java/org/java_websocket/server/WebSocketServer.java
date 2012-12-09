@@ -138,16 +138,17 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 * 
 	 * @param connectionscontainer
 	 *            Allows to specify a collection that will be used to store the websockets in. <br>
-	 *            If you plan to often iterate through the currently connected websockets you may want to use a collection that does not require synchronization like a {@link CopyOnWriteArraySet}. In that case make sure that you overload {@link #removeConnection(WebSocket)} and {@link #addConnection(WebSocket)}.<br>By default a {@link HashSet} will be used.
+	 *            If you plan to often iterate through the currently connected websockets you may want to use a collection that does not require synchronization like a {@link CopyOnWriteArraySet}. In that case make sure that you overload {@link #removeConnection(WebSocket)} and {@link #addConnection(WebSocket)}.<br>
+	 *            By default a {@link HashSet} will be used.
 	 * 
 	 * @see #removeConnection(WebSocket) for more control over syncronized operation
 	 * @see <a href="https://github.com/TooTallNate/Java-WebSocket/wiki/Drafts" > more about drafts
 	 */
 	public WebSocketServer( InetSocketAddress address , int decodercount , List<Draft> drafts , Collection<WebSocket> connectionscontainer ) {
-		if(address ==null || decodercount<1||connectionscontainer==null){
+		if( address == null || decodercount < 1 || connectionscontainer == null ) {
 			throw new IllegalArgumentException( "address and connectionscontainer must not be null and you need at least 1 decoder" );
 		}
-		
+
 		if( drafts == null )
 			this.drafts = Collections.emptyList();
 		else
@@ -630,9 +631,6 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 					assert ( buf != null );
 					try {
 						ws.decode( buf );
-						// ws.flush();
-					} catch ( IOException e ) {
-						handleIOException( ws, e );
 					} finally {
 						pushBuffer( buf );
 					}
@@ -640,8 +638,6 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 			} catch ( InterruptedException e ) {
 			} catch ( RuntimeException e ) {
 				handleFatal( ws, e );
-			} catch ( Throwable e ) {
-				e.printStackTrace();
 			}
 		}
 	}

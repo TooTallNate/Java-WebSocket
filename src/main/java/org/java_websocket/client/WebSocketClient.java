@@ -20,6 +20,7 @@ import java.util.concurrent.CountDownLatch;
 
 import org.java_websocket.SocketChannelIOHelper;
 import org.java_websocket.WebSocket;
+import org.java_websocket.WebSocket.READYSTATE;
 import org.java_websocket.WebSocketAdapter;
 import org.java_websocket.WebSocketFactory;
 import org.java_websocket.WebSocketImpl;
@@ -330,15 +331,12 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	}
 
 	/**
-	 * Retrieve the WebSocket 'readyState'.
 	 * This represents the state of the connection.
-	 * It returns a numerical value, as per W3C WebSockets specs.
-	 * 
-	 * @return Returns '0 = CONNECTING', '1 = OPEN', '2 = CLOSING' or '3 = CLOSED'
+	 * You can use this method instead of
 	 */
-	public int getReadyState() {
+	public READYSTATE getReadyState() {
 		if( conn == null ) {
-			return WebSocket.READY_STATE_CONNECTING;
+			return READYSTATE.NOTYETCONNECTED;
 		}
 		return conn.getReadyState();
 	}
