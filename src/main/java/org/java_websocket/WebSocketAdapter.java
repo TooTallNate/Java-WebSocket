@@ -1,7 +1,5 @@
 package org.java_websocket;
 
-import java.nio.ByteBuffer;
-
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.framing.Framedata;
@@ -9,10 +7,12 @@ import org.java_websocket.framing.Framedata.Opcode;
 import org.java_websocket.framing.FramedataImpl1;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.handshake.HandshakeImpl1Server;
-import org.java_websocket.handshake.Handshakedata;
 import org.java_websocket.handshake.ServerHandshake;
 import org.java_websocket.handshake.ServerHandshakeBuilder;
 
+/**
+ * This class default implements all methods of the WebSocketListener that can be overridden optionally when advances functionalities is needed.<br>
+ **/
 public abstract class WebSocketAdapter implements WebSocketListener {
 
 	/**
@@ -25,11 +25,6 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 		return new HandshakeImpl1Server();
 	}
 
-	/**
-	 * This default implementation does not do anything which will cause connections to be accepted. Go ahead and overwrite it.
-	 * 
-	 * @see org.java_websocket.WebSocketListener#onWebsocketHandshakeReceivedAsClient(WebSocket, ClientHandshake, ServerHandshake)
-	 */
 	@Override
 	public void onWebsocketHandshakeReceivedAsClient( WebSocket conn, ClientHandshake request, ServerHandshake response ) throws InvalidDataException {
 	}
@@ -44,46 +39,19 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	}
 
 	/**
-	 * This default implementation does not do anything. Go ahead and overwrite it.
+	 * This default implementation does not do anything. Go ahead and overwrite it
 	 * 
-	 * @see org.java_websocket.WebSocketListener#onWebsocketMessage(WebSocket, String)
+	 * @see org.java_websocket.WebSocketListener#onWebsocketMessageFragment(WebSocket, Framedata)
 	 */
 	@Override
-	public void onWebsocketMessage( WebSocket conn, String message ) {
-	}
-
-	/**
-	 * This default implementation does not do anything. Go ahead and overwrite it.
-	 * 
-	 * @see @see org.java_websocket.WebSocketListener#onWebsocketOpen(WebSocket, Handshakedata)
-	 */
-	@Override
-	public void onWebsocketOpen( WebSocket conn, Handshakedata handshake ) {
-	}
-
-	/**
-	 * This default implementation does not do anything. Go ahead and overwrite it.
-	 * 
-	 * @see @see org.java_websocket.WebSocketListener#onWebsocketClose(WebSocket, int, String, boolean)
-	 */
-	@Override
-	public void onWebsocketClose( WebSocket conn, int code, String reason, boolean remote ) {
-	}
-
-	/**
-	 * This default implementation does not do anything. Go ahead and overwrite it.
-	 * 
-	 * @see @see org.java_websocket.WebSocketListener#onWebsocketMessage(WebSocket, byte[])
-	 */
-	@Override
-	public void onWebsocketMessage( WebSocket conn, ByteBuffer blob ) {
+	public void onWebsocketMessageFragment( WebSocket conn, Framedata frame ) {
 	}
 
 	/**
 	 * This default implementation will send a pong in response to the received ping.
 	 * The pong frame will have the same payload as the ping frame.
 	 * 
-	 * @see @see org.java_websocket.WebSocketListener#onWebsocketPing(WebSocket, Framedata)
+	 * @see org.java_websocket.WebSocketListener#onWebsocketPing(WebSocket, Framedata)
 	 */
 	@Override
 	public void onWebsocketPing( WebSocket conn, Framedata f ) {
@@ -117,15 +85,6 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	@Override
 	public String getFlashPolicy( WebSocket conn ) {
 		return "<cross-domain-policy><allow-access-from domain=\"*\" to-ports=\"" + conn.getLocalSocketAddress().getPort() + "\" /></cross-domain-policy>\0";
-	}
-
-	/**
-	 * This default implementation does not do anything. Go ahead and overwrite it.
-	 * 
-	 * @see @see org.java_websocket.WebSocketListener#onWebsocketError(WebSocket, Exception)
-	 */
-	@Override
-	public void onWebsocketError( WebSocket conn, Exception ex ) {
 	}
 
 }
