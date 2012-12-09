@@ -20,7 +20,7 @@ public interface WebSocketListener {
 	/**
 	 * Called on the server side when the socket connection is first established, and the WebSocket
 	 * handshake has been received. This method allows to deny connections based on the received handshake.<br>
-	 * By behavior this method only requires protocol compliance.
+	 * By default this method only requires protocol compliance.
 	 * 
 	 * @param conn
 	 *            The WebSocket related to this event
@@ -84,6 +84,8 @@ public interface WebSocketListener {
 	 */
 	public void onWebsocketMessage( WebSocket conn, ByteBuffer blob );
 
+	public void onWebsocketMessageFragment( WebSocket conn, Framedata frame );
+
 	/**
 	 * Called after <var>onHandshakeReceived</var> returns <var>true</var>.
 	 * Indicates that a complete WebSocket connection has been established,
@@ -101,7 +103,13 @@ public interface WebSocketListener {
 	 * @param conn
 	 *            The <tt>WebSocket</tt> instance this event is occuring on.
 	 */
-	public void onWebsocketClose( WebSocket conn, int code, String reason, boolean remote );
+	public void onWebsocketClose( WebSocket ws, int code, String reason, boolean remote );
+
+	/** called as soon as no further frames are accepted */
+	public void onWebsocketClosing( WebSocket ws, int code, String reason, boolean remote );
+
+	/** send when this peer sends a close handshake */
+	public void onWebsocketCloseInitiated( WebSocket ws, int code, String reason );
 
 	/**
 	 * Called if an exception worth noting occurred.

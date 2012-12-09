@@ -53,9 +53,9 @@ public class SocketChannelIOHelper {
 			} while ( buffer != null );
 		}
 
-		if( ws.isClosed() ) {
+		if( ws.outQueue.isEmpty() && ws.isFlushAndClose() ) {
 			synchronized ( ws ) {
-				sockchannel.close();
+				ws.closeConnection();
 			}
 		}
 		return sockchannel instanceof WrappedByteChannel == true ? !( (WrappedByteChannel) sockchannel ).isNeedWrite() : true;

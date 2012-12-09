@@ -84,13 +84,13 @@ public abstract class Draft {
 		}
 
 		if( role == Role.CLIENT ) {
-		    // translating/parsing the response from the SERVER
+			// translating/parsing the response from the SERVER
 			handshake = new HandshakeImpl1Server();
 			ServerHandshakeBuilder serverhandshake = (ServerHandshakeBuilder) handshake;
 			serverhandshake.setHttpStatus( Short.parseShort( firstLineTokens[ 1 ] ) );
 			serverhandshake.setHttpStatusMessage( firstLineTokens[ 2 ] );
 		} else {
-		    // translating/parsing the request from the CLIENT
+			// translating/parsing the request from the CLIENT
 			ClientHandshakeBuilder clienthandshake = new HandshakeImpl1Client();
 			clienthandshake.setResourceDescriptor( firstLineTokens[ 1 ] );
 			handshake = clienthandshake;
@@ -169,6 +169,12 @@ public abstract class Draft {
 	public abstract List<Framedata> translateFrame( ByteBuffer buffer ) throws InvalidDataException;
 
 	public abstract CloseHandshakeType getCloseHandshakeType();
+
+	/**
+	 * Drafts must only be by one websocket at all. To prevent drafts to be used more than once the Websocket implementation should call this method in order to create a new usable version of a given draft instance.<br>
+	 * The copy can be safely used in conjunction with a new websocket connection.
+	 * */
+	public abstract Draft copyInstance();
 
 	public Handshakedata translateHandshake( ByteBuffer buf ) throws InvalidHandshakeException {
 		return translateHandshakeHttp( buf, role );

@@ -202,4 +202,9 @@ public class Draft_75 extends Draft {
 		newbuffer.put( full );
 		return newbuffer;
 	}
+
+	@Override
+	public Draft copyInstance() {
+		return new Draft_75();
+	}
 }

@@ -1,28 +1,27 @@
 package org.java_websocket;
 
 import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.NotYetConnectedException;
 
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.exceptions.InvalidDataException;
-import org.java_websocket.exceptions.InvalidHandshakeException;
 import org.java_websocket.framing.Framedata;
-import org.java_websocket.handshake.ClientHandshakeBuilder;
 
 public abstract class WebSocket {
 	public enum Role {
 		CLIENT, SERVER
 	}
 
+	public enum READYSTATE {
+		NOTYETCONNECTED, CONNECTING, OPEN, CLOSING, CLOSED;
+	}
+
 	public static int RCVBUF = 16384;
 
 	public static/*final*/boolean DEBUG = false; // must be final in the future in order to take advantage of VM optimization
 
-	public static final int READY_STATE_CONNECTING = 0;
-	public static final int READY_STATE_OPEN = 1;
-	public static final int READY_STATE_CLOSING = 2;
-	public static final int READY_STATE_CLOSED = 3;
 	/**
 	 * The default port of WebSockets, as defined in the spec. If the nullary
 	 * constructor is used, DEFAULT_PORT will be the port the WebSocketServer
@@ -39,6 +38,12 @@ public abstract class WebSocket {
 	public abstract void close( int code, String message );
 
 	public abstract void close( int code );
+
+	/**
+	 * This will close the connection immediately without a proper close handshake.
+	 * The code and the message therefore won't be transfered over the wire also they will be forwarded to onClose/onWebsocketClose.
+	 **/
+	public abstract void closeConnection( int code, String message );
 
 	protected abstract void close( InvalidDataException e );
 
@@ -64,10 +69,16 @@ public abstract class WebSocket {
 
 	public abstract boolean hasBufferedData();
 
-	public abstract void startHandshake( ClientHandshakeBuilder handshakedata ) throws InvalidHandshakeException;
-
+	/**
+	 * @returns null when connections is closed
+	 * @see Socket#getRemoteSocketAddress()
+	 */
 	public abstract InetSocketAddress getRemoteSocketAddress();
 
+	/**
+	 * @returns null when connections is closed
+	 * @see Socket#getLocalSocketAddress()
+	 */
 	public abstract InetSocketAddress getLocalSocketAddress();
 
 	public abstract boolean isConnecting();
@@ -76,8 +87,15 @@ public abstract class WebSocket {
 
 	public abstract boolean isClosing();
 
+	/**
+	 * Returns true when no further frames may be submitted<br>
+	 * This happens before the socket connection is closed.
+	 */
+	public abstract boolean isFlushAndClose();
+
+	/** Returns whether the close handshake has been completed and the socket is closed. */
 	public abstract boolean isClosed();
-	
+
 	public abstract Draft getDraft();
 
 	/**
@@ -87,5 +105,5 @@ public abstract class WebSocket {
 	 * 
 	 * @return Returns '0 = CONNECTING', '1 = OPEN', '2 = CLOSING' or '3 = CLOSED'
 	 */
-	public abstract int getReadyState();
+	public abstract READYSTATE getReadyState();
 }
