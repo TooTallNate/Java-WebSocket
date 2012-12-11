@@ -96,6 +96,8 @@ The vm option `-Djavax.net.debug=all` can help to find out if there is a problem
 
 It is currently not possible to accept ws and wss connections at the same time via the same websocket server instance.
 
+For some reason firefox does not allow multible connections to the same wss server if the server uses a different port than the default port(443).
+
 I ( @Davidiusdadi ) would be glad if you would give some feedback whether wss is working fine for you or not.
 
 Minimum Required JDK

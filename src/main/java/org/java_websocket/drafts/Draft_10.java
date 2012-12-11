@@ -387,6 +387,11 @@ public class Draft_10 extends Draft {
 	}
 
 	@Override
+	public Draft copyInstance() {
+		return new Draft_10();
+	}
+
+	@Override
 	public CloseHandshakeType getCloseHandshakeType() {
 		return CloseHandshakeType.TWOWAY;
 	}

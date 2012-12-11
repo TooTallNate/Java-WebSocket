@@ -12,7 +12,6 @@ import java.nio.channels.NotYetConnectedException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
-import java.nio.channels.UnresolvedAddressException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +20,7 @@ import java.util.concurrent.CountDownLatch;
 
 import org.java_websocket.SocketChannelIOHelper;
 import org.java_websocket.WebSocket;
+import org.java_websocket.WebSocket.READYSTATE;
 import org.java_websocket.WebSocketAdapter;
 import org.java_websocket.WebSocketFactory;
 import org.java_websocket.WebSocketImpl;
@@ -49,9 +49,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 * The URI this channel is supposed to connect to.
 	 */
 	private URI uri = null;
-	/**
-	 * The WebSocket instance this channel object wraps.
-	 */
+
 	private WebSocketImpl conn = null;
 	/**
 	 * The SocketChannel instance this channel uses.
@@ -220,16 +218,11 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		} catch ( ClosedByInterruptException e ) {
 			onWebsocketError( null, e );
 			return;
-		} catch ( IOException e ) {//
+		} catch ( /*IOException | SecurityException | UnresolvedAddressException*/Exception e ) {//
 			onWebsocketError( conn, e );
+			conn.closeConnection( CloseFrame.NEVERCONNECTED, e.getMessage() );
 			return;
-		} catch ( SecurityException e ) {
-			onWebsocketError( conn, e );
-			return;
-		} catch ( UnresolvedAddressException e ) {
-			onWebsocketError( conn, e );
-			return;
-		}
+		}  
 		conn = (WebSocketImpl) wf.createWebSocket( this, draft, channel.socket() );
 		ByteBuffer buff = ByteBuffer.allocate( WebSocket.RCVBUF );
 		try/*IO*/{
@@ -277,12 +270,11 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		} catch ( CancelledKeyException e ) {
 			conn.eot();
 		} catch ( IOException e ) {
-			// onError( e );
 			conn.eot();
 		} catch ( RuntimeException e ) {
 			// this catch case covers internal errors only and indicates a bug in this websocket implementation
 			onError( e );
-			conn.close( CloseFrame.ABNORMAL_CLOSE );
+			conn.closeConnection( CloseFrame.ABNORMAL_CLOSE, e.getMessage() );
 		}
 	}
 
@@ -337,15 +329,12 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	}
 
 	/**
-	 * Retrieve the WebSocket 'readyState'.
 	 * This represents the state of the connection.
-	 * It returns a numerical value, as per W3C WebSockets specs.
-	 * 
-	 * @return Returns '0 = CONNECTING', '1 = OPEN', '2 = CLOSING' or '3 = CLOSED'
+	 * You can use this method instead of
 	 */
-	public int getReadyState() {
+	public READYSTATE getReadyState() {
 		if( conn == null ) {
-			return WebSocket.READY_STATE_CONNECTING;
+			return READYSTATE.NOTYETCONNECTED;
 		}
 		return conn.getReadyState();
 	}
@@ -408,6 +397,23 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			// since such an exception/event will also occur on the selector there is no need to do anything herec
 		}
 	}
+
+	@Override
+	public void onWebsocketCloseInitiated( WebSocket conn, int code, String reason ) {
+		onCloseInitiated( code, reason );
+	}
+
+	@Override
+	public void onWebsocketClosing( WebSocket conn, int code, String reason, boolean remote ) {
+		onClosing( code, reason, remote );
+	}
+
+	public void onCloseInitiated( int code, String reason ) {
+	}
+
+	public void onClosing( int code, String reason, boolean remote ) {
+	}
+
 
 	public WebSocket getConnection() {
 		return conn;

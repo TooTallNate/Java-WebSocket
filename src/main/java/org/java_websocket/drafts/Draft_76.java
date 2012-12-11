@@ -234,4 +234,9 @@ public class Draft_76 extends Draft_75 {
 	public CloseHandshakeType getCloseHandshakeType() {
 		return CloseHandshakeType.ONEWAY;
 	}
+
+	@Override
+	public Draft copyInstance() {
+		return new Draft_76();
+	}
 }

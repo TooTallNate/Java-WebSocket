@@ -6,6 +6,8 @@ import java.util.Collections;
 import org.java_websocket.WebSocket;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft_17;
+import org.java_websocket.framing.FrameBuilder;
+import org.java_websocket.framing.Framedata;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 
@@ -45,6 +47,13 @@ public class AutobahnServerTest extends WebSocketServer {
 	@Override
 	public void onMessage( WebSocket conn, ByteBuffer blob ) {
 		conn.send( blob );
+	}
+
+	@Override
+	public void onWebsocketMessageFragment( WebSocket conn, Framedata frame ) {
+		FrameBuilder builder = (FrameBuilder) frame;
+		builder.setTransferemasked( false );
+		conn.sendFrame( frame );
 	}
 
 	public static void main( String[] args ) throws  UnknownHostException {

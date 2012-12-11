@@ -20,4 +20,9 @@ public class Draft_17 extends Draft_10 {
 		return request;
 	}
 
+	@Override
+	public Draft copyInstance() {
+		return new Draft_17();
+	}
+
 }

@@ -21,7 +21,7 @@ public class SSLServerExample {
 	public static void main( String[] args ) throws Exception {
 		WebSocket.DEBUG = true;
 
-		ChatServer chatserver = new ChatServer( 8887 );
+		ChatServer chatserver = new ChatServer( 8887 ); // Firefox does allow multible ssl connection only via port 443 //tested on FF16
 
 		// load up the key store
 		String STORETYPE = "JKS";

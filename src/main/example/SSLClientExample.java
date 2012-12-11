@@ -77,6 +77,7 @@ public class SSLClientExample {
 		SSLContext sslContext = null;
 		sslContext = SSLContext.getInstance( "TLS" );
 		sslContext.init( kmf.getKeyManagers(), tmf.getTrustManagers(), null );
+		// sslContext.init( null, null, null ); // will use java's default key and trust store which is sufficient unless you deal with self-signed certificates
 
 		chatclient.setWebSocketFactory( new DefaultSSLWebSocketClientFactory( sslContext ) );
 

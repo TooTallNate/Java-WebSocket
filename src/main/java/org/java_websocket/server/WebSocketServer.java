@@ -13,6 +13,7 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -20,6 +21,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -49,12 +51,12 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 * Holds the list of active WebSocket connections. "Active" means WebSocket
 	 * handshake is complete and socket can be written to, or read from.
 	 */
-	private final Set<WebSocket> connections = new HashSet<WebSocket>();
+	private final Collection<WebSocket> connections;
 	/**
 	 * The port number that this WebSocket server should listen on. Default is
 	 * WebSocket.DEFAULT_PORT.
 	 */
-	private InetSocketAddress address;
+	private final InetSocketAddress address;
 	/**
 	 * The socket channel for this WebSocket server.
 	 */
@@ -80,27 +82,13 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	private int queueinvokes = 0;
 	private AtomicInteger queuesize = new AtomicInteger( 0 );
 
-	private WebSocketServerFactory wsf = new WebSocketServerFactory() {
-		@Override
-		public WebSocketImpl createWebSocket( WebSocketAdapter a, Draft d, Socket s ) {
-			return new WebSocketImpl( a, d, s );
-		}
+	private WebSocketServerFactory wsf = new DefaultWebSocketServerFactory();
 
-		@Override
-		public WebSocketImpl createWebSocket( WebSocketAdapter a, List<Draft> d, Socket s ) {
-			return new WebSocketImpl( a, d, s );
-		}
-
-		@Override
-		public SocketChannel wrapChannel( SelectionKey c ) {
-			return (SocketChannel) c.channel();
-		}
-	};
-
-	// CONSTRUCTORS ////////////////////////////////////////////////////////////
 	/**
-	 * Nullary constructor. Creates a WebSocketServer that will attempt to
+	 * Creates a WebSocketServer that will attempt to
 	 * listen on port <var>WebSocket.DEFAULT_PORT</var>.
+	 * 
+	 * @see #WebSocketServer(InetSocketAddress, int, List, Collection) more details here
 	 */
 	public WebSocketServer() throws UnknownHostException {
 		this( new InetSocketAddress( WebSocket.DEFAULT_PORT ), DECODERS, null );
@@ -109,15 +97,31 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	/**
 	 * Creates a WebSocketServer that will attempt to bind/listen on the given <var>address</var>.
 	 * 
-	 * @param address
-	 *            The address (host:port) this server should listen on.
+	 * @see #WebSocketServer(InetSocketAddress, int, List, Collection) more details here
 	 */
 	public WebSocketServer( InetSocketAddress address ) {
 		this( address, DECODERS, null );
 	}
 
+	/**
+	 * @see #WebSocketServer(InetSocketAddress, int, List, Collection) more details here
+	 */
 	public WebSocketServer( InetSocketAddress address , int decoders ) {
 		this( address, decoders, null );
+	}
+
+	/**
+	 * @see #WebSocketServer(InetSocketAddress, int, List, Collection) more details here
+	 */
+	public WebSocketServer( InetSocketAddress address , List<Draft> drafts ) {
+		this( address, DECODERS, drafts );
+	}
+
+	/**
+	 * @see #WebSocketServer(InetSocketAddress, int, List, Collection) more details here
+	 */
+	public WebSocketServer( InetSocketAddress address , int decodercount , List<Draft> drafts ) {
+		this( address, decodercount, drafts, new HashSet<WebSocket>() );
 	}
 
 	/**
@@ -126,20 +130,32 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 * 
 	 * @param address
 	 *            The address (host:port) this server should listen on.
-	 * @param draft
-	 *            The version of the WebSocket protocol that this server
-	 *            instance should comply to.
+	 * @param decodercount
+	 *            The number of {@link WebSocketWorker}s that will be used to process the incoming network data. By default this will be <code>Runtime.getRuntime().availableProcessors()</code>
+	 * @param drafts
+	 *            The versions of the WebSocket protocol that this server
+	 *            instance should comply to. Clients that use an other protocol version will be rejected.
+	 * 
+	 * @param connectionscontainer
+	 *            Allows to specify a collection that will be used to store the websockets in. <br>
+	 *            If you plan to often iterate through the currently connected websockets you may want to use a collection that does not require synchronization like a {@link CopyOnWriteArraySet}. In that case make sure that you overload {@link #removeConnection(WebSocket)} and {@link #addConnection(WebSocket)}.<br>
+	 *            By default a {@link HashSet} will be used.
+	 * 
+	 * @see #removeConnection(WebSocket) for more control over syncronized operation
+	 * @see <a href="https://github.com/TooTallNate/Java-WebSocket/wiki/Drafts" > more about drafts
 	 */
-	public WebSocketServer( InetSocketAddress address , List<Draft> drafts ) {
-		this( address, DECODERS, drafts );
-	}
+	public WebSocketServer( InetSocketAddress address , int decodercount , List<Draft> drafts , Collection<WebSocket> connectionscontainer ) {
+		if( address == null || decodercount < 1 || connectionscontainer == null ) {
+			throw new IllegalArgumentException( "address and connectionscontainer must not be null and you need at least 1 decoder" );
+		}
 
-	public WebSocketServer( InetSocketAddress address , int decodercount , List<Draft> drafts ) {
 		if( drafts == null )
 			this.drafts = Collections.emptyList();
 		else
 			this.drafts = drafts;
-		setAddress( address );
+
+		this.address = address;
+		this.connections = connectionscontainer;
 
 		oqueue = new LinkedBlockingQueue<WebSocketImpl>();
 		iqueue = new LinkedList<WebSocketImpl>();
@@ -175,10 +191,6 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 * 
 	 * If this method is called before the server is started it will never start.
 	 * 
-	 * Therefore
-	 * 
-	 * Additionally
-	 * 
 	 * @param timeout
 	 *            Specifies how many milliseconds shall pass between initiating the close handshakes with the connected clients and closing the servers socket channel.
 	 * 
@@ -193,7 +205,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 
 		synchronized ( connections ) {
 			for( WebSocket ws : connections ) {
-				ws.close( CloseFrame.NORMAL );
+				ws.close( CloseFrame.GOING_AWAY );
 			}
 		}
 		synchronized ( this ) {
@@ -226,18 +238,8 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 * 
 	 * @return The currently connected clients.
 	 */
-	public Set<WebSocket> connections() {
+	public Collection<WebSocket> connections() {
 		return this.connections;
-	}
-
-	/**
-	 * Sets the address (host:port) that this WebSocketServer should listen on.
-	 * 
-	 * @param address
-	 *            The address (host:port) to listen on.
-	 */
-	public void setAddress( InetSocketAddress address ) {
-		this.address = address;
 	}
 
 	public InetSocketAddress getAddress() {
@@ -371,6 +373,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 					return;// FIXME controlled shutdown
 				}
 			}
+
 		} catch ( RuntimeException e ) {
 			// should hopefully never occur
 			handleFatal( null, e );
@@ -401,9 +404,11 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		}
 		ws.workerThread.put( ws );
 	}
+
 	private ByteBuffer takeBuffer() throws InterruptedException {
 		return buffers.take();
 	}
+
 	private void pushBuffer( ByteBuffer buf ) throws InterruptedException {
 		if( buffers.size() > queuesize.intValue() )
 			return;
@@ -421,7 +426,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	private void handleIOException( WebSocket conn, IOException ex ) {
 		onWebsocketError( conn, ex );// conn may be null here
 		if( conn != null ) {
-			conn.close( CloseFrame.ABNORMAL_CLOSE );
+			conn.closeConnection( CloseFrame.ABNORMAL_CLOSE, ex.getMessage() );
 		}
 	}
 
@@ -432,6 +437,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		} catch ( IOException e1 ) {
 			onError( null, e1 );
 		} catch ( InterruptedException e1 ) {
+			Thread.currentThread().interrupt();
 			onError( null, e1 );
 		}
 	}
@@ -465,10 +471,8 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 
 	@Override
 	public final void onWebsocketOpen( WebSocket conn, Handshakedata handshake ) {
-		synchronized ( connections ) {
-			if( this.connections.add( conn ) ) {
-				onOpen( conn, (ClientHandshake) handshake );
-			}
+		if( addConnection( conn ) ) {
+			onOpen( conn, (ClientHandshake) handshake );
 		}
 	}
 
@@ -477,20 +481,36 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		oqueue.add( (WebSocketImpl) conn );// because the ostream will close the channel
 		selector.wakeup();
 		try {
-			synchronized ( connections ) {
-				if( this.connections.remove( conn ) ) {
-					onClose( conn, code, reason, remote );
-				}
+			if( removeConnection( conn ) ) {
+				onClose( conn, code, reason, remote );
 			}
 		} finally {
 			try {
 				releaseBuffers( conn );
 			} catch ( InterruptedException e ) {
-				e.printStackTrace();
-				// TODO handle InterruptedException
+				Thread.currentThread().interrupt();
 			}
 		}
 
+	}
+
+	/**
+	 * This method performs remove operations on the connection and therefore also gives control over whether the operation shall be synchronized
+	 * <p>
+	 * {@link #WebSocketServer(InetSocketAddress, int, List, Collection)} allows to specify a collection which will be used to store current connections in.<br>
+	 * Depending on the type on the connection, modifications of that collection may have to be synchronized.
+	 **/
+	protected boolean removeConnection( WebSocket ws ) {
+		synchronized ( connections ) {
+			return this.connections.remove( ws );
+		}
+	}
+
+	/** @see #removeConnection(WebSocket) */
+	protected boolean addConnection( WebSocket ws ) {
+		synchronized ( connections ) {
+			return this.connections.add( ws );
+		}
 	}
 
 	/**
@@ -507,6 +527,24 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		WebSocketImpl conn = (WebSocketImpl) w;
 		oqueue.add( conn );
 		selector.wakeup();
+	}
+
+	@Override
+	public void onWebsocketCloseInitiated( WebSocket conn, int code, String reason ) {
+		onCloseInitiated( conn, code, reason );
+	}
+
+	@Override
+	public void onWebsocketClosing( WebSocket conn, int code, String reason, boolean remote ) {
+		onClosing( conn, code, reason, remote );
+
+	}
+
+	public void onCloseInitiated( WebSocket conn, int code, String reason ) {
+	}
+
+	public void onClosing( WebSocket conn, int code, String reason, boolean remote ) {
+
 	}
 
 	public final void setWebSocketFactory( WebSocketServerFactory wsf ) {
@@ -593,18 +631,13 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 					assert ( buf != null );
 					try {
 						ws.decode( buf );
-						// ws.flush();
-					} catch ( IOException e ) {
-						handleIOException( ws, e );
 					} finally {
 						pushBuffer( buf );
 					}
 				}
+			} catch ( InterruptedException e ) {
 			} catch ( RuntimeException e ) {
 				handleFatal( ws, e );
-			} catch ( InterruptedException e ) {
-			} catch ( Throwable e ) {
-				e.printStackTrace();
 			}
 		}
 	}
