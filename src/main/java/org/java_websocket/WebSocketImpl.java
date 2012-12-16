@@ -75,7 +75,7 @@ public class WebSocketImpl extends WebSocket {
 	/** When true no further frames may be submitted to be sent */
 	private volatile boolean flushandclosestate = false;
 
-	private READYSTATE readystate = READYSTATE.NOTYETCONNECTED;
+	private READYSTATE readystate = READYSTATE.NOT_YET_CONNECTED;
 
 	/**
 	 * The listener to notify of WebSocket events.
@@ -203,7 +203,7 @@ public class WebSocketImpl extends WebSocket {
 										return false;
 									} catch ( RuntimeException e ) {
 										wsl.onWebsocketError( this, e );
-										flushAndClose( CloseFrame.NEVERCONNECTED, e.getMessage(), false );
+										flushAndClose( CloseFrame.NEVER_CONNECTED, e.getMessage(), false );
 										return false;
 									}
 									write( d.createHandshake( d.postProcessHandshakeResponseAsServer( handshake, response ), role ) );
@@ -254,7 +254,7 @@ public class WebSocketImpl extends WebSocket {
 							return false;
 						} catch ( RuntimeException e ) {
 							wsl.onWebsocketError( this, e );
-							flushAndClose( CloseFrame.NEVERCONNECTED, e.getMessage(), false );
+							flushAndClose( CloseFrame.NEVER_CONNECTED, e.getMessage(), false );
 							return false;
 						}
 						open( handshake );
@@ -399,7 +399,7 @@ public class WebSocketImpl extends WebSocket {
 				assert ( remote );
 				flushAndClose( CloseFrame.FLASHPOLICY, message, true );
 			} else {
-				flushAndClose( CloseFrame.NEVERCONNECTED, message, false );
+				flushAndClose( CloseFrame.NEVER_CONNECTED, message, false );
 			}
 			if( code == CloseFrame.PROTOCOL_ERROR )// this endpoint found a PROTOCOL_ERROR
 				flushAndClose( code, message, remote );
@@ -487,6 +487,9 @@ public class WebSocketImpl extends WebSocket {
 	}
 
 	public void eot() {
+		if( getReadyState() == READYSTATE.NOT_YET_CONNECTED ) {
+			closeConnection( CloseFrame.NEVER_CONNECTED, true );
+		}
 		if( draft == null ) {
 			closeConnection( CloseFrame.ABNORMAL_CLOSE, true );
 		} else if( draft.getCloseHandshakeType() == CloseHandshakeType.NONE ) {

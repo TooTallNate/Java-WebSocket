@@ -15,7 +15,7 @@ public abstract class WebSocket {
 	}
 
 	public enum READYSTATE {
-		NOTYETCONNECTED, CONNECTING, OPEN, CLOSING, CLOSED;
+		NOT_YET_CONNECTED, CONNECTING, OPEN, CLOSING, CLOSED;
 	}
 
 	public static int RCVBUF = 16384;

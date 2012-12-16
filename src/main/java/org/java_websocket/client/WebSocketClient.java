@@ -234,7 +234,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 				selector.select( timeout );
 				Set<SelectionKey> keys = selector.selectedKeys();
 				Iterator<SelectionKey> i = keys.iterator();
-				if( conn.getReadyState() == READYSTATE.NOTYETCONNECTED && !i.hasNext() ) {
+				if( conn.getReadyState() == READYSTATE.NOT_YET_CONNECTED && !i.hasNext() ) {
 					// Hack for issue #140:
 					// Android does simply return form select without closing the channel if address is not reachable(which seems to be a bug in the android nio proivder)
 					// TODO provide a way to fix this problem which does not require this hack
@@ -343,7 +343,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 */
 	public READYSTATE getReadyState() {
 		if( conn == null ) {
-			return READYSTATE.NOTYETCONNECTED;
+			return READYSTATE.NOT_YET_CONNECTED;
 		}
 		return conn.getReadyState();
 	}
