@@ -74,6 +74,8 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
 	private CountDownLatch closeLatch = new CountDownLatch( 1 );
 
+	private int timeout = 0;
+
 	WebSocketClientFactory wf = new WebSocketClientFactory() {
 		@Override
 		public WebSocket createWebSocket( WebSocketAdapter a, Draft d, Socket s ) {
@@ -101,10 +103,10 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 * must call <var>connect</var> first to initiate the socket connection.
 	 */
 	public WebSocketClient( URI serverUri , Draft draft ) {
-		this( serverUri, draft, null );
+		this( serverUri, draft, null, 0 );
 	}
 
-	public WebSocketClient( URI serverUri , Draft draft , Map<String,String> headers ) {
+	public WebSocketClient( URI serverUri , Draft draft , Map<String,String> headers , int connecttimeout ) {
 		if( serverUri == null ) {
 			throw new IllegalArgumentException();
 		}
@@ -114,6 +116,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		this.uri = serverUri;
 		this.draft = draft;
 		this.headers = headers;
+		this.timeout = connecttimeout;
 	}
 
 	/**
@@ -220,17 +223,23 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			return;
 		} catch ( /*IOException | SecurityException | UnresolvedAddressException*/Exception e ) {//
 			onWebsocketError( conn, e );
-			conn.closeConnection( CloseFrame.NEVERCONNECTED, e.getMessage() );
+			// conn.closeConnection( CloseFrame.NEVERCONNECTED, e.getMessage() );
 			return;
-		}  
+		}
 		conn = (WebSocketImpl) wf.createWebSocket( this, draft, channel.socket() );
 		ByteBuffer buff = ByteBuffer.allocate( WebSocket.RCVBUF );
 		try/*IO*/{
 			while ( channel.isOpen() ) {
 				SelectionKey key = null;
-				selector.select();
+				selector.select( timeout );
 				Set<SelectionKey> keys = selector.selectedKeys();
 				Iterator<SelectionKey> i = keys.iterator();
+				if( conn.getReadyState() == READYSTATE.NOTYETCONNECTED && !i.hasNext() ) {
+					// Hack for issue #140:
+					// Android does simply return form select without closing the channel if address is not reachable(which seems to be a bug in the android nio proivder)
+					// TODO provide a way to fix this problem which does not require this hack
+					throw new IOException( "Host is not reachable(Android Hack)" );
+				}
 				while ( i.hasNext() ) {
 					key = i.next();
 					i.remove();
@@ -294,13 +303,13 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	}
 
 	private void finishConnect( SelectionKey key ) throws IOException , InvalidHandshakeException {
-		if( channel.isConnectionPending() ) {
-			channel.finishConnect();
-		}
+		if( !channel.finishConnect() )
+			return;
 		// Now that we're connected, re-register for only 'READ' keys.
 		conn.key = key.interestOps( SelectionKey.OP_READ | SelectionKey.OP_WRITE );
 
 		conn.channel = wrappedchannel = wf.wrapChannel( key, uri.getHost(), getPort() );
+		timeout = 0; // since connect is over
 		sendHandshake();
 	}
 
@@ -413,7 +422,6 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
 	public void onClosing( int code, String reason, boolean remote ) {
 	}
-
 
 	public WebSocket getConnection() {
 		return conn;
