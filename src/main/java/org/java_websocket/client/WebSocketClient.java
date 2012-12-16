@@ -223,7 +223,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			return;
 		} catch ( /*IOException | SecurityException | UnresolvedAddressException*/Exception e ) {//
 			onWebsocketError( conn, e );
-			// conn.closeConnection( CloseFrame.NEVERCONNECTED, e.getMessage() );
+			conn.closeConnection( CloseFrame.NEVER_CONNECTED, e.getMessage() );
 			return;
 		}
 		conn = (WebSocketImpl) wf.createWebSocket( this, draft, channel.socket() );
