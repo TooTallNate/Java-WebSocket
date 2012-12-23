@@ -98,6 +98,9 @@ It is currently not possible to accept ws and wss connections at the same time v
 
 For some reason firefox does not allow multible connections to the same wss server if the server uses a different port than the default port(443).
 
+
+If you want to use `wss` on the android platfrom you should take a look at [this](http://blog.antoine.li/2010/10/22/android-trusting-ssl-certificates/).
+
 I ( @Davidiusdadi ) would be glad if you would give some feedback whether wss is working fine for you or not.
 
 Minimum Required JDK
