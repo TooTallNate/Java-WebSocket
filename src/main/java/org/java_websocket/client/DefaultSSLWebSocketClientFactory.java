@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.nio.channels.ByteChannel;
 import java.nio.channels.SelectionKey;
+import java.nio.channels.SocketChannel;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -33,10 +34,10 @@ public class DefaultSSLWebSocketClientFactory implements WebSocketClientFactory 
 	}
 
 	@Override
-	public ByteChannel wrapChannel( SelectionKey c, String host, int port ) throws IOException {
+	public ByteChannel wrapChannel( SocketChannel channel, SelectionKey key, String host, int port ) throws IOException {
 		SSLEngine e = sslcontext.createSSLEngine( host, port );
 		e.setUseClientMode( true );
-		return new SSLSocketChannel2( c, e, exec );
+		return new SSLSocketChannel2( channel, e, exec, key );
 	}
 
 	@Override

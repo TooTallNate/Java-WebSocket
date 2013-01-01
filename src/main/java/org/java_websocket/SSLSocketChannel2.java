@@ -16,6 +16,7 @@ import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
@@ -48,16 +49,20 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 
 	protected SSLEngineResult res;
 	protected SSLEngine sslEngine;
+	protected final boolean isblocking;
 
-	public SSLSocketChannel2( SelectionKey key , SSLEngine sslEngine , ExecutorService exec ) throws IOException {
-		this.sc = (SocketChannel) key.channel();
-		this.key = key;
+	public SSLSocketChannel2( SocketChannel channel , SSLEngine sslEngine , ExecutorService exec , SelectionKey key ) throws IOException {
+		this.sc = channel;
+
 		this.sslEngine = sslEngine;
 		this.exec = exec;
 
 		tasks = new ArrayList<Future<?>>( 3 );
-
-		this.key.interestOps( key.interestOps() | SelectionKey.OP_WRITE );
+		if( key != null ) {
+			key.interestOps( key.interestOps() | SelectionKey.OP_WRITE );
+			this.key = key;
+		}
+		isblocking = channel.isBlocking();
 
 		sslEngine.setEnableSessionCreation( true );
 		SSLSession session = sslEngine.getSession();
@@ -67,7 +72,25 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 		processHandshake();
 	}
 
-	private void processHandshake() throws IOException {
+	private void consumeFutureUninterruptible( Future<?> f ) {
+		try {
+			boolean interrupted = false;
+			while ( true ) {
+				try {
+					f.get();
+					break;
+				} catch ( InterruptedException e ) {
+					interrupted = true;
+				}
+			}
+			if( interrupted )
+				Thread.currentThread().interrupt();
+		} catch ( ExecutionException e ) {
+			throw new RuntimeException( e );
+		}
+	}
+
+	private synchronized void processHandshake() throws IOException {
 		if( !tasks.isEmpty() ) {
 			Iterator<Future<?>> it = tasks.iterator();
 			while ( it.hasNext() ) {
@@ -75,6 +98,8 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 				if( f.isDone() ) {
 					it.remove();
 				} else {
+					if( isBlocking() )
+						consumeFutureUninterruptible( f );
 					return;
 				}
 			}
@@ -106,11 +131,11 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 
 	private synchronized ByteBuffer unwrap() throws SSLException {
 		int rem;
-		do{
+		do {
 			rem = inData.remaining();
 			res = sslEngine.unwrap( inCrypt, inData );
 		} while ( rem != inData.remaining() );
-		
+
 		inData.flip();
 		return inData;
 	}
@@ -146,9 +171,17 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 	}
 
 	public int read( ByteBuffer dst ) throws IOException {
-		if( !isHandShakeComplete() ) {
-			processHandshake();
+		if( !dst.hasRemaining() )
 			return 0;
+		if( isBlocking() ) {
+			while ( !isHandShakeComplete() ) {
+				processHandshake();
+			}
+		} else {
+			processHandshake();
+			if( !isHandShakeComplete() ) {
+				return 0;
+			}
 		}
 
 		int purged = readRemaining( dst );
@@ -173,8 +206,6 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 	}
 
 	private int readRemaining( ByteBuffer dst ) throws SSLException {
-		assert ( dst.hasRemaining() );
-
 		if( inData.hasRemaining() ) {
 			return transfereTo( inData, dst );
 		}
@@ -267,6 +298,11 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 			return fremain;
 		}
 
+	}
+
+	@Override
+	public boolean isBlocking() {
+		return isblocking;
 	}
 
 }
