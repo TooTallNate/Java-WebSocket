@@ -10,12 +10,10 @@ import java.nio.channels.CancelledKeyException;
 import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.NotYetConnectedException;
 import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
-import java.util.Iterator;
+import java.nio.channels.spi.SelectorProvider;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
 import org.java_websocket.SocketChannelIOHelper;
@@ -58,13 +56,9 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
 	private ByteChannel wrappedchannel = null;
 
-	private SelectionKey key = null;
-	/**
-	 * The 'Selector' used to get event keys from the underlying socket.
-	 */
-	private Selector selector = null;
+	private Thread writethread;
 
-	private Thread thread;
+	private Thread readthread;
 
 	private Draft draft;
 
@@ -88,8 +82,10 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		}
 
 		@Override
-		public ByteChannel wrapChannel( SelectionKey c, String host, int port ) {
-			return (ByteChannel) c.channel();
+		public ByteChannel wrapChannel( SocketChannel channel, SelectionKey c, String host, int port ) {
+			if( c == null )
+				return channel;
+			return channel;
 		}
 	};
 
@@ -117,6 +113,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		this.draft = draft;
 		this.headers = headers;
 		this.timeout = connecttimeout;
+
 	}
 
 	/**
@@ -139,10 +136,10 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 * <var>setURI</var>.
 	 */
 	public void connect() {
-		if( thread != null )
+		if( writethread != null )
 			throw new IllegalStateException( "WebSocketClient objects are not reuseable" );
-		thread = new Thread( this );
-		thread.start();
+		writethread = new Thread( this );
+		writethread.start();
 	}
 
 	/**
@@ -156,7 +153,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	}
 
 	public void close() {
-		if( thread != null && conn != null ) {
+		if( writethread != null && conn != null ) {
 			conn.close( CloseFrame.NORMAL );
 		}
 	}
@@ -190,34 +187,34 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		}
 	}
 
-	private void tryToConnect( InetSocketAddress remote ) throws IOException {
-		channel = SocketChannel.open();
-		channel.configureBlocking( false );
+	private void tryToConnect( InetSocketAddress remote ) throws IOException , InvalidHandshakeException {
+		channel = SelectorProvider.provider().openSocketChannel();
+		channel.configureBlocking( true );
 		channel.connect( remote );
-		selector = Selector.open();
-		key = channel.register( selector, SelectionKey.OP_CONNECT );
+
 	}
 
 	// Runnable IMPLEMENTATION /////////////////////////////////////////////////
 	public void run() {
-		if( thread == null )
-			thread = Thread.currentThread();
+		if( writethread == null )
+			writethread = Thread.currentThread();
 		interruptableRun();
 
 		assert ( !channel.isOpen() );
-
-		try {
-			if( selector != null ) // if the initialization in <code>tryToConnect</code> fails, it could be null
-				selector.close();
-		} catch ( IOException e ) {
-			onError( e );
-		}
 
 	}
 
 	private final void interruptableRun() {
 		try {
-			tryToConnect( new InetSocketAddress( uri.getHost(), getPort() ) );
+			String host = uri.getHost();
+			int port = getPort();
+			tryToConnect( new InetSocketAddress( host, port ) );
+			conn = (WebSocketImpl) wf.createWebSocket( this, draft, channel.socket() );
+			conn.channel = wrappedchannel = wf.wrapChannel( channel, null, host, port );
+			timeout = 0; // since connect is over
+			sendHandshake();
+			readthread = new Thread( new WebsocketWriteThread() );
+			readthread.start();
 		} catch ( ClosedByInterruptException e ) {
 			onWebsocketError( null, e );
 			return;
@@ -226,46 +223,16 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			conn.closeConnection( CloseFrame.NEVER_CONNECTED, e.getMessage() );
 			return;
 		}
-		conn = (WebSocketImpl) wf.createWebSocket( this, draft, channel.socket() );
+
 		ByteBuffer buff = ByteBuffer.allocate( WebSocket.RCVBUF );
 		try/*IO*/{
 			while ( channel.isOpen() ) {
-				SelectionKey key = null;
-				selector.select( timeout );
-				Set<SelectionKey> keys = selector.selectedKeys();
-				Iterator<SelectionKey> i = keys.iterator();
-				if( conn.getReadyState() == READYSTATE.NOT_YET_CONNECTED && !i.hasNext() ) {
-					// Hack for issue #140:
-					// Android does simply return form select without closing the channel if address is not reachable(which seems to be a bug in the android nio proivder)
-					// TODO provide a way to fix this problem which does not require this hack
-					throw new IOException( "Host is not reachable(Android Hack)" );
+				if( SocketChannelIOHelper.read( buff, this.conn, wrappedchannel ) ) {
+					conn.decode( buff );
+				} else {
+					conn.eot();
 				}
-				while ( i.hasNext() ) {
-					key = i.next();
-					i.remove();
-					if( !key.isValid() ) {
-						conn.eot();
-						continue;
-					}
-					if( key.isReadable() && SocketChannelIOHelper.read( buff, this.conn, wrappedchannel ) ) {
-						conn.decode( buff );
-					}
-					if( key.isConnectable() ) {
-						try {
-							finishConnect( key );
-						} catch ( InvalidHandshakeException e ) {
-							conn.close( e ); // http error
-						}
-					}
-					if( key.isWritable() ) {
-						if( SocketChannelIOHelper.batch( conn, wrappedchannel ) ) {
-							if( key.isValid() )
-								key.interestOps( SelectionKey.OP_READ );
-						} else {
-							key.interestOps( SelectionKey.OP_READ | SelectionKey.OP_WRITE );
-						}
-					}
-				}
+
 				if( wrappedchannel instanceof WrappedByteChannel ) {
 					WrappedByteChannel w = (WrappedByteChannel) wrappedchannel;
 					if( w.isNeedRead() ) {
@@ -300,17 +267,6 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			}
 		}
 		return port;
-	}
-
-	private void finishConnect( SelectionKey key ) throws IOException , InvalidHandshakeException {
-		if( !channel.finishConnect() )
-			return;
-		// Now that we're connected, re-register for only 'READ' keys.
-		conn.key = key.interestOps( SelectionKey.OP_READ | SelectionKey.OP_WRITE );
-
-		conn.channel = wrappedchannel = wf.wrapChannel( key, uri.getHost(), getPort() );
-		timeout = 0; // since connect is over
-		sendHandshake();
 	}
 
 	private void sendHandshake() throws InvalidHandshakeException {
@@ -384,6 +340,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	public final void onWebsocketClose( WebSocket conn, int code, String reason, boolean remote ) {
 		connectLatch.countDown();
 		closeLatch.countDown();
+		readthread.interrupt();
 		onClose( code, reason, remote );
 	}
 
@@ -399,12 +356,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
 	@Override
 	public final void onWriteDemand( WebSocket conn ) {
-		try {
-			key.interestOps( SelectionKey.OP_READ | SelectionKey.OP_WRITE );
-			selector.wakeup();
-		} catch ( CancelledKeyException e ) {
-			// since such an exception/event will also occur on the selector there is no need to do anything herec
-		}
+		// nothing to do
 	}
 
 	@Override
@@ -444,6 +396,22 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	};
 
 	public interface WebSocketClientFactory extends WebSocketFactory {
-		public ByteChannel wrapChannel( SelectionKey key, String host, int port ) throws IOException;
+		public ByteChannel wrapChannel( SocketChannel channel, SelectionKey key, String host, int port ) throws IOException;
+	}
+
+	private class WebsocketWriteThread implements Runnable {
+		@Override
+		public void run() {
+			Thread.currentThread().setName( "WebsocketWriteThread" );
+			try {
+				while ( !Thread.interrupted() ) {
+					SocketChannelIOHelper.writeBlocking( conn, wrappedchannel );
+				}
+			} catch ( IOException e ) {
+				conn.eot();
+			} catch ( InterruptedException e ) {
+				// this thread is regulary terminated via an interrupt
+			}
+		}
 	}
 }

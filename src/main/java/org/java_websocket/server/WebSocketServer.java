@@ -213,8 +213,10 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 				if( Thread.currentThread() != selectorthread ) {
 
 				}
-				selectorthread.interrupt();
-				selectorthread.join();
+				if( selectorthread != Thread.currentThread() ) {
+					selectorthread.interrupt();
+					selectorthread.join();
+				}
 			}
 			if( decoders != null ) {
 				for( WebSocketWorker w : decoders ) {
@@ -283,7 +285,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 			selector = Selector.open();
 			server.register( selector, server.validOps() );
 		} catch ( IOException ex ) {
-			onWebsocketError( null, ex );
+			handleFatal( null, ex );
 			return;
 		}
 		try {
@@ -315,7 +317,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 							channel.configureBlocking( false );
 							WebSocketImpl w = wsf.createWebSocket( this, drafts, channel.socket() );
 							w.key = channel.register( selector, SelectionKey.OP_READ, w );
-							w.channel = wsf.wrapChannel( w.key );
+							w.channel = wsf.wrapChannel( channel, w.key );
 							i.remove();
 							allocateBuffers( w );
 							continue;
@@ -430,7 +432,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		}
 	}
 
-	private void handleFatal( WebSocket conn, RuntimeException e ) {
+	private void handleFatal( WebSocket conn, Exception e ) {
 		onError( conn, e );
 		try {
 			stop();
@@ -655,6 +657,6 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		 *            a SelectionKey of an open SocketChannel.
 		 * @return The channel on which the read and write operations will be performed.<br>
 		 */
-		public ByteChannel wrapChannel( SelectionKey key ) throws IOException;
+		public ByteChannel wrapChannel( SocketChannel channel, SelectionKey key ) throws IOException;
 	}
 }

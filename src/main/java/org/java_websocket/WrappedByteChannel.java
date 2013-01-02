@@ -12,4 +12,5 @@ public interface WrappedByteChannel extends ByteChannel {
 
 	public boolean isNeedRead();
 	public int readMore( ByteBuffer dst ) throws SSLException;
+	public boolean isBlocking();
 }

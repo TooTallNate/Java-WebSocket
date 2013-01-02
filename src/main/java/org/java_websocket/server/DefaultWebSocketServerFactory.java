@@ -20,7 +20,7 @@ public class DefaultWebSocketServerFactory implements WebSocketServerFactory {
 		return new WebSocketImpl( a, d, s );
 	}
 	@Override
-	public SocketChannel wrapChannel( SelectionKey c ) {
-		return (SocketChannel) c.channel();
+	public SocketChannel wrapChannel( SocketChannel channel, SelectionKey key ) {
+		return (SocketChannel) channel;
 	}
 }

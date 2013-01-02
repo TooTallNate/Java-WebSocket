@@ -3,6 +3,7 @@ package org.java_websocket;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
+import java.nio.channels.spi.AbstractSelectableChannel;
 
 public class SocketChannelIOHelper {
 
@@ -33,10 +34,11 @@ public class SocketChannelIOHelper {
 	/** Returns whether the whole outQueue has been flushed */
 	public static boolean batch( WebSocketImpl ws, ByteChannel sockchannel ) throws IOException {
 		ByteBuffer buffer = ws.outQueue.peek();
+		WrappedByteChannel c = null;
 
 		if( buffer == null ) {
 			if( sockchannel instanceof WrappedByteChannel ) {
-				WrappedByteChannel c = (WrappedByteChannel) sockchannel;
+				c = (WrappedByteChannel) sockchannel;
 				if( c.isNeedWrite() ) {
 					c.writeMore();
 				}
@@ -53,12 +55,21 @@ public class SocketChannelIOHelper {
 			} while ( buffer != null );
 		}
 
-		if( ws.outQueue.isEmpty() && ws.isFlushAndClose() ) {
+		if( ws.outQueue.isEmpty() && ws.isFlushAndClose() /*&& ( c == null || c.isNeedWrite() )*/) {
 			synchronized ( ws ) {
 				ws.closeConnection();
 			}
 		}
-		return sockchannel instanceof WrappedByteChannel == true ? !( (WrappedByteChannel) sockchannel ).isNeedWrite() : true;
+		return c != null ? !( (WrappedByteChannel) sockchannel ).isNeedWrite() : true;
+	}
+
+	public static void writeBlocking( WebSocketImpl ws, ByteChannel channel ) throws InterruptedException , IOException {
+		assert ( channel instanceof AbstractSelectableChannel == true ? ( (AbstractSelectableChannel) channel ).isBlocking() : true );
+		assert ( channel instanceof WrappedByteChannel == true ? ( (WrappedByteChannel) channel ).isBlocking() : true );
+
+		ByteBuffer buf = ws.outQueue.take();
+		while ( buf.hasRemaining() )
+			channel.write( buf );
 	}
 
 }

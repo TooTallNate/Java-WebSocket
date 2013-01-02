@@ -431,11 +431,11 @@ public class WebSocketImpl extends WebSocket {
 		if( key != null ) {
 			// key.attach( null ); //see issue #114
 			key.cancel();
-			try {
-				channel.close();
-			} catch ( IOException e ) {
-				wsl.onWebsocketError( this, e );
-			}
+		}
+		try {
+			channel.close();
+		} catch ( IOException e ) {
+			wsl.onWebsocketError( this, e );
 		}
 		try {
 			this.wsl.onWebsocketClose( this, code, message, remote );
@@ -489,9 +489,8 @@ public class WebSocketImpl extends WebSocket {
 	public void eot() {
 		if( getReadyState() == READYSTATE.NOT_YET_CONNECTED ) {
 			closeConnection( CloseFrame.NEVER_CONNECTED, true );
-		}
-		if( draft == null ) {
-			closeConnection( CloseFrame.ABNORMAL_CLOSE, true );
+		} else if( flushandclosestate ) {
+			closeConnection( closecode, closemessage, closedremotely );
 		} else if( draft.getCloseHandshakeType() == CloseHandshakeType.NONE ) {
 			closeConnection( CloseFrame.NORMAL, true );
 		} else if( draft.getCloseHandshakeType() == CloseHandshakeType.ONEWAY ) {
