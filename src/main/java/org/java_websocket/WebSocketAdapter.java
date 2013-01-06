@@ -21,12 +21,12 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	 * @see org.java_websocket.WebSocketListener#onWebsocketHandshakeReceivedAsServer(WebSocket, Draft, ClientHandshake)
 	 */
 	@Override
-	public ServerHandshakeBuilder onWebsocketHandshakeReceivedAsServer( WebSocket conn, Draft draft, ClientHandshake request ) throws InvalidDataException {
+	public ServerHandshakeBuilder onWebsocketHandshakeReceivedAsServer( IWebSocket conn, Draft draft, ClientHandshake request ) throws InvalidDataException {
 		return new HandshakeImpl1Server();
 	}
 
 	@Override
-	public void onWebsocketHandshakeReceivedAsClient( WebSocket conn, ClientHandshake request, ServerHandshake response ) throws InvalidDataException {
+	public void onWebsocketHandshakeReceivedAsClient( IWebSocket conn, ClientHandshake request, ServerHandshake response ) throws InvalidDataException {
 	}
 
 	/**
@@ -35,7 +35,7 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	 * @see org.java_websocket.WebSocketListener#onWebsocketHandshakeSentAsClient(WebSocket, ClientHandshake)
 	 */
 	@Override
-	public void onWebsocketHandshakeSentAsClient( WebSocket conn, ClientHandshake request ) throws InvalidDataException {
+	public void onWebsocketHandshakeSentAsClient( IWebSocket conn, ClientHandshake request ) throws InvalidDataException {
 	}
 
 	/**
@@ -44,7 +44,7 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	 * @see org.java_websocket.WebSocketListener#onWebsocketMessageFragment(WebSocket, Framedata)
 	 */
 	@Override
-	public void onWebsocketMessageFragment( WebSocket conn, Framedata frame ) {
+	public void onWebsocketMessageFragment( IWebSocket conn, Framedata frame ) {
 	}
 
 	/**
@@ -54,7 +54,7 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	 * @see org.java_websocket.WebSocketListener#onWebsocketPing(WebSocket, Framedata)
 	 */
 	@Override
-	public void onWebsocketPing( WebSocket conn, Framedata f ) {
+	public void onWebsocketPing( IWebSocket conn, Framedata f ) {
 		FramedataImpl1 resp = new FramedataImpl1( f );
 		resp.setOptcode( Opcode.PONG );
 		conn.sendFrame( resp );
@@ -66,7 +66,7 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	 * @see @see org.java_websocket.WebSocketListener#onWebsocketPong(WebSocket, Framedata)
 	 */
 	@Override
-	public void onWebsocketPong( WebSocket conn, Framedata f ) {
+	public void onWebsocketPong( IWebSocket conn, Framedata f ) {
 	}
 
 	/**
@@ -83,7 +83,7 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	 *         not include the null char at the end, it is appended automatically.
 	 */
 	@Override
-	public String getFlashPolicy( WebSocket conn ) {
+	public String getFlashPolicy( IWebSocket conn ) {
 		return "<cross-domain-policy><allow-access-from domain=\"*\" to-ports=\"" + conn.getLocalSocketAddress().getPort() + "\" /></cross-domain-policy>\0";
 	}
 

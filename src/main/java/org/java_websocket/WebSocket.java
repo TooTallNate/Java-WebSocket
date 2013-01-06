@@ -9,16 +9,7 @@ import org.java_websocket.drafts.Draft;
 import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.framing.Framedata;
 
-public abstract class WebSocket {
-	public enum Role {
-		CLIENT, SERVER
-	}
-
-	public enum READYSTATE {
-		NOT_YET_CONNECTED, CONNECTING, OPEN, CLOSING, CLOSED;
-	}
-
-	public static int RCVBUF = 16384;
+public abstract class WebSocket implements IWebSocket {
 
 	public static/*final*/boolean DEBUG = false; // must be final in the future in order to take advantage of VM optimization
 
@@ -45,7 +36,7 @@ public abstract class WebSocket {
 	 **/
 	public abstract void closeConnection( int code, String message );
 
-	protected abstract void close( InvalidDataException e );
+	public abstract void close( InvalidDataException e );
 
 	/**
 	 * Send Text data to the other end.

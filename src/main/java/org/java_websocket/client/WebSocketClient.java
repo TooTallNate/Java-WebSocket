@@ -18,9 +18,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
+import org.java_websocket.IWebSocket;
+import org.java_websocket.IWebSocket.READYSTATE;
 import org.java_websocket.SocketChannelIOHelper;
 import org.java_websocket.WebSocket;
-import org.java_websocket.WebSocket.READYSTATE;
 import org.java_websocket.WebSocketAdapter;
 import org.java_websocket.WebSocketFactory;
 import org.java_websocket.WebSocketImpl;
@@ -78,12 +79,12 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
 	WebSocketClientFactory wf = new WebSocketClientFactory() {
 		@Override
-		public WebSocket createWebSocket( WebSocketAdapter a, Draft d, Socket s ) {
+		public IWebSocket createWebSocket( WebSocketAdapter a, Draft d, Socket s ) {
 			return new WebSocketImpl( WebSocketClient.this, d, s );
 		}
 
 		@Override
-		public WebSocket createWebSocket( WebSocketAdapter a, List<Draft> d, Socket s ) {
+		public IWebSocket createWebSocket( WebSocketAdapter a, List<Draft> d, Socket s ) {
 			return new WebSocketImpl( WebSocketClient.this, d, s );
 		}
 
@@ -292,9 +293,9 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		if( port == -1 ) {
 			String scheme = uri.getScheme();
 			if( scheme.equals( "wss" ) ) {
-				return WebSocket.DEFAULT_WSS_PORT;
+				return IWebSocket.DEFAULT_WSS_PORT;
 			} else if( scheme.equals( "ws" ) ) {
-				return WebSocket.DEFAULT_PORT;
+				return IWebSocket.DEFAULT_PORT;
 			} else {
 				throw new RuntimeException( "unkonow scheme" + scheme );
 			}
@@ -324,7 +325,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		if( part2 != null )
 			path += "?" + part2;
 		int port = getPort();
-		String host = uri.getHost() + ( port != WebSocket.DEFAULT_PORT ? ":" + port : "" );
+		String host = uri.getHost() + ( port != IWebSocket.DEFAULT_PORT ? ":" + port : "" );
 
 		HandshakeImpl1Client handshake = new HandshakeImpl1Client();
 		handshake.setResourceDescriptor( path );
@@ -355,12 +356,12 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 * @param message
 	 */
 	@Override
-	public final void onWebsocketMessage( WebSocket conn, String message ) {
+	public final void onWebsocketMessage( IWebSocket conn, String message ) {
 		onMessage( message );
 	}
 
 	@Override
-	public final void onWebsocketMessage( WebSocket conn, ByteBuffer blob ) {
+	public final void onWebsocketMessage( IWebSocket conn, ByteBuffer blob ) {
 		onMessage( blob );
 	}
 
@@ -370,7 +371,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 * @param conn
 	 */
 	@Override
-	public final void onWebsocketOpen( WebSocket conn, Handshakedata handshake ) {
+	public final void onWebsocketOpen( IWebSocket conn, Handshakedata handshake ) {
 		connectLatch.countDown();
 		onOpen( (ServerHandshake) handshake );
 	}
@@ -381,7 +382,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 * @param conn
 	 */
 	@Override
-	public final void onWebsocketClose( WebSocket conn, int code, String reason, boolean remote ) {
+	public final void onWebsocketClose( IWebSocket conn, int code, String reason, boolean remote ) {
 		connectLatch.countDown();
 		closeLatch.countDown();
 		onClose( code, reason, remote );
@@ -393,12 +394,12 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 * @param conn
 	 */
 	@Override
-	public final void onWebsocketError( WebSocket conn, Exception ex ) {
+	public final void onWebsocketError( IWebSocket conn, Exception ex ) {
 		onError( ex );
 	}
 
 	@Override
-	public final void onWriteDemand( WebSocket conn ) {
+	public final void onWriteDemand( IWebSocket conn ) {
 		try {
 			key.interestOps( SelectionKey.OP_READ | SelectionKey.OP_WRITE );
 			selector.wakeup();
@@ -408,12 +409,12 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	}
 
 	@Override
-	public void onWebsocketCloseInitiated( WebSocket conn, int code, String reason ) {
+	public void onWebsocketCloseInitiated( IWebSocket conn, int code, String reason ) {
 		onCloseInitiated( code, reason );
 	}
 
 	@Override
-	public void onWebsocketClosing( WebSocket conn, int code, String reason, boolean remote ) {
+	public void onWebsocketClosing( IWebSocket conn, int code, String reason, boolean remote ) {
 		onClosing( code, reason, remote );
 	}
 
@@ -423,7 +424,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	public void onClosing( int code, String reason, boolean remote ) {
 	}
 
-	public WebSocket getConnection() {
+	public IWebSocket getConnection() {
 		return conn;
 	}
 
