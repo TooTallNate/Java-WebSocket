@@ -23,7 +23,9 @@ public class SocketChannelIOHelper {
 		int read = channel.readMore( buf );
 		buf.flip();
 
-		if( read == -1 ) {
+		//JBW/GW - 21NOV12: We end up in situations where the socket is closed, but channel.readMore() returns 0.
+		// One case is when Chrome quits while there is server-to-chrome data still in the queue.
+		if(( read == -1 ) || (!channel.isOpen())) {
 			ws.eot();
 			return false;
 		}

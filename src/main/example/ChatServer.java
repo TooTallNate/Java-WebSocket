@@ -5,6 +5,7 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Collection;
 
+import org.java_websocket.IWebSocket;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
@@ -23,19 +24,19 @@ public class ChatServer extends WebSocketServer {
 	}
 
 	@Override
-	public void onOpen( WebSocket conn, ClientHandshake handshake ) {
+	public void onOpen( IWebSocket conn, ClientHandshake handshake ) {
 		this.sendToAll( "new connection: " + handshake.getResourceDescriptor() );
 		System.out.println( conn.getRemoteSocketAddress().getAddress().getHostAddress() + " entered the room!" );
 	}
 
 	@Override
-	public void onClose( WebSocket conn, int code, String reason, boolean remote ) {
+	public void onClose( IWebSocket conn, int code, String reason, boolean remote ) {
 		this.sendToAll( conn + " has left the room!" );
 		System.out.println( conn + " has left the room!" );
 	}
 
 	@Override
-	public void onMessage( WebSocket conn, String message ) {
+	public void onMessage( IWebSocket conn, String message ) {
 		this.sendToAll( message );
 		System.out.println( conn + ": " + message );
 	}
@@ -59,7 +60,7 @@ public class ChatServer extends WebSocketServer {
 	}
 
 	@Override
-	public void onError( WebSocket conn, Exception ex ) {
+	public void onError( IWebSocket conn, Exception ex ) {
 		ex.printStackTrace();
 		if( conn != null ) {
 			// some errors like port binding failed may not be assignable to a specific websocket
@@ -75,9 +76,9 @@ public class ChatServer extends WebSocketServer {
 	 *             When socket related I/O errors occur.
 	 */
 	public void sendToAll( String text ) {
-		Collection<WebSocket> con = connections();
+		Collection<IWebSocket> con = connections();
 		synchronized ( con ) {
-			for( WebSocket c : con ) {
+			for( IWebSocket c : con ) {
 				c.send( text );
 			}
 		}
