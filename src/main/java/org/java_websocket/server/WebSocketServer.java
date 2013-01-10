@@ -280,7 +280,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 			server = ServerSocketChannel.open();
 			server.configureBlocking( false );
 			ServerSocket socket = server.socket();
-			socket.setReceiveBufferSize( WebSocket.RCVBUF );
+			socket.setReceiveBufferSize( WebSocketImpl.RCVBUF );
 			socket.bind( address );
 			selector = Selector.open();
 			server.register( selector, server.validOps() );
@@ -399,7 +399,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	}
 
 	public ByteBuffer createBuffer() {
-		return ByteBuffer.allocate( WebSocket.RCVBUF );
+		return ByteBuffer.allocate( WebSocketImpl.RCVBUF );
 	}
 
 	private void queue( WebSocketImpl ws ) throws InterruptedException {

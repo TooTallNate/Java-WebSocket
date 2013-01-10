@@ -42,7 +42,11 @@ import org.java_websocket.util.Charsetfunctions;
  * text frames, and receiving frames through an event-based model.
  * 
  */
-public class WebSocketImpl extends WebSocket {
+public class WebSocketImpl implements WebSocket {
+
+	public static int RCVBUF = 16384;
+
+	public static/*final*/boolean DEBUG = false; // must be final in the future in order to take advantage of VM optimization
 
 	public static final List<Draft> defaultdraftlist = new ArrayList<Draft>( 4 );
 	static {
@@ -508,7 +512,6 @@ public class WebSocketImpl extends WebSocket {
 		close( code, "", false );
 	}
 
-	@Override
 	public void close( InvalidDataException e ) {
 		close( e.getCloseCode(), e.getMessage(), false );
 	}

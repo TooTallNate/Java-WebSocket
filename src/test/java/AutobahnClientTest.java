@@ -5,6 +5,7 @@ import java.net.URI;
 import java.nio.ByteBuffer;
 
 import org.java_websocket.WebSocket;
+import org.java_websocket.WebSocketImpl;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft_17;
@@ -55,11 +56,11 @@ public class AutobahnClientTest extends WebSocketClient {
 					if( nextline != null ) {
 						line = nextline;
 						nextline = null;
-						WebSocket.DEBUG = false;
+						WebSocketImpl.DEBUG = false;
 					} else {
 						System.out.print( ">" );
 						line = sysin.readLine();
-						WebSocket.DEBUG = true;
+						WebSocketImpl.DEBUG = true;
 					}
 					if( line.equals( "l" ) ) {
 						line = perviousline;
@@ -84,7 +85,7 @@ public class AutobahnClientTest extends WebSocketClient {
 						uri = URI.create( serverlocation + "/runCase?case=" + spl[ 1 ] + "&agent=" + clientname );
 
 					} else if( line.startsWith( "u" ) ) {
-						WebSocket.DEBUG = false;
+						WebSocketImpl.DEBUG = false;
 						uri = URI.create( serverlocation + "/updateReports?agent=" + clientname );
 					} else if( line.startsWith( "d" ) ) {
 						try {

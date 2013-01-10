@@ -13,7 +13,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-import org.java_websocket.WebSocket;
+import org.java_websocket.WebSocketImpl;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft_10;
@@ -148,7 +148,7 @@ public class ChatClient extends JFrame implements ActionListener {
 	}
 
 	public static void main( String[] args ) {
-		WebSocket.DEBUG = true;
+		WebSocketImpl.DEBUG = true;
 		String location;
 		if( args.length != 0 ) {
 			location = args[ 0 ];

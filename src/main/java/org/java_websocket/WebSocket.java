@@ -6,10 +6,9 @@ import java.nio.ByteBuffer;
 import java.nio.channels.NotYetConnectedException;
 
 import org.java_websocket.drafts.Draft;
-import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.framing.Framedata;
 
-public abstract class WebSocket {
+public interface WebSocket {
 	public enum Role {
 		CLIENT, SERVER
 	}
@@ -17,10 +16,6 @@ public abstract class WebSocket {
 	public enum READYSTATE {
 		NOT_YET_CONNECTED, CONNECTING, OPEN, CLOSING, CLOSED;
 	}
-
-	public static int RCVBUF = 16384;
-
-	public static/*final*/boolean DEBUG = false; // must be final in the future in order to take advantage of VM optimization
 
 	/**
 	 * The default port of WebSockets, as defined in the spec. If the nullary
@@ -35,17 +30,15 @@ public abstract class WebSocket {
 	 * sends the closing handshake.
 	 * may be send in response to an other handshake.
 	 */
-	public abstract void close( int code, String message );
+	public void close( int code, String message );
 
-	public abstract void close( int code );
+	public void close( int code );
 
 	/**
 	 * This will close the connection immediately without a proper close handshake.
 	 * The code and the message therefore won't be transfered over the wire also they will be forwarded to onClose/onWebsocketClose.
 	 **/
 	public abstract void closeConnection( int code, String message );
-
-	protected abstract void close( InvalidDataException e );
 
 	/**
 	 * Send Text data to the other end.
