@@ -359,10 +359,14 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 						conn = iqueue.remove( 0 );
 						WrappedByteChannel c = ( (WrappedByteChannel) conn.channel );
 						ByteBuffer buf = takeBuffer();
-						if( SocketChannelIOHelper.readMore( buf, conn, c ) )
-							iqueue.add( conn );
-						conn.inQueue.put( buf );
-						queue( conn );
+						try {
+							if( SocketChannelIOHelper.readMore( buf, conn, c ) )
+								iqueue.add( conn );
+							conn.inQueue.put( buf );
+							queue( conn );
+						} finally {
+							pushBuffer( buf );
+						}
 
 					}
 				} catch ( CancelledKeyException e ) {
@@ -381,7 +385,6 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 			handleFatal( null, e );
 		}
 	}
-
 	protected void allocateBuffers( WebSocket c ) throws InterruptedException {
 		if( queuesize.get() >= 2 * decoders.size() + 1 ) {
 			return;
