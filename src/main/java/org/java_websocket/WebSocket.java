@@ -1,7 +1,6 @@
 package org.java_websocket;
 
 import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.NotYetConnectedException;
 
@@ -63,14 +62,12 @@ public interface WebSocket {
 	public abstract boolean hasBufferedData();
 
 	/**
-	 * @returns null when connections is closed
-	 * @see Socket#getRemoteSocketAddress()
+	 * @returns never returns null
 	 */
 	public abstract InetSocketAddress getRemoteSocketAddress();
 
 	/**
-	 * @returns null when connections is closed
-	 * @see Socket#getLocalSocketAddress()
+	 * @returns never returns null
 	 */
 	public abstract InetSocketAddress getLocalSocketAddress();
 
