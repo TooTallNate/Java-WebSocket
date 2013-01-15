@@ -76,7 +76,6 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 
 	private List<WebSocketWorker> decoders;
 
-	private BlockingQueue<WebSocketImpl> oqueue;
 	private List<WebSocketImpl> iqueue;
 	private BlockingQueue<ByteBuffer> buffers;
 	private int queueinvokes = 0;
@@ -157,7 +156,6 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		this.address = address;
 		this.connections = connectionscontainer;
 
-		oqueue = new LinkedBlockingQueue<WebSocketImpl>();
 		iqueue = new LinkedList<WebSocketImpl>();
 
 		decoders = new ArrayList<WebSocketWorker>( decodercount );
@@ -294,8 +292,6 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 				WebSocketImpl conn = null;
 				try {
 					selector.select();
-					registerWrite();
-
 					Set<SelectionKey> keys = selector.selectedKeys();
 					Iterator<SelectionKey> i = keys.iterator();
 
@@ -420,14 +416,6 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		buffers.put( buf );
 	}
 
-	private void registerWrite() throws CancelledKeyException {
-		int size = oqueue.size();
-		for( int i = 0 ; i < size ; i++ ) {
-			WebSocketImpl conn = oqueue.remove();
-			conn.key.interestOps( SelectionKey.OP_READ | SelectionKey.OP_WRITE );
-		}
-	}
-
 	private void handleIOException( WebSocket conn, IOException ex ) {
 		onWebsocketError( conn, ex );// conn may be null here
 		if( conn != null ) {
@@ -483,7 +471,6 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 
 	@Override
 	public final void onWebsocketClose( WebSocket conn, int code, String reason, boolean remote ) {
-		oqueue.add( (WebSocketImpl) conn );// because the ostream will close the channel
 		selector.wakeup();
 		try {
 			if( removeConnection( conn ) ) {
@@ -530,7 +517,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	@Override
 	public final void onWriteDemand( WebSocket w ) {
 		WebSocketImpl conn = (WebSocketImpl) w;
-		oqueue.add( conn );
+		conn.key.interestOps( SelectionKey.OP_READ | SelectionKey.OP_WRITE );
 		selector.wakeup();
 	}
 
