@@ -31,7 +31,7 @@ import org.java_websocket.handshake.HandshakeImpl1Client;
 import org.java_websocket.handshake.Handshakedata;
 import org.java_websocket.handshake.ServerHandshake;
 
-import sun.rmi.runtime.Log;
+//import sun.rmi.runtime.Log;
 
 /**
  * The <tt>WebSocketClient</tt> is an abstract class that expects a valid
