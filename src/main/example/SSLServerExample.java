@@ -8,7 +8,7 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
-import org.java_websocket.WebSocket;
+import org.java_websocket.WebSocketImpl;
 import org.java_websocket.server.DefaultSSLWebSocketServerFactory;
 
 public class SSLServerExample {
@@ -19,7 +19,7 @@ public class SSLServerExample {
 	 *keytool -genkey -validity 3650 -keystore "keystore.jks" -storepass "storepassword" -keypass "keypassword" -alias "default" -dname "CN=127.0.0.1, OU=MyOrgUnit, O=MyOrg, L=MyCity, S=MyRegion, C=MyCountry"
 	 */
 	public static void main( String[] args ) throws Exception {
-		WebSocket.DEBUG = true;
+		WebSocketImpl.DEBUG = true;
 
 		ChatServer chatserver = new ChatServer( 8887 ); // Firefox does allow multible ssl connection only via port 443 //tested on FF16
 

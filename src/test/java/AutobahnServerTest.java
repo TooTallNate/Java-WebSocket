@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.Collections;
 
 import org.java_websocket.WebSocket;
+import org.java_websocket.WebSocketImpl;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft_17;
 import org.java_websocket.framing.FrameBuilder;
@@ -57,7 +58,7 @@ public class AutobahnServerTest extends WebSocketServer {
 	}
 
 	public static void main( String[] args ) throws  UnknownHostException {
-		WebSocket.DEBUG = false;
+		WebSocketImpl.DEBUG = false;
 		int port;
 		try {
 			port = new Integer( args[ 0 ] );

@@ -6,6 +6,7 @@ import java.net.UnknownHostException;
 import java.util.Collection;
 
 import org.java_websocket.WebSocket;
+import org.java_websocket.WebSocketImpl;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 
@@ -41,7 +42,7 @@ public class ChatServer extends WebSocketServer {
 	}
 
 	public static void main( String[] args ) throws InterruptedException , IOException {
-		WebSocket.DEBUG = true;
+		WebSocketImpl.DEBUG = true;
 		int port = 8887; // 843 flash policy port
 		try {
 			port = Integer.parseInt( args[ 0 ] );
