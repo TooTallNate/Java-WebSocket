@@ -33,6 +33,9 @@ public interface WebSocket {
 
 	public void close( int code );
 
+	/** Convenience function which behaves like close(CloseFrame.NORMAL) */
+	public void close();
+
 	/**
 	 * This will close the connection immediately without a proper close handshake.
 	 * The code and the message therefore won't be transfered over the wire also they will be forwarded to onClose/onWebsocketClose.
