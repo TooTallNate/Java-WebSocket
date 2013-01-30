@@ -704,4 +704,9 @@ public class WebSocketImpl implements WebSocket {
 		return draft;
 	}
 
+	@Override
+	public void close() {
+		close( CloseFrame.NORMAL );
+	}
+
 }
