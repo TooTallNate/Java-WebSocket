@@ -134,7 +134,7 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 		do {
 			rem = inData.remaining();
 			res = sslEngine.unwrap( inCrypt, inData );
-		} while ( rem != inData.remaining() );
+		} while ( res.getStatus() == SSLEngineResult.Status.OK && (rem != inData.remaining()  || res.getHandshakeStatus() == HandshakeStatus.NEED_UNWRAP));
 
 		inData.flip();
 		return inData;
