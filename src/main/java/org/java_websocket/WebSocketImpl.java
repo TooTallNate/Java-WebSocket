@@ -46,7 +46,7 @@ public class WebSocketImpl implements WebSocket {
 
 	public static int RCVBUF = 16384;
 
-	public static/*final*/boolean DEBUG = false; // must be final in the future in order to take advantage of VM optimization
+	public static/*final*/boolean DEBUG = true; // must be final in the future in order to take advantage of VM optimization
 
 	public static final List<Draft> defaultdraftlist = new ArrayList<Draft>( 4 );
 	static {

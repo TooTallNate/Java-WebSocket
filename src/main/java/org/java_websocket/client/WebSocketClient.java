@@ -31,6 +31,8 @@ import org.java_websocket.handshake.HandshakeImpl1Client;
 import org.java_websocket.handshake.Handshakedata;
 import org.java_websocket.handshake.ServerHandshake;
 
+//import sun.rmi.runtime.Log;
+
 /**
  * The <tt>WebSocketClient</tt> is an abstract class that expects a valid
  * "ws://" URI to connect to. When connected, an instance recieves important
@@ -188,10 +190,10 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	}
 
 	private void tryToConnect( InetSocketAddress remote ) throws IOException , InvalidHandshakeException {
+		
 		channel = SelectorProvider.provider().openSocketChannel();
 		channel.configureBlocking( true );
-		channel.connect( remote );
-
+		channel.connect( remote );	
 	}
 
 	// Runnable IMPLEMENTATION /////////////////////////////////////////////////
@@ -220,13 +222,18 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			return;
 		} catch ( /*IOException | SecurityException | UnresolvedAddressException*/Exception e ) {//
 			onWebsocketError( conn, e );
-			conn.closeConnection( CloseFrame.NEVER_CONNECTED, e.getMessage() );
+			//System.err.print("conn: " + conn);
+			//e.printStackTrace();
+			if (conn != null) {
+				conn.closeConnection( CloseFrame.NEVER_CONNECTED, e.getMessage() );
+			}			
 			return;
 		}
 
 		ByteBuffer buff = ByteBuffer.allocate( WebSocketImpl.RCVBUF );
 		try/*IO*/{
 			while ( channel.isOpen() ) {
+				System.out.print("channel is open while");
 				if( SocketChannelIOHelper.read( buff, this.conn, wrappedchannel ) ) {
 					conn.decode( buff );
 				} else {
