@@ -40,7 +40,7 @@ public class CloseFrameBuilder extends FramedataImpl1 implements CloseFrame {
 			m = "";
 		}
 		if( code == CloseFrame.NOCODE ) {
-			if( !m.isEmpty() ) {
+			if( 0 < m.length() ) {
 				throw new InvalidDataException( PROTOCOL_ERROR, "A close frame must have a closecode if it has a reason" );
 			}
 			return;// empty payload
