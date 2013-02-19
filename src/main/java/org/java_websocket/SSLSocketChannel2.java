@@ -51,6 +51,8 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 	protected SSLEngine sslEngine;
 	protected final boolean isblocking;
 
+	private Status status = Status.BUFFER_UNDERFLOW;
+
 	public SSLSocketChannel2( SocketChannel channel , SSLEngine sslEngine , ExecutorService exec , SelectionKey key ) throws IOException {
 		this.sc = channel;
 
@@ -106,12 +108,14 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 		}
 
 		if( res.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.NEED_UNWRAP ) {
-			inCrypt.compact();
-			int read = sc.read( inCrypt );
-			if( read == -1 ) {
-				throw new IOException( "connection closed unexpectedly by peer" );
+			if( !isblocking || status == Status.BUFFER_UNDERFLOW ) {
+				inCrypt.compact();
+				int read = sc.read( inCrypt );
+				if( read == -1 ) {
+					throw new IOException( "connection closed unexpectedly by peer" );
+				}
+				inCrypt.flip();
 			}
-			inCrypt.flip();
 			inData.compact();
 			unwrap();
 		}
@@ -134,7 +138,8 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 		do {
 			rem = inData.remaining();
 			res = sslEngine.unwrap( inCrypt, inData );
-		} while ( res.getStatus() == SSLEngineResult.Status.OK && (rem != inData.remaining()  || res.getHandshakeStatus() == HandshakeStatus.NEED_UNWRAP));
+			status = res.getStatus();
+		} while ( status == SSLEngineResult.Status.OK && ( rem != inData.remaining() || res.getHandshakeStatus() == HandshakeStatus.NEED_UNWRAP ) );
 
 		inData.flip();
 		return inData;
@@ -173,14 +178,16 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 	public int read( ByteBuffer dst ) throws IOException {
 		if( !dst.hasRemaining() )
 			return 0;
-		if( isBlocking() ) {
-			while ( !isHandShakeComplete() ) {
+		if( !isHandShakeComplete() ) {
+			if( isBlocking() ) {
+				while ( !isHandShakeComplete() ) {
+					processHandshake();
+				}
+			} else {
 				processHandshake();
-			}
-		} else {
-			processHandshake();
-			if( !isHandShakeComplete() ) {
-				return 0;
+				if( !isHandShakeComplete() ) {
+					return 0;
+				}
 			}
 		}
 
@@ -196,9 +203,10 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 		else
 			inCrypt.compact();
 
-		if( sc.read( inCrypt ) == -1 ) {
-			return -1;
-		}
+		if( ( isblocking && inCrypt.position() == 0 ) || status == Status.BUFFER_UNDERFLOW )
+			if( sc.read( inCrypt ) == -1 ) {
+				return -1;
+			}
 		inCrypt.flip();
 		unwrap();
 		return transfereTo( inData, dst );
@@ -209,8 +217,8 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 		if( inData.hasRemaining() ) {
 			return transfereTo( inData, dst );
 		}
-		assert ( !inData.hasRemaining() );
-		inData.clear();
+		if( !inData.hasRemaining() )
+			inData.clear();
 		// test if some bytes left from last read (e.g. BUFFER_UNDERFLOW)
 		if( inCrypt.hasRemaining() ) {
 			unwrap();
