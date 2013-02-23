@@ -114,6 +114,15 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		this.headers = headers;
 		this.timeout = connecttimeout;
 
+		try {
+			channel = SelectorProvider.provider().openSocketChannel();
+			channel.configureBlocking( true );
+			conn = (WebSocketImpl) wf.createWebSocket( this, draft, channel.socket() );
+		} catch ( IOException e ) {
+			onWebsocketError( null, e );
+			conn.closeConnection( CloseFrame.NEVER_CONNECTED, e.getMessage() );
+			return;
+		}
 	}
 
 	/**
@@ -153,7 +162,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	}
 
 	public void close() {
-		if( writethread != null && conn != null ) {
+		if( writethread != null ) {
 			conn.close( CloseFrame.NORMAL );
 		}
 	}
@@ -170,9 +179,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 *            The String to send to the WebSocket server.
 	 */
 	public void send( String text ) throws NotYetConnectedException {
-		if( conn != null ) {
-			conn.send( text );
-		}
+		conn.send( text );
 	}
 
 	/**
@@ -182,14 +189,11 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 *            The Byte-Array of data to send to the WebSocket server.
 	 */
 	public void send( byte[] data ) throws NotYetConnectedException {
-		if( conn != null ) {
 			conn.send( data );
-		}
 	}
 
 	private void tryToConnect( InetSocketAddress remote ) throws IOException , InvalidHandshakeException {
-		channel = SelectorProvider.provider().openSocketChannel();
-		channel.configureBlocking( true );
+
 		channel.connect( remote );
 
 	}
@@ -209,7 +213,6 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			String host = uri.getHost();
 			int port = getPort();
 			tryToConnect( new InetSocketAddress( host, port ) );
-			conn = (WebSocketImpl) wf.createWebSocket( this, draft, channel.socket() );
 			conn.channel = wrappedchannel = wf.wrapChannel( channel, null, host, port );
 			timeout = 0; // since connect is over
 			sendHandshake();
@@ -298,9 +301,6 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 * You can use this method instead of
 	 */
 	public READYSTATE getReadyState() {
-		if( conn == null ) {
-			return READYSTATE.NOT_YET_CONNECTED;
-		}
 		return conn.getReadyState();
 	}
 
@@ -410,7 +410,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			} catch ( IOException e ) {
 				conn.eot();
 			} catch ( InterruptedException e ) {
-				// this thread is regulary terminated via an interrupt
+				// this thread is regularly terminated via an interrupt
 			}
 		}
 	}

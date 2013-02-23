@@ -58,8 +58,8 @@ public class WebSocketImpl implements WebSocket {
 
 	public SelectionKey key;
 
-	private final InetSocketAddress localSocketAddress;
-	private final InetSocketAddress remoteSocketAddress;
+	private final Socket socket;
+
 	/** the possibly wrapped channel object whose selection is controlled by {@link #key} */
 	public ByteChannel channel;
 	/**
@@ -120,13 +120,13 @@ public class WebSocketImpl implements WebSocket {
 
 	/**
 	 * crates a websocket with client role
+	 * 
+	 * @param sock
+	 *            may be unbound
 	 */
 	public WebSocketImpl( WebSocketListener listener , Draft draft , Socket sock ) {
 		if( listener == null || sock == null || ( draft == null && role == Role.SERVER ) )
 			throw new IllegalArgumentException( "parameters must not be null" );
-		if( !sock.isBound() ) {
-			throw new IllegalArgumentException( "socket has to be bound" );
-		}
 		this.outQueue = new LinkedBlockingQueue<ByteBuffer>();
 		inQueue = new LinkedBlockingQueue<ByteBuffer>();
 		this.wsl = listener;
@@ -134,10 +134,7 @@ public class WebSocketImpl implements WebSocket {
 		if( draft != null )
 			this.draft = draft.copyInstance();
 
-		localSocketAddress = (InetSocketAddress) sock.getLocalSocketAddress();
-		remoteSocketAddress = (InetSocketAddress) sock.getRemoteSocketAddress();
-		assert ( localSocketAddress != null );
-		assert ( remoteSocketAddress != null );
+		socket = sock;
 	}
 
 	/**
@@ -691,12 +688,12 @@ public class WebSocketImpl implements WebSocket {
 
 	@Override
 	public InetSocketAddress getRemoteSocketAddress() {
-		return remoteSocketAddress;
+		return (InetSocketAddress) socket.getRemoteSocketAddress();
 	}
 
 	@Override
 	public InetSocketAddress getLocalSocketAddress() {
-		return localSocketAddress;
+		return (InetSocketAddress) socket.getLocalSocketAddress();
 	}
 
 	@Override
