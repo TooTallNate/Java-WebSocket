@@ -239,9 +239,10 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 				if( wrappedchannel instanceof WrappedByteChannel ) {
 					WrappedByteChannel w = (WrappedByteChannel) wrappedchannel;
 					if( w.isNeedRead() ) {
-						while ( SocketChannelIOHelper.read( buff, conn, w ) ) {
+						while ( SocketChannelIOHelper.readMore( buff, conn, w ) ) {
 							conn.decode( buff );
 						}
+						conn.decode( buff );
 					}
 				}
 			}
