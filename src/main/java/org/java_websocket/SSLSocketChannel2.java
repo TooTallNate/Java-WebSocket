@@ -197,6 +197,10 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 
 	}
 
+	/**
+	 * Blocks when in blocking mode until at least one byte has been decoded.<br>
+	 * When not in blocking mode 0 may be returned.
+	 **/
 	public int read( ByteBuffer dst ) throws IOException {
 		if( !dst.hasRemaining() )
 			return 0;
@@ -231,8 +235,12 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 			}
 		inCrypt.flip();
 		unwrap();
-		return transfereTo( inData, dst );
 
+		int transfered = transfereTo( inData, dst );
+		if( transfered == 0 && isBlocking() ) {
+			return read( dst ); // "transfered" may be 0 when not enough bytes were received or during rehandshaking
+		}
+		return transfered;
 	}
 
 	private int readRemaining( ByteBuffer dst ) throws SSLException {
