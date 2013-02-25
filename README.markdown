@@ -90,7 +90,7 @@ To see how to use wss please take a look at the examples.<br>
 If you do not have a valid **certificate** in place then you will have to create a self signed one.
 Browsers will simply refuse the connection in case of a bad certificate and will not ask the user to accept it.
 So the first step will be to make a browser to accept your self signed certificate. ( https://bugzilla.mozilla.org/show_bug.cgi?id=594502 ).<br>
-If the websocket server url is `wss://localhost:8000` visit the url `htts://localhost:8000` with your browser. The browser will recognize the handshake and allow you to accept the certificate.
+If the websocket server url is `wss://localhost:8000` visit the url `https://localhost:8000` with your browser. The browser will recognize the handshake and allow you to accept the certificate.
 
 The vm option `-Djavax.net.debug=all` can help to find out if there is a problem with the certificate.
 
