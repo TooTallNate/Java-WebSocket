@@ -120,7 +120,11 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			conn = (WebSocketImpl) wf.createWebSocket( this, draft, channel.socket() );
 		} catch ( IOException e ) {
 			onWebsocketError( null, e );
-			conn.closeConnection( CloseFrame.NEVER_CONNECTED, e.getMessage() );
+			
+			if(conn != null) {
+				conn.closeConnection( CloseFrame.NEVER_CONNECTED, e.getMessage() );
+			}
+			
 			return;
 		}
 	}
@@ -223,7 +227,11 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			return;
 		} catch ( /*IOException | SecurityException | UnresolvedAddressException*/Exception e ) {//
 			onWebsocketError( conn, e );
-			conn.closeConnection( CloseFrame.NEVER_CONNECTED, e.getMessage() );
+			
+			if(conn != null) {
+				conn.closeConnection( CloseFrame.NEVER_CONNECTED, e.getMessage() );
+			}
+			
 			return;
 		}
 
