@@ -557,6 +557,21 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		return true;
 	}
 
+	private Socket getSocket( WebSocket conn ) {
+		WebSocketImpl impl = (WebSocketImpl) conn;
+		return ( (SocketChannel) impl.key.channel() ).socket();
+	}
+
+	@Override
+	public InetSocketAddress getLocalSocketAddress( WebSocket conn ) {
+		return (InetSocketAddress) getSocket( conn ).getLocalSocketAddress();
+	}
+
+	@Override
+	public InetSocketAddress getRemoteSocketAddress( WebSocket conn ) {
+		return (InetSocketAddress) getSocket( conn ).getLocalSocketAddress();
+	}
+
 	/** Called after an opening handshake has been performed and the given websocket is ready to be written on. */
 	public abstract void onOpen( WebSocket conn, ClientHandshake handshake );
 	/**

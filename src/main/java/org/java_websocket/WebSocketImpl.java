@@ -58,8 +58,6 @@ public class WebSocketImpl implements WebSocket {
 
 	public SelectionKey key;
 
-	private final Socket socket;
-
 	/** the possibly wrapped channel object whose selection is controlled by {@link #key} */
 	public ByteChannel channel;
 	/**
@@ -107,8 +105,8 @@ public class WebSocketImpl implements WebSocket {
 	/**
 	 * crates a websocket with server role
 	 */
-	public WebSocketImpl( WebSocketListener listener , List<Draft> drafts , Socket sock ) {
-		this( listener, (Draft) null, sock );
+	public WebSocketImpl( WebSocketListener listener , List<Draft> drafts ) {
+		this( listener, (Draft) null );
 		this.role = Role.SERVER;
 		// draft.copyInstance will be called when the draft is first needed
 		if( drafts == null || drafts.isEmpty() ) {
@@ -121,11 +119,11 @@ public class WebSocketImpl implements WebSocket {
 	/**
 	 * crates a websocket with client role
 	 * 
-	 * @param sock
+	 * @param socket
 	 *            may be unbound
 	 */
-	public WebSocketImpl( WebSocketListener listener , Draft draft , Socket sock ) {
-		if( listener == null || sock == null || ( draft == null && role == Role.SERVER ) )
+	public WebSocketImpl( WebSocketListener listener , Draft draft ) {
+		if( listener == null || ( draft == null && role == Role.SERVER ) )// socket can be null because we want do be able to create the object without already having a bound channel
 			throw new IllegalArgumentException( "parameters must not be null" );
 		this.outQueue = new LinkedBlockingQueue<ByteBuffer>();
 		inQueue = new LinkedBlockingQueue<ByteBuffer>();
@@ -133,8 +131,16 @@ public class WebSocketImpl implements WebSocket {
 		this.role = Role.CLIENT;
 		if( draft != null )
 			this.draft = draft.copyInstance();
+	}
 
-		socket = sock;
+	@Deprecated
+	public WebSocketImpl( WebSocketListener listener , Draft draft , Socket socket ) {
+		this( listener, draft );
+	}
+
+	@Deprecated
+	public WebSocketImpl( WebSocketListener listener , List<Draft> drafts , Socket socket ) {
+		this( listener, drafts );
 	}
 
 	/**
@@ -688,12 +694,12 @@ public class WebSocketImpl implements WebSocket {
 
 	@Override
 	public InetSocketAddress getRemoteSocketAddress() {
-		return (InetSocketAddress) socket.getRemoteSocketAddress();
+		return wsl.getRemoteSocketAddress( this );
 	}
 
 	@Override
 	public InetSocketAddress getLocalSocketAddress() {
-		return (InetSocketAddress) socket.getLocalSocketAddress();
+		return wsl.getLocalSocketAddress( this );
 	}
 
 	@Override

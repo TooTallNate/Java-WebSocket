@@ -41,11 +41,11 @@ public class DefaultSSLWebSocketServerFactory implements WebSocketServer.WebSock
 
 	@Override
 	public WebSocketImpl createWebSocket( WebSocketAdapter a, Draft d, Socket c ) {
-		return new WebSocketImpl( a, d, c );
+		return new WebSocketImpl( a, d );
 	}
 
 	@Override
 	public WebSocketImpl createWebSocket( WebSocketAdapter a, List<Draft> d, Socket s ) {
-		return new WebSocketImpl( a, d, s );
+		return new WebSocketImpl( a, d );
 	}
 }

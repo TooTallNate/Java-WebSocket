@@ -1,5 +1,6 @@
 package org.java_websocket;
 
+import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 
 import org.java_websocket.drafts.Draft;
@@ -143,4 +144,7 @@ public interface WebSocketListener {
 
 	/** This method is used to inform the selector thread that there is data queued to be written to the socket. */
 	public void onWriteDemand( WebSocket conn );
+
+	public InetSocketAddress getLocalSocketAddress( WebSocket conn );
+	public InetSocketAddress getRemoteSocketAddress( WebSocket conn );
 }

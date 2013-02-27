@@ -70,15 +70,15 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
 	private int timeout = 0;
 
-	WebSocketClientFactory wf = new WebSocketClientFactory() {
+	WebSocketClientFactory wsfactory = new WebSocketClientFactory() {
 		@Override
 		public WebSocket createWebSocket( WebSocketAdapter a, Draft d, Socket s ) {
-			return new WebSocketImpl( WebSocketClient.this, d, s );
+			return new WebSocketImpl( WebSocketClient.this, d );
 		}
 
 		@Override
 		public WebSocket createWebSocket( WebSocketAdapter a, List<Draft> d, Socket s ) {
-			return new WebSocketImpl( WebSocketClient.this, d, s );
+			return new WebSocketImpl( WebSocketClient.this, d );
 		}
 
 		@Override
@@ -117,16 +117,18 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		try {
 			channel = SelectorProvider.provider().openSocketChannel();
 			channel.configureBlocking( true );
-			conn = (WebSocketImpl) wf.createWebSocket( this, draft, channel.socket() );
 		} catch ( IOException e ) {
+			channel = null;
 			onWebsocketError( null, e );
-			
-			if(conn != null) {
-				conn.closeConnection( CloseFrame.NEVER_CONNECTED, e.getMessage() );
-			}
-			
-			return;
 		}
+		if(channel == null){
+			conn = (WebSocketImpl) wsfactory.createWebSocket( this, draft, null );
+			conn.close( CloseFrame.NEVER_CONNECTED, "Failed to create or configure SocketChannel." );
+		}
+		else{
+			conn = (WebSocketImpl) wsfactory.createWebSocket( this, draft, channel.socket() );
+		}
+		
 	}
 
 	/**
@@ -213,11 +215,15 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	}
 
 	private final void interruptableRun() {
+		if( channel == null ) {
+			return;// channel will be initialized in the constructor and only be null if no socket channel could be created or if blocking mode could be established
+		}
+
 		try {
 			String host = uri.getHost();
 			int port = getPort();
 			tryToConnect( new InetSocketAddress( host, port ) );
-			conn.channel = wrappedchannel = wf.wrapChannel( channel, null, host, port );
+			conn.channel = wrappedchannel = wsfactory.wrapChannel( channel, null, host, port );
 			timeout = 0; // since connect is over
 			sendHandshake();
 			readthread = new Thread( new WebsocketWriteThread() );
@@ -227,11 +233,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			return;
 		} catch ( /*IOException | SecurityException | UnresolvedAddressException*/Exception e ) {//
 			onWebsocketError( conn, e );
-			
-			if(conn != null) {
-				conn.closeConnection( CloseFrame.NEVER_CONNECTED, e.getMessage() );
-			}
-			
+			conn.closeConnection( CloseFrame.NEVER_CONNECTED, e.getMessage() );
 			return;
 		}
 
@@ -389,11 +391,25 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	}
 
 	public final void setWebSocketFactory( WebSocketClientFactory wsf ) {
-		this.wf = wsf;
+		this.wsfactory = wsf;
 	}
 
 	public final WebSocketFactory getWebSocketFactory() {
-		return wf;
+		return wsfactory;
+	}
+
+	@Override
+	public InetSocketAddress getLocalSocketAddress( WebSocket conn ) {
+		if( channel != null )
+			return (InetSocketAddress) channel.socket().getLocalSocketAddress();
+		return null;
+	}
+
+	@Override
+	public InetSocketAddress getRemoteSocketAddress( WebSocket conn ) {
+		if( channel != null )
+			return (InetSocketAddress) channel.socket().getLocalSocketAddress();
+		return null;
 	}
 
 	// ABTRACT METHODS /////////////////////////////////////////////////////////
