@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/ck1125/Java-WebSocket.png?branch=master)](https://travis-ci.org/ck1125/Java-WebSocket)
 Java WebSockets
 ===============
 
