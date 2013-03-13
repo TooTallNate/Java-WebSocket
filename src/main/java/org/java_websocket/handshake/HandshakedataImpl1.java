@@ -32,7 +32,7 @@ public class HandshakedataImpl1 implements HandshakeBuilder {
 
 	@Override
 	public String getFieldValue( String name ) {
-		String s = map.get( name.toLowerCase( Locale.ENGLISH ) );
+		String s = map.get( name );
 		if( s == null ) {
 			return "";
 		}
@@ -51,11 +51,11 @@ public class HandshakedataImpl1 implements HandshakeBuilder {
 
 	@Override
 	public void put( String name, String value ) {
-		map.put( name.toLowerCase( Locale.ENGLISH ), value );
+		map.put( name, value );
 	}
 
 	@Override
 	public boolean hasFieldValue( String name ) {
-		return map.containsKey( name.toLowerCase( Locale.ENGLISH ) );
+		return map.containsKey( name );
 	}
 }
