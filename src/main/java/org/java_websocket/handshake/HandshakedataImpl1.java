@@ -2,15 +2,14 @@ package org.java_websocket.handshake;
 
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Locale;
+import java.util.TreeMap;
 
 public class HandshakedataImpl1 implements HandshakeBuilder {
 	private byte[] content;
-	private LinkedHashMap<String,String> map;
+	private TreeMap<String,String> map;
 
 	public HandshakedataImpl1() {
-		map = new LinkedHashMap<String,String>();
+		map = new TreeMap<String,String>( String.CASE_INSENSITIVE_ORDER );
 	}
 
 	/*public HandshakedataImpl1( Handshakedata h ) {
@@ -32,8 +31,8 @@ public class HandshakedataImpl1 implements HandshakeBuilder {
 
 	@Override
 	public String getFieldValue( String name ) {
-		String s = map.get( name.toLowerCase( Locale.ENGLISH ) );
-		if( s == null ) {
+		String s = map.get( name );
+		if ( s == null ) {
 			return "";
 		}
 		return s;
@@ -51,11 +50,11 @@ public class HandshakedataImpl1 implements HandshakeBuilder {
 
 	@Override
 	public void put( String name, String value ) {
-		map.put( name.toLowerCase( Locale.ENGLISH ), value );
+		map.put( name, value );
 	}
 
 	@Override
 	public boolean hasFieldValue( String name ) {
-		return map.containsKey( name.toLowerCase( Locale.ENGLISH ) );
+		return map.containsKey( name );
 	}
 }
