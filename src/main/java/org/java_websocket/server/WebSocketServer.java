@@ -8,6 +8,7 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
 import java.nio.channels.CancelledKeyException;
+import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
@@ -370,7 +371,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 				} catch ( IOException ex ) {
 					if( key != null )
 						key.cancel();
-					handleIOException( conn, ex );
+					handleIOException( key, conn, ex );
 				} catch ( InterruptedException e ) {
 					return;// FIXME controlled shutdown
 				}
@@ -416,10 +417,21 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		buffers.put( buf );
 	}
 
-	private void handleIOException( WebSocket conn, IOException ex ) {
+	private void handleIOException( SelectionKey key, WebSocket conn, IOException ex ) {
 		onWebsocketError( conn, ex );// conn may be null here
 		if( conn != null ) {
 			conn.closeConnection( CloseFrame.ABNORMAL_CLOSE, ex.getMessage() );
+		} else if( key != null ) {
+			SelectableChannel channel = key.channel();
+			if( channel != null && channel.isOpen() ) { // this could be the case if the IOException ex is a SSLException
+				try {
+					channel.close();
+				} catch ( IOException e ) {
+					// there is nothing that must be done here
+				}
+				if( WebSocketImpl.DEBUG )
+					System.out.println( "Connection closed because of" + ex );
+			}
 		}
 	}
 
