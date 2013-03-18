@@ -3,10 +3,10 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <groupId>org.sonatype.oss</groupId>
-            <artifactId>oss-parent</artifactId>
-                <version>7</version>
+        <artifactId>oss-parent</artifactId>
+        <version>7</version>
     </parent>
-	<scm>
+    <scm>
         <connection>scm:git:git@github.com/TooTallNate/Java-WebSocket.git</connection>
         <developerConnection>scm:git:git@github.com/TooTallNate/Java-WebSocket.git</developerConnection>
         <url>git@github.com/TooTallNate/Java-WebSocket.git</url>
@@ -14,10 +14,11 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.java-websocket</groupId>
     <artifactId>Java-WebSocket</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.3.0</version>
     <packaging>jar</packaging>
     <name>Java WebSocket</name>
     <url>http://java-websocket.org/</url>
+    <description>A barebones WebSocket client and server implementation written in 100% Java</description>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.6</java.version>
@@ -33,6 +34,56 @@
                     <target>${java.version}</target>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
+    <developers>
+        <developer>
+            <id>TooTallNate</id>
+            <name>Nathan Rajlich</name>
+            <email>nathan@tootallnate.net</email>
+            <url>https://github.com/TooTallNate</url>
+            <roles>
+                <role>founder</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>Davidiusdadi</id>
+            <name>David Rohmer</name>
+            <email>rohmer.david@gmail.com</email>
+            <url>https://github.com/Davidiusdadi</url>
+            <roles>
+                <role>maintainer</role>
+            </roles>
+        </developer>
+    </developers>
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://github.com/TooTallNate/Java-WebSocket/blob/master/LICENSE</url>
+        </license>
+    </licenses>
 </project>
