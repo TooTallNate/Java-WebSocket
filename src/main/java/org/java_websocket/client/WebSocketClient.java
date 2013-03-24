@@ -2,7 +2,6 @@ package org.java_websocket.client;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
@@ -12,7 +11,6 @@ import java.nio.channels.NotYetConnectedException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
@@ -46,7 +44,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	/**
 	 * The URI this channel is supposed to connect to.
 	 */
-	private URI uri = null;
+	protected URI uri = null;
 
 	private WebSocketImpl conn = null;
 	/**
@@ -70,24 +68,9 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
 	private int timeout = 0;
 
-	WebSocketClientFactory wsfactory = new WebSocketClientFactory() {
-		@Override
-		public WebSocket createWebSocket( WebSocketAdapter a, Draft d, Socket s ) {
-			return new WebSocketImpl( WebSocketClient.this, d );
-		}
+	private WebSocketClientFactory wsfactory = new DefaultWebSocketClientFactory( this );
 
-		@Override
-		public WebSocket createWebSocket( WebSocketAdapter a, List<Draft> d, Socket s ) {
-			return new WebSocketImpl( WebSocketClient.this, d );
-		}
-
-		@Override
-		public ByteChannel wrapChannel( SocketChannel channel, SelectionKey c, String host, int port ) {
-			if( c == null )
-				return channel;
-			return channel;
-		}
-	};
+	private InetSocketAddress proxyAddress = null;
 
 	public WebSocketClient( URI serverURI ) {
 		this( serverURI, new Draft_10() );
@@ -198,12 +181,6 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			conn.send( data );
 	}
 
-	private void tryToConnect( InetSocketAddress remote ) throws IOException , InvalidHandshakeException {
-
-		channel.connect( remote );
-
-	}
-
 	// Runnable IMPLEMENTATION /////////////////////////////////////////////////
 	public void run() {
 		if( writethread == null )
@@ -220,10 +197,19 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		}
 
 		try {
-			String host = uri.getHost();
-			int port = getPort();
-			tryToConnect( new InetSocketAddress( host, port ) );
-			conn.channel = wrappedchannel = wsfactory.wrapChannel( channel, null, host, port );
+			String host;
+			int port ;
+
+			if( proxyAddress != null ) {
+				host = proxyAddress.getHostName();
+				port = proxyAddress.getPort();
+			} else {
+				host = uri.getHost();
+				port = getPort();
+			}
+			channel.connect( new InetSocketAddress( host, port ) );
+			conn.channel = wrappedchannel = createProxyChannel( wsfactory.wrapChannel( channel, null, host, port ) );
+
 			timeout = 0; // since connect is over
 			sendHandshake();
 			readthread = new Thread( new WebsocketWriteThread() );
@@ -420,6 +406,26 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	public void onMessage( ByteBuffer bytes ) {
 	};
 
+	public class DefaultClientProxyChannel extends AbstractClientProxyChannel {
+		public DefaultClientProxyChannel( ByteChannel towrap ) {
+			super( towrap );
+		}
+		@Override
+		public String buildHandShake() {
+			StringBuilder b = new StringBuilder();
+			String host = uri.getHost();
+			b.append( "CONNECT " );
+			b.append( host );
+			b.append( ":" );
+			b.append( getPort() );
+			b.append( " HTTP/1.1\n" );
+			b.append( "Host: " );
+			b.append( host );
+			b.append( "\n" );
+			return b.toString();
+		}
+	}
+
 	public interface WebSocketClientFactory extends WebSocketFactory {
 		public ByteChannel wrapChannel( SocketChannel channel, SelectionKey key, String host, int port ) throws IOException;
 	}
@@ -438,5 +444,16 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 				// this thread is regularly terminated via an interrupt
 			}
 		}
+	}
+	
+	public ByteChannel createProxyChannel( ByteChannel towrap ) {
+		if( proxyAddress != null ){
+			return new DefaultClientProxyChannel( towrap );
+		}
+		return towrap;//no proxy in use
+	}
+
+	public void setProxy( InetSocketAddress proxyaddress ) {
+		proxyAddress = proxyaddress;
 	}
 }
