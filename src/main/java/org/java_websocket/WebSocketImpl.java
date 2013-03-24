@@ -448,10 +448,12 @@ public class WebSocketImpl implements WebSocket {
 			// key.attach( null ); //see issue #114
 			key.cancel();
 		}
-		try {
-			channel.close();
-		} catch ( IOException e ) {
-			wsl.onWebsocketError( this, e );
+		if( channel != null ) {
+			try {
+				channel.close();
+			} catch ( IOException e ) {
+				wsl.onWebsocketError( this, e );
+			}
 		}
 		try {
 			this.wsl.onWebsocketClose( this, code, message, remote );
