@@ -581,7 +581,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 
 	@Override
 	public InetSocketAddress getRemoteSocketAddress( WebSocket conn ) {
-		return (InetSocketAddress) getSocket( conn ).getLocalSocketAddress();
+		return (InetSocketAddress) getSocket( conn ).getRemoteSocketAddress();
 	}
 
 	/** Called after an opening handshake has been performed and the given websocket is ready to be written on. */
