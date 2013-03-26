@@ -337,7 +337,8 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	public final void onWebsocketClose( WebSocket conn, int code, String reason, boolean remote ) {
 		connectLatch.countDown();
 		closeLatch.countDown();
-		readthread.interrupt();
+		if( readthread != null )
+			readthread.interrupt();
 		onClose( code, reason, remote );
 	}
 
