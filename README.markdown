@@ -33,8 +33,26 @@ The ant targets are: ```compile```, ```jar```, ```doc``` and ```clean```
 
 ###Maven
 
-Maven is supported. More documentation in that is yet to come...
+To build a jar:
+    mvn clean package 
 
+The release artifacts are hosted on Maven Central. 
+
+For snapshots, add the following repository to your pom.xml file.
+
+    <repository>
+      <id>sonatype-oss-snapshot</id>
+      <snapshots/>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </repository>
+  
+Add the following dependency in your pom.xml file. 
+
+    <dependency>
+      <groupId>net.tootallnate</groupId>
+      <artifactId>java-websocket</artifactId>
+      <version>$version</version>
+    </dependency>
 
 Running the Examples
 -------------------
