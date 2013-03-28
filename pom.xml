@@ -3,8 +3,8 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>net.tootallnate</groupId>
-	<artifactId>java-websocket</artifactId>
+    <groupId>org.java-websocket</groupId>
+    <artifactId>java-webSocket</artifactId>
 	<version>1.3.0</version>
 	<packaging>jar</packaging>
 	<name>Java WebSocket</name>
