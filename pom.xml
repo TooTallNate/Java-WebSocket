@@ -13,7 +13,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.java-websocket</groupId>
     <artifactId>Java-WebSocket</artifactId>
-    <version>1.3.0</version>
+    <version>1.3.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Java WebSocket</name>
     <url>http://java-websocket.org/</url>
