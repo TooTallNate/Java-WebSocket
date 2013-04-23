@@ -465,7 +465,7 @@ public class WebSocketImpl implements WebSocket {
 		handshakerequest = null;
 
 		readystate = READYSTATE.CLOSED;
-		this.outQueue.clear();
+
 	}
 
 	protected void closeConnection( int code, boolean remote ) {

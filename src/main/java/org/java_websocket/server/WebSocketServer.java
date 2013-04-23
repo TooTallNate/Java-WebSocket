@@ -529,12 +529,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	@Override
 	public final void onWriteDemand( WebSocket w ) {
 		WebSocketImpl conn = (WebSocketImpl) w;
-		try {
-			conn.key.interestOps( SelectionKey.OP_READ | SelectionKey.OP_WRITE );
-		} catch ( CancelledKeyException e ) {
-			// the thread which cancels key is responsible for possible cleanup
-			conn.outQueue.clear();
-		}
+		conn.key.interestOps( SelectionKey.OP_READ | SelectionKey.OP_WRITE );
 		selector.wakeup();
 	}
 
