@@ -109,7 +109,7 @@
                 </execution>                                                                                                        
               </executions>                                                                                                         
               <configuration>                                                                                                       
-                <keyname>rohmer.david@gmail.com&gt;</keyname>                                                                                          
+                <keyname>rohmer.david@gmail.com</keyname>                                                                                          
               </configuration>                                                                                                      
             </plugin>                                                                                                               
           </plugins>                                                                                                                

@@ -33,8 +33,14 @@ The ant targets are: ```compile```, ```jar```, ```doc``` and ```clean```
 
 ###Maven
 
-Maven is supported. More documentation in that is yet to come...
-
+To use maven just add this dependency to your pom.xml:
+```xml
+<dependency>
+    <groupId>org.java-websocket</groupId>
+    <artifactId>Java-WebSocket</artifactId>
+    <version>1.3.0</version>
+</dependency> 
+```
 
 Running the Examples
 -------------------
