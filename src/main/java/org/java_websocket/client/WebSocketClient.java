@@ -419,10 +419,12 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			b.append( host );
 			b.append( ":" );
 			b.append( getPort() );
-			b.append( " HTTP/1.1\n" );
+			b.append( " HTTP/1.1\r\n" );
 			b.append( "Host: " );
 			b.append( host );
-			b.append( "\n" );
+			b.append( ":" );
+			b.append( getPort() );
+			b.append( "\r\n\r\n" );
 			return b.toString();
 		}
 	}
