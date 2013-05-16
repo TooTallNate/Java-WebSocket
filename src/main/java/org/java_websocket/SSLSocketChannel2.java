@@ -314,7 +314,8 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 
 	@Override
 	public boolean isNeedRead() {
-		return inData.hasRemaining() || ( inCrypt.hasRemaining() && engineResult.getStatus() != Status.BUFFER_UNDERFLOW );
+		return inData.hasRemaining() || ( inCrypt.hasRemaining() && engineResult.getStatus() != Status.BUFFER_UNDERFLOW && 
+				engineResult.getStatus() != Status.CLOSED );
 	}
 
 	@Override
