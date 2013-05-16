@@ -269,6 +269,7 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 		if( socketChannel.isOpen() )
 			socketChannel.write( wrap( emptybuffer ) );// FIXME what if not all bytes can be written
 		socketChannel.close();
+		exec.shutdownNow();
 	}
 
 	private boolean isHandShakeComplete() {
