@@ -418,7 +418,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	}
 
 	private void handleIOException( SelectionKey key, WebSocket conn, IOException ex ) {
-		onWebsocketError( conn, ex );// conn may be null here
+		//onWebsocketError( conn, ex );// conn may be null here
 		if( conn != null ) {
 			conn.closeConnection( CloseFrame.ABNORMAL_CLOSE, ex.getMessage() );
 		} else if( key != null ) {
