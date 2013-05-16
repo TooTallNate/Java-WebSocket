@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.Random;
 
 import org.java_websocket.exceptions.InvalidDataException;
+import org.java_websocket.exceptions.InvalidFrameException;
 import org.java_websocket.exceptions.InvalidHandshakeException;
+import org.java_websocket.exceptions.LimitExedeedException;
 import org.java_websocket.exceptions.NotSendableException;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.FrameBuilder;
@@ -40,14 +42,13 @@ public class Draft_75 extends Draft {
 	 */
 	public static final byte END_OF_FRAME = (byte) 0xFF;
 
+	/** Is only used to detect protocol violations */
 	protected boolean readingState = false;
-	private boolean inframe = false;
+
 	protected List<Framedata> readyframes = new LinkedList<Framedata>();
 	protected ByteBuffer currentFrame;
-	
-	
+
 	private final Random reuseableRandom = new Random();
-	
 
 	@Override
 	public HandshakeState acceptHandshakeAsClient( ClientHandshake request, ServerHandshake response ) {
@@ -122,15 +123,16 @@ public class Draft_75 extends Draft {
 	}
 
 	protected List<Framedata> translateRegularFrame( ByteBuffer buffer ) throws InvalidDataException {
+
 		while ( buffer.hasRemaining() ) {
 			byte newestByte = buffer.get();
 			if( newestByte == START_OF_FRAME ) { // Beginning of Frame
 				if( readingState )
-					return null;
+					throw new InvalidFrameException( "unexpected START_OF_FRAME" );
 				readingState = true;
 			} else if( newestByte == END_OF_FRAME ) { // End of Frame
 				if( !readingState )
-					return null;
+					throw new InvalidFrameException( "unexpected END_OF_FRAME" );
 				// currentFrame will be null if END_OF_FRAME was send directly after
 				// START_OF_FRAME, thus we will send 'null' as the sent message.
 				if( this.currentFrame != null ) {
@@ -138,13 +140,12 @@ public class Draft_75 extends Draft {
 					FramedataImpl1 curframe = new FramedataImpl1();
 					curframe.setPayload( currentFrame );
 					curframe.setFin( true );
-					curframe.setOptcode( inframe ? Opcode.CONTINUOUS : Opcode.TEXT );
+					curframe.setOptcode( Opcode.TEXT );
 					readyframes.add( curframe );
 					this.currentFrame = null;
 					buffer.mark();
 				}
 				readingState = false;
-				inframe = false;
 			} else if( readingState ) { // Regular frame data, add to current frame buffer //TODO This code is very expensive and slow
 				if( currentFrame == null ) {
 					currentFrame = createBuffer();
@@ -156,15 +157,11 @@ public class Draft_75 extends Draft {
 				return null;
 			}
 		}
-		if( readingState ) {
-			FramedataImpl1 curframe = new FramedataImpl1();
-			currentFrame.flip();
-			curframe.setPayload( currentFrame );
-			curframe.setFin( false );
-			curframe.setOptcode( inframe ? Opcode.CONTINUOUS : Opcode.TEXT );
-			inframe = true;
-			readyframes.add( curframe );
-		}
+
+		// if no error occurred this block will be reached
+		/*if( readingState ) {
+			checkAlloc(currentFrame.position()+1);
+		}*/
 
 		List<Framedata> frames = readyframes;
 		readyframes = new LinkedList<Framedata>();
@@ -196,9 +193,9 @@ public class Draft_75 extends Draft {
 		return ByteBuffer.allocate( INITIAL_FAMESIZE );
 	}
 
-	public ByteBuffer increaseBuffer( ByteBuffer full ) {
+	public ByteBuffer increaseBuffer( ByteBuffer full ) throws LimitExedeedException , InvalidDataException {
 		full.flip();
-		ByteBuffer newbuffer = ByteBuffer.allocate( full.capacity() * 2 );
+		ByteBuffer newbuffer = ByteBuffer.allocate( checkAlloc( full.capacity() * 2 ) );
 		newbuffer.put( full );
 		return newbuffer;
 	}
