@@ -101,6 +101,8 @@ public class WebSocketImpl implements WebSocket {
 	private String closemessage = null;
 	private Integer closecode = null;
 	private Boolean closedremotely = null;
+	
+	private String resourceDescriptor = null;
 
 	/**
 	 * crates a websocket with server role
@@ -211,6 +213,7 @@ public class WebSocketImpl implements WebSocket {
 								ClientHandshake handshake = (ClientHandshake) tmphandshake;
 								handshakestate = d.acceptHandshakeAsServer( handshake );
 								if( handshakestate == HandshakeState.MATCHED ) {
+									resourceDescriptor = handshake.getResourceDescriptor();
 									ServerHandshakeBuilder response;
 									try {
 										response = wsl.onWebsocketHandshakeReceivedAsServer( this, d, handshake );
@@ -605,6 +608,9 @@ public class WebSocketImpl implements WebSocket {
 		// Store the Handshake Request we are about to send
 		this.handshakerequest = draft.postProcessHandshakeRequestAsClient( handshakedata );
 
+		resourceDescriptor = handshakedata.getResourceDescriptor();
+		assert( resourceDescriptor != null );
+		
 		// Notify Listener
 		try {
 			wsl.onWebsocketHandshakeSentAsClient( this, this.handshakerequest );
@@ -712,6 +718,11 @@ public class WebSocketImpl implements WebSocket {
 	@Override
 	public void close() {
 		close( CloseFrame.NORMAL );
+	}
+
+	@Override
+	public String getResourceDescriptor() {
+		return resourceDescriptor;
 	}
 
 }

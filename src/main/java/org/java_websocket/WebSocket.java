@@ -99,4 +99,10 @@ public interface WebSocket {
 	 * @return Returns '0 = CONNECTING', '1 = OPEN', '2 = CLOSING' or '3 = CLOSED'
 	 */
 	public abstract READYSTATE getReadyState();
+	
+	/**
+	 * Returns the HTTP Request-URI as defined by http://tools.ietf.org/html/rfc2616#section-5.1.2<br>
+	 * If the opening handshake has not yet happened it will return null.
+	 **/
+	public abstract String getResourceDescriptor();
 }
