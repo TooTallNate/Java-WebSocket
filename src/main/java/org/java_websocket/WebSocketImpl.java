@@ -264,23 +264,28 @@ public class WebSocketImpl implements WebSocket {
 						return false;
 					}
 					ServerHandshake handshake = (ServerHandshake) tmphandshake;
-					handshakestate = draft.acceptHandshakeAsClient( handshakerequest, handshake );
-					if( handshakestate == HandshakeState.MATCHED ) {
-						try {
-							wsl.onWebsocketHandshakeReceivedAsClient( this, handshakerequest, handshake );
-						} catch ( InvalidDataException e ) {
-							flushAndClose( e.getCloseCode(), e.getMessage(), false );
-							return false;
-						} catch ( RuntimeException e ) {
-							wsl.onWebsocketError( this, e );
-							flushAndClose( CloseFrame.NEVER_CONNECTED, e.getMessage(), false );
-							return false;
+					if (!handshake.getHttpStatusMessage().equalsIgnoreCase("Connection Established"))	// Ignore Proxy CONNECT response
+					{
+						handshakestate = draft.acceptHandshakeAsClient( handshakerequest, handshake );
+						if( handshakestate == HandshakeState.MATCHED ) {
+							try {
+								wsl.onWebsocketHandshakeReceivedAsClient( this, handshakerequest, handshake );
+							} catch ( InvalidDataException e ) {
+								flushAndClose( e.getCloseCode(), e.getMessage(), false );
+								return false;
+							} catch ( RuntimeException e ) {
+								wsl.onWebsocketError( this, e );
+								flushAndClose( CloseFrame.NEVER_CONNECTED, e.getMessage(), false );
+								return false;
+							}
+							open( handshake );
+							return true;
+						} else {
+							close( CloseFrame.PROTOCOL_ERROR, "draft " + draft + " refuses handshake" );
 						}
-						open( handshake );
-						return true;
-					} else {
-						close( CloseFrame.PROTOCOL_ERROR, "draft " + draft + " refuses handshake" );
 					}
+					else
+						return false;
 				}
 			} catch ( InvalidHandshakeException e ) {
 				close( e );

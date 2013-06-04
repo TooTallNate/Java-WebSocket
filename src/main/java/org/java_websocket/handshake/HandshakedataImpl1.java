@@ -2,14 +2,14 @@ package org.java_websocket.handshake;
 
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.TreeMap;
+import java.util.LinkedHashMap;
 
 public class HandshakedataImpl1 implements HandshakeBuilder {
 	private byte[] content;
-	private TreeMap<String,String> map;
+	private LinkedHashMap<String,String> map;
 
 	public HandshakedataImpl1() {
-		map = new TreeMap<String,String>( String.CASE_INSENSITIVE_ORDER );
+		map = new LinkedHashMap<String,String>();
 	}
 
 	/*public HandshakedataImpl1( Handshakedata h ) {
