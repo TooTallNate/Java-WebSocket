@@ -158,7 +158,6 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 			rem = inData.remaining();
 			readEngineResult = sslEngine.unwrap( inCrypt, inData );
 		} while ( readEngineResult.getStatus() == SSLEngineResult.Status.OK && ( rem != inData.remaining() || sslEngine.getHandshakeStatus() == HandshakeStatus.NEED_UNWRAP ) );
-
 		inData.flip();
 		return inData;
 	}
@@ -226,10 +225,16 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 				}
 			}
 		}
+		/* 1. When "dst" is smaller than "inData" readRemaining will fill "dst" with data decoded in a previous read call.
+		 * 2. When "inCrypt" contains more data than "inData" has remaining space, unwrap has to be called on more time(readRemaining)
+		 */
 		int purged = readRemaining( dst );
 		if( purged != 0 )
 			return purged;
 
+		/* We only continue when we really need more data from the network.
+		 * Thats the case if inData is empty or inCrypt holds to less data than necessary for decryption
+		 */
 		assert ( inData.position() == 0 );
 		inData.clear();
 
@@ -238,7 +243,7 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 		else
 			inCrypt.compact();
 
-		if( ( isBlocking() && inCrypt.position() == 0 ) || readEngineResult.getStatus() == Status.BUFFER_UNDERFLOW )
+		if( isBlocking() || readEngineResult.getStatus() == Status.BUFFER_UNDERFLOW )
 			if( socketChannel.read( inCrypt ) == -1 ) {
 				return -1;
 			}
