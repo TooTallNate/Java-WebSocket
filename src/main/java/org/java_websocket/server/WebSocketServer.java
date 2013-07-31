@@ -73,9 +73,8 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 
 	private Thread selectorthread;
 
-	private volatile AtomicBoolean isclosed = new AtomicBoolean( false );
-
 	private List<WebSocketWorker> decoders;
+	private int decodercount;
 
 	private List<WebSocketImpl> iqueue;
 	private BlockingQueue<ByteBuffer> buffers;
@@ -148,6 +147,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		if( address == null || decodercount < 1 || connectionscontainer == null ) {
 			throw new IllegalArgumentException( "address and connectionscontainer must not be null and you need at least 1 decoder" );
 		}
+		this.decodercount = decodercount;
 
 		if( drafts == null )
 			this.drafts = Collections.emptyList();
@@ -161,11 +161,6 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 
 		decoders = new ArrayList<WebSocketWorker>( decodercount );
 		buffers = new LinkedBlockingQueue<ByteBuffer>();
-		for( int i = 0 ; i < decodercount ; i++ ) {
-			WebSocketWorker ex = new WebSocketWorker();
-			decoders.add( ex );
-			ex.start();
-		}
 	}
 
 	/**
@@ -198,9 +193,6 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 * @throws InterruptedException
 	 */
 	public void stop( int timeout ) throws IOException , InterruptedException {
-		if( !isclosed.compareAndSet( false, true ) ) {
-			return;
-		}
 
 		synchronized ( connections ) {
 			for( WebSocket ws : connections ) {
@@ -217,11 +209,11 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 					selectorthread.join();
 				}
 			}
-			if( decoders != null ) {
-				for( WebSocketWorker w : decoders ) {
-					w.interrupt();
-				}
+			for( WebSocketWorker w : decoders ) {
+				w.interrupt();
 			}
+			decoders.clear();
+			buffers.clear();
 			if( server != null ) {
 				server.close();
 			}
@@ -266,13 +258,17 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 
 	// Runnable IMPLEMENTATION /////////////////////////////////////////////////
 	public void run() {
+		try {
+		decoders.clear();
+		for (int i = 0; i < decodercount; i++) {
+			WebSocketWorker ex = new WebSocketWorker();
+			decoders.add(ex);
+			ex.start();
+		}
 		synchronized ( this ) {
 			if( selectorthread != null )
 				throw new IllegalStateException( getClass().getName() + " can only be started once." );
 			selectorthread = Thread.currentThread();
-			if( isclosed.get() ) {
-				return;
-			}
 		}
 		selectorthread.setName( "WebsocketSelector" + selectorthread.getId() );
 		try {
@@ -374,12 +370,20 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 					handleIOException( key, conn, ex );
 				} catch ( InterruptedException e ) {
 					return;// FIXME controlled shutdown
+				} catch (RuntimeException e) {
+					if (key != null) {
+						key.cancel();
+					}
+					handleIOException(key, conn, e);
 				}
 			}
 
 		} catch ( RuntimeException e ) {
 			// should hopefully never occur
 			handleFatal( null, e );
+		}
+		} finally {
+			selectorthread = null;
 		}
 	}
 	protected void allocateBuffers( WebSocket c ) throws InterruptedException {
@@ -417,8 +421,8 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		buffers.put( buf );
 	}
 
-	private void handleIOException( SelectionKey key, WebSocket conn, IOException ex ) {
-		//onWebsocketError( conn, ex );// conn may be null here
+	private void handleIOException( SelectionKey key, WebSocket conn, Exception ex ) {
+		onWebsocketError( conn, ex );// conn may be null here
 		if( conn != null ) {
 			conn.closeConnection( CloseFrame.ABNORMAL_CLOSE, ex.getMessage() );
 		} else if( key != null ) {
