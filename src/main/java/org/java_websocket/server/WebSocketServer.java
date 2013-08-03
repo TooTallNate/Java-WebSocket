@@ -205,8 +205,10 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 
 				}
 				if( selectorthread != Thread.currentThread() ) {
-					selectorthread.interrupt();
-					selectorthread.join();
+					try {
+						selectorthread.interrupt();
+						selectorthread.join();
+					} catch (NullPointerException e) {}
 				}
 			}
 			for( WebSocketWorker w : decoders ) {
