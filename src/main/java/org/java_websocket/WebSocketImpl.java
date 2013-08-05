@@ -93,7 +93,7 @@ public class WebSocketImpl implements WebSocket {
 	private Opcode current_continuous_frame_opcode = null;
 
 	/** the bytes of an incomplete received handshake */
-	private ByteBuffer tmpHandshakeBytes;
+	private ByteBuffer tmpHandshakeBytes = ByteBuffer.allocate( 0 );
 
 	/** stores the handshake sent by this websocket ( Role.CLIENT only ) */
 	private ClientHandshake handshakerequest = null;
@@ -149,8 +149,11 @@ public class WebSocketImpl implements WebSocket {
 	 * 
 	 */
 	public void decode( ByteBuffer socketBuffer ) {
-		if( !socketBuffer.hasRemaining() || flushandclosestate )
+		assert ( socketBuffer.hasRemaining() );
+
+		if( flushandclosestate ) {
 			return;
+		}
 
 		if( DEBUG )
 			System.out.println( "process(" + socketBuffer.remaining() + "): {" + ( socketBuffer.remaining() > 1000 ? "too big to display" : new String( socketBuffer.array(), socketBuffer.position(), socketBuffer.remaining() ) ) + "}" );
@@ -159,19 +162,24 @@ public class WebSocketImpl implements WebSocket {
 			decodeFrames( socketBuffer );
 		} else {
 			if( decodeHandshake( socketBuffer ) ) {
-				decodeFrames( socketBuffer );
+				assert ( tmpHandshakeBytes.hasRemaining() != socketBuffer.hasRemaining() || !socketBuffer.hasRemaining() ); // the buffers will never have remaining bytes at the same time
+
+				if( socketBuffer.hasRemaining() ) {
+					decodeFrames( socketBuffer );
+				} else if( tmpHandshakeBytes.hasRemaining() ) {
+					decodeFrames( tmpHandshakeBytes );
+				}
 			}
 		}
 		assert ( isClosing() || isFlushAndClose() || !socketBuffer.hasRemaining() );
 	}
-
 	/**
 	 * Returns whether the handshake phase has is completed.
 	 * In case of a broken handshake this will be never the case.
 	 **/
 	private boolean decodeHandshake( ByteBuffer socketBufferNew ) {
 		ByteBuffer socketBuffer;
-		if( tmpHandshakeBytes == null ) {
+		if( tmpHandshakeBytes.capacity() == 0 ) {
 			socketBuffer = socketBufferNew;
 		} else {
 			if( tmpHandshakeBytes.remaining() < socketBufferNew.remaining() ) {
@@ -260,7 +268,7 @@ public class WebSocketImpl implements WebSocket {
 					draft.setParseMode( role );
 					Handshakedata tmphandshake = draft.translateHandshake( socketBuffer );
 					if( tmphandshake instanceof ServerHandshake == false ) {
-						flushAndClose( CloseFrame.PROTOCOL_ERROR, "Wwrong http function", false );
+						flushAndClose( CloseFrame.PROTOCOL_ERROR, "wrong http function", false );
 						return false;
 					}
 					ServerHandshake handshake = (ServerHandshake) tmphandshake;
@@ -286,7 +294,7 @@ public class WebSocketImpl implements WebSocket {
 				close( e );
 			}
 		} catch ( IncompleteHandshakeException e ) {
-			if( tmpHandshakeBytes == null ) {
+			if( tmpHandshakeBytes.capacity() == 0 ) {
 				socketBuffer.reset();
 				int newsize = e.getPreferedSize();
 				if( newsize == 0 ) {
