@@ -8,6 +8,7 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
 import java.nio.channels.CancelledKeyException;
+import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -325,6 +326,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 							ByteBuffer buf = takeBuffer();
 							try {
 								if( SocketChannelIOHelper.read( buf, conn, (ByteChannel) conn.channel ) ) {
+									assert ( buf.hasRemaining() );
 									conn.inQueue.put( buf );
 									queue( conn );
 									i.remove();
@@ -337,9 +339,6 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 									pushBuffer( buf );
 								}
 							} catch ( IOException e ) {
-								pushBuffer( buf );
-								throw e;
-							} catch ( RuntimeException e ) {
 								pushBuffer( buf );
 								throw e;
 							}
@@ -359,21 +358,25 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 						try {
 							if( SocketChannelIOHelper.readMore( buf, conn, c ) )
 								iqueue.add( conn );
+							assert ( buf.hasRemaining() );
 							conn.inQueue.put( buf );
 							queue( conn );
-						} finally {
+						} catch ( IOException e ) {
 							pushBuffer( buf );
+							throw e;
 						}
 
 					}
 				} catch ( CancelledKeyException e ) {
 					// an other thread may cancel the key
+				} catch ( ClosedByInterruptException e ) {
+					return; // do the same stuff as when InterruptedException is thrown
 				} catch ( IOException ex ) {
 					if( key != null )
 						key.cancel();
 					handleIOException( key, conn, ex );
 				} catch ( InterruptedException e ) {
-					return;// FIXME controlled shutdown
+					return;// FIXME controlled shutdown (e.g. take care of buffermanagement)
 				}
 			}
 
@@ -418,7 +421,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	}
 
 	private void handleIOException( SelectionKey key, WebSocket conn, IOException ex ) {
-		//onWebsocketError( conn, ex );// conn may be null here
+		// onWebsocketError( conn, ex );// conn may be null here
 		if( conn != null ) {
 			conn.closeConnection( CloseFrame.ABNORMAL_CLOSE, ex.getMessage() );
 		} else if( key != null ) {
