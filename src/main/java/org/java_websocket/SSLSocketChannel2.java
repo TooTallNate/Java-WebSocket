@@ -56,6 +56,8 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 	protected SSLEngineResult readEngineResult;
 	protected SSLEngineResult writeEngineResult;
 
+	protected int bufferallocations = 0;
+
 	public SSLSocketChannel2( SocketChannel channel , SSLEngine sslEngine , ExecutorService exec , SelectionKey key ) throws IOException {
 		if( channel == null || sslEngine == null || exec == null )
 			throw new IllegalArgumentException( "parameter must not be null" );
@@ -127,21 +129,21 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 			}
 			inData.compact();
 			unwrap();
-			if( sslEngine.getHandshakeStatus() == HandshakeStatus.FINISHED ) {
+			if( readEngineResult.getHandshakeStatus() == HandshakeStatus.FINISHED ) {
 				createBuffers( sslEngine.getSession() );
 				return;
 			}
 		}
 		consumeDelegatedTasks();
-		assert ( sslEngine.getHandshakeStatus() != HandshakeStatus.NOT_HANDSHAKING );
 		if( tasks.isEmpty() || sslEngine.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.NEED_WRAP ) {
 			socketChannel.write( wrap( emptybuffer ) );
-			if( sslEngine.getHandshakeStatus() == HandshakeStatus.FINISHED ) {
+			if( writeEngineResult.getHandshakeStatus() == HandshakeStatus.FINISHED ) {
 				createBuffers( sslEngine.getSession() );
+				return;
 			}
 		}
+		assert ( sslEngine.getHandshakeStatus() != HandshakeStatus.NOT_HANDSHAKING );// this function could only leave NOT_HANDSHAKING after createBuffers was called
 	}
-
 	private synchronized ByteBuffer wrap( ByteBuffer b ) throws SSLException {
 		outCrypt.compact();
 		writeEngineResult = sslEngine.wrap( b, outCrypt );
@@ -192,6 +194,7 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 		inCrypt.flip();
 		outCrypt.rewind();
 		outCrypt.flip();
+		bufferallocations++;
 	}
 
 	public int write( ByteBuffer src ) throws IOException {
@@ -199,6 +202,7 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 			processHandshake();
 			return 0;
 		}
+		assert ( bufferallocations > 1 );
 		int num = socketChannel.write( wrap( src ) );
 		return num;
 
@@ -225,6 +229,7 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 				}
 			}
 		}
+		assert ( bufferallocations > 1 );
 		/* 1. When "dst" is smaller than "inData" readRemaining will fill "dst" with data decoded in a previous read call.
 		 * 2. When "inCrypt" contains more data than "inData" has remaining space, unwrap has to be called on more time(readRemaining)
 		 */
@@ -256,7 +261,6 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 		}
 		return transfered;
 	}
-
 	/**
 	 * {@link #read(ByteBuffer)} may not be to leave all buffers(inData, inCrypt)
 	 **/
