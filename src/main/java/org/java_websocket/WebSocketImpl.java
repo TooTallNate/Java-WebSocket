@@ -578,6 +578,11 @@ public class WebSocketImpl implements WebSocket {
 	}
 
 	@Override
+	public void sendFragmentedFrame( Opcode op, ByteBuffer buffer, boolean fin ) {
+		send( draft.continuousFrame( op, buffer, fin ) );
+	}
+
+	@Override
 	public void sendFrame( Framedata framedata ) {
 		if( DEBUG )
 			System.out.println( "send frame: " + framedata );
