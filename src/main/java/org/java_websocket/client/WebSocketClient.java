@@ -16,7 +16,6 @@ import java.util.concurrent.CountDownLatch;
 
 import org.java_websocket.SocketChannelIOHelper;
 import org.java_websocket.WebSocket;
-import org.java_websocket.WebSocket.READYSTATE;
 import org.java_websocket.WebSocketAdapter;
 import org.java_websocket.WebSocketFactory;
 import org.java_websocket.WebSocketImpl;
@@ -25,6 +24,8 @@ import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft_10;
 import org.java_websocket.exceptions.InvalidHandshakeException;
 import org.java_websocket.framing.CloseFrame;
+import org.java_websocket.framing.Framedata;
+import org.java_websocket.framing.Framedata.Opcode;
 import org.java_websocket.handshake.HandshakeImpl1Client;
 import org.java_websocket.handshake.Handshakedata;
 import org.java_websocket.handshake.ServerHandshake;
@@ -39,7 +40,7 @@ import org.java_websocket.handshake.ServerHandshake;
  * 
  * @author Nathan Rajlich
  */
-public abstract class WebSocketClient extends WebSocketAdapter implements Runnable {
+public abstract class WebSocketClient extends WebSocketAdapter implements Runnable, WebSocket {
 
 	/**
 	 * The URI this channel is supposed to connect to.
@@ -104,14 +105,13 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			channel = null;
 			onWebsocketError( null, e );
 		}
-		if(channel == null){
+		if( channel == null ) {
 			conn = (WebSocketImpl) wsfactory.createWebSocket( this, draft, null );
 			conn.close( CloseFrame.NEVER_CONNECTED, "Failed to create or configure SocketChannel." );
-		}
-		else{
+		} else {
 			conn = (WebSocketImpl) wsfactory.createWebSocket( this, draft, channel.socket() );
 		}
-		
+
 	}
 
 	/**
@@ -171,6 +171,10 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		conn.send( text );
 	}
 
+	public void sendFragment( Framedata f ) {
+		conn.sendFrame( f );
+	}
+
 	/**
 	 * Sends <var>data</var> to the connected WebSocket server.
 	 * 
@@ -178,7 +182,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 *            The Byte-Array of data to send to the WebSocket server.
 	 */
 	public void send( byte[] data ) throws NotYetConnectedException {
-			conn.send( data );
+		conn.send( data );
 	}
 
 	// Runnable IMPLEMENTATION /////////////////////////////////////////////////
@@ -198,7 +202,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
 		try {
 			String host;
-			int port ;
+			int port;
 
 			if( proxyAddress != null ) {
 				host = proxyAddress.getHostName();
@@ -317,6 +321,11 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		onMessage( blob );
 	}
 
+	@Override
+	public void onWebsocketMessageFragment( WebSocket conn, Framedata frame ) {
+		onFragment( frame );
+	}
+
 	/**
 	 * Calls subclass' implementation of <var>onOpen</var>.
 	 * 
@@ -405,7 +414,9 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	public abstract void onClose( int code, String reason, boolean remote );
 	public abstract void onError( Exception ex );
 	public void onMessage( ByteBuffer bytes ) {
-	};
+	}
+	public void onFragment( Framedata frame ) {
+	}
 
 	public class DefaultClientProxyChannel extends AbstractClientProxyChannel {
 		public DefaultClientProxyChannel( ByteChannel towrap ) {
@@ -446,15 +457,84 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			}
 		}
 	}
-	
+
 	public ByteChannel createProxyChannel( ByteChannel towrap ) {
-		if( proxyAddress != null ){
+		if( proxyAddress != null ) {
 			return new DefaultClientProxyChannel( towrap );
 		}
-		return towrap;//no proxy in use
+		return towrap;// no proxy in use
 	}
 
 	public void setProxy( InetSocketAddress proxyaddress ) {
 		proxyAddress = proxyaddress;
+	}
+
+	@Override
+	public void sendFragmentedFrame( Opcode op, ByteBuffer buffer, boolean fin ) {
+		conn.sendFragmentedFrame( op, buffer, fin );
+	}
+
+	@Override
+	public boolean isOpen() {
+		return conn.isOpen();
+	}
+
+	@Override
+	public boolean isFlushAndClose() {
+		return conn.isFlushAndClose();
+	}
+
+	@Override
+	public boolean isClosed() {
+		return conn.isClosed();
+	}
+
+	@Override
+	public boolean isClosing() {
+		return conn.isClosing();
+	}
+
+	@Override
+	public boolean isConnecting() {
+		return conn.isConnecting();
+	}
+
+	@Override
+	public boolean hasBufferedData() {
+		return conn.hasBufferedData();
+	}
+
+	@Override
+	public void close( int code ) {
+		conn.close();
+	}
+
+	@Override
+	public void close( int code, String message ) {
+		conn.close( code, message );
+	}
+
+	@Override
+	public void closeConnection( int code, String message ) {
+		conn.closeConnection( code, message );
+	}
+
+	@Override
+	public void send( ByteBuffer bytes ) throws IllegalArgumentException , NotYetConnectedException {
+		conn.send( bytes );
+	}
+
+	@Override
+	public void sendFrame( Framedata framedata ) {
+		conn.sendFrame( framedata );
+	}
+
+	@Override
+	public InetSocketAddress getLocalSocketAddress() {
+		return conn.getLocalSocketAddress();
+	}
+	@Override
+	public InetSocketAddress getRemoteSocketAddress() {
+		return conn.getRemoteSocketAddress();
 	}
 }
