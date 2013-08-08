@@ -31,13 +31,12 @@ import org.java_websocket.util.Charsetfunctions;
 public class Draft_10 extends Draft {
 
 	private class IncompleteException extends Throwable {
-		
+
 		/**
 		 * It's Serializable.
 		 */
 		private static final long serialVersionUID = 7330519489840500997L;
-		
-		
+
 		private int preferedsize;
 		public IncompleteException( int preferedsize ) {
 			this.preferedsize = preferedsize;
@@ -63,7 +62,7 @@ public class Draft_10 extends Draft {
 
 	private ByteBuffer incompleteframe;
 	private Framedata fragmentedframe = null;
-	
+
 	private final Random reuseableRandom = new Random();
 
 	@Override
@@ -117,7 +116,7 @@ public class Draft_10 extends Draft {
 			ByteBuffer maskkey = ByteBuffer.allocate( 4 );
 			maskkey.putInt( reuseableRandom.nextInt() );
 			buf.put( maskkey.array() );
-			for( int i = 0 ; i < mes.limit() ; i++ ) {
+			for( int i = 0 ; mes.hasRemaining() ; i++ ) {
 				buf.put( (byte) ( mes.get() ^ maskkey.get( i % 4 ) ) );
 			}
 		} else
