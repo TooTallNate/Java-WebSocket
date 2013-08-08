@@ -135,8 +135,6 @@ public abstract class Draft {
 
 		if( continuousFrameType != null ) {
 			continuousFrameType = Opcode.CONTINUOUS;
-		} else if( fin ) {
-			throw new IllegalArgumentException( "There is no continious frame to continue" );
 		} else {
 			continuousFrameType = op;
 		}
