@@ -7,6 +7,7 @@ import java.util.Collection;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketImpl;
+import org.java_websocket.framing.Framedata;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 
@@ -41,6 +42,11 @@ public class ChatServer extends WebSocketServer {
 		System.out.println( conn + ": " + message );
 	}
 
+	@Override
+	public void onFragment( WebSocket conn, Framedata fragment ) {
+		System.out.println( "received fragment: " + fragment );
+	}
+
 	public static void main( String[] args ) throws InterruptedException , IOException {
 		WebSocketImpl.DEBUG = true;
 		int port = 8887; // 843 flash policy port
@@ -56,9 +62,16 @@ public class ChatServer extends WebSocketServer {
 		while ( true ) {
 			String in = sysin.readLine();
 			s.sendToAll( in );
+			if( in.equals( "exit" ) ) {
+				s.stop();
+				break;
+			} else if( in.equals( "restart" ) ) {
+				s.stop();
+				s.start();
+				break;
+			}
 		}
 	}
-
 	@Override
 	public void onError( WebSocket conn, Exception ex ) {
 		ex.printStackTrace();
