@@ -31,7 +31,7 @@ public class ExampleClient extends WebSocketClient {
 
 	@Override
 	public void onFragment( Framedata fragment ) {
-		System.out.println( "received fragment: " + fragment );
+		System.out.println( "received fragment: " + new String( fragment.getPayloadData().array() ) );
 	}
 
 	@Override

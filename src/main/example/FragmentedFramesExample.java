@@ -11,9 +11,10 @@ import org.java_websocket.drafts.Draft_17;
 import org.java_websocket.framing.Framedata.Opcode;
 
 /**
- * This example show how to send fragmented frames.<br>
- * It also shows that one can mix fragmented and normal frames at will.<br>
- * Of course one has to finish with a fragmented frame sequence before continuing with the next.
+ * This example shows how to send fragmented frames.<br>
+ * For information on when to used fragmented frames see http://tools.ietf.org/html/rfc6455#section-5.4<br>
+ * Fragmented and normal messages can not be mixed.
+ * One is however allowed to mix them with control messages like ping/pong.
  * 
  * @see WebSocket#sendFragmentedFrame(Opcode, ByteBuffer, boolean)
  **/
@@ -27,29 +28,24 @@ public class FragmentedFramesExample {
 			return;
 		}
 
-		System.out.println( "This example shows how to send fragmented(continuous) messages.\n It also shows that fragments can be intercepted by normal messages." );
+		System.out.println( "This example shows how to send fragmented(continuous) messages." );
 
 		BufferedReader stdin = new BufferedReader( new InputStreamReader( System.in ) );
 		while ( websocket.isOpen() ) {
-			System.out.println( "Please type in a loooooong line(which will be send in multible parts):" );
+			System.out.println( "Please type in a loooooong line(which then will be send in 2 byte fragments):" );
 			String longline = stdin.readLine();
 			ByteBuffer longelinebuffer = ByteBuffer.wrap( longline.getBytes() );
 			longelinebuffer.rewind();
 
-			System.out.println( "The long message you just typed in will be fragmented in messages of 2bytes payload each.\nPress enter so send the next fragemnt or make some other input to send text messages inbetween." );
 			for( int position = 2 ; ; position += 2 ) {
-
-				String sendInOnePiece = stdin.readLine();
-				if( !sendInOnePiece.isEmpty() ) {
-					websocket.send( sendInOnePiece );
-				}
-
 				if( position < longelinebuffer.capacity() ) {
 					longelinebuffer.limit( position );
-					websocket.sendFragmentedFrame( Opcode.TEXT, longelinebuffer, false );// when sending binary data use Opcode.BINARY
+					websocket.sendFragmentedFrame( Opcode.TEXT, longelinebuffer, false );// when sending binary data one should use Opcode.BINARY
+					assert ( longelinebuffer.remaining() == 0 );
+					// after calling sendFragmentedFrame one may reuse the buffer given to the method immediately
 				} else {
 					longelinebuffer.limit( longelinebuffer.capacity() );
-					websocket.sendFragmentedFrame( Opcode.TEXT, longelinebuffer, true );
+					websocket.sendFragmentedFrame( Opcode.TEXT, longelinebuffer, true );// sending the last frame
 					break;
 				}
 
