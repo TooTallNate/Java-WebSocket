@@ -56,6 +56,10 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 	protected SSLEngineResult readEngineResult;
 	protected SSLEngineResult writeEngineResult;
 
+	/**
+	 * Should be used to count the buffer allocations.
+	 * But because of #190 where HandshakeStatus.FINISHED is not properly returned by nio wrap/unwrap this variable is used to check whether {@link #createBuffers(SSLSession)} needs to be called.
+	 **/
 	protected int bufferallocations = 0;
 
 	public SSLSocketChannel2( SocketChannel channel , SSLEngine sslEngine , ExecutorService exec , SelectionKey key ) throws IOException {
@@ -142,7 +146,9 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 				return;
 			}
 		}
-		assert ( sslEngine.getHandshakeStatus() != HandshakeStatus.NOT_HANDSHAKING );// this function could only leave NOT_HANDSHAKING after createBuffers was called
+		assert ( sslEngine.getHandshakeStatus() != HandshakeStatus.NOT_HANDSHAKING );// this function could only leave NOT_HANDSHAKING after createBuffers was called unless #190 occurs which means that nio wrap/unwrap never return HandshakeStatus.FINISHED
+
+		bufferallocations = 1; // look at variable declaration why this line exists and #190. Without this line buffers would not be be recreated when #190 AND a rehandshake occur.
 	}
 	private synchronized ByteBuffer wrap( ByteBuffer b ) throws SSLException {
 		outCrypt.compact();
@@ -202,7 +208,10 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 			processHandshake();
 			return 0;
 		}
-		assert ( bufferallocations > 1 );
+		// assert ( bufferallocations > 1 ); //see #190
+		if( bufferallocations <= 1 ) {
+			createBuffers( sslEngine.getSession() );
+		}
 		int num = socketChannel.write( wrap( src ) );
 		return num;
 
@@ -229,7 +238,10 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 				}
 			}
 		}
-		assert ( bufferallocations > 1 );
+		// assert ( bufferallocations > 1 ); //see #190
+		if( bufferallocations <= 1 ) {
+			createBuffers( sslEngine.getSession() );
+		}
 		/* 1. When "dst" is smaller than "inData" readRemaining will fill "dst" with data decoded in a previous read call.
 		 * 2. When "inCrypt" contains more data than "inData" has remaining space, unwrap has to be called on more time(readRemaining)
 		 */
