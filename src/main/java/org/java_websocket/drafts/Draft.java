@@ -12,7 +12,10 @@ import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.exceptions.InvalidHandshakeException;
 import org.java_websocket.exceptions.LimitExedeedException;
 import org.java_websocket.framing.CloseFrame;
+import org.java_websocket.framing.FrameBuilder;
 import org.java_websocket.framing.Framedata;
+import org.java_websocket.framing.Framedata.Opcode;
+import org.java_websocket.framing.FramedataImpl1;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.handshake.ClientHandshakeBuilder;
 import org.java_websocket.handshake.HandshakeBuilder;
@@ -45,6 +48,8 @@ public abstract class Draft {
 
 	/** In some cases the handshake will be parsed different depending on whether */
 	protected Role role = null;
+
+	protected Opcode continuousFrameType = null;
 
 	public static ByteBuffer readLine( ByteBuffer buf ) {
 		ByteBuffer sbuf = ByteBuffer.allocate( buf.remaining() );
@@ -122,6 +127,32 @@ public abstract class Draft {
 	public abstract List<Framedata> createFrames( ByteBuffer binary, boolean mask );
 
 	public abstract List<Framedata> createFrames( String text, boolean mask );
+
+	public List<Framedata> continuousFrame( Opcode op, ByteBuffer buffer, boolean fin ) {
+		if( op != Opcode.BINARY && op != Opcode.TEXT && op != Opcode.TEXT ) {
+			throw new IllegalArgumentException( "Only Opcode.BINARY or  Opcode.TEXT are allowed" );
+		}
+
+		if( continuousFrameType != null ) {
+			continuousFrameType = Opcode.CONTINUOUS;
+		} else {
+			continuousFrameType = op;
+		}
+
+		FrameBuilder bui = new FramedataImpl1( continuousFrameType );
+		try {
+			bui.setPayload( buffer );
+		} catch ( InvalidDataException e ) {
+			throw new RuntimeException( e ); // can only happen when one builds close frames(Opcode.Close)
+		}
+		bui.setFin( fin );
+		if( fin ) {
+			continuousFrameType = null;
+		} else {
+			continuousFrameType = op;
+		}
+		return Collections.singletonList( (Framedata) bui );
+	}
 
 	public abstract void reset();
 

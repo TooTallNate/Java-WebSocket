@@ -36,6 +36,7 @@ import org.java_websocket.WebSocketImpl;
 import org.java_websocket.WrappedByteChannel;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.framing.CloseFrame;
+import org.java_websocket.framing.Framedata;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.handshake.Handshakedata;
 
@@ -473,6 +474,12 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	}
 
 	@Override
+	@Deprecated
+	public/*final*/void onWebsocketMessageFragment( WebSocket conn, Framedata frame ) {// onFragment should be overloaded instead
+		onFragment( conn, frame );
+	}
+
+	@Override
 	public final void onWebsocketMessage( WebSocket conn, ByteBuffer blob ) {
 		onMessage( conn, blob );
 	}
@@ -626,7 +633,13 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 * @see #onMessage(WebSocket, String)
 	 **/
 	public void onMessage( WebSocket conn, ByteBuffer message ) {
-	};
+	}
+
+	/**
+	 * @see WebSocket#sendFragmentedFrame(org.java_websocket.framing.Framedata.Opcode, ByteBuffer, boolean)
+	 */
+	public void onFragment( WebSocket conn, Framedata fragment ) {
+	}
 
 	public class WebSocketWorker extends Thread {
 
