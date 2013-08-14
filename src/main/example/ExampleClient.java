@@ -4,6 +4,7 @@ import java.net.URISyntaxException;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft_10;
+import org.java_websocket.framing.Framedata;
 import org.java_websocket.handshake.ServerHandshake;
 
 /** This example demonstrates how to create a websocket connection to a server. Only the most important callbacks are overloaded. */
@@ -20,13 +21,17 @@ public class ExampleClient extends WebSocketClient {
 	@Override
 	public void onOpen( ServerHandshake handshakedata ) {
 		System.out.println( "opened connection" );
-		// if you pan to refuse connection based on ip or httpfields overload: onWebsocketHandshakeReceivedAsClient
+		// if you plan to refuse connection based on ip or httpfields overload: onWebsocketHandshakeReceivedAsClient
 	}
 
 	@Override
 	public void onMessage( String message ) {
 		System.out.println( "received: " + message );
-		// send( "you said: " + message );
+	}
+
+	@Override
+	public void onFragment( Framedata fragment ) {
+		System.out.println( "received fragment: " + new String( fragment.getPayloadData().array() ) );
 	}
 
 	@Override

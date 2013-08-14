@@ -6,6 +6,7 @@ import java.nio.channels.NotYetConnectedException;
 
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.framing.Framedata;
+import org.java_websocket.framing.Framedata.Opcode;
 
 public interface WebSocket {
 	public enum Role {
@@ -61,6 +62,21 @@ public interface WebSocket {
 	public abstract void send( byte[] bytes ) throws IllegalArgumentException , NotYetConnectedException;
 
 	public abstract void sendFrame( Framedata framedata );
+
+	/**
+	 * Allows to send continuous/fragmented frames conveniently. <br>
+	 * For more into on this frame type see http://tools.ietf.org/html/rfc6455#section-5.4<br>
+	 * 
+	 * If the first frame you send is also the last then it is not a fragmented frame and will received via onMessage instead of onFragmented even though it was send by this method.
+	 * 
+	 * @param op
+	 *            This is only important for the first frame in the sequence. Opcode.TEXT, Opcode.BINARY are allowed.
+	 * @param buffer
+	 *            The buffer which contains the payload. It may have no bytes remaining.
+	 * @param fin
+	 *            true means the current frame is the last in the sequence.
+	 **/
+	public abstract void sendFragmentedFrame( Opcode op, ByteBuffer buffer, boolean fin );
 
 	public abstract boolean hasBufferedData();
 

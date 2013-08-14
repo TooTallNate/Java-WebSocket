@@ -165,7 +165,6 @@ public class Draft_75 extends Draft {
 
 		List<Framedata> frames = readyframes;
 		readyframes = new LinkedList<Framedata>();
-		this.currentFrame = null;
 		return frames;
 	}
 
