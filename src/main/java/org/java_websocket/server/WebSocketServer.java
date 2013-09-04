@@ -35,10 +35,12 @@ import org.java_websocket.WebSocketFactory;
 import org.java_websocket.WebSocketImpl;
 import org.java_websocket.WrappedByteChannel;
 import org.java_websocket.drafts.Draft;
+import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.handshake.Handshakedata;
+import org.java_websocket.handshake.ServerHandshakeBuilder;
 
 /**
  * <tt>WebSocketServer</tt> is an abstract class that only takes care of the
@@ -200,15 +202,21 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 * @throws InterruptedException
 	 */
 	public void stop( int timeout ) throws IOException , InterruptedException {
-		if( !isclosed.compareAndSet( false, true ) ) {
+		if( !isclosed.compareAndSet( false, true ) ) { // this also makes sure that no further connections will be added to this.connections
 			return;
 		}
 
+		List<WebSocket> socketsToClose = null;
+
+		// copy the connections in a list (prevent callback deadlocks)
 		synchronized ( connections ) {
-			for( WebSocket ws : connections ) {
-				ws.close( CloseFrame.GOING_AWAY );
-			}
+			socketsToClose = new ArrayList<WebSocket>( connections );
 		}
+
+		for( WebSocket ws : socketsToClose ) {
+			ws.close( CloseFrame.GOING_AWAY );
+		}
+
 		synchronized ( this ) {
 			if( selectorthread != null ) {
 				if( Thread.currentThread() != selectorthread ) {
@@ -525,13 +533,25 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		}
 	}
 
-	/** @see #removeConnection(WebSocket) */
-	protected boolean addConnection( WebSocket ws ) {
-		synchronized ( connections ) {
-			return this.connections.add( ws );
-		}
+	@Override
+	public ServerHandshakeBuilder onWebsocketHandshakeReceivedAsServer( WebSocket conn, Draft draft, ClientHandshake request ) throws InvalidDataException {
+		return super.onWebsocketHandshakeReceivedAsServer( conn, draft, request );
 	}
 
+	/** @see #removeConnection(WebSocket) */
+	protected boolean addConnection( WebSocket ws ) {
+		if( isclosed.get() ) {
+			synchronized ( connections ) {
+				boolean succ = this.connections.add( ws );
+				assert ( succ );
+				return succ;
+			}
+		} else {
+			// This case will happen when a new connection gets ready while the server is already stopping.
+			ws.close( CloseFrame.GOING_AWAY );
+			return true;// for consistency sake we will make sure that both onOpen will be called
+		}
+	}
 	/**
 	 * @param conn
 	 *            may be null if the error does not belong to a single connection
