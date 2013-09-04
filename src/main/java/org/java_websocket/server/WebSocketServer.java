@@ -326,16 +326,18 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 							conn = (WebSocketImpl) key.attachment();
 							ByteBuffer buf = takeBuffer();
 							try {
-								if( SocketChannelIOHelper.read( buf, conn, (ByteChannel) conn.channel ) ) {
-									assert ( buf.hasRemaining() );
-									conn.inQueue.put( buf );
-									queue( conn );
-									i.remove();
-									if( conn.channel instanceof WrappedByteChannel ) {
-										if( ( (WrappedByteChannel) conn.channel ).isNeedRead() ) {
-											iqueue.add( conn );
+								if( SocketChannelIOHelper.read( buf, conn, conn.channel ) ) {
+									if( buf.hasRemaining() ) {
+										conn.inQueue.put( buf );
+										queue( conn );
+										i.remove();
+										if( conn.channel instanceof WrappedByteChannel ) {
+											if( ( (WrappedByteChannel) conn.channel ).isNeedRead() ) {
+												iqueue.add( conn );
+											}
 										}
-									}
+									} else
+										pushBuffer( buf );
 								} else {
 									pushBuffer( buf );
 								}
@@ -346,7 +348,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 						}
 						if( key.isWritable() ) {
 							conn = (WebSocketImpl) key.attachment();
-							if( SocketChannelIOHelper.batch( conn, (ByteChannel) conn.channel ) ) {
+							if( SocketChannelIOHelper.batch( conn, conn.channel ) ) {
 								if( key.isValid() )
 									key.interestOps( SelectionKey.OP_READ );
 							}
@@ -359,9 +361,12 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 						try {
 							if( SocketChannelIOHelper.readMore( buf, conn, c ) )
 								iqueue.add( conn );
-							assert ( buf.hasRemaining() );
-							conn.inQueue.put( buf );
-							queue( conn );
+							if( buf.hasRemaining() ) {
+								conn.inQueue.put( buf );
+								queue( conn );
+							} else {
+								pushBuffer( buf );
+							}
 						} catch ( IOException e ) {
 							pushBuffer( buf );
 							throw e;
