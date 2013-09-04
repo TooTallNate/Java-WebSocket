@@ -195,13 +195,13 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 * If this method is called before the server is started it will never start.
 	 * 
 	 * @param timeout
-	 *            Specifies how many milliseconds shall pass between initiating the close handshakes with the connected clients and closing the servers socket channel.
+	 *            Specifies how many milliseconds the overall close handshaking may take altogether before the connections are closed without proper close handshaking.<br>
 	 * 
 	 * @throws IOException
 	 *             When {@link ServerSocketChannel}.close throws an IOException
 	 * @throws InterruptedException
 	 */
-	public void stop( int timeout ) throws IOException , InterruptedException {
+	public void stop( int timeout ) throws InterruptedException {
 		if( !isclosed.compareAndSet( false, true ) ) { // this also makes sure that no further connections will be added to this.connections
 			return;
 		}
@@ -223,21 +223,14 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 
 				}
 				if( selectorthread != Thread.currentThread() ) {
-					selectorthread.interrupt();
+					if( socketsToClose.size() > 0 )
+						selectorthread.join( timeout );// isclosed will tell the selectorthread to go down after the last connection was closed
+					selectorthread.interrupt();// in case the selectorthread did not terminate in time we send the interrupt
 					selectorthread.join();
 				}
 			}
-			if( decoders != null ) {
-				for( WebSocketWorker w : decoders ) {
-					w.interrupt();
-				}
-			}
-			if( server != null ) {
-				server.close();
-			}
 		}
 	}
-
 	public void stop() throws IOException , InterruptedException {
 		stop( 0 );
 	}
@@ -397,6 +390,19 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		} catch ( RuntimeException e ) {
 			// should hopefully never occur
 			handleFatal( null, e );
+		} finally {
+			if( decoders != null ) {
+				for( WebSocketWorker w : decoders ) {
+					w.interrupt();
+				}
+			}
+			if( server != null ) {
+				try {
+					server.close();
+				} catch ( IOException e ) {
+					onError( null, e );
+				}
+			}
 		}
 	}
 	protected void allocateBuffers( WebSocket c ) throws InterruptedException {
@@ -528,11 +534,16 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 * Depending on the type on the connection, modifications of that collection may have to be synchronized.
 	 **/
 	protected boolean removeConnection( WebSocket ws ) {
+		boolean removed;
 		synchronized ( connections ) {
-			return this.connections.remove( ws );
+			removed = this.connections.remove( ws );
+			assert ( removed );
 		}
+		if( isclosed.get() && connections.size() == 0 ) {
+			selectorthread.interrupt();
+		}
+		return removed;
 	}
-
 	@Override
 	public ServerHandshakeBuilder onWebsocketHandshakeReceivedAsServer( WebSocket conn, Draft draft, ClientHandshake request ) throws InvalidDataException {
 		return super.onWebsocketHandshakeReceivedAsServer( conn, draft, request );
@@ -540,7 +551,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 
 	/** @see #removeConnection(WebSocket) */
 	protected boolean addConnection( WebSocket ws ) {
-		if( isclosed.get() ) {
+		if( !isclosed.get() ) {
 			synchronized ( connections ) {
 				boolean succ = this.connections.add( ws );
 				assert ( succ );
