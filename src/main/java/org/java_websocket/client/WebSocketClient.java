@@ -344,6 +344,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 				while ( !Thread.interrupted() ) {
 					ByteBuffer buffer = engine.outQueue.take();
 					ostream.write( buffer.array(), 0, buffer.limit() );
+					ostream.flush();
 				}
 			} catch ( IOException e ) {
 				engine.eot();
