@@ -537,4 +537,9 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	public InetSocketAddress getRemoteSocketAddress() {
 		return conn.getRemoteSocketAddress();
 	}
+	
+	@Override
+	public String getResourceDescriptor() {
+		return uri.getPath();
+	}
 }
