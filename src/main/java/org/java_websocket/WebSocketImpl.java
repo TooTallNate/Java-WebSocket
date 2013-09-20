@@ -198,8 +198,12 @@ public class WebSocketImpl implements WebSocket {
 			if( draft == null ) {
 				HandshakeState isflashedgecase = isFlashEdgeCase( socketBuffer );
 				if( isflashedgecase == HandshakeState.MATCHED ) {
-					write( ByteBuffer.wrap( Charsetfunctions.utf8Bytes( wsl.getFlashPolicy( this ) ) ) );
-					close( CloseFrame.FLASHPOLICY, "" );
+					try {
+						write( ByteBuffer.wrap( Charsetfunctions.utf8Bytes( wsl.getFlashPolicy( this ) ) ) );
+						close( CloseFrame.FLASHPOLICY, "" );
+					} catch ( InvalidDataException e ) {
+						close( CloseFrame.ABNORMAL_CLOSE, "remote peer closed connection before flashpolicy could be transmitted", true );
+					}
 					return false;
 				}
 			}
