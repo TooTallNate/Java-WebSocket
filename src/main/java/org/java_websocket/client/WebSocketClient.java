@@ -1,27 +1,22 @@
 package org.java_websocket.client;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.Socket;
 import java.net.URI;
 import java.nio.ByteBuffer;
-import java.nio.channels.ByteChannel;
-import java.nio.channels.CancelledKeyException;
-import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.NotYetConnectedException;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.SocketChannel;
-import java.nio.channels.spi.SelectorProvider;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
-import org.java_websocket.SocketChannelIOHelper;
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketAdapter;
-import org.java_websocket.WebSocketFactory;
 import org.java_websocket.WebSocketImpl;
-import org.java_websocket.WrappedByteChannel;
 import org.java_websocket.drafts.Draft;
-import org.java_websocket.drafts.Draft_10;
+import org.java_websocket.drafts.Draft_17;
 import org.java_websocket.exceptions.InvalidHandshakeException;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.Framedata;
@@ -31,14 +26,8 @@ import org.java_websocket.handshake.Handshakedata;
 import org.java_websocket.handshake.ServerHandshake;
 
 /**
- * The <tt>WebSocketClient</tt> is an abstract class that expects a valid
- * "ws://" URI to connect to. When connected, an instance recieves important
- * events related to the life of the connection. A subclass must implement
- * <var>onOpen</var>, <var>onClose</var>, and <var>onMessage</var> to be
- * useful. An instance can send messages to it's connected server via the
- * <var>send</var> method.
- * 
- * @author Nathan Rajlich
+ * A subclass must implement at least <var>onOpen</var>, <var>onClose</var>, and <var>onMessage</var> to be
+ * useful. At runtime the user is expected to establish a connection via {@link #connect()}, then receive events like {@link #onMessage(String)} via the overloaded methods and to {@link #send(String)} data to the server.
  */
 public abstract class WebSocketClient extends WebSocketAdapter implements Runnable, WebSocket {
 
@@ -47,17 +36,17 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 */
 	protected URI uri = null;
 
-	private WebSocketImpl conn = null;
-	/**
-	 * The SocketChannel instance this channel uses.
-	 */
-	private SocketChannel channel = null;
+	private WebSocketImpl engine = null;
 
-	private ByteChannel wrappedchannel = null;
+	private Socket socket = null;
 
-	private Thread writethread;
+	private InputStream istream;
 
-	private Thread readthread;
+	private OutputStream ostream;
+
+	private Proxy proxy = Proxy.NO_PROXY;
+
+	private Thread writeThread;
 
 	private Draft draft;
 
@@ -67,92 +56,77 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
 	private CountDownLatch closeLatch = new CountDownLatch( 1 );
 
-	private int timeout = 0;
+	private int connectTimeout = 0;
 
-	private WebSocketClientFactory wsfactory = new DefaultWebSocketClientFactory( this );
-
-	private InetSocketAddress proxyAddress = null;
-
+	/** This open a websocket connection as specified by rfc6455 */
 	public WebSocketClient( URI serverURI ) {
-		this( serverURI, new Draft_10() );
+		this( serverURI, new Draft_17() );
 	}
 
 	/**
 	 * Constructs a WebSocketClient instance and sets it to the connect to the
-	 * specified URI. The channel does not attampt to connect automatically. You
-	 * must call <var>connect</var> first to initiate the socket connection.
+	 * specified URI. The channel does not attampt to connect automatically. The connection
+	 * will be established once you call <var>connect</var>.
 	 */
 	public WebSocketClient( URI serverUri , Draft draft ) {
 		this( serverUri, draft, null, 0 );
 	}
 
-	public WebSocketClient( URI serverUri , Draft draft , Map<String,String> headers , int connecttimeout ) {
+	public WebSocketClient( URI serverUri , Draft protocolDraft , Map<String,String> httpHeaders , int connectTimeout ) {
 		if( serverUri == null ) {
 			throw new IllegalArgumentException();
-		}
-		if( draft == null ) {
+		} else if( protocolDraft == null ) {
 			throw new IllegalArgumentException( "null as draft is permitted for `WebSocketServer` only!" );
 		}
 		this.uri = serverUri;
-		this.draft = draft;
-		this.headers = headers;
-		this.timeout = connecttimeout;
-
-		try {
-			channel = SelectorProvider.provider().openSocketChannel();
-			channel.configureBlocking( true );
-		} catch ( IOException e ) {
-			channel = null;
-			onWebsocketError( null, e );
-		}
-		if( channel == null ) {
-			conn = (WebSocketImpl) wsfactory.createWebSocket( this, draft, null );
-			conn.close( CloseFrame.NEVER_CONNECTED, "Failed to create or configure SocketChannel." );
-		} else {
-			conn = (WebSocketImpl) wsfactory.createWebSocket( this, draft, channel.socket() );
-		}
-
+		this.draft = protocolDraft;
+		this.headers = httpHeaders;
+		this.connectTimeout = connectTimeout;
+		this.engine = new WebSocketImpl( this, protocolDraft );
 	}
 
 	/**
-	 * Gets the URI that this WebSocketClient is connected to.
-	 * 
-	 * @return The <tt>URI</tt> for this WebSocketClient.
+	 * Returns the URI that this WebSocketClient is connected to.
 	 */
 	public URI getURI() {
 		return uri;
 	}
 
-	/** Returns the protocol version this channel uses. */
+	/**
+	 * Returns the protocol version this channel uses.<br>
+	 * For more infos see https://github.com/TooTallNate/Java-WebSocket/wiki/Drafts
+	 */
 	public Draft getDraft() {
 		return draft;
 	}
 
 	/**
-	 * Starts a background thread that attempts and maintains a WebSocket
-	 * connection to the URI specified in the constructor or via <var>setURI</var>.
-	 * <var>setURI</var>.
+	 * Initiates the websocket connection. This method does not block.
 	 */
 	public void connect() {
-		if( writethread != null )
+		if( writeThread != null )
 			throw new IllegalStateException( "WebSocketClient objects are not reuseable" );
-		writethread = new Thread( this );
-		writethread.start();
+		writeThread = new Thread( this );
+		writeThread.start();
 	}
 
 	/**
-	 * Same as connect but blocks until the websocket connected or failed to do so.<br>
+	 * Same as <code>connect</code> but blocks until the websocket connected or failed to do so.<br>
 	 * Returns whether it succeeded or not.
 	 **/
 	public boolean connectBlocking() throws InterruptedException {
 		connect();
 		connectLatch.await();
-		return conn.isOpen();
+		return engine.isOpen();
 	}
 
+	/**
+	 * Initiates the websocket close handshake. This method does not block<br>
+	 * In oder to make sure the connection is closed use <code>closeBlocking</code>
+	 */
 	public void close() {
-		if( writethread != null ) {
-			conn.close( CloseFrame.NORMAL );
+		if( writeThread != null ) {
+			engine.close( CloseFrame.NORMAL );
 		}
 	}
 
@@ -162,102 +136,64 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	}
 
 	/**
-	 * Sends <var>text</var> to the connected WebSocket server.
+	 * Sends <var>text</var> to the connected websocket server.
 	 * 
 	 * @param text
-	 *            The String to send to the WebSocket server.
+	 *            The string which will be transmitted.
 	 */
 	public void send( String text ) throws NotYetConnectedException {
-		conn.send( text );
-	}
-
-	public void sendFragment( Framedata f ) {
-		conn.sendFrame( f );
+		engine.send( text );
 	}
 
 	/**
-	 * Sends <var>data</var> to the connected WebSocket server.
+	 * Sends binary <var> data</var> to the connected webSocket server.
 	 * 
 	 * @param data
-	 *            The Byte-Array of data to send to the WebSocket server.
+	 *            The byte-Array of data to send to the WebSocket server.
 	 */
 	public void send( byte[] data ) throws NotYetConnectedException {
-		conn.send( data );
+		engine.send( data );
 	}
 
-	// Runnable IMPLEMENTATION /////////////////////////////////////////////////
 	public void run() {
-		if( writethread == null )
-			writethread = Thread.currentThread();
-		interruptableRun();
+		try {
+			if( socket == null ) {
+				socket = new Socket( proxy );
+			} else if( socket.isClosed() ) {
+				throw new IOException();
+			}
+			if( !socket.isBound() )
+				socket.connect( new InetSocketAddress( uri.getHost(), getPort() ), connectTimeout );
+			istream = socket.getInputStream();
+			ostream = socket.getOutputStream();
 
-		assert ( !channel.isOpen() );
-
-	}
-
-	private final void interruptableRun() {
-		if( channel == null ) {
-			return;// channel will be initialized in the constructor and only be null if no socket channel could be created or if blocking mode could be established
+			sendHandshake();
+		} catch ( /*IOException | SecurityException | UnresolvedAddressException | InvalidHandshakeException | ClosedByInterruptException | SocketTimeoutException */Exception e ) {
+			onWebsocketError( engine, e );
+			engine.closeConnection( CloseFrame.NEVER_CONNECTED, e.getMessage() );
+			return;
 		}
+
+		writeThread = new Thread( new WebsocketWriteThread() );
+		writeThread.start();
+
+		byte[] rawbuffer = new byte[ WebSocketImpl.RCVBUF ];
+		int readBytes;
 
 		try {
-			String host;
-			int port;
-
-			if( proxyAddress != null ) {
-				host = proxyAddress.getHostName();
-				port = proxyAddress.getPort();
-			} else {
-				host = uri.getHost();
-				port = getPort();
+			while ( ( readBytes = istream.read( rawbuffer ) ) != -1 ) {
+				engine.decode( ByteBuffer.wrap( rawbuffer, 0, readBytes ) );
 			}
-			channel.connect( new InetSocketAddress( host, port ) );
-			conn.channel = wrappedchannel = createProxyChannel( wsfactory.wrapChannel( channel, null, host, port ) );
-
-			timeout = 0; // since connect is over
-			sendHandshake();
-			readthread = new Thread( new WebsocketWriteThread() );
-			readthread.start();
-		} catch ( ClosedByInterruptException e ) {
-			onWebsocketError( null, e );
-			return;
-		} catch ( /*IOException | SecurityException | UnresolvedAddressException*/Exception e ) {//
-			onWebsocketError( conn, e );
-			conn.closeConnection( CloseFrame.NEVER_CONNECTED, e.getMessage() );
-			return;
-		}
-
-		ByteBuffer buff = ByteBuffer.allocate( WebSocketImpl.RCVBUF );
-		try/*IO*/{
-			while ( channel.isOpen() ) {
-				if( SocketChannelIOHelper.read( buff, this.conn, wrappedchannel ) ) {
-					conn.decode( buff );
-				} else {
-					conn.eot();
-				}
-
-				if( wrappedchannel instanceof WrappedByteChannel ) {
-					WrappedByteChannel w = (WrappedByteChannel) wrappedchannel;
-					if( w.isNeedRead() ) {
-						while ( SocketChannelIOHelper.readMore( buff, conn, w ) ) {
-							conn.decode( buff );
-						}
-						conn.decode( buff );
-					}
-				}
-			}
-
-		} catch ( CancelledKeyException e ) {
-			conn.eot();
+			engine.eot();
 		} catch ( IOException e ) {
-			conn.eot();
+			engine.eot();
 		} catch ( RuntimeException e ) {
 			// this catch case covers internal errors only and indicates a bug in this websocket implementation
 			onError( e );
-			conn.closeConnection( CloseFrame.ABNORMAL_CLOSE, e.getMessage() );
+			engine.closeConnection( CloseFrame.ABNORMAL_CLOSE, e.getMessage() );
 		}
+		assert ( socket.isClosed() );
 	}
-
 	private int getPort() {
 		int port = uri.getPort();
 		if( port == -1 ) {
@@ -294,22 +230,18 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 				handshake.put( kv.getKey(), kv.getValue() );
 			}
 		}
-		conn.startHandshake( handshake );
+		engine.startHandshake( handshake );
 	}
 
 	/**
 	 * This represents the state of the connection.
-	 * You can use this method instead of
 	 */
 	public READYSTATE getReadyState() {
-		return conn.getReadyState();
+		return engine.getReadyState();
 	}
 
 	/**
 	 * Calls subclass' implementation of <var>onMessage</var>.
-	 * 
-	 * @param conn
-	 * @param message
 	 */
 	@Override
 	public final void onWebsocketMessage( WebSocket conn, String message ) {
@@ -328,8 +260,6 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
 	/**
 	 * Calls subclass' implementation of <var>onOpen</var>.
-	 * 
-	 * @param conn
 	 */
 	@Override
 	public final void onWebsocketOpen( WebSocket conn, Handshakedata handshake ) {
@@ -339,22 +269,18 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
 	/**
 	 * Calls subclass' implementation of <var>onClose</var>.
-	 * 
-	 * @param conn
 	 */
 	@Override
 	public final void onWebsocketClose( WebSocket conn, int code, String reason, boolean remote ) {
 		connectLatch.countDown();
 		closeLatch.countDown();
-		if( readthread != null )
-			readthread.interrupt();
+		if( writeThread != null )
+			writeThread.interrupt();
 		onClose( code, reason, remote );
 	}
 
 	/**
 	 * Calls subclass' implementation of <var>onIOError</var>.
-	 * 
-	 * @param conn
 	 */
 	@Override
 	public final void onWebsocketError( WebSocket conn, Exception ex ) {
@@ -383,28 +309,20 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	}
 
 	public WebSocket getConnection() {
-		return conn;
-	}
-
-	public final void setWebSocketFactory( WebSocketClientFactory wsf ) {
-		this.wsfactory = wsf;
-	}
-
-	public final WebSocketFactory getWebSocketFactory() {
-		return wsfactory;
+		return engine;
 	}
 
 	@Override
 	public InetSocketAddress getLocalSocketAddress( WebSocket conn ) {
-		if( channel != null )
-			return (InetSocketAddress) channel.socket().getLocalSocketAddress();
+		if( socket != null )
+			return (InetSocketAddress) socket.getLocalSocketAddress();
 		return null;
 	}
 
 	@Override
 	public InetSocketAddress getRemoteSocketAddress( WebSocket conn ) {
-		if( channel != null )
-			return (InetSocketAddress) channel.socket().getLocalSocketAddress();
+		if( socket != null )
+			return (InetSocketAddress) socket.getLocalSocketAddress();
 		return null;
 	}
 
@@ -418,124 +336,109 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	public void onFragment( Framedata frame ) {
 	}
 
-	public class DefaultClientProxyChannel extends AbstractClientProxyChannel {
-		public DefaultClientProxyChannel( ByteChannel towrap ) {
-			super( towrap );
-		}
-		@Override
-		public String buildHandShake() {
-			StringBuilder b = new StringBuilder();
-			String host = uri.getHost();
-			b.append( "CONNECT " );
-			b.append( host );
-			b.append( ":" );
-			b.append( getPort() );
-			b.append( " HTTP/1.1\n" );
-			b.append( "Host: " );
-			b.append( host );
-			b.append( "\n" );
-			return b.toString();
-		}
-	}
-
-	public interface WebSocketClientFactory extends WebSocketFactory {
-		public ByteChannel wrapChannel( SocketChannel channel, SelectionKey key, String host, int port ) throws IOException;
-	}
-
 	private class WebsocketWriteThread implements Runnable {
 		@Override
 		public void run() {
 			Thread.currentThread().setName( "WebsocketWriteThread" );
 			try {
 				while ( !Thread.interrupted() ) {
-					SocketChannelIOHelper.writeBlocking( conn, wrappedchannel );
+					ByteBuffer buffer = engine.outQueue.take();
+					ostream.write( buffer.array(), 0, buffer.limit() );
+					ostream.flush();
 				}
 			} catch ( IOException e ) {
-				conn.eot();
+				engine.eot();
 			} catch ( InterruptedException e ) {
 				// this thread is regularly terminated via an interrupt
 			}
 		}
 	}
 
-	public ByteChannel createProxyChannel( ByteChannel towrap ) {
-		if( proxyAddress != null ) {
-			return new DefaultClientProxyChannel( towrap );
-		}
-		return towrap;// no proxy in use
+	public void setProxy( Proxy proxy ) {
+		if( proxy == null )
+			throw new IllegalArgumentException();
+		this.proxy = proxy;
 	}
 
-	public void setProxy( InetSocketAddress proxyaddress ) {
-		proxyAddress = proxyaddress;
+	/**
+	 * Accepts bound and unbound sockets.<br>
+	 * This method must be called before <code>connect</code>.
+	 * If the given socket is not yet bound it will be bound to the uri specified in the constructor.
+	 **/
+	public void setSocket( Socket socket ) {
+		if( this.socket != null ) {
+			throw new IllegalStateException( "socket has already been set" );
+		}
+		this.socket = socket;
 	}
 
 	@Override
 	public void sendFragmentedFrame( Opcode op, ByteBuffer buffer, boolean fin ) {
-		conn.sendFragmentedFrame( op, buffer, fin );
+		engine.sendFragmentedFrame( op, buffer, fin );
 	}
 
 	@Override
 	public boolean isOpen() {
-		return conn.isOpen();
+		return engine.isOpen();
 	}
 
 	@Override
 	public boolean isFlushAndClose() {
-		return conn.isFlushAndClose();
+		return engine.isFlushAndClose();
 	}
 
 	@Override
 	public boolean isClosed() {
-		return conn.isClosed();
+		return engine.isClosed();
 	}
 
 	@Override
 	public boolean isClosing() {
-		return conn.isClosing();
+		return engine.isClosing();
 	}
 
 	@Override
 	public boolean isConnecting() {
-		return conn.isConnecting();
+		return engine.isConnecting();
 	}
 
 	@Override
 	public boolean hasBufferedData() {
-		return conn.hasBufferedData();
+		return engine.hasBufferedData();
 	}
 
 	@Override
 	public void close( int code ) {
-		conn.close();
+		engine.close();
 	}
 
 	@Override
 	public void close( int code, String message ) {
-		conn.close( code, message );
+		engine.close( code, message );
 	}
 
 	@Override
 	public void closeConnection( int code, String message ) {
-		conn.closeConnection( code, message );
+		engine.closeConnection( code, message );
 	}
 
 	@Override
 	public void send( ByteBuffer bytes ) throws IllegalArgumentException , NotYetConnectedException {
-		conn.send( bytes );
+		engine.send( bytes );
 	}
 
 	@Override
 	public void sendFrame( Framedata framedata ) {
-		conn.sendFrame( framedata );
+		engine.sendFrame( framedata );
 	}
 
 	@Override
 	public InetSocketAddress getLocalSocketAddress() {
-		return conn.getLocalSocketAddress();
+		return engine.getLocalSocketAddress();
 	}
 	@Override
 	public InetSocketAddress getRemoteSocketAddress() {
-		return conn.getRemoteSocketAddress();
+		return engine.getRemoteSocketAddress();
 	}
 	
 	@Override

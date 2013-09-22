@@ -59,11 +59,11 @@ public class SocketChannelIOHelper {
 			} while ( buffer != null );
 		}
 
-		if( ws.outQueue.isEmpty() && ws.isFlushAndClose() /*&& ( c == null || c.isNeedWrite() )*/) {
+		/*if( ws.outQueue.isEmpty() && ws.isFlushAndClose() ) {//
 			synchronized ( ws ) {
 				ws.closeConnection();
 			}
-		}
+		}*/
 		return c != null ? !( (WrappedByteChannel) sockchannel ).isNeedWrite() : true;
 	}
 
