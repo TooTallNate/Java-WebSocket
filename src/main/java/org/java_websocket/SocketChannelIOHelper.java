@@ -5,6 +5,8 @@ import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
 import java.nio.channels.spi.AbstractSelectableChannel;
 
+import org.java_websocket.WebSocket.Role;
+
 public class SocketChannelIOHelper {
 
 	public static boolean read( final ByteBuffer buf, WebSocketImpl ws, ByteChannel channel ) throws IOException {
@@ -59,21 +61,11 @@ public class SocketChannelIOHelper {
 			} while ( buffer != null );
 		}
 
-		if( ws.outQueue.isEmpty() && ws.isFlushAndClose() /*&& ( c == null || c.isNeedWrite() )*/) {
+		if( ws.outQueue.isEmpty() && ws.isFlushAndClose() && ws.getDraft().getRole() == Role.SERVER ) {//
 			synchronized ( ws ) {
 				ws.closeConnection();
 			}
 		}
 		return c != null ? !( (WrappedByteChannel) sockchannel ).isNeedWrite() : true;
 	}
-
-	public static void writeBlocking( WebSocketImpl ws, ByteChannel channel ) throws InterruptedException , IOException {
-		assert ( channel instanceof AbstractSelectableChannel == true ? ( (AbstractSelectableChannel) channel ).isBlocking() : true );
-		assert ( channel instanceof WrappedByteChannel == true ? ( (WrappedByteChannel) channel ).isBlocking() : true );
-
-		ByteBuffer buf = ws.outQueue.take();
-		while ( buf.hasRemaining() )
-			channel.write( buf );
-	}
-
 }

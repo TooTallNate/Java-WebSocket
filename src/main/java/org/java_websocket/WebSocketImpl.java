@@ -151,15 +151,11 @@ public class WebSocketImpl implements WebSocket {
 	public void decode( ByteBuffer socketBuffer ) {
 		assert ( socketBuffer.hasRemaining() );
 
-		if( flushandclosestate ) {
-			return;
-		}
-
 		if( DEBUG )
 			System.out.println( "process(" + socketBuffer.remaining() + "): {" + ( socketBuffer.remaining() > 1000 ? "too big to display" : new String( socketBuffer.array(), socketBuffer.position(), socketBuffer.remaining() ) ) + "}" );
 
-		if( readystate == READYSTATE.OPEN ) {
-			decodeFrames( socketBuffer );
+		if( readystate != READYSTATE.NOT_YET_CONNECTED ) {
+			decodeFrames( socketBuffer );;
 		} else {
 			if( decodeHandshake( socketBuffer ) ) {
 				assert ( tmpHandshakeBytes.hasRemaining() != socketBuffer.hasRemaining() || !socketBuffer.hasRemaining() ); // the buffers will never have remaining bytes at the same time
@@ -198,8 +194,12 @@ public class WebSocketImpl implements WebSocket {
 			if( draft == null ) {
 				HandshakeState isflashedgecase = isFlashEdgeCase( socketBuffer );
 				if( isflashedgecase == HandshakeState.MATCHED ) {
-					write( ByteBuffer.wrap( Charsetfunctions.utf8Bytes( wsl.getFlashPolicy( this ) ) ) );
-					close( CloseFrame.FLASHPOLICY, "" );
+					try {
+						write( ByteBuffer.wrap( Charsetfunctions.utf8Bytes( wsl.getFlashPolicy( this ) ) ) );
+						close( CloseFrame.FLASHPOLICY, "" );
+					} catch ( InvalidDataException e ) {
+						close( CloseFrame.ABNORMAL_CLOSE, "remote peer closed connection before flashpolicy could be transmitted", true );
+					}
 					return false;
 				}
 			}
@@ -315,8 +315,6 @@ public class WebSocketImpl implements WebSocket {
 	}
 
 	private void decodeFrames( ByteBuffer socketBuffer ) {
-		if( flushandclosestate )
-			return;
 
 		List<Framedata> frames;
 		try {
@@ -324,8 +322,6 @@ public class WebSocketImpl implements WebSocket {
 			for( Framedata f : frames ) {
 				if( DEBUG )
 					System.out.println( "matched frame: " + f );
-				if( flushandclosestate )
-					return;
 				Opcode curop = f.getOpcode();
 				boolean fin = f.isFin();
 
