@@ -181,7 +181,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		int readBytes;
 
 		try {
-			while ( ( readBytes = istream.read( rawbuffer ) ) != -1 ) {
+			while ( !isClosed() && ( readBytes = istream.read( rawbuffer ) ) != -1 ) {
 				engine.decode( ByteBuffer.wrap( rawbuffer, 0, readBytes ) );
 			}
 			engine.eot();
@@ -276,6 +276,12 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		closeLatch.countDown();
 		if( writeThread != null )
 			writeThread.interrupt();
+		try {
+			if( socket != null )
+				socket.close();
+		} catch ( IOException e ) {
+			onWebsocketError( this, e );
+		}
 		onClose( code, reason, remote );
 	}
 
