@@ -139,8 +139,9 @@ public interface WebSocketListener {
 	/**
 	 * Gets the XML string that should be returned if a client requests a Flash
 	 * security policy.
+	 * @throws InvalidDataException thrown when some data that is required to generate the flash-policy like the websocket local port could not be obtained.
 	 */
-	public String getFlashPolicy( WebSocket conn );
+	public String getFlashPolicy( WebSocket conn ) throws InvalidDataException;
 
 	/** This method is used to inform the selector thread that there is data queued to be written to the socket. */
 	public void onWriteDemand( WebSocket conn );

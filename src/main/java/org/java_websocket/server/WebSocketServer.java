@@ -35,10 +35,12 @@ import org.java_websocket.WebSocketFactory;
 import org.java_websocket.WebSocketImpl;
 import org.java_websocket.WrappedByteChannel;
 import org.java_websocket.drafts.Draft;
+import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.handshake.Handshakedata;
+import org.java_websocket.handshake.ServerHandshakeBuilder;
 
 /**
  * <tt>WebSocketServer</tt> is an abstract class that only takes care of the
@@ -193,43 +195,42 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 * If this method is called before the server is started it will never start.
 	 * 
 	 * @param timeout
-	 *            Specifies how many milliseconds shall pass between initiating the close handshakes with the connected clients and closing the servers socket channel.
+	 *            Specifies how many milliseconds the overall close handshaking may take altogether before the connections are closed without proper close handshaking.<br>
 	 * 
 	 * @throws IOException
 	 *             When {@link ServerSocketChannel}.close throws an IOException
 	 * @throws InterruptedException
 	 */
-	public void stop( int timeout ) throws IOException , InterruptedException {
-		if( !isclosed.compareAndSet( false, true ) ) {
+	public void stop( int timeout ) throws InterruptedException {
+		if( !isclosed.compareAndSet( false, true ) ) { // this also makes sure that no further connections will be added to this.connections
 			return;
 		}
 
+		List<WebSocket> socketsToClose = null;
+
+		// copy the connections in a list (prevent callback deadlocks)
 		synchronized ( connections ) {
-			for( WebSocket ws : connections ) {
-				ws.close( CloseFrame.GOING_AWAY );
-			}
+			socketsToClose = new ArrayList<WebSocket>( connections );
 		}
+
+		for( WebSocket ws : socketsToClose ) {
+			ws.close( CloseFrame.GOING_AWAY );
+		}
+
 		synchronized ( this ) {
 			if( selectorthread != null ) {
 				if( Thread.currentThread() != selectorthread ) {
 
 				}
 				if( selectorthread != Thread.currentThread() ) {
-					selectorthread.interrupt();
+					if( socketsToClose.size() > 0 )
+						selectorthread.join( timeout );// isclosed will tell the selectorthread to go down after the last connection was closed
+					selectorthread.interrupt();// in case the selectorthread did not terminate in time we send the interrupt
 					selectorthread.join();
 				}
 			}
-			if( decoders != null ) {
-				for( WebSocketWorker w : decoders ) {
-					w.interrupt();
-				}
-			}
-			if( server != null ) {
-				server.close();
-			}
 		}
 	}
-
 	public void stop() throws IOException , InterruptedException {
 		stop( 0 );
 	}
@@ -326,16 +327,18 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 							conn = (WebSocketImpl) key.attachment();
 							ByteBuffer buf = takeBuffer();
 							try {
-								if( SocketChannelIOHelper.read( buf, conn, (ByteChannel) conn.channel ) ) {
-									assert ( buf.hasRemaining() );
-									conn.inQueue.put( buf );
-									queue( conn );
-									i.remove();
-									if( conn.channel instanceof WrappedByteChannel ) {
-										if( ( (WrappedByteChannel) conn.channel ).isNeedRead() ) {
-											iqueue.add( conn );
+								if( SocketChannelIOHelper.read( buf, conn, conn.channel ) ) {
+									if( buf.hasRemaining() ) {
+										conn.inQueue.put( buf );
+										queue( conn );
+										i.remove();
+										if( conn.channel instanceof WrappedByteChannel ) {
+											if( ( (WrappedByteChannel) conn.channel ).isNeedRead() ) {
+												iqueue.add( conn );
+											}
 										}
-									}
+									} else
+										pushBuffer( buf );
 								} else {
 									pushBuffer( buf );
 								}
@@ -346,7 +349,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 						}
 						if( key.isWritable() ) {
 							conn = (WebSocketImpl) key.attachment();
-							if( SocketChannelIOHelper.batch( conn, (ByteChannel) conn.channel ) ) {
+							if( SocketChannelIOHelper.batch( conn, conn.channel ) ) {
 								if( key.isValid() )
 									key.interestOps( SelectionKey.OP_READ );
 							}
@@ -359,9 +362,12 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 						try {
 							if( SocketChannelIOHelper.readMore( buf, conn, c ) )
 								iqueue.add( conn );
-							assert ( buf.hasRemaining() );
-							conn.inQueue.put( buf );
-							queue( conn );
+							if( buf.hasRemaining() ) {
+								conn.inQueue.put( buf );
+								queue( conn );
+							} else {
+								pushBuffer( buf );
+							}
 						} catch ( IOException e ) {
 							pushBuffer( buf );
 							throw e;
@@ -384,6 +390,19 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		} catch ( RuntimeException e ) {
 			// should hopefully never occur
 			handleFatal( null, e );
+		} finally {
+			if( decoders != null ) {
+				for( WebSocketWorker w : decoders ) {
+					w.interrupt();
+				}
+			}
+			if( server != null ) {
+				try {
+					server.close();
+				} catch ( IOException e ) {
+					onError( null, e );
+				}
+			}
 		}
 	}
 	protected void allocateBuffers( WebSocket c ) throws InterruptedException {
@@ -515,18 +534,35 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 * Depending on the type on the connection, modifications of that collection may have to be synchronized.
 	 **/
 	protected boolean removeConnection( WebSocket ws ) {
+		boolean removed;
 		synchronized ( connections ) {
-			return this.connections.remove( ws );
+			removed = this.connections.remove( ws );
+			assert ( removed );
 		}
+		if( isclosed.get() && connections.size() == 0 ) {
+			selectorthread.interrupt();
+		}
+		return removed;
+	}
+	@Override
+	public ServerHandshakeBuilder onWebsocketHandshakeReceivedAsServer( WebSocket conn, Draft draft, ClientHandshake request ) throws InvalidDataException {
+		return super.onWebsocketHandshakeReceivedAsServer( conn, draft, request );
 	}
 
 	/** @see #removeConnection(WebSocket) */
 	protected boolean addConnection( WebSocket ws ) {
-		synchronized ( connections ) {
-			return this.connections.add( ws );
+		if( !isclosed.get() ) {
+			synchronized ( connections ) {
+				boolean succ = this.connections.add( ws );
+				assert ( succ );
+				return succ;
+			}
+		} else {
+			// This case will happen when a new connection gets ready while the server is already stopping.
+			ws.close( CloseFrame.GOING_AWAY );
+			return true;// for consistency sake we will make sure that both onOpen will be called
 		}
 	}
-
 	/**
 	 * @param conn
 	 *            may be null if the error does not belong to a single connection
