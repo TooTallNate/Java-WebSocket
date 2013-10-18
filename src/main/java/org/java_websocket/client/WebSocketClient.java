@@ -328,7 +328,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	@Override
 	public InetSocketAddress getRemoteSocketAddress( WebSocket conn ) {
 		if( socket != null )
-			return (InetSocketAddress) socket.getLocalSocketAddress();
+			return (InetSocketAddress) socket.getRemoteSocketAddress();
 		return null;
 	}
 
