@@ -20,6 +20,7 @@ import org.java_websocket.drafts.Draft_10;
 import org.java_websocket.drafts.Draft_17;
 import org.java_websocket.drafts.Draft_75;
 import org.java_websocket.drafts.Draft_76;
+import org.java_websocket.drafts.RFC_6455;
 import org.java_websocket.handshake.ServerHandshake;
 
 public class ChatClient extends JFrame implements ActionListener {
@@ -30,7 +31,7 @@ public class ChatClient extends JFrame implements ActionListener {
 	private final JButton close;
 	private final JTextArea ta;
 	private final JTextField chatField;
-	private final JComboBox draft;
+	private final JComboBox<Draft> draft;
 	private WebSocketClient cc;
 
 	public ChatClient( String defaultlocation ) {
@@ -41,8 +42,8 @@ public class ChatClient extends JFrame implements ActionListener {
 		layout.setRows( 6 );
 		c.setLayout( layout );
 
-		Draft[] drafts = { new Draft_17(), new Draft_10(), new Draft_76(), new Draft_75() };
-		draft = new JComboBox( drafts );
+		Draft[] drafts = { new RFC_6455(), new Draft_17(), new Draft_10(), new Draft_76(), new Draft_75() };
+		draft = new JComboBox<Draft>( drafts );
 		c.add( draft );
 
 		uriField = new JTextField();

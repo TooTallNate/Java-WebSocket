@@ -73,7 +73,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	/**
 	 * The Draft of the WebSocket protocol the Server is adhering to.
 	 */
-	private List<Draft> drafts;
+	private List<? extends Draft> drafts;
 
 	private Thread selectorthread;
 
@@ -117,14 +117,14 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	/**
 	 * @see #WebSocketServer(InetSocketAddress, int, List, Collection) more details here
 	 */
-	public WebSocketServer( InetSocketAddress address , List<Draft> drafts ) {
+	public WebSocketServer( InetSocketAddress address , List<? extends Draft> drafts ) {
 		this( address, DECODERS, drafts );
 	}
 
 	/**
 	 * @see #WebSocketServer(InetSocketAddress, int, List, Collection) more details here
 	 */
-	public WebSocketServer( InetSocketAddress address , int decodercount , List<Draft> drafts ) {
+	public WebSocketServer( InetSocketAddress address , int decodercount , List<? extends Draft> drafts ) {
 		this( address, decodercount, drafts, new HashSet<WebSocket>() );
 	}
 
@@ -148,7 +148,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 * @see #removeConnection(WebSocket) for more control over syncronized operation
 	 * @see <a href="https://github.com/TooTallNate/Java-WebSocket/wiki/Drafts" > more about drafts
 	 */
-	public WebSocketServer( InetSocketAddress address , int decodercount , List<Draft> drafts , Collection<WebSocket> connectionscontainer ) {
+	public WebSocketServer( InetSocketAddress address , int decodercount , List<? extends Draft> drafts , Collection<WebSocket> connectionscontainer ) {
 		if( address == null || decodercount < 1 || connectionscontainer == null ) {
 			throw new IllegalArgumentException( "address and connectionscontainer must not be null and you need at least 1 decoder" );
 		}
@@ -315,7 +315,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 
 							SocketChannel channel = server.accept();
 							channel.configureBlocking( false );
-							WebSocketImpl w = wsf.createWebSocket( this, drafts, channel.socket() );
+							WebSocketImpl w = wsf.createWebSocket( this, drafts );
 							w.key = channel.register( selector, SelectionKey.OP_READ, w );
 							w.channel = wsf.wrapChannel( channel, w.key );
 							i.remove();
@@ -720,9 +720,10 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 
 	public interface WebSocketServerFactory extends WebSocketFactory {
 		@Override
-		public WebSocketImpl createWebSocket( WebSocketAdapter a, Draft d, Socket s );
+		public WebSocketImpl createWebSocket( WebSocketAdapter a, Draft d );
 
-		public WebSocketImpl createWebSocket( WebSocketAdapter a, List<Draft> drafts, Socket s );
+		@Override
+		public WebSocketImpl createWebSocket( WebSocketAdapter a, List<? extends Draft> drafts );
 
 		/**
 		 * Allows to wrap the Socketchannel( key.channel() ) to insert a protocol layer( like ssl or proxy authentication) beyond the ws layer.

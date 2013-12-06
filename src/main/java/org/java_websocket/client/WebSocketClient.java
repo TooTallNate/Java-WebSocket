@@ -58,7 +58,6 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
 	private int connectTimeout = 0;
 
-	/** This open a websocket connection as specified by rfc6455 */
 	public WebSocketClient( URI serverURI ) {
 		this( serverURI, new Draft_17() );
 	}
@@ -78,8 +77,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		} else if( protocolDraft == null ) {
 			throw new IllegalArgumentException( "null as draft is permitted for `WebSocketServer` only!" );
 		}
-		this.uri = serverUri;
-		this.draft = protocolDraft;
+		this.uri = serverUri;		this.draft = protocolDraft;
 		this.headers = httpHeaders;
 		this.connectTimeout = connectTimeout;
 		this.engine = new WebSocketImpl( this, protocolDraft );
