@@ -146,7 +146,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 *            By default a {@link HashSet} will be used.
 	 * 
 	 * @see #removeConnection(WebSocket) for more control over syncronized operation
-	 * @see <a href="https://github.com/TooTallNate/Java-WebSocket/wiki/Drafts" > more about drafts
+	 * @see <a href='https://github.com/TooTallNate/Java-WebSocket/wiki/Drafts'>more about drafts</a>
 	 */
 	public WebSocketServer( InetSocketAddress address , int decodercount , List<? extends Draft> drafts , Collection<WebSocket> connectionscontainer ) {
 		if( address == null || decodercount < 1 || connectionscontainer == null ) {
@@ -614,7 +614,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 * Returns whether a new connection shall be accepted or not.<br>
 	 * Therefore method is well suited to implement some kind of connection limitation.<br>
 	 * 
-	 * @see {@link #onOpen(WebSocket, ClientHandshake)}, {@link #onWebsocketHandshakeReceivedAsServer(WebSocket, Draft, ClientHandshake)}
+	 * {@link #onOpen(WebSocket, ClientHandshake)}, {@link #onWebsocketHandshakeReceivedAsServer(WebSocket, Draft, ClientHandshake)}
 	 **/
 	protected boolean onConnect( SelectionKey key ) {
 		return true;
@@ -651,7 +651,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	/**
 	 * Callback for string messages received from the remote host
 	 * 
-	 * @see #onMessage(WebSocket, ByteBuffer)
+	 * {@link #onMessage(WebSocket, ByteBuffer)}
 	 **/
 	public abstract void onMessage( WebSocket conn, String message );
 	/**
@@ -659,7 +659,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 * This method will be called primarily because of IO or protocol errors.<br>
 	 * If the given exception is an RuntimeException that probably means that you encountered a bug.<br>
 	 * 
-	 * @param con
+	 * @param conn
 	 *            Can be null if there error does not belong to one specific websocket. For example if the servers port could not be bound.
 	 **/
 	public abstract void onError( WebSocket conn, Exception ex );

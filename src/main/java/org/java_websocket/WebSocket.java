@@ -81,12 +81,12 @@ public interface WebSocket {
 	public abstract boolean hasBufferedData();
 
 	/**
-	 * @returns never returns null
+	 * @return never returns null
 	 */
 	public abstract InetSocketAddress getRemoteSocketAddress();
 
 	/**
-	 * @returns never returns null
+	 * @return never returns null
 	 */
 	public abstract InetSocketAddress getLocalSocketAddress();
 
