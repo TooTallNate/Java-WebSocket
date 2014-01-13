@@ -42,6 +42,12 @@ To use maven just add this dependency to your pom.xml:
 </dependency> 
 ```
 
+###SBT
+To use in SBT, add this dependency:
+```scala
+libraryDependencies += "org.java-websocket" % "Java-WebSocket" % "1.3.0"
+```
+
 Running the Examples
 -------------------
 
