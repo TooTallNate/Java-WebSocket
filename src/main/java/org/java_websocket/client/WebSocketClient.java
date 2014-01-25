@@ -6,6 +6,8 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.Socket;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.NotYetConnectedException;
@@ -164,6 +166,9 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			}
 			if( !socket.isBound() )
 				socket.connect( new InetSocketAddress( uri.getHost(), getPort() ), connectTimeout );
+                        SSLSocketFactory f = (SSLSocketFactory) SSLSocketFactory.getDefault();
+                        socket = f.createSocket(socket, uri.getHost(), getPort(), true);
+
 			istream = socket.getInputStream();
 			ostream = socket.getOutputStream();
 
