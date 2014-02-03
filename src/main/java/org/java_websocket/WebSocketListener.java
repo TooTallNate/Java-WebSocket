@@ -51,6 +51,18 @@ public interface WebSocketListener {
 	public void onWebsocketHandshakeReceivedAsClient( WebSocket conn, ClientHandshake request, ServerHandshake response ) throws InvalidDataException;
 
 	/**
+	 * Called on the client side when the socket connection is about to be established, but failed due to the handshake
+	 * could not be verified. E.g. the server rejected the request with a regular HTTP response, and the client
+	 * can then use this callback as a way of obtain that HTTP response, e.g. status code.
+	 *
+	 * @param conn     The WebSocket related to this event
+	 * @param request  The handshake initially send out to the server by this websocket.
+	 * @param response The handshake the server sent in response to the request.
+	 */
+	public void onWebsocketHandshakeReceivedAsClientFailed(WebSocket conn, ClientHandshake request, ServerHandshake response);
+
+
+	/**
 	 * Called on the client side when the socket connection is first established, and the WebSocketImpl
 	 * handshake has just been sent.
 	 * 

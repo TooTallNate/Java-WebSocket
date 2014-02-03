@@ -287,6 +287,16 @@ public class WebSocketImpl implements WebSocket {
 						open( handshake );
 						return true;
 					} else {
+						if (handshake.getHttpStatus() != 101) {
+							// if HTTP-status is not 101, let client get a chance to obtain the HTTP response
+							// and take action upon that as per regular HTTP procedures.
+							// (http://tools.ietf.org/html/rfc6455#section-4.1)
+							try {
+								wsl.onWebsocketHandshakeReceivedAsClientFailed(this, handshakerequest, handshake);
+							} catch (RuntimeException e) {
+								// do nothing, fall through and close socket
+							}
+						}
 						close( CloseFrame.PROTOCOL_ERROR, "draft " + draft + " refuses handshake" );
 					}
 				}
