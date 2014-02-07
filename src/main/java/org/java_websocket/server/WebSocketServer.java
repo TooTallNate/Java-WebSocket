@@ -514,7 +514,11 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	public final void onWebsocketClose( WebSocket conn, int code, String reason, boolean remote ) {
 		selector.wakeup();
 		try {
-			if( removeConnection( conn ) ) {
+			if(conn.getReadyState() == WebSocket.READYSTATE.NOT_YET_CONNECTED){
+				// if the WebSocket was never opened (i.e. rejected before opened), then the connection will not have
+				// been added, so removeConnection should not be called.
+				onClose( conn, code, reason, remote );
+			} else if( removeConnection( conn ) ) {
 				onClose( conn, code, reason, remote );
 			}
 		} finally {

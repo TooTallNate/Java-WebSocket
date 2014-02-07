@@ -761,6 +761,10 @@ public class WebSocketImpl implements WebSocket {
 		return wsl.getLocalSocketAddress( this );
 	}
 
+	Role getRole() {
+		return role;
+	}
+
 	@Override
 	public Draft getDraft() {
 		return draft;
