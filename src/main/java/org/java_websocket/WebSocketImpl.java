@@ -253,6 +253,7 @@ public class WebSocketImpl implements WebSocket {
 								ClientHandshake handshake = (ClientHandshake) tmphandshake;
 								handshakestate = d.acceptHandshakeAsServer( handshake );
 								if( handshakestate == HandshakeState.MATCHED ) {
+									draft = d;
 									resourceDescriptor = handshake.getResourceDescriptor();
 									ServerHandshakeBuilder response;
 									try {
@@ -266,7 +267,6 @@ public class WebSocketImpl implements WebSocket {
 										return false;
 									}
 									write( d.createHandshake( d.postProcessHandshakeResponseAsServer( handshake, response ), role ) );
-									draft = d;
 									open( handshake );
 									return true;
 								}
