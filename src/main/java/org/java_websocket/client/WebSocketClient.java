@@ -82,7 +82,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		this.draft = protocolDraft;
 		this.headers = httpHeaders;
 		this.connectTimeout = connectTimeout;
-		this.engine = new WebSocketImpl( this, protocolDraft );
+		this.engine = WebSocketImpl.createClient( this , protocolDraft );
 	}
 
 	/**
