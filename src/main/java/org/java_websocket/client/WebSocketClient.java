@@ -211,8 +211,8 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
 	private void sendHandshake() throws InvalidHandshakeException {
 		String path;
-		String part1 = uri.getPath();
-		String part2 = uri.getQuery();
+		String part1 = uri.getRawPath();
+		String part2 = uri.getRawQuery();
 		if( part1 == null || part1.length() == 0 )
 			path = "/";
 		else
