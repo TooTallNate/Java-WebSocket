@@ -220,58 +220,65 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 	/**
 	 * Blocks when in blocking mode until at least one byte has been decoded.<br>
 	 * When not in blocking mode 0 may be returned.
-	 * 
+	 *
 	 * @return the number of bytes read.
 	 **/
 	public int read( ByteBuffer dst ) throws IOException {
-		if( !dst.hasRemaining() )
-			return 0;
-		if( !isHandShakeComplete() ) {
-			if( isBlocking() ) {
-				while ( !isHandShakeComplete() ) {
+		int bytesRead = 0;
+		for(;;) {
+			if( !dst.hasRemaining() )
+				break;
+			if( !isHandShakeComplete() ) {
+				if( isBlocking() ) {
+					while ( !isHandShakeComplete() ) {
+						processHandshake();
+					}
+				} else {
 					processHandshake();
-				}
-			} else {
-				processHandshake();
-				if( !isHandShakeComplete() ) {
-					return 0;
+					if( !isHandShakeComplete() ) {
+						break;
+					}
 				}
 			}
-		}
-		// assert ( bufferallocations > 1 ); //see #190
-		if( bufferallocations <= 1 ) {
-			createBuffers( sslEngine.getSession() );
-		}
-		/* 1. When "dst" is smaller than "inData" readRemaining will fill "dst" with data decoded in a previous read call.
-		 * 2. When "inCrypt" contains more data than "inData" has remaining space, unwrap has to be called on more time(readRemaining)
-		 */
-		int purged = readRemaining( dst );
-		if( purged != 0 )
-			return purged;
-
-		/* We only continue when we really need more data from the network.
-		 * Thats the case if inData is empty or inCrypt holds to less data than necessary for decryption
-		 */
-		assert ( inData.position() == 0 );
-		inData.clear();
-
-		if( !inCrypt.hasRemaining() )
-			inCrypt.clear();
-		else
-			inCrypt.compact();
-
-		if( isBlocking() || readEngineResult.getStatus() == Status.BUFFER_UNDERFLOW )
-			if( socketChannel.read( inCrypt ) == -1 ) {
-				return -1;
+			// assert ( bufferallocations > 1 ); //see #190
+			if( bufferallocations <= 1 ) {
+				createBuffers( sslEngine.getSession() );
 			}
-		inCrypt.flip();
-		unwrap();
+			/* 1. When "dst" is smaller than "inData" readRemaining will fill "dst" with data decoded in a previous read call.
+			 * 2. When "inCrypt" contains more data than "inData" has remaining space, unwrap has to be called on more time(readRemaining)
+			 */
+			int purged = readRemaining( dst );
+			if( purged != 0 ) {
+				bytesRead += purged;
+				break;
+			}
 
-		int transfered = transfereTo( inData, dst );
-		if( transfered == 0 && isBlocking() ) {
-			return read( dst ); // "transfered" may be 0 when not enough bytes were received or during rehandshaking
+			/* We only continue when we really need more data from the network.
+			 * Thats the case if inData is empty or inCrypt holds to less data than necessary for decryption
+			 */
+			assert ( inData.position() == 0 );
+			inData.clear();
+
+			if( !inCrypt.hasRemaining() )
+				inCrypt.clear();
+			else
+				inCrypt.compact();
+
+			if( isBlocking() || readEngineResult.getStatus() == Status.BUFFER_UNDERFLOW )
+				if( socketChannel.read( inCrypt ) == -1 ) {
+					return -1;
+				}
+			inCrypt.flip();
+			unwrap();
+
+			int transfered = transfereTo( inData, dst );
+			if( transfered == 0 && isBlocking() ) {
+				continue;
+				//return read( dst ); // "transfered" may be 0 when not enough bytes were received or during rehandshaking
+			}
+			bytesRead += transfered;
 		}
-		return transfered;
+		return bytesRead;
 	}
 	/**
 	 * {@link #read(ByteBuffer)} may not be to leave all buffers(inData, inCrypt)
