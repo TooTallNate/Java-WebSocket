@@ -1,7 +1,4 @@
 apply plugin: 'java'
-apply plugin: 'idea'
-apply plugin: 'maven'
-
 
 repositories {
     mavenLocal()
@@ -9,36 +6,6 @@ repositories {
 }
 
 group = 'org.java_websocket'
-version = '1.2.1-SNAPSHOT'
+version = '1.3.1-SNAPSHOT'
 sourceCompatibility = 1.6
 targetCompatibility = 1.6
-
-configurations {
-    deployerJars
-}
-
-configure(install.repositories.mavenInstaller) {
-    pom.version = project.version
-    pom.groupId = "org.java_websocket"
-    pom.artifactId = 'Java-WebSocket'
-}
-
-dependencies {
-	deployerJars "org.apache.maven.wagon:wagon-webdav:1.0-beta-2"
-}
-
-
-//deploy to maven repository
-//uploadArchives {
-//    repositories.mavenDeployer {
-//        configuration = configurations.deployerJars
-//        repository(url: repositoryUrl) {
-//			authentication(userName: repositoryUsername, password: repositoryPassword)
-//		}
-//    }
-//}
-
-task wrapper(type: Wrapper) {
-    gradleVersion = '1.4'
-}
-
