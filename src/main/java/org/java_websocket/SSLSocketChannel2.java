@@ -179,8 +179,8 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 	}
 
 	protected void createBuffers( SSLSession session ) {
-		int appBufferMax = session.getApplicationBufferSize();
 		int netBufferMax = session.getPacketBufferSize();
+		int appBufferMax = Math.max(session.getApplicationBufferSize(), netBufferMax);
 
 		if( inData == null ) {
 			inData = ByteBuffer.allocate( appBufferMax );
@@ -209,9 +209,9 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 			return 0;
 		}
 		// assert ( bufferallocations > 1 ); //see #190
-		if( bufferallocations <= 1 ) {
-			createBuffers( sslEngine.getSession() );
-		}
+		//if( bufferallocations <= 1 ) {
+		//	createBuffers( sslEngine.getSession() );
+		//}
 		int num = socketChannel.write( wrap( src ) );
 		return num;
 
@@ -239,9 +239,9 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 			}
 		}
 		// assert ( bufferallocations > 1 ); //see #190
-		if( bufferallocations <= 1 ) {
-			createBuffers( sslEngine.getSession() );
-		}
+		//if( bufferallocations <= 1 ) {
+		//	createBuffers( sslEngine.getSession() );
+		//}
 		/* 1. When "dst" is smaller than "inData" readRemaining will fill "dst" with data decoded in a previous read call.
 		 * 2. When "inCrypt" contains more data than "inData" has remaining space, unwrap has to be called on more time(readRemaining)
 		 */
