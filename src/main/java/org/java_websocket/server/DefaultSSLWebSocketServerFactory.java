@@ -4,6 +4,7 @@ import java.net.Socket;
 import java.nio.channels.ByteChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -41,11 +42,13 @@ public class DefaultSSLWebSocketServerFactory implements WebSocketServer.WebSock
 
 	@Override
 	public WebSocketImpl createWebSocket( WebSocketAdapter a, Draft d, Socket c ) {
-		return new WebSocketImpl( a, d );
+		List<Draft> drafts = new ArrayList<Draft>(1);
+		drafts.add(d);
+		return WebSocketImpl.createServer( a, drafts );
 	}
 
 	@Override
 	public WebSocketImpl createWebSocket( WebSocketAdapter a, List<Draft> d, Socket s ) {
-		return new WebSocketImpl( a, d );
+		return WebSocketImpl.createServer( a, d );
 	}
 }

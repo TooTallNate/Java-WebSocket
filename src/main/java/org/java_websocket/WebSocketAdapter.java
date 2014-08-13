@@ -34,6 +34,16 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 
 	/**
 	 * This default implementation does not do anything which will cause the connections to always progress.
+	 *
+	 * @see org.java_websocket.WebSocketListener#onWebsocketHandshakeReceivedAsClientFailed(WebSocket, ClientHandshake, ServerHandshake)
+	 */
+	@Override
+	public void onWebsocketHandshakeReceivedAsClientFailed( WebSocket conn, ClientHandshake request, ServerHandshake response ) {
+
+	}
+
+	/**
+	 * This default implementation does not do anything which will cause the connections to always progress.
 	 * 
 	 * @see org.java_websocket.WebSocketListener#onWebsocketHandshakeSentAsClient(WebSocket, ClientHandshake)
 	 */

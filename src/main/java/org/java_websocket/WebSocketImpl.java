@@ -88,7 +88,7 @@ public class WebSocketImpl implements WebSocket {
 
 	private Draft draft = null;
 
-	private Role role;
+	private final Role role;
 
 	private Opcode current_continuous_frame_opcode = null;
 
@@ -104,13 +104,42 @@ public class WebSocketImpl implements WebSocket {
 	
 	private String resourceDescriptor = null;
 
+	private static BlockingQueue<ByteBuffer> createQueue(){
+		return new LinkedBlockingQueue<ByteBuffer>();
+	}
+
 	/**
 	 * crates a websocket with server role
+	 * @param listener Listener
+	 * @param drafts Known drafts (may be null to use default drafts)
 	 */
-	public WebSocketImpl( WebSocketListener listener , List<Draft> drafts ) {
-		this( listener, (Draft) null );
-		this.role = Role.SERVER;
-		// draft.copyInstance will be called when the draft is first needed
+	public static WebSocketImpl createServer( WebSocketListener listener , List<Draft> drafts ) {
+		return new WebSocketImpl( listener, drafts );
+	}
+
+	/**
+	 * crates a websocket with client role
+	 *
+	 * @param @param listener Listener
+	 * @param draft Draft to use
+	 */
+	public static WebSocketImpl createClient( WebSocketListener listener , Draft draft ) {
+		return new WebSocketImpl( listener, draft );
+	}
+
+	/**
+	 * Constructor for  a websocket with server role
+	 * @param listener Listener
+	 * @param drafts Known drafts (may be null to use default drafts)
+	 */
+	private WebSocketImpl( WebSocketListener listener , List<Draft> drafts ) {
+		if(null == listener){
+			throw new IllegalArgumentException( "listener must not be null" );
+		}
+		role = Role.SERVER;
+		wsl = listener;
+		outQueue = createQueue();
+		inQueue = createQueue();
 		if( drafts == null || drafts.isEmpty() ) {
 			knownDrafts = defaultdraftlist;
 		} else {
@@ -119,20 +148,23 @@ public class WebSocketImpl implements WebSocket {
 	}
 
 	/**
-	 * crates a websocket with client role
+	 * Constructor for a websocket with client role
 	 * 
-	 * @param socket
-	 *            may be unbound
+	 * @param @param listener Listener
+	 * @param draft Draft to use
 	 */
-	public WebSocketImpl( WebSocketListener listener , Draft draft ) {
-		if( listener == null || ( draft == null && role == Role.SERVER ) )// socket can be null because we want do be able to create the object without already having a bound channel
-			throw new IllegalArgumentException( "parameters must not be null" );
-		this.outQueue = new LinkedBlockingQueue<ByteBuffer>();
-		inQueue = new LinkedBlockingQueue<ByteBuffer>();
-		this.wsl = listener;
-		this.role = Role.CLIENT;
-		if( draft != null )
-			this.draft = draft.copyInstance();
+	private WebSocketImpl( WebSocketListener listener , Draft draft ) {
+		if(null == listener){
+			throw new IllegalArgumentException( "listener must not be null" );
+		}
+		if(null == draft){
+			throw new IllegalArgumentException( "draft must not be null" );
+		}
+		role = Role.CLIENT;
+		wsl = listener;
+		outQueue = createQueue();
+		inQueue = createQueue();
+		this.draft = draft.copyInstance();
 	}
 
 	@Deprecated
@@ -221,6 +253,7 @@ public class WebSocketImpl implements WebSocket {
 								ClientHandshake handshake = (ClientHandshake) tmphandshake;
 								handshakestate = d.acceptHandshakeAsServer( handshake );
 								if( handshakestate == HandshakeState.MATCHED ) {
+									draft = d;
 									resourceDescriptor = handshake.getResourceDescriptor();
 									ServerHandshakeBuilder response;
 									try {
@@ -234,7 +267,6 @@ public class WebSocketImpl implements WebSocket {
 										return false;
 									}
 									write( d.createHandshake( d.postProcessHandshakeResponseAsServer( handshake, response ), role ) );
-									draft = d;
 									open( handshake );
 									return true;
 								}
@@ -287,6 +319,16 @@ public class WebSocketImpl implements WebSocket {
 						open( handshake );
 						return true;
 					} else {
+						if (handshake.getHttpStatus() != 101) {
+							// if HTTP-status is not 101, let client get a chance to obtain the HTTP response
+							// and take action upon that as per regular HTTP procedures.
+							// (http://tools.ietf.org/html/rfc6455#section-4.1)
+							try {
+								wsl.onWebsocketHandshakeReceivedAsClientFailed(this, handshakerequest, handshake);
+							} catch (RuntimeException e) {
+								// do nothing, fall through and close socket
+							}
+						}
 						close( CloseFrame.PROTOCOL_ERROR, "draft " + draft + " refuses handshake" );
 					}
 				}
@@ -717,6 +759,10 @@ public class WebSocketImpl implements WebSocket {
 	@Override
 	public InetSocketAddress getLocalSocketAddress() {
 		return wsl.getLocalSocketAddress( this );
+	}
+
+	Role getRole() {
+		return role;
 	}
 
 	@Override

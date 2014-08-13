@@ -3,6 +3,7 @@ package org.java_websocket.client;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.ref.WeakReference;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.Socket;
@@ -46,7 +47,8 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
 	private Proxy proxy = Proxy.NO_PROXY;
 
-	private Thread writeThread;
+	private WeakReference<Thread> readThread;
+	private WeakReference<Thread> writeThread;
 
 	private Draft draft;
 
@@ -57,7 +59,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	private CountDownLatch closeLatch = new CountDownLatch( 1 );
 
 	private int connectTimeout = 0;
-
+	
 	/** This open a websocket connection as specified by rfc6455 */
 	public WebSocketClient( URI serverURI ) {
 		this( serverURI, new Draft_17() );
@@ -82,7 +84,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		this.draft = protocolDraft;
 		this.headers = httpHeaders;
 		this.connectTimeout = connectTimeout;
-		this.engine = new WebSocketImpl( this, protocolDraft );
+		this.engine = WebSocketImpl.createClient( this , protocolDraft );
 	}
 
 	/**
@@ -104,10 +106,12 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 * Initiates the websocket connection. This method does not block.
 	 */
 	public void connect() {
-		if( writeThread != null )
+		if( readThread != null )
 			throw new IllegalStateException( "WebSocketClient objects are not reuseable" );
-		writeThread = new Thread( this );
-		writeThread.start();
+		
+		Thread reader = new Thread(this, "WSC Read");
+		reader.start();
+		readThread = new WeakReference<Thread>(reader) ;
 	}
 
 	/**
@@ -174,8 +178,9 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			return;
 		}
 
-		writeThread = new Thread( new WebsocketWriteThread() );
-		writeThread.start();
+		Thread write = new Thread( new WebsocketWriteThread() );
+		write.start();
+		writeThread = new WeakReference<Thread>(write);
 
 		byte[] rawbuffer = new byte[ WebSocketImpl.RCVBUF ];
 		int readBytes;
@@ -274,8 +279,13 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	public final void onWebsocketClose( WebSocket conn, int code, String reason, boolean remote ) {
 		connectLatch.countDown();
 		closeLatch.countDown();
-		if( writeThread != null )
-			writeThread.interrupt();
+		if( writeThread != null && writeThread.get() != null) {
+			writeThread.get().interrupt();
+		}
+		if( readThread != null && readThread.get() != null) {
+			readThread.get().interrupt();
+		}
+		
 		try {
 			if( socket != null )
 				socket.close();
@@ -345,7 +355,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	private class WebsocketWriteThread implements Runnable {
 		@Override
 		public void run() {
-			Thread.currentThread().setName( "WebsocketWriteThread" );
+			Thread.currentThread().setName( "WSC Write" );
 			try {
 				while ( !Thread.interrupted() ) {
 					ByteBuffer buffer = engine.outQueue.take();
