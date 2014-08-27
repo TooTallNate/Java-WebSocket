@@ -88,7 +88,7 @@ public class WebSocketImpl implements WebSocket {
 
 	private Draft draft = null;
 
-	private Role role;
+	private Role role = Role.SERVER;
 
 	private Opcode current_continuous_frame_opcode = null;
 

@@ -129,7 +129,7 @@ public abstract class Draft {
 	public abstract List<Framedata> createFrames( String text, boolean mask );
 
 	public List<Framedata> continuousFrame( Opcode op, ByteBuffer buffer, boolean fin ) {
-		if( op != Opcode.BINARY && op != Opcode.TEXT && op != Opcode.TEXT ) {
+		if( op != Opcode.BINARY && op != Opcode.TEXT ) {
 			throw new IllegalArgumentException( "Only Opcode.BINARY or  Opcode.TEXT are allowed" );
 		}
 
