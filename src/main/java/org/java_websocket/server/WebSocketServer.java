@@ -565,7 +565,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 *            may be null if the error does not belong to a single connection
 	 */
 	@Override
-	public final void onWebsocketError( WebSocket conn, Exception ex ) {
+	public void onWebsocketError( WebSocket conn, Exception ex ) {
 		onError( conn, ex );
 	}
 
