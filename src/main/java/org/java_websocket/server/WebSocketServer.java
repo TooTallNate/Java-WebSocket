@@ -79,7 +79,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 
 	private volatile AtomicBoolean isclosed = new AtomicBoolean( false );
 
-	private List<WebSocketWorker> decoders;
+	protected List<WebSocketWorker> decoders;
 
 	private List<WebSocketImpl> iqueue;
 	private BlockingQueue<ByteBuffer> buffers;
@@ -184,7 +184,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	public void start() {
 		if( selectorthread != null )
 			throw new IllegalStateException( getClass().getName() + " can only be started once." );
-		new Thread( this ).start();;
+		new Thread( this ).start();
 	}
 
 	/**
@@ -219,9 +219,6 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 
 		synchronized ( this ) {
 			if( selectorthread != null ) {
-				if( Thread.currentThread() != selectorthread ) {
-
-				}
 				if( selectorthread != Thread.currentThread() ) {
 					if( socketsToClose.size() > 0 )
 						selectorthread.join( timeout );// isclosed will tell the selectorthread to go down after the last connection was closed
@@ -422,7 +419,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		return ByteBuffer.allocate( WebSocketImpl.RCVBUF );
 	}
 
-	private void queue( WebSocketImpl ws ) throws InterruptedException {
+	protected void queue( WebSocketImpl ws ) throws InterruptedException {
 		if( ws.workerThread == null ) {
 			ws.workerThread = decoders.get( queueinvokes % decoders.size() );
 			queueinvokes++;
