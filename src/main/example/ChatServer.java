@@ -89,7 +89,7 @@ public class ChatServer extends WebSocketServer {
 	 *             When socket related I/O errors occur.
 	 */
 	public void sendToAll( String text ) {
-		Collection<WebSocket> con = connections();
+		Collection<WebSocket> con = this.connections();
 		synchronized ( con ) {
 			for( WebSocket c : con ) {
 				c.send( text );
