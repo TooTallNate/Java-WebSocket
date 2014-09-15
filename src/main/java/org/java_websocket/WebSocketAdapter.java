@@ -66,7 +66,7 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	/**
 	 * This default implementation does not do anything. Go ahead and overwrite it.
 	 * 
-	 * @see @see org.java_websocket.WebSocketListener#onWebsocketPong(WebSocket, Framedata)
+	 * @see org.java_websocket.WebSocketListener#onWebsocketPong(WebSocket, Framedata)
 	 */
 	@Override
 	public void onWebsocketPong( WebSocket conn, Framedata f ) {
