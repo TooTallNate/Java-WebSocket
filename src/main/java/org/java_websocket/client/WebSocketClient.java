@@ -62,7 +62,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	private int connectTimeout = 0;
 
     private Timer pingTimer;
-    private int pingTimeoutInSeconds;
+    private int pingTimeoutInSeconds = -1;
     private boolean isPingTimeoutEnabled = false;
     private TimerTask pingTimeoutTask;
 
@@ -283,12 +283,6 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
     public void enablePingTimer(int pingTimeout) {
         if (!isPingTimeoutEnabled) {
             this.pingTimeoutInSeconds = pingTimeout;
-            pingTimeoutTask = new TimerTask() {
-                @Override
-                public void run() {
-                    onError(new RuntimeException(String.format(PINGPONG_ERROR_MESSAGE, pingTimeoutInSeconds)));
-                }
-            };
             this.isPingTimeoutEnabled = true;
         }
     }
@@ -299,16 +293,27 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
     public void disablePingTimer() {
         cancelPingTimer();
         this.isPingTimeoutEnabled = false;
+        this.pingTimeoutInSeconds = -1;
     }
     private void startPingTimer() {
         cancelPingTimer();
         pingTimer = new Timer();
+        pingTimeoutTask = new TimerTask() {
+            @Override
+            public void run() {
+                onError(new RuntimeException(String.format(PINGPONG_ERROR_MESSAGE, pingTimeoutInSeconds)));
+            }
+        };
         pingTimer.schedule(pingTimeoutTask, pingTimeoutInSeconds * 1000);
     }
     private void cancelPingTimer() {
         if (pingTimer != null) {
             pingTimer.cancel();
             pingTimer = null;
+        }
+        if (pingTimeoutTask != null)  {
+            pingTimeoutTask.cancel();
+            pingTimeoutTask = null;
         }
     }
 
