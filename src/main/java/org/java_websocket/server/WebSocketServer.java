@@ -509,14 +509,6 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
     
     private void handleFatal(WebSocket conn, Exception e) {
         onError(conn, e);
-        try {
-            stop();
-        } catch (IOException e1) {
-            onError(null, e1);
-        } catch (InterruptedException e1) {
-            Thread.currentThread().interrupt();
-            onError(null, e1);
-        }
     }
     
     /**
@@ -756,6 +748,8 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
     }
     
     public class WebSocketWorker extends Thread {
+    
+        private boolean running;
         
         private BlockingQueue<WebSocketImpl> iqueue;
         
@@ -775,21 +769,33 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
         }
         
         @Override
+        public void interrupt() {
+            this.running = false;
+            super.interrupt();
+        }
+        
+        @Override
         public void run() {
             WebSocketImpl ws = null;
+            
+            this.running = true;
             try {
-                while (true) {
-                    ByteBuffer buf = null;
-                    ws = iqueue.take();
-                    buf = ws.inQueue.poll();
-                    assert (buf != null);
+                while (running) {
                     try {
-                        ws.decode(buf);
-                    } finally {
-                        pushBuffer(buf);
+                        ByteBuffer buf = null;
+                        ws = iqueue.take();
+                        buf = ws.inQueue.poll();
+                        assert (buf != null);
+                        try {
+                            ws.decode(buf);
+                        } finally {
+                            pushBuffer(buf);
+                        }
+                    } catch (Exception e) {
+                        //Screw this socket
                     }
                 }
-            } catch (InterruptedException e) {
+                
             } catch (RuntimeException e) {
                 handleFatal(ws, e);
             }
