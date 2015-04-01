@@ -8,6 +8,7 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
 import java.nio.channels.CancelledKeyException;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -24,7 +25,6 @@ import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.java_websocket.SocketChannelIOHelper;
@@ -310,8 +310,9 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 
 							SocketChannel channel = server.accept();
 							channel.configureBlocking( false );
-							WebSocketImpl w = wsf.createWebSocket( this, drafts, channel.socket() );
-							w.key = channel.register( selector, SelectionKey.OP_READ, w );
+							// WebSocketImpl w = wsf.createWebSocket( this, drafts, channel.socket() );
+							// w.key = channel.register( selector, SelectionKey.OP_READ, w );
+								WebSocketImpl w = createWebSocket(channel, selector);
 							w.channel = wsf.wrapChannel( channel, w.key );
 							i.remove();
 							allocateBuffers( w );
@@ -388,6 +389,14 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 			selectorthread = null;
 		}
 	}
+
+	protected WebSocketImpl createWebSocket(SocketChannel channel, Selector selector) throws ClosedChannelException {
+		WebSocketImpl w = wsf.createWebSocket(this, drafts, channel.socket());
+		w.key = channel.register(selector, SelectionKey.OP_READ, w);
+
+		return w;
+	}
+
 	protected void allocateBuffers( WebSocket c ) throws InterruptedException {
 		if( queuesize.get() >= 2 * decoders.size() + 1 ) {
 			return;
