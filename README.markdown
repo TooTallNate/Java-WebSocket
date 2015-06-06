@@ -83,7 +83,7 @@ connections though HTTP. After that it's up to **your** subclass to add purpose.
 Writing your own WebSocket Client
 ---------------------------------
 
-The `org.java_websocket.server.WebSocketClient` abstract class can connect to
+The `org.java_websocket.client.WebSocketClient` abstract class can connect to
 valid WebSocket servers. The constructor expects a valid `ws://` URI to
 connect to. Important events `onOpen`, `onClose`, `onMessage` and `onIOError` 
 get fired throughout the life of the WebSocketClient, and must be implemented 
