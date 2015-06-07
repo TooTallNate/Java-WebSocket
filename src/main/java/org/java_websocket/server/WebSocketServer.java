@@ -707,7 +707,11 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 					assert ( buf != null );
 					try {
 						ws.decode( buf );
-					} finally {
+					} catch(Exception e){
+						System.err.println("Error while reading from remote connection: " + e);
+					}
+					
+					finally {
 						pushBuffer( buf );
 					}
 				}
