@@ -243,44 +243,44 @@ public class Draft_10 extends Draft {
 	public List<Framedata> translateFrame( ByteBuffer buffer ) throws LimitExedeedException , InvalidDataException {
 		List<Framedata> frames = new LinkedList<Framedata>();
 		Framedata cur;
-        
-        if (incompleteframe != null && incompleteframe.capacity() > 0 ) {
-            // Check if we have remaining buffer from last run and prepend it to current buffer.
-            ByteBuffer new_buffer = ByteBuffer.allocate( incompleteframe.capacity() + buffer.remaining() );
-            new_buffer.put(incompleteframe);
-            new_buffer.put(buffer);
-            buffer = new_buffer;
-            
-            // Clear frame after using it.
-            incompleteframe = null;
-        }
-        
-        // Start to read at beginning.
-        buffer.rewind();
-        
-        // Loop through buffer and process frame by frame.
-        while ( buffer.hasRemaining() ) {
-            // Mark the beginn of a frame.
-            buffer.mark();
-            try {
-                cur = translateSingleFrame( buffer );
-                frames.add( cur );
-            } catch ( IncompleteException e ) {
-                // On last incomplete frame, break loop.
-                
-                // Go back to beginn of frame.
-                buffer.reset();
-                
-                int remaining = buffer.remaining();
-                if (remaining > 0) {
-                    // If buffer is still not empty, put it rest to global cache.
-                    incompleteframe = ByteBuffer.allocate( remaining );
-                    incompleteframe.put(buffer);
-                    incompleteframe.rewind();
-                }
-                break;
-            }
-        }
+
+		if (incompleteframe != null && incompleteframe.capacity() > 0 ) {
+			// Check if we have remaining buffer from last run and prepend it to current buffer.
+			ByteBuffer new_buffer = ByteBuffer.allocate( incompleteframe.capacity() + buffer.remaining() );
+			new_buffer.put(incompleteframe);
+			new_buffer.put(buffer);
+			buffer = new_buffer;
+			
+			// Clear frame after using it.
+			incompleteframe = null;
+		}
+		
+		// Start to read at beginning.
+		buffer.rewind();
+		
+		// Loop through buffer and process frame by frame.
+		while ( buffer.hasRemaining() ) {
+			// Mark the beginn of a frame.
+			buffer.mark();
+			try {
+				cur = translateSingleFrame( buffer );
+				frames.add( cur );
+			} catch ( IncompleteException e ) {
+				// On last incomplete frame, break loop.
+				
+				// Go back to beginn of frame.
+				buffer.reset();
+				
+				int remaining = buffer.remaining();
+				if (remaining > 0) {
+					// If buffer is still not empty, put it rest to global cache.
+					incompleteframe = ByteBuffer.allocate( remaining );
+					incompleteframe.put(buffer);
+					incompleteframe.rewind();
+				}
+				break;
+			}
+		}
 
 		return frames;
 	}
