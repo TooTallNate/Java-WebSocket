@@ -65,7 +65,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
 	/**
 	 * Constructs a WebSocketClient instance and sets it to the connect to the
-	 * specified URI. The channel does not attampt to connect automatically. The connection
+	 * specified URI. The channel does not attempt to connect automatically. The connection
 	 * will be established once you call <var>connect</var>.
 	 */
 	public WebSocketClient( URI serverUri , Draft draft ) {
