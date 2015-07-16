@@ -77,14 +77,14 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 
 	private Thread selectorthread;
 
-	private volatile AtomicBoolean isclosed = new AtomicBoolean( false );
+	private final AtomicBoolean isclosed = new AtomicBoolean( false );
 
 	private List<WebSocketWorker> decoders;
 
 	private List<WebSocketImpl> iqueue;
 	private BlockingQueue<ByteBuffer> buffers;
 	private int queueinvokes = 0;
-	private AtomicInteger queuesize = new AtomicInteger( 0 );
+	private final AtomicInteger queuesize = new AtomicInteger( 0 );
 
 	private WebSocketServerFactory wsf = new DefaultWebSocketServerFactory();
 
