@@ -16,7 +16,7 @@ import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketAdapter;
 import org.java_websocket.WebSocketImpl;
 import org.java_websocket.drafts.Draft;
-import org.java_websocket.drafts.Draft_17;
+import org.java_websocket.drafts.RFC_6455;
 import org.java_websocket.exceptions.InvalidHandshakeException;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.Framedata;
@@ -58,9 +58,9 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
 	private int connectTimeout = 0;
 
-	/** This open a websocket connection as specified by rfc6455 */
+	/** This open a websocket connection as specified by rfc6455. */
 	public WebSocketClient( URI serverURI ) {
-		this( serverURI, new Draft_17() );
+		this( serverURI, new RFC_6455() );
 	}
 
 	/**

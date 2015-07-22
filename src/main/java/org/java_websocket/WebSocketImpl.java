@@ -20,6 +20,7 @@ import org.java_websocket.drafts.Draft_10;
 import org.java_websocket.drafts.Draft_17;
 import org.java_websocket.drafts.Draft_75;
 import org.java_websocket.drafts.Draft_76;
+import org.java_websocket.drafts.RFC_6455;
 import org.java_websocket.exceptions.IncompleteHandshakeException;
 import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.exceptions.InvalidHandshakeException;
@@ -48,8 +49,9 @@ public class WebSocketImpl implements WebSocket {
 
 	public static/*final*/boolean DEBUG = false; // must be final in the future in order to take advantage of VM optimization
 
-	public static final List<Draft> defaultdraftlist = new ArrayList<Draft>( 4 );
+	public static final List<Draft> defaultdraftlist = new ArrayList<Draft>( 5 );
 	static {
+		defaultdraftlist.add( new RFC_6455() );
 		defaultdraftlist.add( new Draft_17() );
 		defaultdraftlist.add( new Draft_10() );
 		defaultdraftlist.add( new Draft_76() );
@@ -84,7 +86,7 @@ public class WebSocketImpl implements WebSocket {
 	 */
 	private final WebSocketListener wsl;
 
-	private List<Draft> knownDrafts;
+	private List<? extends Draft> knownDrafts;
 
 	private Draft draft = null;
 
@@ -107,7 +109,7 @@ public class WebSocketImpl implements WebSocket {
 	/**
 	 * crates a websocket with server role
 	 */
-	public WebSocketImpl( WebSocketListener listener , List<Draft> drafts ) {
+	public WebSocketImpl( WebSocketListener listener , List<? extends Draft> drafts ) {
 		this( listener, (Draft) null );
 		this.role = Role.SERVER;
 		// draft.copyInstance will be called when the draft is first needed
@@ -119,13 +121,13 @@ public class WebSocketImpl implements WebSocket {
 	}
 
 	/**
-	 * crates a websocket with client role
+	 * creates a websocket with client role.
 	 * 
-	 * @param socket
-	 *            may be unbound
+	 * @param listener the listener which will react to the various events on this socket.
+	 * @param draft the draft version this websocket will honor.
 	 */
 	public WebSocketImpl( WebSocketListener listener , Draft draft ) {
-		if( listener == null || ( draft == null && role == Role.SERVER ) )// socket can be null because we want do be able to create the object without already having a bound channel
+		if( listener == null || ( draft == null && role == Role.SERVER ) )
 			throw new IllegalArgumentException( "parameters must not be null" );
 		this.outQueue = new LinkedBlockingQueue<ByteBuffer>();
 		inQueue = new LinkedBlockingQueue<ByteBuffer>();
@@ -141,7 +143,7 @@ public class WebSocketImpl implements WebSocket {
 	}
 
 	@Deprecated
-	public WebSocketImpl( WebSocketListener listener , List<Draft> drafts , Socket socket ) {
+	public WebSocketImpl( WebSocketListener listener , List<? extends Draft> drafts , Socket socket ) {
 		this( listener, drafts );
 	}
 

@@ -24,6 +24,7 @@ import javax.swing.event.ChangeListener;
 import org.java_websocket.client.WebSocketClient;
 
 public class ServerStressTest extends JFrame {
+	private static final long serialVersionUID = 8007549440946398445L;
 	private JSlider clients;
 	private JSlider interval;
 	private JSlider joinrate;
