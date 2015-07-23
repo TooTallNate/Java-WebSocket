@@ -13,4 +13,5 @@ target
 .classpath
 bin
 
-/doc
+doc/
+dist/

@@ -101,7 +101,7 @@ public interface WebSocketListener {
 	 * Called after <tt>WebSocket#close</tt> is explicity called, or when the
 	 * other end of the WebSocket connection is closed.
 	 * 
-	 * @param conn
+	 * @param ws
 	 *            The <tt>WebSocket</tt> instance this event is occuring on.
 	 */
 	public void onWebsocketClose( WebSocket ws, int code, String reason, boolean remote );

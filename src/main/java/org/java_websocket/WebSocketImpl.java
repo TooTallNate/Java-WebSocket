@@ -105,7 +105,7 @@ public class WebSocketImpl implements WebSocket {
 	private String resourceDescriptor = null;
 
 	/**
-	 * crates a websocket with server role
+	 * Creates a websocket with server role.
 	 */
 	public WebSocketImpl( WebSocketListener listener , List<Draft> drafts ) {
 		this( listener, (Draft) null );
@@ -119,10 +119,7 @@ public class WebSocketImpl implements WebSocket {
 	}
 
 	/**
-	 * crates a websocket with client role
-	 * 
-	 * @param socket
-	 *            may be unbound
+	 * Creates a websocket with client role.
 	 */
 	public WebSocketImpl( WebSocketListener listener , Draft draft ) {
 		if( listener == null || ( draft == null && role == Role.SERVER ) )// socket can be null because we want do be able to create the object without already having a bound channel
