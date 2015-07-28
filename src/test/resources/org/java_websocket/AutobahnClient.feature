@@ -22,7 +22,7 @@ Feature: Client connects using Draft 17
 
  	Examples:
  		|protocol|host      |port|query                             |method |http_version|handshake          |websocket_key     |websocket_version     |upgraded_protocol |
- 		|ws://   |localhost:|9001|case=1&agent=tootallnate/websocket|GET    |HTTP/1.1    |Connection: Upgrade|Sec-WebSocket-Key:|Sec-WebSocket-Version:|Upgrade: websocket|
+ 		|ws://   |localhost:|9003|case=1&agent=tootallnate/websocket|GET    |HTTP/1.1    |Connection: Upgrade|Sec-WebSocket-Key:|Sec-WebSocket-Version:|Upgrade: websocket|
 
  
 
