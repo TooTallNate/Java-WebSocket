@@ -121,7 +121,7 @@ public class WebSocketImpl implements WebSocket {
 	/**
 	 * crates a websocket with client role
 	 * 
-	 * @param socket
+	 * @param listener
 	 *            may be unbound
 	 */
 	public WebSocketImpl( WebSocketListener listener , Draft draft ) {
