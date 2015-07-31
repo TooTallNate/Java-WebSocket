@@ -79,7 +79,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 
 	private final AtomicBoolean isclosed = new AtomicBoolean( false );
 
-	private List<WebSocketWorker> decoders;
+	protected List<WebSocketWorker> decoders;
 
 	private List<WebSocketImpl> iqueue;
 	private BlockingQueue<ByteBuffer> buffers;
@@ -217,9 +217,6 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 
 		synchronized ( this ) {
 			if( selectorthread != null ) {
-				if( Thread.currentThread() != selectorthread ) {
-
-				}
 				if( selectorthread != Thread.currentThread() ) {
 					if( socketsToClose.size() > 0 )
 						selectorthread.join( timeout );// isclosed will tell the selectorthread to go down after the last connection was closed
@@ -420,7 +417,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		return ByteBuffer.allocate( WebSocketImpl.RCVBUF );
 	}
 
-	private void queue( WebSocketImpl ws ) throws InterruptedException {
+	protected void queue( WebSocketImpl ws ) throws InterruptedException {
 		if( ws.workerThread == null ) {
 			ws.workerThread = decoders.get( queueinvokes % decoders.size() );
 			queueinvokes++;
@@ -566,7 +563,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 *            may be null if the error does not belong to a single connection
 	 */
 	@Override
-	public final void onWebsocketError( WebSocket conn, Exception ex ) {
+	public void onWebsocketError( WebSocket conn, Exception ex ) {
 		onError( conn, ex );
 	}
 

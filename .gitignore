@@ -5,6 +5,7 @@ build
 *.svn
 *~
 target
+.idea
 *.ipr
 *.iml
 *.iws
