@@ -23,4 +23,7 @@ public class DefaultWebSocketServerFactory implements WebSocketServerFactory {
 	public SocketChannel wrapChannel( SocketChannel channel, SelectionKey key ) {
 		return (SocketChannel) channel;
 	}
+	@Override
+	public void close() {
+	}
 }
