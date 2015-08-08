@@ -30,7 +30,7 @@ public class ChatClient extends JFrame implements ActionListener {
 	private final JButton close;
 	private final JTextArea ta;
 	private final JTextField chatField;
-	private final JComboBox draft;
+	private final JComboBox<?> draft;
 	private WebSocketClient cc;
 
 	public ChatClient( String defaultlocation ) {
@@ -42,7 +42,7 @@ public class ChatClient extends JFrame implements ActionListener {
 		c.setLayout( layout );
 
 		Draft[] drafts = { new Draft_17(), new Draft_10(), new Draft_76(), new Draft_75() };
-		draft = new JComboBox( drafts );
+		draft = new JComboBox<Object>( drafts );
 		c.add( draft );
 
 		uriField = new JTextField();

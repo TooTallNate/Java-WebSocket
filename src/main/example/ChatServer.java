@@ -62,10 +62,10 @@ public class ChatServer extends WebSocketServer {
 		while ( true ) {
 			String in = sysin.readLine();
 			s.sendToAll( in );
-			if( in.equals( "exit" ) ) {
+			if( "exit".equals(in) ) {
 				s.stop();
 				break;
-			} else if( in.equals( "restart" ) ) {
+			} else if( "restart".equals(in) ) {
 				s.stop();
 				s.start();
 				break;

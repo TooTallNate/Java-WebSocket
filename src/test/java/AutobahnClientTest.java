@@ -62,7 +62,7 @@ public class AutobahnClientTest extends WebSocketClient {
 						line = sysin.readLine();
 						WebSocketImpl.DEBUG = true;
 					}
-					if( line.equals( "l" ) ) {
+					if( "l".equals(line) ) {
 						line = perviousline;
 					}
 					String[] spl = line.split( " " );
