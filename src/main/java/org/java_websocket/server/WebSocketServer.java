@@ -216,16 +216,10 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		}
 
 		synchronized ( this ) {
-			if( selectorthread != null ) {
-				if( Thread.currentThread() != selectorthread ) {
-
-				}
-				if( selectorthread != Thread.currentThread() ) {
-					if( socketsToClose.size() > 0 )
-						selectorthread.join( timeout );// isclosed will tell the selectorthread to go down after the last connection was closed
-					selectorthread.interrupt();// in case the selectorthread did not terminate in time we send the interrupt
-					selectorthread.join();
-				}
+			if( selectorthread != null && selectorthread != Thread.currentThread() ) {
+				selector.wakeup();
+				selectorthread.interrupt();
+				selectorthread.join( timeout );
 			}
 		}
 	}
