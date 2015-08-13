@@ -1,156 +1,236 @@
 package org.java_websocket;
 
+import cucumber.annotation.After;
 import cucumber.annotation.en.Given;
 import cucumber.annotation.en.Then;
 import cucumber.annotation.en.When;
-import java.net.InetSocketAddress;
-import java.net.URI;
-import java.net.UnknownHostException;
-import java.util.Collections;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft;
-import org.java_websocket.drafts.Draft_17;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.handshake.ServerHandshake;
 import org.java_websocket.server.WebSocketServer;
-import static org.junit.Assert.assertTrue;
+import org.junit.Assert;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.UnknownHostException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 
 public class AutobahnClientScenario {
 
-    private class AutobahnServer extends WebSocketServer {
+	private class AutobahnServer extends WebSocketServer {
 
-        public AutobahnServer(int port, Draft d) throws UnknownHostException {
-            super(new InetSocketAddress(port), Collections.singletonList(d));
-        }
+		public AutobahnServer(int port, Draft d) throws UnknownHostException {
+			super(new InetSocketAddress(port), Collections.singletonList(d));
+		}
 
-        @Override
-        public void onOpen(WebSocket conn, ClientHandshake handshake) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
+		@Override
+		public void onOpen(WebSocket conn, ClientHandshake handshake) {
+			//throw new UnsupportedOperationException("Not supported yet.");
+		}
 
-        @Override
-        public void onClose(WebSocket conn, int code, String reason, boolean remote) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
+		@Override
+		public void onClose(WebSocket conn, int code, String reason, boolean remote) {
+			//throw new UnsupportedOperationException("Not supported yet.");
+		}
 
-        @Override
-        public void onMessage(WebSocket conn, String message) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
+		@Override
+		public void onMessage(WebSocket conn, String message) {
+			//throw new UnsupportedOperationException("Not supported yet.");
+		}
 
-        @Override
-        public void onError(WebSocket conn, Exception ex) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
+		@Override
+		public void onError(WebSocket conn, Exception ex) {
+			//throw new UnsupportedOperationException("Not supported yet.");
+		}
 
-    }
+	}
 
-    private class AutobahnClient extends WebSocketClient {
+	private class AutobahnClient extends WebSocketClient {
 
-        public AutobahnClient(Draft draft, URI uri) {
-            super(uri, draft);
-        }
+		private final CountDownLatch connectionOpenedLatch;
+		private final Map<String, String> openHandShakeFields;
+		private String message;
 
-        @Override
-        public void onOpen(ServerHandshake handshakedata) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
+		public AutobahnClient(Draft draft, URI uri) {
+			super(uri, draft);
+			connectionOpenedLatch = new CountDownLatch(1);
+			openHandShakeFields = new HashMap<String, String>();
+		}
 
-        @Override
-        public void onMessage(String message) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
+		@Override
+		public void onOpen(ServerHandshake handshakedata) {
+			Iterator<String> it = handshakedata.iterateHttpFields();
+			while(it.hasNext()) {
+				String key = it.next();
+				System.out.printf("%s %s%n", key, handshakedata.getFieldValue(key)); // TODO Remove this
+				openHandShakeFields.put(key, handshakedata.getFieldValue(key));
+			}
+			connectionOpenedLatch.countDown();
+		}
 
-        @Override
-        public void onClose(int code, String reason, boolean remote) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
+		@Override
+		public void onMessage(String message) {
+			// TODO Test message receiving
+		}
 
-        @Override
-        public void onError(Exception ex) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-    }
-    private String protocol;
-    private String host;
-    private Integer port;
-    private String query;
-    private Draft draft;
+		@Override
+		public void onClose(int code, String reason, boolean remote) {
+			// TODO Check connection closing
+		}
 
-    @Given("^the Autobahn Server is running using Draft_(\\d+) on port (\\d+)$")
-    public void startAutobahnServer() throws UnknownHostException {
-        new AutobahnServer(9003, new Draft_17()).start();
-    }
+		@Override
+		public void onError(Exception ex) {
+			// TODO Check error handling
+			ex.printStackTrace();
+			connectionOpenedLatch.countDown();
+		}
 
-    @Given("^protocol is ws://$")
-    public void createProtocol(String protocol) {
-        this.protocol = protocol;
-    }
+	}
 
-    @Given("^the host is localhost:$")
-    public void createHost(String host) {
-        this.host = host;
-    }
+	private static Draft getDraft(int number) {
+		Exception exception;
+		try {
+			return (Draft) Class.forName("org.java_websocket.drafts.Draft_" + number).newInstance();
+		} catch(InstantiationException e) {
+			exception = e;
+		} catch(IllegalAccessException e) {
+			exception = e;
+		} catch(ClassNotFoundException e) {
+			exception = e;
+		}
+		throw new RuntimeException(exception);
+	}
 
-    @Given("^the port is (\\d*)$")
-    public void createPort(Integer port) {
-        this.port = port;
-    }
+	private String protocol;
+	private String host;
+	private Integer port;
+	private String query;
+	private Draft draft;
 
-    @Given("^the query string is case=(\\d+)&agent=tootallnate/websocket$")
-    public void createQuery(String query) {
-        this.query = query;
-    }
+	private AutobahnServer autobahnServer;
 
-    @Given("^the draft is Draft_17")
-    public void createDraft(Draft_17 draft_17) {
-        this.draft = draft_17;
-    }
+	@Given("^the Autobahn Server is running using Draft_(\\d+) on port (\\d+)$")
+	public void startAutobahnServer(int draft, int port) throws UnknownHostException {
+		autobahnServer = new AutobahnServer(port, getDraft(draft));
+		autobahnServer.start();
+	}
 
-    @When("^the client connects to the server")
-    public void connectToServer() {
-        AutobahnClient autobahnClient = new AutobahnClient(this.draft, URI.create(this.protocol + this.host + this.port + this.query));
-        Thread thread = new Thread(autobahnClient);
-        thread.start();
-    }
+	@Given("^protocol is (.+)$")
+	public void createProtocol(String protocol) {
+		this.protocol = protocol;
+	}
 
-    @Then("^the server response should contain (\\w*)$")
-    public void checkMethod(String method) {
-        assertTrue(method.contains("GET"));
-    }
+	@Given("^the host is (.+)$")
+	public void createHost(String host) {
+		this.host = host;
+	}
 
-    @Then("^the response should contain case=(\\d+)&agent=tootallnate/websocket$")
-    public void checkQuery(String query) {
-        assertTrue(query.contains(this.query));
-    }
+	@Given("^the port is (\\d+)$")
+	public void createPort(int port) {
+		this.port = port;
+	}
 
-    @Then("^the response should contain HTTP/(\\d+).(\\d+)$")
-    public void checkHttpVersion(String http_version) {
-        assertTrue(http_version.contains("HTTP/1.1"));
-    }
+	@Given("^the query string is (.+)$")
+	public void createQuery(String query) {
+		this.query = query;
+	}
 
-    @Then("^the response should contain Connection: Upgrade$")
-    public void checkHandshake(String handshake) {
-        assertTrue(handshake.contains("Connection: Upgrade"));
-    }
+	@Given("^the draft is Draft_(\\d+)")
+	public void createDraft(int draft) {
+		this.draft = getDraft(draft);
+	}
 
-    @Then("^the response should contain localhost:$")
-    public void checkHost(String host) {
-        assertTrue(host.contains(this.host));
-    }
+	private AutobahnClient autobahnClient;
 
-    @Then("^the response should contain Sec-WebSocket-Key:$")
-    public void checkWebSocketKey(String websocketKey) {
-        assertTrue(websocketKey.contains("Sec-WebSocket-Key:"));
-    }
+	@When("^the client connects to the server$")
+	public void connectToServer() {
+		URI uri;
+		try {
+			uri = new URI(this.protocol, null, this.host, this.port, null, this.query, null);
+		} catch(URISyntaxException e) {
+			throw new RuntimeException(e);
+		}
 
-    @Then("^the response should contain Sec-WebSocket-Version:$")
-    public void checkWebSocketVersion(String websocketVersion) {
-        assertTrue(websocketVersion.contains("Sec-WebSocket-Version:"));
-    }
-    @Then("^the response should contain Upgrade: websocket$")
-    public void checkUpgradedProtocol(String upgradedProtocol) {
-        assertTrue(upgradedProtocol.contains("Upgrade: websocket"));
-    }
+		System.out.println(uri);
+		autobahnClient = new AutobahnClient(this.draft, uri);
+		try {
+			autobahnClient.connectBlocking();
+			autobahnClient.connectionOpenedLatch.await();
+		} catch(InterruptedException e) {
+			Assert.assertTrue(e.getMessage(), false);
+			e.printStackTrace();
+		}
+	}
+
+	@Then("^the server response should contain (.+)$")
+	public void checkMethod(String method) {
+		// TODO Implement check
+		//assertTrue(method.contains("GET"));
+	}
+
+	@Then("^the response's query should contain (.+)$")
+	public void checkQuery(String query) {
+		// TODO Implement check
+		//assertTrue(query.contains(this.query));
+	}
+
+	@Then("^the response's http version should contain (.+)$")
+	public void checkHttpVersion(String httpversion) {
+		// TODO Implement check
+		//assertTrue(.contains("HTTP/" + major + "." + minor));
+	}
+
+	@Then("^the response's handshake should contain (.+)$")
+	public void checkHandshake(String handshake) {
+		Assert.assertEquals(handshake, autobahnClient.openHandShakeFields.get("Connection"));
+	}
+
+	@Then("^the response's host should contain (.+)$")
+	public void checkHost(String host) {
+		// TODO Implement check
+		//assertTrue(host.contains(this.host));
+	}
+
+	@Then("^the response's websocket key should contain (.+)$")
+	public void checkWebSocketKey(String websocketKey) {
+		// TODO Implement check
+		Assert.assertTrue(autobahnClient.openHandShakeFields.containsKey(websocketKey));
+		//assertTrue(websocketKey.contains("Sec-WebSocket-Key:"));
+	}
+
+	@Then("^the response's websocket version should contain (.+)$")
+	public void checkWebSocketVersion(String websocketVersion) {
+		// TODO Implement check
+		//assertTrue(websocketVersion.contains("Sec-WebSocket-Version:"));
+	}
+
+	@Then("^the response's upgraded protocol should contain (.+)$")
+	public void checkUpgradedProtocol(String upgradedProtocol) {
+		Assert.assertEquals(upgradedProtocol, autobahnClient.openHandShakeFields.get("Upgrade"));
+	}
+
+	@After
+	public void cleanup() {
+		try {
+			autobahnClient.closeBlocking();
+		} catch(InterruptedException e) {
+			e.printStackTrace();
+		}
+
+		try {
+			autobahnServer.stop();
+		} catch(IOException e) {
+			e.printStackTrace();
+		} catch(InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
 
 }
