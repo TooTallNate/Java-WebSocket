@@ -24,6 +24,9 @@ import org.java_websocket.framing.Framedata.Opcode;
 import org.java_websocket.handshake.HandshakeImpl1Client;
 import org.java_websocket.handshake.Handshakedata;
 import org.java_websocket.handshake.ServerHandshake;
+import org.java_websocket.framing.FramedataImpl1;
+import org.java_websocket.framing.Framedata.Opcode;
+import org.java_websocket.framing.Framedata;
 
 /**
  * A subclass must implement at least <var>onOpen</var>, <var>onClose</var>, and <var>onMessage</var> to be
@@ -155,6 +158,15 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		engine.send( data );
 	}
 
+	/**
+	 * Sends a websocket ping to the connected webSocket server.
+	 */
+	public void sendPing() throws NotYetConnectedException {
+		FramedataImpl1 frame = new FramedataImpl1(Opcode.PING);
+        frame.setFin(true);
+        engine.sendFrame(frame);
+	}
+
 	public void run() {
 		try {
 			if( socket == null ) {
@@ -258,6 +270,11 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		onFragment( frame );
 	}
 
+	@Override
+	public void onWebsocketPong( WebSocket conn, Framedata f ) {
+		onPong();
+	}
+
 	/**
 	 * Calls subclass' implementation of <var>onOpen</var>.
 	 */
@@ -337,6 +354,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	public abstract void onMessage( String message );
 	public abstract void onClose( int code, String reason, boolean remote );
 	public abstract void onError( Exception ex );
+	public abstract void onPong();
 	public void onMessage( ByteBuffer bytes ) {
 	}
 	public void onFragment( Framedata frame ) {
