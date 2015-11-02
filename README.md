@@ -1,6 +1,7 @@
-[![Build Status](https://travis-ci.org/ck1125/Java-WebSocket.png?branch=master)](https://travis-ci.org/ck1125/Java-WebSocket)
 Java WebSockets
 ===============
+
+[![Build Status](https://travis-ci.org/ck1125/Java-WebSocket.png?branch=master)](https://travis-ci.org/ck1125/Java-WebSocket)
 
 This repository contains a barebones WebSocket server and client implementation
 written in 100% Java. The underlying classes are implemented `java.nio`, which allows for a
@@ -19,7 +20,7 @@ Implemented WebSocket protocol versions are:
 
 
 ##Build
-You can build using Ant or Maven but there is nothing against just putting the source path ```src/main/java ``` on your applications buildpath.
+You can build using Ant, Maven, or Gradle, but there is nothing against just putting the source path `src/main/java` on your applications buildpath.
 
 ###Ant
 
@@ -27,9 +28,9 @@ You can build using Ant or Maven but there is nothing against just putting the s
 ant 
 ```
 
-will create the javadoc of this library at ```doc/``` and build the library itself: ```dest/java_websocket.jar```
+will create the javadoc of this library at `doc/` and build the library itself: `dest/java_websocket.jar`
 
-The ant targets are: ```compile```, ```jar```, ```doc``` and ```clean```
+The ant targets are: `compile`, `jar`, `doc` and `clean`
 
 ###Maven
 
@@ -41,6 +42,10 @@ To use maven just add this dependency to your pom.xml:
     <version>1.3.0</version>
 </dependency> 
 ```
+
+###Gradle
+
+    compile 'org.java-websocket:Java-WebSocket:1.3.0'
 
 Running the Examples
 -------------------
