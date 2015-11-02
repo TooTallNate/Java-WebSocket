@@ -24,6 +24,9 @@ configure(install.repositories.mavenInstaller) {
 
 dependencies {
     deployerJars "org.apache.maven.wagon:wagon-webdav:1.0-beta-2"
+    testCompile 'info.cukes:cucumber-java:1.0.0.RC24'
+    testCompile 'info.cukes:cucumber-junit:1.0.0'
+    testCompile 'junit:junit:4.8.2'
 }
 
 //deploy to maven repository
