@@ -8,6 +8,7 @@ Feature: Client connects using Draft 17
 			And protocol is <protocol>
 			And the host is <host>
 			And the port is <port>
+			And the path is <path>
 			And the query string is <query>
 			And the draft is Draft_<draft>
 		When the client connects to the server
@@ -21,5 +22,5 @@ Feature: Client connects using Draft 17
 			And the response's upgraded protocol should contain <upgraded_protocol>
 
 	Examples:
-		| protocol | host      | port | query                              | draft | method  | http_version | handshake | websocket_key     | websocket_version     | upgraded_protocol |
-		| ws       | localhost | 9003 | case=1&agent=tootallnate/websocket | 17    | GET     | HTTP/1.1     | Upgrade   | Sec-WebSocket-Key | Sec-WebSocket-Version | websocket         |
+		| protocol | host      | port | path       | query                              | draft | method  | http_version | handshake | websocket_key     | websocket_version     | upgraded_protocol |
+		| ws       | localhost | 9003 | /websocket | case=1&agent=tootallnate/websocket | 17    | GET     | HTTP/1.1     | Upgrade   | Sec-WebSocket-Key | Sec-WebSocket-Version | websocket         |

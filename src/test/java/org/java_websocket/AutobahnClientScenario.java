@@ -111,7 +111,8 @@ public class AutobahnClientScenario {
 	private String protocol;
 	private String host;
 	private Integer port;
-	private String query;
+    private String path;
+    private String query;
 	private Draft draft;
 
 	private AutobahnServer autobahnServer;
@@ -136,6 +137,11 @@ public class AutobahnClientScenario {
 	public void createPort(int port) {
 		this.port = port;
 	}
+
+    @Given("^the path is (.+)$")
+    public void createPath(String path) {
+        this.path = path;
+    }
 
 	@Given("^the query string is (.+)$")
 	public void createQuery(String query) {
