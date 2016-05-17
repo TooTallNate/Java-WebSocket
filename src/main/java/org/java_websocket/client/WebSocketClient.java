@@ -299,6 +299,10 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	}
 
 	@Override
+	public void onWebsocketContinuation( WebSocket conn, Framedata f ) {
+	}
+
+	@Override
 	public void onWebsocketCloseInitiated( WebSocket conn, int code, String reason ) {
 		onCloseInitiated( code, reason );
 	}

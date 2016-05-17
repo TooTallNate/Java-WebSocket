@@ -577,6 +577,10 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	}
 
 	@Override
+	public void onWebsocketContinuation( WebSocket conn, Framedata f ) {
+	}
+
+	@Override
 	public void onWebsocketCloseInitiated( WebSocket conn, int code, String reason ) {
 		onCloseInitiated( conn, code, reason );
 	}
@@ -584,7 +588,6 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	@Override
 	public void onWebsocketClosing( WebSocket conn, int code, String reason, boolean remote ) {
 		onClosing( conn, code, reason, remote );
-
 	}
 
 	public void onCloseInitiated( WebSocket conn, int code, String reason ) {

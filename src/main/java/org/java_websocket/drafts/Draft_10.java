@@ -304,12 +304,13 @@ public class Draft_10 extends Draft {
 		byte b1 = buffer.get( /*0*/);
 		boolean FIN = b1 >> 8 != 0;
 		byte rsv = (byte) ( ( b1 & ~(byte) 128 ) >> 4 );
-		if( rsv != 0 )
-			throw new InvalidFrameException( "bad rsv " + rsv );
+		boolean isContinuation = rsv != 0;
+//		if( rsv != 0 )
+//			throw new InvalidFrameException( "bad rsv " + rsv );
 		byte b2 = buffer.get( /*1*/);
 		boolean MASK = ( b2 & -128 ) != 0;
 		int payloadlength = (byte) ( b2 & ~(byte) 128 );
-		Opcode optcode = toOpcode( (byte) ( b1 & 15 ) );
+		Opcode optcode = isContinuation ? Opcode.CONTINUATION : toOpcode( (byte) ( b1 & 15 ) );
 
 		if( !FIN ) {
 			if( optcode == Opcode.PING || optcode == Opcode.PONG || optcode == Opcode.CLOSING ) {
