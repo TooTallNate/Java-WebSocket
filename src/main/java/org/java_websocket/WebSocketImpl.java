@@ -7,6 +7,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
 import java.nio.channels.NotYetConnectedException;
 import java.nio.channels.SelectionKey;
+import java.nio.channels.UnsupportedAddressTypeException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -193,6 +194,8 @@ public class WebSocketImpl implements WebSocket {
 					try {
 						write( ByteBuffer.wrap( Charsetfunctions.utf8Bytes( wsl.getFlashPolicy( this ) ) ) );
 						close( CloseFrame.FLASHPOLICY, "" );
+					} catch ( UnsupportedAddressTypeException e ) {
+						close( CloseFrame.ABNORMAL_CLOSE, "unsupported socket address type", true );
 					} catch ( InvalidDataException e ) {
 						close( CloseFrame.ABNORMAL_CLOSE, "remote peer closed connection before flashpolicy could be transmitted", true );
 					}
