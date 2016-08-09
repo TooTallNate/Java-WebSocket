@@ -154,7 +154,7 @@ public class WebSocketImpl implements WebSocket {
 			return;
 
 		if( DEBUG )
-			System.out.println( "process(" + socketBuffer.remaining() + "): {" + ( socketBuffer.remaining() > 1000 ? "too big to display" : new String( socketBuffer.array(), socketBuffer.position(), socketBuffer.remaining() ) ) + "}" );
+			System.out.println( addressOf(this) +  ": process(" + socketBuffer.remaining() + "): {" + ( socketBuffer.remaining() > 1000 ? "too big to display" : new String( socketBuffer.array(), socketBuffer.position(), socketBuffer.remaining() ) ) + "}" );
 
 		if( readystate == READYSTATE.OPEN ) {
 			decodeFrames( socketBuffer );
@@ -322,7 +322,7 @@ public class WebSocketImpl implements WebSocket {
 			frames = draft.translateFrame( socketBuffer );
 			for( Framedata f : frames ) {
 				if( DEBUG )
-					System.out.println( "matched frame: " + f );
+					System.out.println( addressOf(this) +  ": matched frame: " + f );
 				if( flushandclosestate )
 					return;
 				Opcode curop = f.getOpcode();
@@ -582,7 +582,7 @@ public class WebSocketImpl implements WebSocket {
 	@Override
 	public void sendFrame( Framedata framedata ) {
 		if( DEBUG )
-			System.out.println( "send frame: " + framedata );
+			System.out.println( addressOf(this) +  ": send frame: " + framedata );
 		write( draft.createBinaryFrame( framedata ) );
 	}
 
@@ -635,7 +635,7 @@ public class WebSocketImpl implements WebSocket {
 
 	private void write( ByteBuffer buf ) {
 		if( DEBUG )
-			System.out.println( "write(" + buf.remaining() + "): {" + ( buf.remaining() > 1000 ? "too big to display" : new String( buf.array() ) ) + "}" );
+			System.out.println( addressOf(this) +  ": write(" + buf.remaining() + "): {" + ( buf.remaining() > 1000 ? "too big to display" : new String( buf.array() ) ) + "}" );
 
 		outQueue.add( buf );
 		/*try {
@@ -656,7 +656,7 @@ public class WebSocketImpl implements WebSocket {
 
 	private void open( Handshakedata d ) {
 		if( DEBUG )
-			System.out.println( "open using draft: " + draft.getClass().getSimpleName() );
+			System.out.println( addressOf(this) +  ": open using draft: " + draft.getClass().getSimpleName() );
 		readystate = READYSTATE.OPEN;
 		try {
 			wsl.onWebsocketOpen( this, d );
@@ -730,6 +730,16 @@ public class WebSocketImpl implements WebSocket {
 	@Override
 	public String getResourceDescriptor() {
 		return resourceDescriptor;
+	}
+
+	public static String addressOf(WebSocket conn) {
+		if (conn != null) {
+			InetSocketAddress address = conn.getRemoteSocketAddress();
+			if (address != null) {
+				return address.toString();
+			}
+		}
+		return null;
 	}
 
 }
