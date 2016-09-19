@@ -415,10 +415,15 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	}
 
 	private void queue( WebSocketImpl ws ) throws InterruptedException {
-		if( ws.workerThread == null ) {
-			ws.workerThread = decoders.get( queueinvokes % decoders.size() );
-			queueinvokes++;
-		}
+		// double checked locking should work because ws.workerThread is volatile and we're using JDK5+
+//		if( ws.workerThread == null ) {
+//			synchronized(ws) {
+				if( ws.workerThread == null ) {
+					ws.workerThread = decoders.get( queueinvokes % decoders.size() );
+					queueinvokes++;
+				}
+//			}
+//		}
 		ws.workerThread.put( ws );
 	}
 
@@ -676,7 +681,20 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 				}
 			} catch ( InterruptedException e ) {
 			} catch ( RuntimeException e ) {
-				handleFatal( ws, e );
+				System.out.println("ERROR: " + e.getMessage() + " for: " + WebSocketImpl.addressOf(ws));
+				e.printStackTrace();
+
+				if(ws != null) {
+					System.out.println("Shutting down erroneous connection due to previous error: " + e.getMessage() + " for: " + WebSocketImpl.addressOf(ws));
+
+					// try to gracefully shutdown the erroneous connection
+					ws.close(CloseFrame.ABNORMAL_CLOSE, "RuntimeException occurred.");
+				} else {
+					System.out.println("Shutting down server due to previous error: " + e.getMessage() + " for: " + WebSocketImpl.addressOf(ws));
+
+					// no connection found, so let's shutdown the server as usual
+					handleFatal( ws, e );
+				}
 			}
 		}
 	}
