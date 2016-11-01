@@ -149,7 +149,7 @@ public class WebSocketImpl implements WebSocket {
 	/**
 	 * 
 	 */
-	public void decode( ByteBuffer socketBuffer ) {
+	public synchronized void decode( ByteBuffer socketBuffer ) {
 		if( !socketBuffer.hasRemaining() || flushandclosestate )
 			return;
 
