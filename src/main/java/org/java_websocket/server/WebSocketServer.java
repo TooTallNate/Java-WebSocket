@@ -219,8 +219,8 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 
 		synchronized ( this ) {
 			if( selectorthread != null && selectorthread != Thread.currentThread() ) {
-				selector.wakeup();
 				selectorthread.interrupt();
+				selector.wakeup();
 				selectorthread.join( timeout );
 			}
 		}
