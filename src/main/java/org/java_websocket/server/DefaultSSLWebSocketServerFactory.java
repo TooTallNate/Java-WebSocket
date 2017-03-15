@@ -48,4 +48,11 @@ public class DefaultSSLWebSocketServerFactory implements WebSocketServer.WebSock
 	public WebSocketImpl createWebSocket( WebSocketAdapter a, List<Draft> d, Socket s ) {
 		return new WebSocketImpl( a, d );
 	}
+	
+	/**
+	* shutdown executor service
+	*/
+	public void shutdown() {
+		exec.shutdownNow();
+	}
 }
