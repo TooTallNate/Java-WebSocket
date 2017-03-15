@@ -203,7 +203,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			} else if( scheme.equals( "ws" ) ) {
 				return WebSocket.DEFAULT_PORT;
 			} else {
-				throw new RuntimeException( "unkonow scheme" + scheme );
+				throw new RuntimeException( "unknown scheme: " + scheme );
 			}
 		}
 		return port;
