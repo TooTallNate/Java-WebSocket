@@ -215,10 +215,12 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 			ws.close( CloseFrame.GOING_AWAY );
 		}
 
+		wsf.close();
+
 		synchronized ( this ) {
 			if( selectorthread != null && selectorthread != Thread.currentThread() ) {
-				selector.wakeup();
 				selectorthread.interrupt();
+				selector.wakeup();
 				selectorthread.join( timeout );
 			}
 		}
@@ -729,5 +731,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		 * @return The channel on which the read and write operations will be performed.<br>
 		 */
 		public ByteChannel wrapChannel( SocketChannel channel, SelectionKey key ) throws IOException;
+
+		public void close();
 	}
 }
