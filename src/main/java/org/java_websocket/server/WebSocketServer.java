@@ -295,7 +295,8 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 
 					while ( i.hasNext() ) {
 						key = i.next();
-
+						conn = null;
+						
 						if( !key.isValid() ) {
 							// Object o = key.attachment();
 							continue;
@@ -308,18 +309,34 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 							}
 
 							SocketChannel channel = server.accept();
+							if(channel==null){
+								continue;
+							}
 							channel.configureBlocking( false );
 							WebSocketImpl w = wsf.createWebSocket( this, drafts, channel.socket() );
 							w.key = channel.register( selector, SelectionKey.OP_READ, w );
-							w.channel = wsf.wrapChannel( channel, w.key );
-							i.remove();
-							allocateBuffers( w );
+							try {
+								w.channel = wsf.wrapChannel( channel, w.key );
+								i.remove();
+								allocateBuffers( w );
+								continue;
+							} catch (IOException ex) {
+								if (w.key != null)
+									w.key.cancel();							
+							}
 							continue;
 						}
 
 						if( key.isReadable() ) {
 							conn = (WebSocketImpl) key.attachment();
 							ByteBuffer buf = takeBuffer();
+							if(conn.channel == null){
+								if( key != null )
+									key.cancel();
+								
+								handleIOException( key, conn, new IOException() );
+								continue;
+							}
 							try {
 								if( SocketChannelIOHelper.read( buf, conn, conn.channel ) ) {
 									if( buf.hasRemaining() ) {
