@@ -321,8 +321,10 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 								allocateBuffers( w );
 								continue;
 							} catch (IOException ex) {
-								if (w.key != null)
-									w.key.cancel();							
+								if( w.key != null )
+									w.key.cancel();
+
+								handleIOException( w.key, null, ex );
 							}
 							continue;
 						}
@@ -464,7 +466,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 					// there is nothing that must be done here
 				}
 				if( WebSocketImpl.DEBUG )
-					System.out.println( "Connection closed because of" + ex );
+					System.out.println("Connection closed because of " + ex);
 			}
 		}
 	}
