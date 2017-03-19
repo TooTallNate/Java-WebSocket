@@ -1,16 +1,23 @@
+# Java class files
 *.class
-.git
-.gradle
-build
-*.svn
-*~
-target
+
+# Generated files
+bin/
+build/
+target/
+bin/
+doc/
+dist/
+
+# Gradle files
+.gradle/
+
+# IntelliJ files
 *.ipr
 *.iml
 *.iws
+
+# Eclipse files
 .settings
 .project
 .classpath
-bin
-
-/doc
