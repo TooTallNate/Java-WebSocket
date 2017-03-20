@@ -409,6 +409,13 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 					w.interrupt();
 				}
 			}
+			if( selector != null ) {
+				try {
+					selector.close();
+				} catch ( IOException e ) {
+					onError( null, e );
+				}
+			}
 			if( server != null ) {
 				try {
 					server.close();
