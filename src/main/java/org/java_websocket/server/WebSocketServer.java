@@ -708,7 +708,9 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 			setUncaughtExceptionHandler( new UncaughtExceptionHandler() {
 				@Override
 				public void uncaughtException( Thread t, Throwable e ) {
-					getDefaultUncaughtExceptionHandler().uncaughtException( t, e );
+					System.err.print("Uncaught exception in thread \""
+							+ t.getName() + "\":");
+					e.printStackTrace(System.err);
 				}
 			} );
 		}
