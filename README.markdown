@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/ck1125/Java-WebSocket.png?branch=master)](https://travis-ci.org/ck1125/Java-WebSocket)
+[![Build Status](https://travis-ci.org/marci4/Java-WebSocket-Dev.svg?branch=master)](https://travis-ci.org/ck1125/Java-WebSocket)
 Java WebSockets
 ===============
 
@@ -18,8 +18,8 @@ Implemented WebSocket protocol versions are:
 [Here](https://github.com/TooTallNate/Java-WebSocket/wiki/Drafts) some more details about protocol versions/drafts. 
 
 
-##Build
-You can build using Ant or Maven but there is nothing against just putting the source path ```src/main/java ``` on your applications buildpath.
+## Build
+You can build using Ant but there is nothing against just putting the source path ```src/main/java ``` on your applications buildpath.
 
 ### Ant
 
@@ -30,19 +30,6 @@ ant
 will create the javadoc of this library at ```doc/``` and build the library itself: ```dest/java_websocket.jar```
 
 The ant targets are: ```compile```, ```jar```, ```doc``` and ```clean```
-
-### Maven
-
-**Note: I (marci4) have currently no access to our maven repository!!! The jar you can get there is out of date and it is recommended for you to build the jar directly from the sources!!!**
-
-To use maven just add this dependency to your pom.xml:
-```xml
-<dependency>
-    <groupId>org.java-websocket</groupId>
-    <artifactId>Java-WebSocket</artifactId>
-    <version>1.3.0</version>
-</dependency> 
-```
 
 Running the Examples
 -------------------
