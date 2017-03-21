@@ -14,3 +14,16 @@ target
 bin
 
 /doc
+.idea/workspace.xml
+.idea/libraries/Maven__info_cukes_gherkin_2_9_3.xml
+.idea/libraries/Maven__info_cukes_cucumber_html_0_2_1.xml
+.idea/libraries/Maven__info_cukes_cucumber_core_1_0_0.xml
+.idea/compiler.xml
+.idea/modules.xml
+.idea/misc.xml
+.idea/libraries/Maven__info_cukes_cucumber_junit_1_0_0.xml
+.idea/libraries/Maven__junit_junit_4_8_2.xml
+.idea/encodings.xml
+.idea/vcs.xml
+.idea/.name
+.idea/libraries/Maven__info_cukes_cucumber_java_1_0_0_RC24.xml
