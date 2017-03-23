@@ -27,7 +27,7 @@ You can build using Ant but there is nothing against just putting the source pat
 ant 
 ```
 
-will create the javadoc of this library at ```doc/``` and build the library itself: ```dest/java_websocket.jar```
+will create the javadoc of this library at ```doc/``` and build the library itself: ```dist/java_websocket.jar```
 
 The ant targets are: ```compile```, ```jar```, ```doc``` and ```clean```
 
