@@ -105,7 +105,7 @@ public class WebSocketImpl implements WebSocket {
 	private String resourceDescriptor = null;
 
 	/**
-	 * crates a websocket with server role
+	 * creates a websocket with server role
 	 */
 	public WebSocketImpl( WebSocketListener listener , List<Draft> drafts ) {
 		this( listener, (Draft) null );
@@ -119,9 +119,9 @@ public class WebSocketImpl implements WebSocket {
 	}
 
 	/**
-	 * crates a websocket with client role
+	 * creates a websocket with client role
 	 * 
-	 * @param socket
+	 * @param listener
 	 *            may be unbound
 	 */
 	public WebSocketImpl( WebSocketListener listener , Draft draft ) {
@@ -733,5 +733,4 @@ public class WebSocketImpl implements WebSocket {
 	public String getResourceDescriptor() {
 		return resourceDescriptor;
 	}
-
 }

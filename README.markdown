@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/ck1125/Java-WebSocket.png?branch=master)](https://travis-ci.org/ck1125/Java-WebSocket)
+[![Build Status](https://travis-ci.org/marci4/Java-WebSocket-Dev.svg?branch=master)](https://travis-ci.org/ck1125/Java-WebSocket)
 Java WebSockets
 ===============
 
@@ -18,29 +18,18 @@ Implemented WebSocket protocol versions are:
 [Here](https://github.com/TooTallNate/Java-WebSocket/wiki/Drafts) some more details about protocol versions/drafts. 
 
 
-##Build
-You can build using Ant or Maven but there is nothing against just putting the source path ```src/main/java ``` on your applications buildpath.
+## Build
+You can build using Ant but there is nothing against just putting the source path ```src/main/java ``` on your applications buildpath.
 
-###Ant
+### Ant
 
 ``` bash
 ant 
 ```
 
-will create the javadoc of this library at ```doc/``` and build the library itself: ```dest/java_websocket.jar```
+will create the javadoc of this library at ```doc/``` and build the library itself: ```dist/java_websocket.jar```
 
 The ant targets are: ```compile```, ```jar```, ```doc``` and ```clean```
-
-###Maven
-
-To use maven just add this dependency to your pom.xml:
-```xml
-<dependency>
-    <groupId>org.java-websocket</groupId>
-    <artifactId>Java-WebSocket</artifactId>
-    <version>1.3.0</version>
-</dependency> 
-```
 
 Running the Examples
 -------------------
@@ -83,7 +72,7 @@ connections though HTTP. After that it's up to **your** subclass to add purpose.
 Writing your own WebSocket Client
 ---------------------------------
 
-The `org.java_websocket.server.WebSocketClient` abstract class can connect to
+The `org.java_websocket.client.WebSocketClient` abstract class can connect to
 valid WebSocket servers. The constructor expects a valid `ws://` URI to
 connect to. Important events `onOpen`, `onClose`, `onMessage` and `onIOError` 
 get fired throughout the life of the WebSocketClient, and must be implemented 

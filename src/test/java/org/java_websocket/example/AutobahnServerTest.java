@@ -1,3 +1,5 @@
+package org.java_websocket.example;
+
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;

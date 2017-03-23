@@ -2,27 +2,57 @@ package org.java_websocket.exceptions;
 
 import org.java_websocket.framing.CloseFrame;
 
+/**
+ * exception which indicates that a invalid handshake was recieved (CloseFrame.PROTOCOL_ERROR)
+ */
 public class InvalidHandshakeException extends InvalidDataException {
 
-	/**
-	 * Serializable
-	 */
-	private static final long serialVersionUID = -1426533877490484964L;
+    /**
+     * Serializable
+     */
+    private static final long serialVersionUID = -1426533877490484964L;
 
-	public InvalidHandshakeException() {
-		super( CloseFrame.PROTOCOL_ERROR );
-	}
+    /**
+     * constructor for a InvalidHandshakeException
+     * <p>
+     * calling InvalidDataException with closecode PROTOCOL_ERROR
+     */
+    public InvalidHandshakeException() {
+        super(CloseFrame.PROTOCOL_ERROR);
+    }
 
-	public InvalidHandshakeException( String arg0 , Throwable arg1 ) {
-		super( CloseFrame.PROTOCOL_ERROR, arg0, arg1 );
-	}
+    /**
+     * constructor for a InvalidHandshakeException
+     * <p>
+     * calling InvalidDataException with closecode PROTOCOL_ERROR
+     *
+     * @param s the detail message.
+     * @param t the throwable causing this exception.
+     */
+    public InvalidHandshakeException(String s, Throwable t) {
+        super(CloseFrame.PROTOCOL_ERROR, s, t);
+    }
 
-	public InvalidHandshakeException( String arg0 ) {
-		super( CloseFrame.PROTOCOL_ERROR, arg0 );
-	}
+    /**
+     * constructor for a InvalidHandshakeException
+     * <p>
+     * calling InvalidDataException with closecode PROTOCOL_ERROR
+     *
+     * @param s the detail message.
+     */
+    public InvalidHandshakeException(String s) {
+        super(CloseFrame.PROTOCOL_ERROR, s);
+    }
 
-	public InvalidHandshakeException( Throwable arg0 ) {
-		super( CloseFrame.PROTOCOL_ERROR, arg0 );
-	}
+    /**
+     * constructor for a InvalidHandshakeException
+     * <p>
+     * calling InvalidDataException with closecode PROTOCOL_ERROR
+     *
+     * @param t the throwable causing this exception.
+     */
+    public InvalidHandshakeException(Throwable t) {
+        super(CloseFrame.PROTOCOL_ERROR, t);
+    }
 
 }
