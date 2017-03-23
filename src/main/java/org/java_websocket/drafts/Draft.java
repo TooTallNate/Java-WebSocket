@@ -169,7 +169,7 @@ public abstract class Draft {
 		} else if( handshakedata instanceof ServerHandshake ) {
 			bui.append( "HTTP/1.1 101 " + ( (ServerHandshake) handshakedata ).getHttpStatusMessage() );
 		} else {
-			throw new RuntimeException( "unknow role" );
+			throw new RuntimeException( "unknown role" );
 		}
 		bui.append( "\r\n" );
 		Iterator<String> it = handshakedata.iterateHttpFields();
