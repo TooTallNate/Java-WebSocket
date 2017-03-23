@@ -97,7 +97,7 @@ public class Draft_76 extends Draft_75 {
 			if( keySpace == 0 ) {
 				throw new InvalidHandshakeException( "invalid Sec-WebSocket-Key (/key2/)" );
 			}
-			long part = new Long( keyNumber / keySpace );
+			long part = keyNumber / keySpace;
 			return new byte[]{ (byte) ( part >> 24 ), (byte) ( ( part << 8 ) >> 24 ), (byte) ( ( part << 16 ) >> 24 ), (byte) ( ( part << 24 ) >> 24 ) };
 		} catch ( NumberFormatException e ) {
 			throw new InvalidHandshakeException( "invalid Sec-WebSocket-Key (/key1/ or /key2/)" );

@@ -155,7 +155,7 @@ public class WebSocketImpl implements WebSocket {
 			System.out.println( "process(" + socketBuffer.remaining() + "): {" + ( socketBuffer.remaining() > 1000 ? "too big to display" : new String( socketBuffer.array(), socketBuffer.position(), socketBuffer.remaining() ) ) + "}" );
 
 		if( readystate != READYSTATE.NOT_YET_CONNECTED ) {
-			decodeFrames( socketBuffer );;
+			decodeFrames( socketBuffer );
 		} else {
 			if( decodeHandshake( socketBuffer ) ) {
 				assert ( tmpHandshakeBytes.hasRemaining() != socketBuffer.hasRemaining() || !socketBuffer.hasRemaining() ); // the buffers will never have remaining bytes at the same time
@@ -203,7 +203,7 @@ public class WebSocketImpl implements WebSocket {
 					return false;
 				}
 			}
-			HandshakeState handshakestate = null;
+			HandshakeState handshakestate;
 
 			try {
 				if( role == Role.SERVER ) {
@@ -214,7 +214,7 @@ public class WebSocketImpl implements WebSocket {
 								d.setParseMode( role );
 								socketBuffer.reset();
 								Handshakedata tmphandshake = d.translateHandshake( socketBuffer );
-								if( tmphandshake instanceof ClientHandshake == false ) {
+								if(!(tmphandshake instanceof ClientHandshake)) {
 									flushAndClose( CloseFrame.PROTOCOL_ERROR, "wrong http function", false );
 									return false;
 								}
@@ -249,7 +249,7 @@ public class WebSocketImpl implements WebSocket {
 					} else {
 						// special case for multiple step handshakes
 						Handshakedata tmphandshake = draft.translateHandshake( socketBuffer );
-						if( tmphandshake instanceof ClientHandshake == false ) {
+						if(!(tmphandshake instanceof ClientHandshake)) {
 							flushAndClose( CloseFrame.PROTOCOL_ERROR, "wrong http function", false );
 							return false;
 						}
@@ -267,7 +267,7 @@ public class WebSocketImpl implements WebSocket {
 				} else if( role == Role.CLIENT ) {
 					draft.setParseMode( role );
 					Handshakedata tmphandshake = draft.translateHandshake( socketBuffer );
-					if( tmphandshake instanceof ServerHandshake == false ) {
+					if(!(tmphandshake instanceof ServerHandshake)) {
 						flushAndClose( CloseFrame.PROTOCOL_ERROR, "wrong http function", false );
 						return false;
 					}
@@ -397,7 +397,7 @@ public class WebSocketImpl implements WebSocket {
 		if( readystate != READYSTATE.CLOSING && readystate != READYSTATE.CLOSED ) {
 			if( readystate == READYSTATE.OPEN ) {
 				if( code == CloseFrame.ABNORMAL_CLOSE ) {
-					assert ( remote == false );
+					assert (!remote);
 					readystate = READYSTATE.CLOSING;
 					flushAndClose( code, message, false );
 					return;
@@ -539,9 +539,7 @@ public class WebSocketImpl implements WebSocket {
 
 	/**
 	 * Send Text data to the other end.
-	 * 
-	 * @throws IllegalArgumentException
-	 * @throws NotYetConnectedException
+	 * @throws NotYetConnectedException websocket is not yet connected
 	 */
 	@Override
 	public void send( String text ) throws WebsocketNotConnectedException {
@@ -552,9 +550,9 @@ public class WebSocketImpl implements WebSocket {
 
 	/**
 	 * Send Binary data (plain bytes) to the other end.
-	 * 
-	 * @throws IllegalArgumentException
-	 * @throws NotYetConnectedException
+	 *
+	 * @throws IllegalArgumentException the data is null
+	 * @throws NotYetConnectedException websocket is not yet connected
 	 */
 	@Override
 	public void send( ByteBuffer bytes ) throws IllegalArgumentException , WebsocketNotConnectedException {
@@ -669,13 +667,13 @@ public class WebSocketImpl implements WebSocket {
 
 	@Override
 	public boolean isConnecting() {
-		assert ( flushandclosestate ? readystate == READYSTATE.CONNECTING : true );
+		assert (!flushandclosestate || readystate == READYSTATE.CONNECTING);
 		return readystate == READYSTATE.CONNECTING; // ifflushandclosestate
 	}
 
 	@Override
 	public boolean isOpen() {
-		assert ( readystate == READYSTATE.OPEN ? !flushandclosestate : true );
+		assert (readystate != READYSTATE.OPEN || !flushandclosestate);
 		return readystate == READYSTATE.OPEN;
 	}
 

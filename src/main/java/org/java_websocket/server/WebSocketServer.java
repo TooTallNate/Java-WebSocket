@@ -179,7 +179,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 * 
 	 * Alternatively you can call {@link WebSocketServer#run()} directly.
 	 * 
-	 * @throws IllegalStateException
+	 * @throws IllegalStateException Starting an instance again
 	 */
 	public void start() {
 		if( selectorthread != null )
@@ -197,14 +197,14 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 * @param timeout
 	 *            Specifies how many milliseconds the overall close handshaking may take altogether before the connections are closed without proper close handshaking.<br>
 	 * 
-	 * @throws InterruptedException
+	 * @throws InterruptedException Interrupt
 	 */
 	public void stop( int timeout ) throws InterruptedException {
 		if( !isclosed.compareAndSet( false, true ) ) { // this also makes sure that no further connections will be added to this.connections
 			return;
 		}
 
-		List<WebSocket> socketsToClose = null;
+		List<WebSocket> socketsToClose;
 
 		// copy the connections in a list (prevent callback deadlocks)
 		synchronized ( connections ) {
@@ -724,7 +724,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 			WebSocketImpl ws = null;
 			try {
 				while ( true ) {
-					ByteBuffer buf = null;
+					ByteBuffer buf;
 					ws = iqueue.take();
 					buf = ws.inQueue.poll();
 					assert ( buf != null );
