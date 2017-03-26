@@ -65,10 +65,6 @@ public class ChatServer extends WebSocketServer {
 			if( in.equals( "exit" ) ) {
 				s.stop();
 				break;
-			} else if( in.equals( "restart" ) ) {
-				s.stop();
-				s.start();
-				break;
 			}
 		}
 	}
