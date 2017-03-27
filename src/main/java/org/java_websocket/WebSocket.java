@@ -14,7 +14,7 @@ public interface WebSocket {
 	}
 
 	public enum READYSTATE {
-		NOT_YET_CONNECTED, CONNECTING, OPEN, CLOSING, CLOSED;
+		NOT_YET_CONNECTED, CONNECTING, OPEN, CLOSING, CLOSED
 	}
 
 	/**
@@ -45,17 +45,16 @@ public interface WebSocket {
 
 	/**
 	 * Send Text data to the other end.
-	 * 
-	 * @throws IllegalArgumentException
-	 * @throws NotYetConnectedException
+	 *
+	 * @throws NotYetConnectedException websocket is not yet connected
 	 */
 	public abstract void send( String text ) throws NotYetConnectedException;
 
 	/**
 	 * Send Binary data (plain bytes) to the other end.
 	 * 
-	 * @throws IllegalArgumentException
-	 * @throws NotYetConnectedException
+	 * @throws IllegalArgumentException the data is null
+	 * @throws NotYetConnectedException websocket is not yet connected
 	 */
 	public abstract void send( ByteBuffer bytes ) throws IllegalArgumentException , NotYetConnectedException;
 
@@ -81,12 +80,12 @@ public interface WebSocket {
 	public abstract boolean hasBufferedData();
 
 	/**
-	 * @returns never returns null
+	 * @return never returns null
 	 */
 	public abstract InetSocketAddress getRemoteSocketAddress();
 
 	/**
-	 * @returns never returns null
+	 * @return never returns null
 	 */
 	public abstract InetSocketAddress getLocalSocketAddress();
 

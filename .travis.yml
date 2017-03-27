@@ -1,5 +1,4 @@
-language: java
-jdk:
-  - oraclejdk7
-
-script: "./gradlew test"
+{
+  "language": "java",
+  "script": "ant all"
+}

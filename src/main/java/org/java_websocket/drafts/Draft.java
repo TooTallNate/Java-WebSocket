@@ -41,7 +41,7 @@ public abstract class Draft {
 		NONE, ONEWAY, TWOWAY
 	}
 
-	public static int MAX_FAME_SIZE = 1000 * 1;
+	public static int MAX_FAME_SIZE = 1000;
 	public static int INITIAL_FAMESIZE = 64;
 
 	public static final byte[] FLASH_POLICY_REQUEST = Charsetfunctions.utf8Bytes( "<policy-file-request/>\0" );
@@ -129,7 +129,7 @@ public abstract class Draft {
 	public abstract List<Framedata> createFrames( String text, boolean mask );
 
 	public List<Framedata> continuousFrame( Opcode op, ByteBuffer buffer, boolean fin ) {
-		if( op != Opcode.BINARY && op != Opcode.TEXT && op != Opcode.TEXT ) {
+		if(op != Opcode.BINARY && op != Opcode.TEXT) {
 			throw new IllegalArgumentException( "Only Opcode.BINARY or  Opcode.TEXT are allowed" );
 		}
 
@@ -167,9 +167,9 @@ public abstract class Draft {
 			bui.append( ( (ClientHandshake) handshakedata ).getResourceDescriptor() );
 			bui.append( " HTTP/1.1" );
 		} else if( handshakedata instanceof ServerHandshake ) {
-			bui.append( "HTTP/1.1 101 " + ( (ServerHandshake) handshakedata ).getHttpStatusMessage() );
+			bui.append("HTTP/1.1 101 ").append(((ServerHandshake) handshakedata).getHttpStatusMessage());
 		} else {
-			throw new RuntimeException( "unknow role" );
+			throw new RuntimeException( "unknown role" );
 		}
 		bui.append( "\r\n" );
 		Iterator<String> it = handshakedata.iterateHttpFields();

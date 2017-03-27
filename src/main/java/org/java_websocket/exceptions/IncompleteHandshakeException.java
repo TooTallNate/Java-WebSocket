@@ -1,20 +1,45 @@
 package org.java_websocket.exceptions;
 
+/**
+ * exception which indicates that a incomplete handshake was recieved
+ */
 public class IncompleteHandshakeException extends RuntimeException {
 
-	private static final long serialVersionUID = 7906596804233893092L;
-	private int newsize;
+    /**
+     * Serializable
+     */
+    private static final long serialVersionUID = 7906596804233893092L;
 
-	public IncompleteHandshakeException( int newsize ) {
-		this.newsize = newsize;
-	}
+    /**
+     * attribut which size of handshake would have been prefered
+     */
+    private int preferedSize;
 
-	public IncompleteHandshakeException() {
-		this.newsize = 0;
-	}
+    /**
+     * constructor for a IncompleteHandshakeException
+     * <p>
+     * @param preferedSize the prefered size
+     */
+    public IncompleteHandshakeException(int preferedSize) {
+        this.preferedSize = preferedSize;
+    }
 
-	public int getPreferedSize() {
-		return newsize;
-	}
+    /**
+     * constructor for a IncompleteHandshakeException
+     * <p>
+     * preferedSize will be 0
+     */
+    public IncompleteHandshakeException() {
+        this.preferedSize = 0;
+    }
+
+    /**
+     * Getter preferedSize
+     *
+     * @return the preferedSize
+     */
+    public int getPreferedSize() {
+        return preferedSize;
+    }
 
 }

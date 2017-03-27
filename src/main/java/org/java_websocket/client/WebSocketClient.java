@@ -181,7 +181,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		int readBytes;
 
 		try {
-			while ( !isClosed() && ( readBytes = istream.read( rawbuffer ) ) != -1 ) {
+			while ( !isClosing() && !isClosed() && ( readBytes = istream.read( rawbuffer ) ) != -1 ) {
 				engine.decode( ByteBuffer.wrap( rawbuffer, 0, readBytes ) );
 			}
 			engine.eot();
@@ -203,7 +203,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			} else if( scheme.equals( "ws" ) ) {
 				return WebSocket.DEFAULT_PORT;
 			} else {
-				throw new RuntimeException( "unkonow scheme" + scheme );
+				throw new RuntimeException( "unknown scheme: " + scheme );
 			}
 		}
 		return port;
@@ -211,8 +211,8 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
 	private void sendHandshake() throws InvalidHandshakeException {
 		String path;
-		String part1 = uri.getPath();
-		String part2 = uri.getQuery();
+		String part1 = uri.getRawPath();
+		String part2 = uri.getRawQuery();
 		if( part1 == null || part1.length() == 0 )
 			path = "/";
 		else

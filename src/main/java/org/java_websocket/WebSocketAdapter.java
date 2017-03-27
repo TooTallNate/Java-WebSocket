@@ -66,7 +66,7 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	/**
 	 * This default implementation does not do anything. Go ahead and overwrite it.
 	 * 
-	 * @see @see org.java_websocket.WebSocketListener#onWebsocketPong(WebSocket, Framedata)
+	 * @see org.java_websocket.WebSocketListener#onWebsocketPong(WebSocket, Framedata)
 	 */
 	@Override
 	public void onWebsocketPong( WebSocket conn, Framedata f ) {
@@ -92,13 +92,8 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 		if(null == adr){
 			throw new InvalidHandshakeException( "socket not bound" );
 		}
-		
-		StringBuffer sb = new StringBuffer( 90 );
-		sb.append( "<cross-domain-policy><allow-access-from domain=\"*\" to-ports=\"" );
-		sb.append(adr.getPort());
-		sb.append( "\" /></cross-domain-policy>\0" );
-		
-		return sb.toString();
+
+		return "<cross-domain-policy><allow-access-from domain=\"*\" to-ports=\"" + adr.getPort() +"\" /></cross-domain-policy>\0";
 	}
 
 }

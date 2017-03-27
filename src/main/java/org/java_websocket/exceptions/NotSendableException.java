@@ -1,25 +1,48 @@
 package org.java_websocket.exceptions;
 
+/**
+ * exception which indicates the frame payload is not sendable
+ */
 public class NotSendableException extends RuntimeException {
 
-	/**
-	 * Serializable
-	 */
-	private static final long serialVersionUID = -6468967874576651628L;
+    /**
+     * Serializable
+     */
+    private static final long serialVersionUID = -6468967874576651628L;
 
-	public NotSendableException() {
-	}
+    /**
+     * constructor for a NotSendableException
+     */
+    public NotSendableException() {
+        super();
+    }
 
-	public NotSendableException( String message ) {
-		super( message );
-	}
+    /**
+     * constructor for a NotSendableException
+     *
+     * @param s the detail message.
+     */
+    public NotSendableException(String s) {
+        super(s);
+    }
 
-	public NotSendableException( Throwable cause ) {
-		super( cause );
-	}
+    /**
+     * constructor for a NotSendableException
+     *
+     * @param t the throwable causing this exception.
+     */
+    public NotSendableException(Throwable t) {
+        super(t);
+    }
 
-	public NotSendableException( String message , Throwable cause ) {
-		super( message, cause );
-	}
+    /**
+     * constructor for a NotSendableException
+     *
+     * @param s the detail message.
+     * @param t the throwable causing this exception.
+     */
+    public NotSendableException(String s, Throwable t) {
+        super(s, t);
+    }
 
 }
