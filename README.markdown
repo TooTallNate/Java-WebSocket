@@ -18,8 +18,8 @@ Implemented WebSocket protocol versions are:
 [Here](https://github.com/TooTallNate/Java-WebSocket/wiki/Drafts) some more details about protocol versions/drafts. 
 
 
-## Build
-You can build using Ant but there is nothing against just putting the source path ```src/main/java ``` on your applications buildpath.
+##Build
+You can build using Ant or Leiningen but there is nothing against just putting the source path ```src/main/java ``` on your applications buildpath.
 
 ### Ant
 
@@ -30,6 +30,13 @@ ant
 will create the javadoc of this library at ```doc/``` and build the library itself: ```dist/java_websocket.jar```
 
 The ant targets are: ```compile```, ```jar```, ```doc``` and ```clean```
+
+
+### Leiningen
+
+``` bash
+lein compile
+```
 
 Running the Examples
 -------------------
