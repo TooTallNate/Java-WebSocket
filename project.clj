@@ -1,4 +1,4 @@
-(defproject org.java-websocket/java-websocket "1.3.1-snapshot"
+(defproject org.java-websocket/java-websocket "1.3.1"
   :description "A barebones WebSocket client and server implementation written 100% in Java"
   :url "http://java-websocket.org/"
   :scm {:name "git"
@@ -17,6 +17,10 @@
                              [:developer
                                [:name "David Rohmer"]
                                [:url "https://github.com/Davidiusdadi"]
-                               [:email "rohmer.david@gmail.com"]]])
+                               [:email "rohmer.david@gmail.com"]]
+                             [:developer
+                               [:name "Marcel Prestel"]
+                               [:url "https://github.com/marci4"]
+                               [:email "admin@marci4.de"]]])
 
 
