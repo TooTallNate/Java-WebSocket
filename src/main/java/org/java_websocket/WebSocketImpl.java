@@ -1,5 +1,20 @@
 package org.java_websocket;
 
+import org.java_websocket.drafts.*;
+import org.java_websocket.drafts.Draft.CloseHandshakeType;
+import org.java_websocket.drafts.Draft.HandshakeState;
+import org.java_websocket.exceptions.IncompleteHandshakeException;
+import org.java_websocket.exceptions.InvalidDataException;
+import org.java_websocket.exceptions.InvalidHandshakeException;
+import org.java_websocket.exceptions.WebsocketNotConnectedException;
+import org.java_websocket.framing.CloseFrame;
+import org.java_websocket.framing.CloseFrameBuilder;
+import org.java_websocket.framing.Framedata;
+import org.java_websocket.framing.Framedata.Opcode;
+import org.java_websocket.handshake.*;
+import org.java_websocket.server.WebSocketServer.WebSocketWorker;
+import org.java_websocket.util.Charsetfunctions;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -13,42 +28,17 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import org.java_websocket.drafts.Draft;
-import org.java_websocket.drafts.Draft.CloseHandshakeType;
-import org.java_websocket.drafts.Draft.HandshakeState;
-import org.java_websocket.drafts.Draft_10;
-import org.java_websocket.drafts.Draft_17;
-import org.java_websocket.drafts.Draft_75;
-import org.java_websocket.drafts.Draft_76;
-import org.java_websocket.exceptions.IncompleteHandshakeException;
-import org.java_websocket.exceptions.InvalidDataException;
-import org.java_websocket.exceptions.InvalidHandshakeException;
-import org.java_websocket.exceptions.WebsocketNotConnectedException;
-import org.java_websocket.framing.CloseFrame;
-import org.java_websocket.framing.CloseFrameBuilder;
-import org.java_websocket.framing.Framedata;
-import org.java_websocket.framing.Framedata.Opcode;
-import org.java_websocket.handshake.ClientHandshake;
-import org.java_websocket.handshake.ClientHandshakeBuilder;
-import org.java_websocket.handshake.Handshakedata;
-import org.java_websocket.handshake.ServerHandshake;
-import org.java_websocket.handshake.ServerHandshakeBuilder;
-import org.java_websocket.server.WebSocketServer.WebSocketWorker;
-import org.java_websocket.util.Charsetfunctions;
-
 /**
  * Represents one end (client or server) of a single WebSocketImpl connection.
  * Takes care of the "handshake" phase, then allows for easy sending of
  * text frames, and receiving frames through an event-based model.
- * 
  */
 public class WebSocketImpl implements WebSocket {
 
-	public static int RCVBUF = 16384;
-
-	public static/*final*/boolean DEBUG = false; // must be final in the future in order to take advantage of VM optimization
-
 	public static final List<Draft> defaultdraftlist = new ArrayList<Draft>( 4 );
+	public static int RCVBUF = 16384;
+	public static/*final*/ boolean DEBUG = false; // must be final in the future in order to take advantage of VM optimization
+
 	static {
 		defaultdraftlist.add( new Draft_17() );
 		defaultdraftlist.add( new Draft_10() );
@@ -56,10 +46,6 @@ public class WebSocketImpl implements WebSocket {
 		defaultdraftlist.add( new Draft_75() );
 	}
 
-	public SelectionKey key;
-
-	/** the possibly wrapped channel object whose selection is controlled by {@link #key} */
-	public ByteChannel channel;
 	/**
 	 * Queue of buffers that need to be sent to the client.
 	 */
@@ -68,22 +54,24 @@ public class WebSocketImpl implements WebSocket {
 	 * Queue of buffers that need to be processed
 	 */
 	public final BlockingQueue<ByteBuffer> inQueue;
-
-	/**
-	 * Helper variable meant to store the thread which ( exclusively ) triggers this objects decode method.
-	 **/
-	public volatile WebSocketWorker workerThread; // TODO reset worker?
-
-	/** When true no further frames may be submitted to be sent */
-	private volatile boolean flushandclosestate = false;
-
-	private READYSTATE readystate = READYSTATE.NOT_YET_CONNECTED;
-
 	/**
 	 * The listener to notify of WebSocket events.
 	 */
 	private final WebSocketListener wsl;
-
+	public SelectionKey key;
+	/**
+	 * the possibly wrapped channel object whose selection is controlled by {@link #key}
+	 */
+	public ByteChannel channel;
+	/**
+	 * Helper variable meant to store the thread which ( exclusively ) triggers this objects decode method.
+	 **/
+	public volatile WebSocketWorker workerThread; // TODO reset worker?
+	/**
+	 * When true no further frames may be submitted to be sent
+	 */
+	private volatile boolean flushandclosestate = false;
+	private READYSTATE readystate = READYSTATE.NOT_YET_CONNECTED;
 	private List<Draft> knownDrafts;
 
 	private Draft draft = null;
@@ -92,23 +80,27 @@ public class WebSocketImpl implements WebSocket {
 
 	private Opcode current_continuous_frame_opcode = null;
 
-	/** the bytes of an incomplete received handshake */
+	/**
+	 * the bytes of an incomplete received handshake
+	 */
 	private ByteBuffer tmpHandshakeBytes = ByteBuffer.allocate( 0 );
 
-	/** stores the handshake sent by this websocket ( Role.CLIENT only ) */
+	/**
+	 * stores the handshake sent by this websocket ( Role.CLIENT only )
+	 */
 	private ClientHandshake handshakerequest = null;
 
 	private String closemessage = null;
 	private Integer closecode = null;
 	private Boolean closedremotely = null;
-	
+
 	private String resourceDescriptor = null;
 
 	/**
 	 * creates a websocket with server role
 	 */
-	public WebSocketImpl( WebSocketListener listener , List<Draft> drafts ) {
-		this( listener, (Draft) null );
+	public WebSocketImpl( WebSocketListener listener, List<Draft> drafts ) {
+		this( listener, ( Draft ) null );
 		this.role = Role.SERVER;
 		// draft.copyInstance will be called when the draft is first needed
 		if( drafts == null || drafts.isEmpty() ) {
@@ -120,11 +112,10 @@ public class WebSocketImpl implements WebSocket {
 
 	/**
 	 * creates a websocket with client role
-	 * 
-	 * @param listener
-	 *            may be unbound
+	 *
+	 * @param listener may be unbound
 	 */
-	public WebSocketImpl( WebSocketListener listener , Draft draft ) {
+	public WebSocketImpl( WebSocketListener listener, Draft draft ) {
 		if( listener == null || ( draft == null && role == Role.SERVER ) )// socket can be null because we want do be able to create the object without already having a bound channel
 			throw new IllegalArgumentException( "parameters must not be null" );
 		this.outQueue = new LinkedBlockingQueue<ByteBuffer>();
@@ -136,17 +127,17 @@ public class WebSocketImpl implements WebSocket {
 	}
 
 	@Deprecated
-	public WebSocketImpl( WebSocketListener listener , Draft draft , Socket socket ) {
+	public WebSocketImpl( WebSocketListener listener, Draft draft, Socket socket ) {
 		this( listener, draft );
 	}
 
 	@Deprecated
-	public WebSocketImpl( WebSocketListener listener , List<Draft> drafts , Socket socket ) {
+	public WebSocketImpl( WebSocketListener listener, List<Draft> drafts, Socket socket ) {
 		this( listener, drafts );
 	}
 
 	/**
-	 * 
+	 *
 	 */
 	public void decode( ByteBuffer socketBuffer ) {
 		assert ( socketBuffer.hasRemaining() );
@@ -169,6 +160,7 @@ public class WebSocketImpl implements WebSocket {
 		}
 		assert ( isClosing() || isFlushAndClose() || !socketBuffer.hasRemaining() );
 	}
+
 	/**
 	 * Returns whether the handshake phase has is completed.
 	 * In case of a broken handshake this will be never the case.
@@ -214,11 +206,11 @@ public class WebSocketImpl implements WebSocket {
 								d.setParseMode( role );
 								socketBuffer.reset();
 								Handshakedata tmphandshake = d.translateHandshake( socketBuffer );
-								if(!(tmphandshake instanceof ClientHandshake)) {
+								if( !( tmphandshake instanceof ClientHandshake ) ) {
 									flushAndClose( CloseFrame.PROTOCOL_ERROR, "wrong http function", false );
 									return false;
 								}
-								ClientHandshake handshake = (ClientHandshake) tmphandshake;
+								ClientHandshake handshake = ( ClientHandshake ) tmphandshake;
 								handshakestate = d.acceptHandshakeAsServer( handshake );
 								if( handshakestate == HandshakeState.MATCHED ) {
 									resourceDescriptor = handshake.getResourceDescriptor();
@@ -249,11 +241,11 @@ public class WebSocketImpl implements WebSocket {
 					} else {
 						// special case for multiple step handshakes
 						Handshakedata tmphandshake = draft.translateHandshake( socketBuffer );
-						if(!(tmphandshake instanceof ClientHandshake)) {
+						if( !( tmphandshake instanceof ClientHandshake ) ) {
 							flushAndClose( CloseFrame.PROTOCOL_ERROR, "wrong http function", false );
 							return false;
 						}
-						ClientHandshake handshake = (ClientHandshake) tmphandshake;
+						ClientHandshake handshake = ( ClientHandshake ) tmphandshake;
 						handshakestate = draft.acceptHandshakeAsServer( handshake );
 
 						if( handshakestate == HandshakeState.MATCHED ) {
@@ -267,11 +259,11 @@ public class WebSocketImpl implements WebSocket {
 				} else if( role == Role.CLIENT ) {
 					draft.setParseMode( role );
 					Handshakedata tmphandshake = draft.translateHandshake( socketBuffer );
-					if(!(tmphandshake instanceof ServerHandshake)) {
+					if( !( tmphandshake instanceof ServerHandshake ) ) {
 						flushAndClose( CloseFrame.PROTOCOL_ERROR, "wrong http function", false );
 						return false;
 					}
-					ServerHandshake handshake = (ServerHandshake) tmphandshake;
+					ServerHandshake handshake = ( ServerHandshake ) tmphandshake;
 					handshakestate = draft.acceptHandshakeAsClient( handshakerequest, handshake );
 					if( handshakestate == HandshakeState.MATCHED ) {
 						try {
@@ -325,11 +317,15 @@ public class WebSocketImpl implements WebSocket {
 				Opcode curop = f.getOpcode();
 				boolean fin = f.isFin();
 
+				//Not evaluating any further frames if the connection is in READYSTATE CLOSE
+				if( readystate == READYSTATE.CLOSING )
+					return;
+
 				if( curop == Opcode.CLOSING ) {
 					int code = CloseFrame.NOCODE;
 					String reason = "";
 					if( f instanceof CloseFrame ) {
-						CloseFrame cf = (CloseFrame) f;
+						CloseFrame cf = ( CloseFrame ) f;
 						code = cf.getCloseCode();
 						reason = cf.getMessage();
 					}
@@ -391,13 +387,14 @@ public class WebSocketImpl implements WebSocket {
 			close( e1 );
 			return;
 		}
+
 	}
 
 	private void close( int code, String message, boolean remote ) {
 		if( readystate != READYSTATE.CLOSING && readystate != READYSTATE.CLOSED ) {
 			if( readystate == READYSTATE.OPEN ) {
 				if( code == CloseFrame.ABNORMAL_CLOSE ) {
-					assert (!remote);
+					assert ( !remote );
 					readystate = READYSTATE.CLOSING;
 					flushAndClose( code, message, false );
 					return;
@@ -438,12 +435,10 @@ public class WebSocketImpl implements WebSocket {
 	}
 
 	/**
-	 * 
-	 * @param remote
-	 *            Indicates who "generated" <code>code</code>.<br>
-	 *            <code>true</code> means that this endpoint received the <code>code</code> from the other endpoint.<br>
-	 *            false means this endpoint decided to send the given code,<br>
-	 *            <code>remote</code> may also be true if this endpoint started the closing handshake since the other endpoint may not simply echo the <code>code</code> but close the connection the same time this endpoint does do but with an other <code>code</code>. <br>
+	 * @param remote Indicates who "generated" <code>code</code>.<br>
+	 *               <code>true</code> means that this endpoint received the <code>code</code> from the other endpoint.<br>
+	 *               false means this endpoint decided to send the given code,<br>
+	 *               <code>remote</code> may also be true if this endpoint started the closing handshake since the other endpoint may not simply echo the <code>code</code> but close the connection the same time this endpoint does do but with an other <code>code</code>. <br>
 	 **/
 
 	protected synchronized void closeConnection( int code, String message, boolean remote ) {
@@ -539,6 +534,7 @@ public class WebSocketImpl implements WebSocket {
 
 	/**
 	 * Send Text data to the other end.
+	 *
 	 * @throws NotYetConnectedException websocket is not yet connected
 	 */
 	@Override
@@ -555,14 +551,14 @@ public class WebSocketImpl implements WebSocket {
 	 * @throws NotYetConnectedException websocket is not yet connected
 	 */
 	@Override
-	public void send( ByteBuffer bytes ) throws IllegalArgumentException , WebsocketNotConnectedException {
+	public void send( ByteBuffer bytes ) throws IllegalArgumentException, WebsocketNotConnectedException {
 		if( bytes == null )
 			throw new IllegalArgumentException( "Cannot send 'null' data to a WebSocketImpl." );
 		send( draft.createFrames( bytes, role == Role.CLIENT ) );
 	}
 
 	@Override
-	public void send( byte[] bytes ) throws IllegalArgumentException , WebsocketNotConnectedException {
+	public void send( byte[] bytes ) throws IllegalArgumentException, WebsocketNotConnectedException {
 		send( ByteBuffer.wrap( bytes ) );
 	}
 
@@ -600,7 +596,7 @@ public class WebSocketImpl implements WebSocket {
 		} else {
 
 			for( int flash_policy_index = 0 ; request.hasRemaining() ; flash_policy_index++ ) {
-				if( Draft.FLASH_POLICY_REQUEST[ flash_policy_index ] != request.get() ) {
+				if( Draft.FLASH_POLICY_REQUEST[flash_policy_index] != request.get() ) {
 					request.reset();
 					return HandshakeState.NOT_MATCHED;
 				}
@@ -616,8 +612,8 @@ public class WebSocketImpl implements WebSocket {
 		this.handshakerequest = draft.postProcessHandshakeRequestAsClient( handshakedata );
 
 		resourceDescriptor = handshakedata.getResourceDescriptor();
-		assert( resourceDescriptor != null );
-		
+		assert ( resourceDescriptor != null );
+
 		// Notify Listener
 		try {
 			wsl.onWebsocketHandshakeSentAsClient( this, this.handshakerequest );
@@ -667,13 +663,13 @@ public class WebSocketImpl implements WebSocket {
 
 	@Override
 	public boolean isConnecting() {
-		assert (!flushandclosestate || readystate == READYSTATE.CONNECTING);
+		assert ( !flushandclosestate || readystate == READYSTATE.CONNECTING );
 		return readystate == READYSTATE.CONNECTING; // ifflushandclosestate
 	}
 
 	@Override
 	public boolean isOpen() {
-		assert (readystate != READYSTATE.OPEN || !flushandclosestate);
+		assert ( readystate != READYSTATE.OPEN || !flushandclosestate );
 		return readystate == READYSTATE.OPEN;
 	}
 
