@@ -235,55 +235,57 @@ public class Draft_10 extends Draft {
 
     @Override
     public List<Framedata> translateFrame(ByteBuffer buffer) throws LimitExedeedException, InvalidDataException {
-        List<Framedata> frames = new LinkedList<Framedata>();
-        Framedata cur;
+        while (true) {
+            List<Framedata> frames = new LinkedList<Framedata>();
+            Framedata cur;
 
-        if (incompleteframe != null) {
-            // complete an incomplete frame
-            try {
-                buffer.mark();
-                int available_next_byte_count = buffer.remaining();// The number of bytes received
-                int expected_next_byte_count = incompleteframe.remaining();// The number of bytes to complete the incomplete frame
+            if (incompleteframe != null) {
+                // complete an incomplete frame
+                try {
+                    buffer.mark();
+                    int available_next_byte_count = buffer.remaining();// The number of bytes received
+                    int expected_next_byte_count = incompleteframe.remaining();// The number of bytes to complete the incomplete frame
 
-                if (expected_next_byte_count > available_next_byte_count) {
-                    // did not receive enough bytes to complete the frame
-                    incompleteframe.put(buffer.array(), buffer.position(), available_next_byte_count);
-                    buffer.position(buffer.position() + available_next_byte_count);
-                    return Collections.emptyList();
+                    if (expected_next_byte_count > available_next_byte_count) {
+                        // did not receive enough bytes to complete the frame
+                        incompleteframe.put(buffer.array(), buffer.position(), available_next_byte_count);
+                        buffer.position(buffer.position() + available_next_byte_count);
+                        return Collections.emptyList();
+                    }
+                    incompleteframe.put(buffer.array(), buffer.position(), expected_next_byte_count);
+                    buffer.position(buffer.position() + expected_next_byte_count);
+
+                    cur = translateSingleFrame((ByteBuffer) incompleteframe.duplicate().position(0));
+                    frames.add(cur);
+                    incompleteframe = null;
+                } catch (IncompleteException e) {
+                    // extending as much as suggested
+                    int oldsize = incompleteframe.limit();
+                    ByteBuffer extendedframe = ByteBuffer.allocate(checkAlloc(e.getPreferedSize()));
+                    assert (extendedframe.limit() > incompleteframe.limit());
+                    incompleteframe.rewind();
+                    extendedframe.put(incompleteframe);
+                    incompleteframe = extendedframe;
+                    continue;
                 }
-                incompleteframe.put(buffer.array(), buffer.position(), expected_next_byte_count);
-                buffer.position(buffer.position() + expected_next_byte_count);
-
-                cur = translateSingleFrame((ByteBuffer) incompleteframe.duplicate().position(0));
-                frames.add(cur);
-                incompleteframe = null;
-            } catch (IncompleteException e) {
-                // extending as much as suggested
-                int oldsize = incompleteframe.limit();
-                ByteBuffer extendedframe = ByteBuffer.allocate(checkAlloc(e.getPreferedSize()));
-                assert (extendedframe.limit() > incompleteframe.limit());
-                incompleteframe.rewind();
-                extendedframe.put(incompleteframe);
-                incompleteframe = extendedframe;
-                return translateFrame(buffer);
             }
-        }
 
-        while (buffer.hasRemaining()) {// Read as much as possible full frames
-            buffer.mark();
-            try {
-                cur = translateSingleFrame(buffer);
-                frames.add(cur);
-            } catch (IncompleteException e) {
-                // remember the incomplete data
-                buffer.reset();
-                int pref = e.getPreferedSize();
-                incompleteframe = ByteBuffer.allocate(checkAlloc(pref));
-                incompleteframe.put(buffer);
-                break;
+            while (buffer.hasRemaining()) {// Read as much as possible full frames
+                buffer.mark();
+                try {
+                    cur = translateSingleFrame(buffer);
+                    frames.add(cur);
+                } catch (IncompleteException e) {
+                    // remember the incomplete data
+                    buffer.reset();
+                    int pref = e.getPreferedSize();
+                    incompleteframe = ByteBuffer.allocate(checkAlloc(pref));
+                    incompleteframe.put(buffer);
+                    break;
+                }
             }
+            return frames;
         }
-        return frames;
     }
 
     public Framedata translateSingleFrame(ByteBuffer buffer) throws IncompleteException, InvalidDataException {
