@@ -20,7 +20,7 @@ Implemented WebSocket protocol versions are:
 
 
 ## Build
-You can build using Ant or Leiningen but there is nothing against just putting the source path ```src/main/java ``` on your applications buildpath.
+You can build using Ant, Maven or Leiningen but there is nothing against just putting the source path ```src/main/java ``` on your applications buildpath.
 
 ### Ant
 
@@ -32,6 +32,22 @@ will create the javadoc of this library at ```doc/``` and build the library itse
 
 The ant targets are: ```compile```, ```jar```, ```doc``` and ```clean```
 
+### Maven
+To use maven add this repository to your pom.xml:
+```xml
+<repository>
+  <id>clojars.org</id>
+  <url>http://clojars.org/repo</url>
+</repository>
+```
+Also add this dependency to your pom.xml:
+```xml
+<dependency>
+    <groupId>org.java-websocket</groupId>
+    <artifactId>Java-WebSocket</artifactId>
+    <version>1.3.0</version>
+</dependency> 
+```
 
 ### Leiningen
 
