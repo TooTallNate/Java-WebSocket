@@ -1,6 +1,7 @@
-[![Build Status](https://travis-ci.org/marci4/Java-WebSocket-Dev.svg?branch=master)](https://travis-ci.org/marci4/Java-WebSocket-Dev) [![Clojars Project](https://img.shields.io/clojars/v/org.java-websocket/java-websocket.svg)](https://clojars.org/org.java-websocket/java-websocket)
 Java WebSockets
 ===============
+[![Build Status](https://travis-ci.org/marci4/Java-WebSocket-Dev.svg?branch=master)](https://travis-ci.org/marci4/Java-WebSocket-Dev) [![Clojars Project](https://img.shields.io/clojars/v/org.java-websocket/java-websocket.svg)](https://clojars.org/org.java-websocket/java-websocket)
+
 
 This repository contains a barebones WebSocket server and client implementation
 written in 100% Java. The underlying classes are implemented `java.nio`, which allows for a
@@ -18,7 +19,7 @@ Implemented WebSocket protocol versions are:
 [Here](https://github.com/TooTallNate/Java-WebSocket/wiki/Drafts) some more details about protocol versions/drafts. 
 
 
-##Build
+## Build
 You can build using Ant or Leiningen but there is nothing against just putting the source path ```src/main/java ``` on your applications buildpath.
 
 ### Ant
