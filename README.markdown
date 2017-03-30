@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/marci4/Java-WebSocket-Dev.svg?branch=master)](https://travis-ci.org/marci4/Java-WebSocket-Dev)
+[![Build Status](https://travis-ci.org/marci4/Java-WebSocket-Dev.svg?branch=master)](https://travis-ci.org/marci4/Java-WebSocket-Dev) [![Clojars Project](https://img.shields.io/clojars/v/org.java-websocket/java-websocket.svg)](https://clojars.org/org.java-websocket/java-websocket)
 Java WebSockets
 ===============
 

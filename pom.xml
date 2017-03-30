@@ -1,132 +1,84 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <parent>
-        <groupId>org.sonatype.oss</groupId>
-        <artifactId>oss-parent</artifactId>
-        <version>7</version>
-    </parent>
-    <scm>
-        <connection>scm:git:git@github.com:TooTallNate/Java-WebSocket.git</connection>
-        <developerConnection>scm:git:git@github.com:TooTallNate/Java-WebSocket.git</developerConnection>
-        <url>git@github.com:TooTallNate/Java-WebSocket.git</url>
-    </scm>
-    <modelVersion>4.0.0</modelVersion>
-    <groupId>org.java-websocket</groupId>
-    <artifactId>Java-WebSocket</artifactId>
-    <version>1.3.1</version>
-    <packaging>jar</packaging>
-    <name>Java WebSocket</name>
-    <url>http://java-websocket.org/</url>
-    <description>A barebones WebSocket client and server implementation written in 100% Java</description>
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>1.6</java.version>
-	<cucumber.version>1.0.2</cucumber.version>
-    </properties>
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.5.1</version>
-                <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>2.2.1</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.9</version>
-                <executions>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
-    <dependencies>
-        <!-- JUnit -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.10</version>
-            <scope>test</scope>
-        </dependency>
-        <!-- Cucumber -->
-        <dependency>
-            <groupId>info.cukes</groupId>
-            <artifactId>cucumber-junit</artifactId>
-            <version>1.0.2</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>info.cukes</groupId>
-            <artifactId>cucumber-java</artifactId>
-            <version>${cucumber.version}</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
-    <developers>
-        <developer>
-            <id>TooTallNate</id>
-            <name>Nathan Rajlich</name>
-            <email>nathan@tootallnate.net</email>
-            <url>https://github.com/TooTallNate</url>
-            <roles>
-                <role>founder</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>Davidiusdadi</id>
-            <name>David Rohmer</name>
-            <email>rohmer.david@gmail.com</email>
-            <url>https://github.com/Davidiusdadi</url>
-            <roles>
-                <role>maintainer</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>marci4</id>
-            <name>Marcel Prestel</name>
-            <email>admin@marci4.de</email>
-            <url>https://github.com/marci4</url>
-            <roles>
-                <role>maintainer</role>
-            </roles>
-        </developer>
-    </developers>
-    <licenses>
-        <license>
-            <name>MIT License</name>
-            <url>http://github.com/TooTallNate/Java-WebSocket/blob/master/LICENSE</url>
-        </license>
-    </licenses>
-    <profiles>                                                                                                                      
-      <profile>                                                                                                                     
-        <id>release-sign-artifacts</id>                                                                                             
-        <activation>                                                                                                                
-          <property><name>performRelease</name><value>true</value></property>                                                       
-        </activation>                                                                                                               
-        <build>
-        </build>                                                                                                                    
-      </profile>                                                                                                                    
-    </profiles>     
+<?xml version="1.0" encoding="UTF-8"?><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.java-websocket</groupId>
+  <artifactId>java-websocket</artifactId>
+  <packaging>jar</packaging>
+  <version>1.3.2</version>
+  <name>java-websocket</name>
+  <description>A barebones WebSocket client and server implementation written 100% in Java</description>
+  <url>http://java-websocket.org/</url>
+  <licenses>
+    <license>
+      <name>MIT License</name>
+      <url>https://github.com/TooTallNate/Java-WebSocket/blob/master/LICENSE</url>
+    </license>
+  </licenses>
+  <scm>
+    <url>https://github.com/TooTallNate/Java-WebSocket</url>
+  </scm>
+  <build>
+    <sourceDirectory>src\main\java</sourceDirectory>
+    <testSourceDirectory>test</testSourceDirectory>
+    <resources>
+      <resource>
+        <directory>resources</directory>
+      </resource>
+    </resources>
+    <testResources>
+      <testResource>
+        <directory>resources</directory>
+      </testResource>
+    </testResources>
+    <directory>target</directory>
+    <outputDirectory>target\classes</outputDirectory>
+    <plugins/>
+  </build>
+  <repositories>
+    <repository>
+      <id>central</id>
+      <url>https://repo1.maven.org/maven2/</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+    </repository>
+    <repository>
+      <id>clojars</id>
+      <url>https://clojars.org/repo/</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+    </repository>
+  </repositories>
+  <dependencyManagement>
+    <dependencies/>
+  </dependencyManagement>
+  <dependencies/>
+  <developers>
+    <developer>
+      <name>Nathan Rajlich</name>
+      <url>https://github.com/TooTallNate</url>
+      <email>nathan@tootallnate.net</email>
+    </developer>
+    <developer>
+      <name>David Rohmer</name>
+      <url>https://github.com/Davidiusdadi</url>
+      <email>rohmer.david@gmail.com</email>
+    </developer>
+    <developer>
+      <name>Marcel Prestel</name>
+      <url>https://github.com/marci4</url>
+      <email>admin@marci4.de</email>
+    </developer>
+  </developers>
 </project>
+
+<!-- This file was autogenerated by Leiningen.
+  Please do not edit it directly; instead edit project.clj and regenerate it.
+  It should not be considered canonical data. For more information see
+  https://github.com/technomancy/leiningen -->

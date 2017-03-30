@@ -1,4 +1,4 @@
-(defproject org.java-websocket/java-websocket "1.3.1"
+(defproject org.java-websocket/java-websocket "1.3.2"
   :description "A barebones WebSocket client and server implementation written 100% in Java"
   :url "http://java-websocket.org/"
   :scm {:name "git"
@@ -6,9 +6,12 @@
   :license {:name "MIT License"
             :url "https://github.com/TooTallNate/Java-WebSocket/blob/master/LICENSE"}
   :source-paths []
+  :omit-source true
   :java-source-paths ["src/main/java"]
   :javac-options ["-target" "1.6" "-source" "1.6" "-Xlint:-options"]
-  :deploy-repositories [["clojars" {:sign-releases false}]]
+  :signing {:gpg-key "7A9D8E91"}
+  :deploy-repositories  [["releases" :clojars]
+                        ["snapshots" :clojars]]
   :pom-addition [:developers [:developer
                                [:name "Nathan Rajlich"]
                                [:url "https://github.com/TooTallNate"]
