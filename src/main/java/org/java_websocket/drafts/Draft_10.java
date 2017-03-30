@@ -307,8 +307,7 @@ public class Draft_10 extends Draft {
             }
         }
 
-        if (payloadlength >= 0 && payloadlength <= 125) {
-        } else {
+        if (!(payloadlength >= 0 && payloadlength <= 125)) {
             if (optcode == Opcode.PING || optcode == Opcode.PONG || optcode == Opcode.CLOSING) {
                 throw new InvalidFrameException("more than 125 octets");
             }

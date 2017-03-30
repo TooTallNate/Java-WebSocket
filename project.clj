@@ -8,8 +8,7 @@
   :source-paths []
   :java-source-paths ["src/main/java"]
   :javac-options ["-target" "1.6" "-source" "1.6" "-Xlint:-options"]
-  :signing {:gpg-key "C8F8CC77"}
-  :deploy-repositories [["clojars" {:creds :gpg}]]
+  :deploy-repositories [["clojars" {:sign-releases false}]]
   :pom-addition [:developers [:developer
                                [:name "Nathan Rajlich"]
                                [:url "https://github.com/TooTallNate"]
