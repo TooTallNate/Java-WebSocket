@@ -20,7 +20,7 @@ Implemented WebSocket protocol versions are:
 
 
 ## Build
-You can build using Ant, Maven or Leiningen but there is nothing against just putting the source path ```src/main/java ``` on your applications buildpath.
+You can build using Ant, Maven, Gradle or Leiningen but there is nothing against just putting the source path ```src/main/java ``` on your applications buildpath.
 
 ### Ant
 
@@ -49,10 +49,21 @@ Also add this dependency to your pom.xml:
 </dependency> 
 ```
 
+### Gradle
+To use Gradle add this repository to your repositories list :
+```xml
+maven { url "http://clojars.org/repo" }
+```
+Then you can just add the latest version to your build.
+```xml
+compile "org.java-websocket:java-websocket:1.3.2"
+```
+
+
 ### Leiningen
 
 ``` bash
-lein compile
+[org.java-websocket/java-websocket "1.3.2"]
 ```
 
 Running the Examples
