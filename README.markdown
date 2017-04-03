@@ -43,10 +43,10 @@ To use maven add this repository to your pom.xml:
 Also add this dependency to your pom.xml:
 ```xml
 <dependency>
-    <groupId>org.java-websocket</groupId>
-    <artifactId>Java-WebSocket</artifactId>
-    <version>1.3.0</version>
-</dependency> 
+  <groupId>org.java-websocket</groupId>
+  <artifactId>java-websocket</artifactId>
+  <version>1.3.2</version>
+</dependency>
 ```
 
 ### Gradle
