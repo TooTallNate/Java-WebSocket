@@ -184,6 +184,18 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	public void start() {
 		if( selectorthread != null )
 			throw new IllegalStateException( getClass().getName() + " can only be started once." );
+		try {
+			server = ServerSocketChannel.open();
+			server.configureBlocking( false );
+			ServerSocket socket = server.socket();
+			socket.setReceiveBufferSize( WebSocketImpl.RCVBUF );
+			socket.bind( address );
+			selector = Selector.open();
+			server.register( selector, server.validOps() );
+		} catch ( IOException ex ) {
+			handleFatal( null, ex );
+			return;
+		}
 		new Thread( this ).start();
 	}
 
@@ -272,18 +284,6 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 			}
 		}
 		selectorthread.setName( "WebsocketSelector" + selectorthread.getId() );
-		try {
-			server = ServerSocketChannel.open();
-			server.configureBlocking( false );
-			ServerSocket socket = server.socket();
-			socket.setReceiveBufferSize( WebSocketImpl.RCVBUF );
-			socket.bind( address );
-			selector = Selector.open();
-			server.register( selector, server.validOps() );
-		} catch ( IOException ex ) {
-			handleFatal( null, ex );
-			return;
-		}
 		try {
 			while ( !selectorthread.isInterrupted() ) {
 				SelectionKey key = null;
