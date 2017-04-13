@@ -2,17 +2,15 @@ package org.java_websocket.drafts;
 
 import org.java_websocket.WebSocket.Role;
 import org.java_websocket.exceptions.*;
-import org.java_websocket.framing.CloseFrameBuilder;
-import org.java_websocket.framing.FrameBuilder;
-import org.java_websocket.framing.Framedata;
+import org.java_websocket.framing.*;
 import org.java_websocket.framing.Framedata.Opcode;
-import org.java_websocket.framing.FramedataImpl1;
 import org.java_websocket.handshake.*;
 import org.java_websocket.util.Base64;
 import org.java_websocket.util.Charsetfunctions;
 
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
@@ -368,6 +366,11 @@ public class Draft_10 extends Draft {
         }
         payload.flip();
         frame.setPayload(payload);
+        if (optcode == Opcode.TEXT) {
+            if (!Charsetfunctions.isValidUTF8(frame.getPayloadData())) {
+                throw new InvalidDataException(CloseFrame.NO_UTF8);
+            }
+        }
         return frame;
     }
 

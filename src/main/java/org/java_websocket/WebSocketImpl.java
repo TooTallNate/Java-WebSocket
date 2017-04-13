@@ -78,7 +78,7 @@ public class WebSocketImpl implements WebSocket {
 
 	private Role role;
 
-	private Opcode current_continuous_frame_opcode = null;
+	private Framedata current_continuous_frame = null;
 
 	/**
 	 * the bytes of an incomplete received handshake
@@ -316,7 +316,6 @@ public class WebSocketImpl implements WebSocket {
 					System.out.println( "matched frame: " + f );
 				Opcode curop = f.getOpcode();
 				boolean fin = f.isFin();
-
 				//Not evaluating any further frames if the connection is in READYSTATE CLOSE
 				if( readystate == READYSTATE.CLOSING )
 					return;
@@ -348,15 +347,39 @@ public class WebSocketImpl implements WebSocket {
 					continue;
 				} else if( !fin || curop == Opcode.CONTINUOUS ) {
 					if( curop != Opcode.CONTINUOUS ) {
-						if( current_continuous_frame_opcode != null )
+						if( current_continuous_frame != null )
 							throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "Previous continuous frame sequence not completed." );
-						current_continuous_frame_opcode = curop;
+						current_continuous_frame = f;
 					} else if( fin ) {
-						if( current_continuous_frame_opcode == null )
+						if( current_continuous_frame == null )
 							throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "Continuous frame sequence was not started." );
-						current_continuous_frame_opcode = null;
-					} else if( current_continuous_frame_opcode == null ) {
+						//Check if the whole payload is valid utf8, when the opcode indicates a text
+						if( current_continuous_frame.getOpcode() == Opcode.TEXT ) {
+							//Checking a bit more from the frame before this one just to make sure all the code points are correct
+							int off = Math.max( current_continuous_frame.getPayloadData().limit() - 64, 0 );
+							current_continuous_frame.append( f );
+							if( !Charsetfunctions.isValidUTF8( current_continuous_frame.getPayloadData(), off ) ) {
+								throw new InvalidDataException( CloseFrame.NO_UTF8 );
+							}
+						}
+						current_continuous_frame = null;
+					} else if( current_continuous_frame == null ) {
 						throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "Continuous frame sequence was not started." );
+					}
+					//Check if the whole payload is valid utf8, when the opcode indicates a text
+					if( curop == Opcode.TEXT ) {
+						if( !Charsetfunctions.isValidUTF8( f.getPayloadData() ) ) {
+							throw new InvalidDataException( CloseFrame.NO_UTF8 );
+						}
+					}
+					//Checking if the current continous frame contains a correct payload with the other frames combined
+					if( curop == Opcode.CONTINUOUS && current_continuous_frame != null && current_continuous_frame.getOpcode() == Opcode.TEXT ) {
+						//Checking a bit more from the frame before this one just to make sure all the code points are correct
+						int off = Math.max( current_continuous_frame.getPayloadData().limit() - 64, 0 );
+						current_continuous_frame.append( f );
+						if( !Charsetfunctions.isValidUTF8( current_continuous_frame.getPayloadData(), off ) ) {
+							throw new InvalidDataException( CloseFrame.NO_UTF8 );
+						}
 					}
 					try {
 						wsl.onWebsocketMessageFragment( this, f );
@@ -364,7 +387,7 @@ public class WebSocketImpl implements WebSocket {
 						wsl.onWebsocketError( this, e );
 					}
 
-				} else if( current_continuous_frame_opcode != null ) {
+				} else if( current_continuous_frame != null ) {
 					throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "Continuous frame sequence not completed." );
 				} else if( curop == Opcode.TEXT ) {
 					try {
@@ -595,7 +618,7 @@ public class WebSocketImpl implements WebSocket {
 			throw new IncompleteHandshakeException( Draft.FLASH_POLICY_REQUEST.length );
 		} else {
 
-			for( int flash_policy_index = 0 ; request.hasRemaining() ; flash_policy_index++ ) {
+			for( int flash_policy_index = 0; request.hasRemaining(); flash_policy_index++ ) {
 				if( Draft.FLASH_POLICY_REQUEST[flash_policy_index] != request.get() ) {
 					request.reset();
 					return HandshakeState.NOT_MATCHED;
