@@ -101,6 +101,14 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	}
 
 	/**
+	 * Returns the socket to allow Hostname Verification
+	 * @return the socket used for this connection
+	 */
+	public Socket getSocket() {
+		return socket;
+	}
+
+	/**
 	 * Initiates the websocket connection. This method does not block.
 	 */
 	public void connect() {
