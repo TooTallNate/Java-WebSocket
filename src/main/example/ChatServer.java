@@ -76,6 +76,11 @@ public class ChatServer extends WebSocketServer {
 		}
 	}
 
+	@Override
+	public void onStart() {
+		System.out.println("Server started!");
+	}
+
 	/**
 	 * Sends <var>text</var> to all currently connected WebSocket clients.
 	 * 

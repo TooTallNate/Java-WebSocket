@@ -280,6 +280,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 			socket.bind( address );
 			selector = Selector.open();
 			server.register( selector, server.validOps() );
+			onStart();
 		} catch ( IOException ex ) {
 			handleFatal( null, ex );
 			return;
@@ -684,6 +685,14 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 *            Can be null if there error does not belong to one specific websocket. For example if the servers port could not be bound.
 	 **/
 	public abstract void onError( WebSocket conn, Exception ex );
+
+	/**
+	 * Called when the server started up successfully.
+	 *
+	 * If any error occured, onError is called instead.
+	 */
+	public abstract void onStart();
+
 	/**
 	 * Callback for binary messages received from the remote host
 	 * 
