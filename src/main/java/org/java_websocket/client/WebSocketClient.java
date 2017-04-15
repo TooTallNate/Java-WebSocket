@@ -271,8 +271,8 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 */
 	@Override
 	public final void onWebsocketOpen( WebSocket conn, Handshakedata handshake ) {
-		connectLatch.countDown();
 		onOpen( (ServerHandshake) handshake );
+		connectLatch.countDown();
 	}
 
 	/**
@@ -280,8 +280,6 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 */
 	@Override
 	public final void onWebsocketClose( WebSocket conn, int code, String reason, boolean remote ) {
-		connectLatch.countDown();
-		closeLatch.countDown();
 		if( writeThread != null )
 			writeThread.interrupt();
 		try {
@@ -291,6 +289,8 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			onWebsocketError( this, e );
 		}
 		onClose( code, reason, remote );
+		connectLatch.countDown();
+		closeLatch.countDown();
 	}
 
 	/**
