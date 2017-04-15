@@ -43,6 +43,11 @@ public class AutobahnServerTest extends WebSocketServer {
 	}
 
 	@Override
+	public void onStart() {
+		System.out.println( "Server started!" );
+	}
+
+	@Override
 	public void onMessage( WebSocket conn, String message ) {
 		conn.send( message );
 	}

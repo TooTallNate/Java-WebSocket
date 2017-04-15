@@ -53,7 +53,6 @@ public class Draft_10 extends Draft {
     }
 
     private ByteBuffer incompleteframe;
-    private Framedata fragmentedframe = null;
 
     private final Random reuseableRandom = new Random();
 

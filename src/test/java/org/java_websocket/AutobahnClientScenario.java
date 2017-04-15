@@ -50,6 +50,11 @@ public class AutobahnClientScenario {
 			//throw new UnsupportedOperationException("Not supported yet.");
 		}
 
+		@Override
+		public void onStart() {
+
+		}
+
 	}
 
 	private class AutobahnClient extends WebSocketClient {
