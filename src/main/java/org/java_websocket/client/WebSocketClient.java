@@ -10,6 +10,8 @@ import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.NotYetConnectedException;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.CountDownLatch;
 
 import org.java_websocket.WebSocket;
@@ -31,7 +33,8 @@ import org.java_websocket.handshake.ServerHandshake;
  */
 public abstract class WebSocketClient extends WebSocketAdapter implements Runnable, WebSocket {
 
-	/**
+    private static final String PINGPONG_ERROR_MESSAGE = "No ping received after specified timeout: %s seconds";
+    /**
 	 * The URI this channel is supposed to connect to.
 	 */
 	protected URI uri = null;
@@ -58,7 +61,12 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
 	private int connectTimeout = 0;
 
-	/** This open a websocket connection as specified by rfc6455 */
+    private Timer pingTimer;
+    private int pingTimeoutInSeconds = -1;
+    private boolean isPingTimeoutEnabled = false;
+    private TimerTask pingTimeoutTask;
+
+    /** This open a websocket connection as specified by rfc6455 */
 	public WebSocketClient( URI serverURI ) {
 		this( serverURI, new Draft_17() );
 	}
@@ -265,6 +273,58 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	public void onWebsocketMessageFragment( WebSocket conn, Framedata frame ) {
 		onFragment( frame );
 	}
+
+
+    @Override
+    public void onWebsocketPing(WebSocket conn, Framedata f) {
+        super.onWebsocketPing(conn, f);
+        if (isPingTimeoutEnabled) {
+            startPingTimer();
+        }
+    }
+
+    /**
+     * Enables the ping timeout.
+     *
+     * @param pingTimeout
+     */
+    public void enablePingTimer(int pingTimeout) {
+        if (!isPingTimeoutEnabled) {
+            this.pingTimeoutInSeconds = pingTimeout;
+            this.isPingTimeoutEnabled = true;
+        }
+    }
+
+    /**
+     * Disables the ping/pong timeout.
+     */
+    public void disablePingTimer() {
+        cancelPingTimer();
+        this.isPingTimeoutEnabled = false;
+        this.pingTimeoutInSeconds = -1;
+    }
+    private void startPingTimer() {
+        cancelPingTimer();
+        pingTimer = new Timer();
+        pingTimeoutTask = new TimerTask() {
+            @Override
+            public void run() {
+                onError(new RuntimeException(String.format(PINGPONG_ERROR_MESSAGE, pingTimeoutInSeconds)));
+            }
+        };
+        pingTimer.schedule(pingTimeoutTask, pingTimeoutInSeconds * 1000);
+    }
+    private void cancelPingTimer() {
+        if (pingTimer != null) {
+            pingTimer.cancel();
+            pingTimer = null;
+        }
+        if (pingTimeoutTask != null)  {
+            pingTimeoutTask.cancel();
+            pingTimeoutTask = null;
+        }
+    }
+
 
 	/**
 	 * Calls subclass' implementation of <var>onOpen</var>.
