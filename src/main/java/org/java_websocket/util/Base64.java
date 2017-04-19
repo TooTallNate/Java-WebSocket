@@ -1113,21 +1113,13 @@ public class Base64
      *
      * @param source The Base64 encoded data
      * @return decoded data
+     * @throws java.io.IOException If bogus characters exist in source data
      * @since 2.3.1
      */
-    public static byte[] decode( byte[] source )
-    throws java.io.IOException {
-        byte[] decoded;
-//        try {
-            decoded = decode( source, 0, source.length, Base64.NO_OPTIONS );
-//        } catch( java.io.IOException ex ) {
-//            assert false : "IOExceptions only come from GZipping, which is turned off: " + ex.getMessage();
-//        }
-        return decoded;
+    public static byte[] decode( byte[] source ) throws java.io.IOException {
+        return decode( source, 0, source.length, Base64.NO_OPTIONS );
     }
 
-    
-    
     /**
      * Low-level access to decoding ASCII characters in
      * the form of a byte array. <strong>Ignores GUNZIP option, if

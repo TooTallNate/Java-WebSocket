@@ -1,12 +1,12 @@
 <project default="all">
-
 	<target name="all" depends="doc,jar" />
 
 	<target name="compile">
 		<mkdir dir="build/classes" />
 		<mkdir dir="build/examples" />
 		<javac includeantruntime="false" debug="on" srcdir="src/main/java"
-			destdir="build/classes" target="1.6" />
+			destdir="build/classes" target="1.6" source="1.6">
+		</javac>
 		<javac includeantruntime="false" srcdir="src/main/example/"
 			classpath="build/classes" destdir="build/examples" />
 	</target>

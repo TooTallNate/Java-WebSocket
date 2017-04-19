@@ -20,7 +20,7 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 
 	/**
 	 * This default implementation does not do anything. Go ahead and overwrite it.
-	 * 
+	 *
 	 * @see org.java_websocket.WebSocketListener#onWebsocketHandshakeReceivedAsServer(WebSocket, Draft, ClientHandshake)
 	 */
 	@Override
@@ -34,7 +34,7 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 
 	/**
 	 * This default implementation does not do anything which will cause the connections to always progress.
-	 * 
+	 *
 	 * @see org.java_websocket.WebSocketListener#onWebsocketHandshakeSentAsClient(WebSocket, ClientHandshake)
 	 */
 	@Override
@@ -43,7 +43,7 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 
 	/**
 	 * This default implementation does not do anything. Go ahead and overwrite it
-	 * 
+	 *
 	 * @see org.java_websocket.WebSocketListener#onWebsocketMessageFragment(WebSocket, Framedata)
 	 */
 	@Override
@@ -53,7 +53,7 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	/**
 	 * This default implementation will send a pong in response to the received ping.
 	 * The pong frame will have the same payload as the ping frame.
-	 * 
+	 *
 	 * @see org.java_websocket.WebSocketListener#onWebsocketPing(WebSocket, Framedata)
 	 */
 	@Override
@@ -65,7 +65,7 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 
 	/**
 	 * This default implementation does not do anything. Go ahead and overwrite it.
-	 * 
+	 *
 	 * @see org.java_websocket.WebSocketListener#onWebsocketPong(WebSocket, Framedata)
 	 */
 	@Override

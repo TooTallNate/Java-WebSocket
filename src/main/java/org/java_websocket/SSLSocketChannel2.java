@@ -1,7 +1,7 @@
-/**
- * Copyright (C) 2003 Alexander Kout
- * Originally from the jFxp project (http://jfxp.sourceforge.net/).
- * Copied with permission June 11, 2012 by Femi Omojola (fomojola@ideasynthesis.com).
+/*
+  Copyright (C) 2003 Alexander Kout
+  Originally from the jFxp project (http://jfxp.sourceforge.net/).
+  Copied with permission June 11, 2012 by Femi Omojola (fomojola@ideasynthesis.com).
  */
 package org.java_websocket;
 

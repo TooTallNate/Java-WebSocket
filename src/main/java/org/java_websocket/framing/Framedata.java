@@ -5,6 +5,9 @@ import java.nio.ByteBuffer;
 import org.java_websocket.exceptions.InvalidFrameException;
 
 public interface Framedata {
+	/**
+	 * Enum which contains the different valid opcodes
+	 */
 	public enum Opcode {
 		CONTINUOUS, TEXT, BINARY, PING, PONG, CLOSING
 		// more to come
