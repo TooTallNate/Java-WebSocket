@@ -97,7 +97,10 @@ public class WebSocketImpl implements WebSocket {
 	private String resourceDescriptor = null;
 
 	/**
-	 * creates a websocket with server role
+	 * Creates a websocket with server role
+	 *
+	 * @param listener The listener for this instance
+	 * @param drafts The drafts which should be used
 	 */
 	public WebSocketImpl( WebSocketListener listener, List<Draft> drafts ) {
 		this( listener, ( Draft ) null );
@@ -113,7 +116,8 @@ public class WebSocketImpl implements WebSocket {
 	/**
 	 * creates a websocket with client role
 	 *
-	 * @param listener may be unbound
+	 * @param listener The listener for this instance
+	 * @param draft The draft which should be used
 	 */
 	public WebSocketImpl( WebSocketListener listener, Draft draft ) {
 		if( listener == null || ( draft == null && role == Role.SERVER ) )// socket can be null because we want do be able to create the object without already having a bound channel
@@ -137,7 +141,8 @@ public class WebSocketImpl implements WebSocket {
 	}
 
 	/**
-	 *
+	 * Method to decode the provided ByteBuffer
+	 * @param socketBuffer the ByteBuffer to decode
 	 */
 	public void decode( ByteBuffer socketBuffer ) {
 		assert ( socketBuffer.hasRemaining() );
@@ -458,12 +463,15 @@ public class WebSocketImpl implements WebSocket {
 	}
 
 	/**
+	 * This will close the connection immediately without a proper close handshake.
+	 * The code and the message therefore won't be transfered over the wire also they will be forwarded to onClose/onWebsocketClose.
+	 * @param code the closing code
+	 * @param message the closing message
 	 * @param remote Indicates who "generated" <code>code</code>.<br>
 	 *               <code>true</code> means that this endpoint received the <code>code</code> from the other endpoint.<br>
 	 *               false means this endpoint decided to send the given code,<br>
 	 *               <code>remote</code> may also be true if this endpoint started the closing handshake since the other endpoint may not simply echo the <code>code</code> but close the connection the same time this endpoint does do but with an other <code>code</code>. <br>
 	 **/
-
 	protected synchronized void closeConnection( int code, String message, boolean remote ) {
 		if( readystate == READYSTATE.CLOSED ) {
 			return;

@@ -59,7 +59,7 @@ public class AbstractWrappedByteChannel implements WrappedByteChannel {
 	}
 
 	@Override
-	public int readMore( ByteBuffer dst ) throws SSLException {
+	public int readMore( ByteBuffer dst ) throws IOException {
 		return channel instanceof WrappedByteChannel ? ( (WrappedByteChannel) channel ).readMore( dst ) : 0;
 	}
 
