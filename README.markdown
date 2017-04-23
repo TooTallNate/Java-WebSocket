@@ -1,6 +1,7 @@
-[![Build Status](https://travis-ci.org/ck1125/Java-WebSocket.png?branch=master)](https://travis-ci.org/ck1125/Java-WebSocket)
 Java WebSockets
 ===============
+[![Build Status](https://travis-ci.org/marci4/Java-WebSocket-Dev.svg?branch=master)](https://travis-ci.org/marci4/Java-WebSocket-Dev) [![Clojars Project](https://img.shields.io/clojars/v/org.java-websocket/java-websocket.svg)](https://clojars.org/org.java-websocket/java-websocket)
+
 
 This repository contains a barebones WebSocket server and client implementation
 written in 100% Java. The underlying classes are implemented `java.nio`, which allows for a
@@ -18,28 +19,51 @@ Implemented WebSocket protocol versions are:
 [Here](https://github.com/TooTallNate/Java-WebSocket/wiki/Drafts) some more details about protocol versions/drafts. 
 
 
-##Build
-You can build using Ant or Maven but there is nothing against just putting the source path ```src/main/java ``` on your applications buildpath.
+## Build
+You can build using Ant, Maven, Gradle or Leiningen but there is nothing against just putting the source path ```src/main/java ``` on your applications buildpath.
 
-###Ant
+### Ant
 
 ``` bash
 ant 
 ```
 
-will create the javadoc of this library at ```doc/``` and build the library itself: ```dest/java_websocket.jar```
+will create the javadoc of this library at ```doc/``` and build the library itself: ```dist/java_websocket.jar```
 
 The ant targets are: ```compile```, ```jar```, ```doc``` and ```clean```
 
-###Maven
-
-To use maven just add this dependency to your pom.xml:
+### Maven
+To use maven add this repository to your pom.xml:
+```xml
+<repository>
+  <id>clojars.org</id>
+  <url>http://clojars.org/repo</url>
+</repository>
+```
+Also add this dependency to your pom.xml:
 ```xml
 <dependency>
-    <groupId>org.java-websocket</groupId>
-    <artifactId>Java-WebSocket</artifactId>
-    <version>1.3.0</version>
-</dependency> 
+  <groupId>org.java-websocket</groupId>
+  <artifactId>java-websocket</artifactId>
+  <version>1.3.2</version>
+</dependency>
+```
+
+### Gradle
+To use Gradle add this repository to your repositories list :
+```xml
+maven { url "http://clojars.org/repo" }
+```
+Then you can just add the latest version to your build.
+```xml
+compile "org.java-websocket:java-websocket:1.3.2"
+```
+
+
+### Leiningen
+
+``` bash
+[org.java-websocket/java-websocket "1.3.2"]
 ```
 
 Running the Examples

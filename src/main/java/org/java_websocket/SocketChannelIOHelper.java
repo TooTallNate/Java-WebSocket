@@ -3,7 +3,6 @@ package org.java_websocket;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
-import java.nio.channels.spi.AbstractSelectableChannel;
 
 import org.java_websocket.WebSocket.Role;
 
@@ -23,7 +22,11 @@ public class SocketChannelIOHelper {
 
 	/**
 	 * @see WrappedByteChannel#readMore(ByteBuffer)
-	 * @return returns whether there is more data left which can be obtained via {@link #readMore(ByteBuffer, WebSocketImpl, WrappedByteChannel)}
+	 * @param buf The ByteBuffer to read from
+	 * @param ws The WebSocketImpl associated with the channels
+	 * @param channel The channel to read from
+	 * @return returns Whether there is more data left which can be obtained via {@link WrappedByteChannel#readMore(ByteBuffer)}
+	 * @throws IOException May be thrown by {@link WrappedByteChannel#readMore(ByteBuffer)}#
 	 **/
 	public static boolean readMore( final ByteBuffer buf, WebSocketImpl ws, WrappedByteChannel channel ) throws IOException {
 		buf.clear();
@@ -37,7 +40,12 @@ public class SocketChannelIOHelper {
 		return channel.isNeedRead();
 	}
 
-	/** Returns whether the whole outQueue has been flushed */
+	/** Returns whether the whole outQueue has been flushed
+	 * @param ws The WebSocketImpl associated with the channels
+	 * @param sockchannel The channel to write to
+	 * @throws IOException May be thrown by {@link WrappedByteChannel#writeMore()}
+	 * @return returns Whether there is more data to write
+	 */
 	public static boolean batch( WebSocketImpl ws, ByteChannel sockchannel ) throws IOException {
 		ByteBuffer buffer = ws.outQueue.peek();
 		WrappedByteChannel c = null;
@@ -66,6 +74,6 @@ public class SocketChannelIOHelper {
 				ws.closeConnection();
 			}
 		}
-		return c != null ? !( (WrappedByteChannel) sockchannel ).isNeedWrite() : true;
+		return c == null || !((WrappedByteChannel) sockchannel).isNeedWrite();
 	}
 }

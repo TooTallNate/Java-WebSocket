@@ -1,10 +1,10 @@
 package org.java_websocket.framing;
 
-import java.nio.ByteBuffer;
-
 import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.exceptions.InvalidFrameException;
 import org.java_websocket.util.Charsetfunctions;
+
+import java.nio.ByteBuffer;
 
 public class CloseFrameBuilder extends FramedataImpl1 implements CloseFrame {
 
@@ -24,7 +24,7 @@ public class CloseFrameBuilder extends FramedataImpl1 implements CloseFrame {
 		setCodeAndMessage( code, "" );
 	}
 
-	public CloseFrameBuilder( int code , String m ) throws InvalidDataException {
+	public CloseFrameBuilder( int code, String m ) throws InvalidDataException {
 		super( Opcode.CLOSING );
 		setFin( true );
 		setCodeAndMessage( code, m );
@@ -44,6 +44,10 @@ public class CloseFrameBuilder extends FramedataImpl1 implements CloseFrame {
 				throw new InvalidDataException( PROTOCOL_ERROR, "A close frame must have a closecode if it has a reason" );
 			}
 			return;// empty payload
+		}
+		//Intentional check for code != CloseFrame.TLS_ERROR just to make sure even if the code earlier changes
+		if( ( code > CloseFrame.UNEXPECTED_CONDITION && code < 3000 && code != CloseFrame.TLS_ERROR ) ) {
+			throw new InvalidDataException( PROTOCOL_ERROR, "Trying to send an illegal close code!" );
 		}
 
 		byte[] by = Charsetfunctions.utf8Bytes( m );
@@ -113,6 +117,7 @@ public class CloseFrameBuilder extends FramedataImpl1 implements CloseFrame {
 		initCloseCode();
 		initMessage();
 	}
+
 	@Override
 	public ByteBuffer getPayloadData() {
 		if( code == NOCODE )

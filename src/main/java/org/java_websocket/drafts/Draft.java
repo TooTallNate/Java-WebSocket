@@ -31,17 +31,23 @@ import org.java_websocket.util.Charsetfunctions;
  **/
 public abstract class Draft {
 
+	/**
+	 * Enum which represents the states a handshake may be in
+	 */
 	public enum HandshakeState {
 		/** Handshake matched this Draft successfully */
 		MATCHED,
 		/** Handshake is does not match this Draft */
 		NOT_MATCHED
 	}
+	/**
+	 * Enum which represents type of handshake is required for a close
+	 */
 	public enum CloseHandshakeType {
 		NONE, ONEWAY, TWOWAY
 	}
 
-	public static int MAX_FAME_SIZE = 1000 * 1;
+	public static int MAX_FAME_SIZE = 1000;
 	public static int INITIAL_FAMESIZE = 64;
 
 	public static final byte[] FLASH_POLICY_REQUEST = Charsetfunctions.utf8Bytes( "<policy-file-request/>\0" );
@@ -129,7 +135,7 @@ public abstract class Draft {
 	public abstract List<Framedata> createFrames( String text, boolean mask );
 
 	public List<Framedata> continuousFrame( Opcode op, ByteBuffer buffer, boolean fin ) {
-		if( op != Opcode.BINARY && op != Opcode.TEXT && op != Opcode.TEXT ) {
+		if(op != Opcode.BINARY && op != Opcode.TEXT) {
 			throw new IllegalArgumentException( "Only Opcode.BINARY or  Opcode.TEXT are allowed" );
 		}
 
@@ -167,9 +173,9 @@ public abstract class Draft {
 			bui.append( ( (ClientHandshake) handshakedata ).getResourceDescriptor() );
 			bui.append( " HTTP/1.1" );
 		} else if( handshakedata instanceof ServerHandshake ) {
-			bui.append( "HTTP/1.1 101 " + ( (ServerHandshake) handshakedata ).getHttpStatusMessage() );
+			bui.append("HTTP/1.1 101 ").append(((ServerHandshake) handshakedata).getHttpStatusMessage());
 		} else {
-			throw new RuntimeException( "unknow role" );
+			throw new RuntimeException( "unknown role" );
 		}
 		bui.append( "\r\n" );
 		Iterator<String> it = handshakedata.iterateHttpFields();
@@ -204,7 +210,8 @@ public abstract class Draft {
 	/**
 	 * Drafts must only be by one websocket at all. To prevent drafts to be used more than once the Websocket implementation should call this method in order to create a new usable version of a given draft instance.<br>
 	 * The copy can be safely used in conjunction with a new websocket connection.
-	 * */
+	 * @return a copy of the draft
+	 */
 	public abstract Draft copyInstance();
 
 	public Handshakedata translateHandshake( ByteBuffer buf ) throws InvalidHandshakeException {

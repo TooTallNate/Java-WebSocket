@@ -65,10 +65,6 @@ public class ChatServer extends WebSocketServer {
 			if( in.equals( "exit" ) ) {
 				s.stop();
 				break;
-			} else if( in.equals( "restart" ) ) {
-				s.stop();
-				s.start();
-				break;
 			}
 		}
 	}
@@ -78,6 +74,11 @@ public class ChatServer extends WebSocketServer {
 		if( conn != null ) {
 			// some errors like port binding failed may not be assignable to a specific websocket
 		}
+	}
+
+	@Override
+	public void onStart() {
+		System.out.println("Server started!");
 	}
 
 	/**

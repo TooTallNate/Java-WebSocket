@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.exceptions.InvalidDataException;
+import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.handshake.Handshakedata;
@@ -85,6 +86,13 @@ public interface WebSocketListener {
 	 */
 	public void onWebsocketMessage( WebSocket conn, ByteBuffer blob );
 
+	/**
+	 * Called when a frame fragment has been recieved
+	 *
+	 * @param conn
+	 *            The <tt>WebSocket</tt> instance this event is occurring on.
+	 * @param frame The fragmented frame
+	 */
 	public void onWebsocketMessageFragment( WebSocket conn, Framedata frame );
 
 	/**
@@ -92,8 +100,8 @@ public interface WebSocketListener {
 	 * Indicates that a complete WebSocket connection has been established,
 	 * and we are ready to send/receive data.
 	 * 
-	 * @param conn
-	 *            The <tt>WebSocket</tt> instance this event is occuring on.
+	 * @param conn The <tt>WebSocket</tt> instance this event is occuring on.
+	 * @param d The handshake of the websocket instance
 	 */
 	public void onWebsocketOpen( WebSocket conn, Handshakedata d );
 
@@ -101,21 +109,35 @@ public interface WebSocketListener {
 	 * Called after <tt>WebSocket#close</tt> is explicity called, or when the
 	 * other end of the WebSocket connection is closed.
 	 * 
-	 * @param ws
-	 *            The <tt>WebSocket</tt> instance this event is occuring on.
+	 * @param ws The <tt>WebSocket</tt> instance this event is occuring on.
+	 * @param code The codes can be looked up here: {@link CloseFrame}
+	 * @param reason Additional information string
+	 * @param remote Returns whether or not the closing of the connection was initiated by the remote host.
 	 */
 	public void onWebsocketClose( WebSocket ws, int code, String reason, boolean remote );
 
-	/** called as soon as no further frames are accepted */
+	/** Called as soon as no further frames are accepted
+	 *
+	 * @param ws The <tt>WebSocket</tt> instance this event is occuring on.
+	 * @param code The codes can be looked up here: {@link CloseFrame}
+	 * @param reason Additional information string
+	 * @param remote Returns whether or not the closing of the connection was initiated by the remote host.
+	 */
 	public void onWebsocketClosing( WebSocket ws, int code, String reason, boolean remote );
 
-	/** send when this peer sends a close handshake */
+	/** send when this peer sends a close handshake
+	 *
+	 * @param ws The <tt>WebSocket</tt> instance this event is occuring on.
+	 * @param code The codes can be looked up here: {@link CloseFrame}
+	 * @param reason Additional information string
+	 */
 	public void onWebsocketCloseInitiated( WebSocket ws, int code, String reason );
 
 	/**
 	 * Called if an exception worth noting occurred.
 	 * If an error causes the connection to fail onClose will be called additionally afterwards.
-	 * 
+	 *
+	 * @param conn The <tt>WebSocket</tt> instance this event is occuring on.
 	 * @param ex
 	 *            The exception that occurred. <br>
 	 *            Might be null if the exception is not related to any specific connection. For example if the server port could not be bound.
@@ -125,27 +147,46 @@ public interface WebSocketListener {
 	/**
 	 * Called a ping frame has been received.
 	 * This method must send a corresponding pong by itself.
-	 * 
-	 * @param f
-	 *            The ping frame. Control frames may contain payload.
+	 *
+	 * @param conn The <tt>WebSocket</tt> instance this event is occuring on.
+	 * @param f The ping frame. Control frames may contain payload.
 	 */
 	public void onWebsocketPing( WebSocket conn, Framedata f );
 
 	/**
 	 * Called when a pong frame is received.
+	 *
+	 * @param conn The <tt>WebSocket</tt> instance this event is occuring on.
+	 * @param f The pong frame. Control frames may contain payload.
 	 **/
 	public void onWebsocketPong( WebSocket conn, Framedata f );
 
 	/**
-	 * Gets the XML string that should be returned if a client requests a Flash
-	 * security policy.
+	 * @see WebSocketAdapter#getFlashPolicy(WebSocket)
+	 * @param conn The <tt>WebSocket</tt> instance this event is occuring on.
 	 * @throws InvalidDataException thrown when some data that is required to generate the flash-policy like the websocket local port could not be obtained.
+	 * @return An XML String that comforts to Flash's security policy. You MUST not include the null char at the end, it is appended automatically.
 	 */
 	public String getFlashPolicy( WebSocket conn ) throws InvalidDataException;
 
-	/** This method is used to inform the selector thread that there is data queued to be written to the socket. */
+	/** This method is used to inform the selector thread that there is data queued to be written to the socket.
+	 * @param conn The <tt>WebSocket</tt> instance this event is occuring on.
+	 */
 	public void onWriteDemand( WebSocket conn );
 
+	/**
+	 * @see  WebSocket#getLocalSocketAddress()
+	 *
+	 * @param conn The <tt>WebSocket</tt> instance this event is occuring on.
+	 * @return Returns the address of the endpoint this socket is bound to.
+	 */
 	public InetSocketAddress getLocalSocketAddress( WebSocket conn );
+
+	/**
+	 * @see  WebSocket#getRemoteSocketAddress()
+	 *
+	 * @param conn The <tt>WebSocket</tt> instance this event is occuring on.
+	 * @return Returns the address of the endpoint this socket is connected to, or{@code null} if it is unconnected.
+	 */
 	public InetSocketAddress getRemoteSocketAddress( WebSocket conn );
 }
