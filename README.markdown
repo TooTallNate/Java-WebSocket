@@ -66,6 +66,12 @@ compile "org.java-websocket:java-websocket:1.3.2"
 [org.java-websocket/java-websocket "1.3.2"]
 ```
 
+###SBT
+To use in SBT, add this dependency:
+```scala
+libraryDependencies += "org.java-websocket" % "Java-WebSocket" % "1.3.0"
+```
+
 Running the Examples
 -------------------
 
