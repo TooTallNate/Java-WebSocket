@@ -1,5 +1,6 @@
 package org.java_websocket.server;
 
+import java.net.StandardSocketOptions;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -334,6 +335,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 							if(channel==null){
 								continue;
 							}
+							channel.setOption(StandardSocketOptions.TCP_NODELAY, new Boolean(true));
 							channel.configureBlocking( false );
 							WebSocketImpl w = wsf.createWebSocket( this, drafts, channel.socket() );
 							w.key = channel.register( selector, SelectionKey.OP_READ, w );
