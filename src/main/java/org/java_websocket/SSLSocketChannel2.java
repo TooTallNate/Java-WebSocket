@@ -162,6 +162,14 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 	 **/
 	private synchronized ByteBuffer unwrap() throws SSLException {
 		int rem;
+		//There are some ssl test suites, which get around the selector.select() call, which cause an infinite unwrap and 100% cpu usage (see #459 and #458)
+		if(readEngineResult.getStatus() == SSLEngineResult.Status.CLOSED && sslEngine.getHandshakeStatus() == HandshakeStatus.NOT_HANDSHAKING){
+			try {
+				close();
+			} catch (IOException e) {
+				//Not really interesting
+			}
+		}
 		do {
 			rem = inData.remaining();
 			readEngineResult = sslEngine.unwrap( inCrypt, inData );
