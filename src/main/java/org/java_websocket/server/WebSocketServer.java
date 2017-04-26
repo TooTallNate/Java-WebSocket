@@ -89,6 +89,11 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	private WebSocketServerFactory wsf = new DefaultWebSocketServerFactory();
 
 	/**
+	 * Attribute which allows you to deactivate the Nagle's algorithm
+	 */
+	private boolean tcpNoDelay;
+
+	/**
 	 * Creates a WebSocketServer that will attempt to
 	 * listen on port <var>WebSocket.DEFAULT_PORT</var>.
 	 * 
@@ -181,7 +186,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 
 		this.address = address;
 		this.connections = connectionscontainer;
-
+		tcpNoDelay = false;
 		iqueue = new LinkedList<WebSocketImpl>();
 
 		decoders = new ArrayList<WebSocketWorker>( decodercount );
@@ -192,6 +197,25 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 			ex.start();
 		}
 	}
+
+	/**
+	 * Tests if TCP_NODELAY is enabled.
+	 * @return a boolean indicating whether or not TCP_NODELAY is enabled for new connections.
+	 */
+	public boolean isTcpNoDelay() {
+		return tcpNoDelay;
+	}
+
+	/**
+	 * Setter for tcpNoDelay
+	 *
+	 * Enable/disable TCP_NODELAY (disable/enable Nagle's algorithm) for new connections
+	 * @param tcpNoDelay true to enable TCP_NODELAY, false to disable.
+	 */
+	public void setTcpNoDelay( boolean tcpNoDelay ) {
+		this.tcpNoDelay = tcpNoDelay;
+	}
+
 
 	/**
 	 * Starts the server selectorthread that binds to the currently set port number and
@@ -335,7 +359,9 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 								continue;
 							}
 							channel.configureBlocking( false );
-							WebSocketImpl w = wsf.createWebSocket( this, drafts, channel.socket() );
+							Socket socket = channel.socket();
+							socket.setTcpNoDelay( tcpNoDelay );
+							WebSocketImpl w = wsf.createWebSocket( this, drafts, socket );
 							w.key = channel.register( selector, SelectionKey.OP_READ, w );
 							try {
 								w.channel = wsf.wrapChannel( channel, w.key );

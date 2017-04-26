@@ -59,6 +59,11 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	private int connectTimeout = 0;
 
 	/**
+	 * Attribute which allows you to deactivate the Nagle's algorithm
+	 */
+	private boolean tcpNoDelay;
+
+	/**
 	 * Constructs a WebSocketClient instance and sets it to the connect to the
 	 * specified URI. The channel does not attampt to connect automatically. The connection
 	 * will be established once you call <var>connect</var>.
@@ -99,6 +104,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		this.draft = protocolDraft;
 		this.headers = httpHeaders;
 		this.connectTimeout = connectTimeout;
+		this.tcpNoDelay = false;
 		this.engine = new WebSocketImpl( this, protocolDraft );
 	}
 
@@ -125,6 +131,24 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 */
 	public Socket getSocket() {
 		return socket;
+	}
+
+	/**
+	 * Tests if TCP_NODELAY is enabled.
+	 * @return a boolean indicating whether or not TCP_NODELAY is enabled for new connections.
+	 */
+	public boolean isTcpNoDelay() {
+		return tcpNoDelay;
+	}
+
+	/**
+	 * Setter for tcpNoDelay
+	 *
+	 * Enable/disable TCP_NODELAY (disable/enable Nagle's algorithm) for new connections
+	 * @param tcpNoDelay true to enable TCP_NODELAY, false to disable.
+	 */
+	public void setTcpNoDelay( boolean tcpNoDelay ) {
+		this.tcpNoDelay = tcpNoDelay;
 	}
 
 	/**
@@ -193,6 +217,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			} else if( socket.isClosed() ) {
 				throw new IOException();
 			}
+			socket.setTcpNoDelay( tcpNoDelay );
 			if( !socket.isBound() )
 				socket.connect( new InetSocketAddress( uri.getHost(), getPort() ), connectTimeout );
 			istream = socket.getInputStream();
