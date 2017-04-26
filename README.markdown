@@ -45,7 +45,7 @@ Also add this dependency to your pom.xml:
 <dependency>
   <groupId>org.java-websocket</groupId>
   <artifactId>java-websocket</artifactId>
-  <version>1.3.2</version>
+  <version>1.3.3</version>
 </dependency>
 ```
 
@@ -56,14 +56,14 @@ maven { url "http://clojars.org/repo" }
 ```
 Then you can just add the latest version to your build.
 ```xml
-compile "org.java-websocket:java-websocket:1.3.2"
+compile "org.java-websocket:java-websocket:1.3.3"
 ```
 
 
 ### Leiningen
 
 ``` bash
-[org.java-websocket/java-websocket "1.3.2"]
+[org.java-websocket/java-websocket "1.3.3"]
 ```
 
 Running the Examples

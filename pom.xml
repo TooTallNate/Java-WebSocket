@@ -3,7 +3,7 @@
   <groupId>org.java-websocket</groupId>
   <artifactId>java-websocket</artifactId>
   <packaging>jar</packaging>
-  <version>1.3.2</version>
+  <version>1.3.3</version>
   <name>java-websocket</name>
   <description>A barebones WebSocket client and server implementation written 100% in Java</description>
   <url>http://java-websocket.org/</url>
