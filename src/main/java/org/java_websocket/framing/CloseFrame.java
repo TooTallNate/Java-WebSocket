@@ -93,6 +93,15 @@ public interface CloseFrame extends Framedata {
 	public static final int BUGGYCLOSE = -2;
 	public static final int FLASHPOLICY = -3;
 
-	public int getCloseCode() throws InvalidFrameException;
-	public String getMessage() throws InvalidDataException;
+	/**
+	 * Getter for the close code used in this close frame
+	 * @return the used close code
+	 */
+	int getCloseCode();
+
+	/**
+	 * Getter for the close message used in this close frame
+	 * @return the used close message
+	 */
+	String getMessage();
 }

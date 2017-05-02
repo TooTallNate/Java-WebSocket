@@ -12,11 +12,11 @@ import org.java_websocket.server.WebSocketServer.WebSocketServerFactory;
 
 public class DefaultWebSocketServerFactory implements WebSocketServerFactory {
 	@Override
-	public WebSocketImpl createWebSocket( WebSocketAdapter a, Draft d, Socket s ) {
+	public WebSocketImpl createWebSocket( WebSocketAdapter a, Draft d) {
 		return new WebSocketImpl( a, d );
 	}
 	@Override
-	public WebSocketImpl createWebSocket( WebSocketAdapter a, List<Draft> d, Socket s ) {
+	public WebSocketImpl createWebSocket( WebSocketAdapter a, List<Draft> d) {
 		return new WebSocketImpl( a, d );
 	}
 	@Override
