@@ -361,7 +361,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 							channel.configureBlocking( false );
 							Socket socket = channel.socket();
 							socket.setTcpNoDelay( tcpNoDelay );
-							WebSocketImpl w = wsf.createWebSocket( this, drafts, socket );
+							WebSocketImpl w = wsf.createWebSocket( this, drafts );
 							w.key = channel.register( selector, SelectionKey.OP_READ, w );
 							try {
 								w.channel = wsf.wrapChannel( channel, w.key );
@@ -538,22 +538,6 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		}
 	}
 
-	/**
-	 * Gets the XML string that should be returned if a client requests a Flash
-	 * security policy.
-	 * 
-	 * The default implementation allows access from all remote domains, but
-	 * only on the port that this WebSocketServer is listening on.
-	 * 
-	 * This is specifically implemented for gitime's WebSocket client for Flash:
-	 * http://github.com/gimite/web-socket-js
-	 * 
-	 * @return An XML String that comforms to Flash's security policy. You MUST
-	 *         not include the null char at the end, it is appended automatically.
-	 */
-	protected String getFlashSecurityPolicy() {
-		return "<cross-domain-policy><allow-access-from domain=\"*\" to-ports=\"" + getPort() + "\" /></cross-domain-policy>";
-	}
 
 	@Override
 	public final void onWebsocketMessage( WebSocket conn, String message ) {
@@ -836,16 +820,10 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	 */
 	public interface WebSocketServerFactory extends WebSocketFactory {
 		@Override
-		public WebSocketImpl createWebSocket( WebSocketAdapter a, Draft d, Socket s );
+		WebSocketImpl createWebSocket( WebSocketAdapter a, Draft d);
 
-		/**
-		 * Create a new Websocket with the provided listener, drafts and socket
-		 * @param a The Listener for the WebsocketImpl
-		 * @param drafts The drafts which should be used
-		 * @param s The socket which should be used
-		 * @return A WebsocketImpl
-		 */
-		public WebSocketImpl createWebSocket( WebSocketAdapter a, List<Draft> drafts, Socket s );
+		@Override
+		WebSocketImpl createWebSocket( WebSocketAdapter a, List<Draft> drafts );
 
 		/**
 		 * Allows to wrap the Socketchannel( key.channel() ) to insert a protocol layer( like ssl or proxy authentication) beyond the ws layer.
@@ -855,11 +833,11 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 		 * @return The channel on which the read and write operations will be performed.<br>
 		 * @throws IOException may be thrown while writing on the channel
 		 */
-		public ByteChannel wrapChannel( SocketChannel channel, SelectionKey key ) throws IOException;
+		ByteChannel wrapChannel( SocketChannel channel, SelectionKey key ) throws IOException;
 
 		/**
 		 * Allows to shutdown the websocket factory for a clean shutdown
 		 */
-		public void close();
+		void close();
 	}
 }

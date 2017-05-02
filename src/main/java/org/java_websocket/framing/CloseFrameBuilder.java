@@ -7,23 +7,52 @@ import org.java_websocket.util.Charsetfunctions;
 import java.nio.ByteBuffer;
 
 public class CloseFrameBuilder extends FramedataImpl1 implements CloseFrame {
-
+	/**
+	 * Attribute for just an empty ByteBuffer
+	 */
 	static final ByteBuffer emptybytebuffer = ByteBuffer.allocate( 0 );
 
+	/**
+	 * The close code used in this close frame
+	 */
 	private int code;
+
+	/**
+	 * The close message used in this close frame
+	 */
 	private String reason;
 
+	/**
+	 * Constructor for a close frame
+	 *
+	 * Using opcode closing and fin = true
+	 */
 	public CloseFrameBuilder() {
 		super( Opcode.CLOSING );
 		setFin( true );
 	}
 
+	/**
+	 * Constructor for a close frame
+	 *
+	 * Using opcode closing and fin = true
+	 *
+	 * @param code The close code causing this close frame
+	 */
 	public CloseFrameBuilder( int code ) throws InvalidDataException {
 		super( Opcode.CLOSING );
 		setFin( true );
 		setCodeAndMessage( code, "" );
 	}
 
+	/**
+	 * Constructor for a close frame
+	 *
+	 * Using opcode closing and fin = true
+	 *
+	 * @param code The close code causing this close frame
+	 * @param m The close message explaining this close frame a bit more
+	 */
 	public CloseFrameBuilder( int code, String m ) throws InvalidDataException {
 		super( Opcode.CLOSING );
 		setFin( true );
