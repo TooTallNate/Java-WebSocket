@@ -9,6 +9,8 @@ import java.net.Socket;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.NotYetConnectedException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
@@ -21,6 +23,7 @@ import org.java_websocket.exceptions.InvalidHandshakeException;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.framing.Framedata.Opcode;
+import org.java_websocket.framing.FramedataImpl1;
 import org.java_websocket.handshake.HandshakeImpl1Client;
 import org.java_websocket.handshake.Handshakedata;
 import org.java_websocket.handshake.ServerHandshake;
@@ -58,10 +61,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
 	private int connectTimeout = 0;
 
-	/**
-	 * Attribute which allows you to deactivate the Nagle's algorithm
-	 */
-	private boolean tcpNoDelay;
+
 
 	/**
 	 * Constructs a WebSocketClient instance and sets it to the connect to the
@@ -104,7 +104,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		this.draft = protocolDraft;
 		this.headers = httpHeaders;
 		this.connectTimeout = connectTimeout;
-		this.tcpNoDelay = false;
+		setTcpNoDelay( false );
 		this.engine = new WebSocketImpl( this, protocolDraft );
 	}
 
@@ -131,24 +131,6 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 */
 	public Socket getSocket() {
 		return socket;
-	}
-
-	/**
-	 * Tests if TCP_NODELAY is enabled.
-	 * @return a boolean indicating whether or not TCP_NODELAY is enabled for new connections.
-	 */
-	public boolean isTcpNoDelay() {
-		return tcpNoDelay;
-	}
-
-	/**
-	 * Setter for tcpNoDelay
-	 *
-	 * Enable/disable TCP_NODELAY (disable/enable Nagle's algorithm) for new connections
-	 * @param tcpNoDelay true to enable TCP_NODELAY, false to disable.
-	 */
-	public void setTcpNoDelay( boolean tcpNoDelay ) {
-		this.tcpNoDelay = tcpNoDelay;
 	}
 
 	/**
@@ -210,6 +192,15 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		engine.send( data );
 	}
 
+	protected Collection<WebSocket> connections() {
+		return Collections.singletonList((WebSocket ) engine );
+	}
+
+
+	public void sendPing() throws NotYetConnectedException {
+		engine.sendPing( );
+	}
+
 	public void run() {
 		try {
 			if( socket == null ) {
@@ -217,7 +208,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			} else if( socket.isClosed() ) {
 				throw new IOException();
 			}
-			socket.setTcpNoDelay( tcpNoDelay );
+			socket.setTcpNoDelay( isTcpNoDelay() );
 			if( !socket.isBound() )
 				socket.connect( new InetSocketAddress( uri.getHost(), getPort() ), connectTimeout );
 			istream = socket.getInputStream();
@@ -319,6 +310,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 */
 	@Override
 	public final void onWebsocketOpen( WebSocket conn, Handshakedata handshake ) {
+		startConnectionLostTimer();
 		onOpen( (ServerHandshake) handshake );
 		connectLatch.countDown();
 	}
@@ -328,6 +320,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 */
 	@Override
 	public final void onWebsocketClose( WebSocket conn, int code, String reason, boolean remote ) {
+		stopConnectionLostTimer();
 		if( writeThread != null )
 			writeThread.interrupt();
 		try {

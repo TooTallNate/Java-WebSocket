@@ -89,11 +89,6 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 	private WebSocketServerFactory wsf = new DefaultWebSocketServerFactory();
 
 	/**
-	 * Attribute which allows you to deactivate the Nagle's algorithm
-	 */
-	private boolean tcpNoDelay;
-
-	/**
 	 * Creates a WebSocketServer that will attempt to
 	 * listen on port <var>WebSocket.DEFAULT_PORT</var>.
 	 * 
@@ -186,7 +181,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 
 		this.address = address;
 		this.connections = connectionscontainer;
-		tcpNoDelay = false;
+		setTcpNoDelay(false);
 		iqueue = new LinkedList<WebSocketImpl>();
 
 		decoders = new ArrayList<WebSocketWorker>( decodercount );
@@ -196,24 +191,6 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 			decoders.add( ex );
 			ex.start();
 		}
-	}
-
-	/**
-	 * Tests if TCP_NODELAY is enabled.
-	 * @return a boolean indicating whether or not TCP_NODELAY is enabled for new connections.
-	 */
-	public boolean isTcpNoDelay() {
-		return tcpNoDelay;
-	}
-
-	/**
-	 * Setter for tcpNoDelay
-	 *
-	 * Enable/disable TCP_NODELAY (disable/enable Nagle's algorithm) for new connections
-	 * @param tcpNoDelay true to enable TCP_NODELAY, false to disable.
-	 */
-	public void setTcpNoDelay( boolean tcpNoDelay ) {
-		this.tcpNoDelay = tcpNoDelay;
 	}
 
 
@@ -325,6 +302,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 			socket.bind( address );
 			selector = Selector.open();
 			server.register( selector, server.validOps() );
+			startConnectionLostTimer();
 			onStart();
 		} catch ( IOException ex ) {
 			handleFatal( null, ex );
@@ -360,7 +338,8 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 							}
 							channel.configureBlocking( false );
 							Socket socket = channel.socket();
-							socket.setTcpNoDelay( tcpNoDelay );
+							socket.setTcpNoDelay( isTcpNoDelay() );
+							socket.setKeepAlive( true );
 							WebSocketImpl w = wsf.createWebSocket( this, drafts );
 							w.key = channel.register( selector, SelectionKey.OP_READ, w );
 							try {
@@ -452,6 +431,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 			// should hopefully never occur
 			handleFatal( null, e );
 		} finally {
+			stopConnectionLostTimer();
 			if( decoders != null ) {
 				for( WebSocketWorker w : decoders ) {
 					w.interrupt();

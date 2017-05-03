@@ -11,6 +11,7 @@ import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.CloseFrameBuilder;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.framing.Framedata.Opcode;
+import org.java_websocket.framing.FramedataImpl1;
 import org.java_websocket.handshake.*;
 import org.java_websocket.server.WebSocketServer.WebSocketWorker;
 import org.java_websocket.util.Charsetfunctions;
@@ -611,6 +612,12 @@ public class WebSocketImpl implements WebSocket {
 		if( DEBUG )
 			System.out.println( "send frame: " + framedata );
 		write( draft.createBinaryFrame( framedata ) );
+	}
+
+	public void sendPing() throws NotYetConnectedException {
+		FramedataImpl1 frame = new FramedataImpl1(Opcode.PING);
+		frame.setFin(true);
+		sendFrame(frame);
 	}
 
 	@Override
