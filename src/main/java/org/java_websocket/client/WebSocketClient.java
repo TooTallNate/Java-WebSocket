@@ -157,7 +157,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	public void connect() {
 		if( writeThread != null )
 			throw new IllegalStateException( "WebSocketClient objects are not reuseable" );
-		writeThread = new Thread( this );
+		writeThread = new Thread( this, "WebsocketMainThread" );
 		writeThread.start();
 	}
 
