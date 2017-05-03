@@ -4,6 +4,8 @@ import java.net.Socket;
 import java.nio.channels.ByteChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -35,6 +37,15 @@ public class DefaultSSLWebSocketServerFactory implements WebSocketServer.WebSock
 	@Override
 	public ByteChannel wrapChannel( SocketChannel channel, SelectionKey key ) throws IOException {
 		SSLEngine e = sslcontext.createSSLEngine();
+		/**
+		 * See https://github.com/TooTallNate/Java-WebSocket/issues/466
+		 *
+		 * We remove TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 from the enabled ciphers since it is just available when you patch your java installation directly.
+		 * E.g. firefox requests this cipher and this causes some dcs/instable connections
+		 */
+		List<String> ciphers = new ArrayList<String>( Arrays.asList(e.getEnabledCipherSuites()));
+		ciphers.remove("TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256");
+		e.setEnabledCipherSuites( ciphers.toArray(new String[]{}));
 		e.setUseClientMode( false );
 		return new SSLSocketChannel2( channel, e, exec, key );
 	}
