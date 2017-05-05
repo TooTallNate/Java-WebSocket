@@ -98,6 +98,11 @@ public class WebSocketImpl implements WebSocket {
 	private String resourceDescriptor = null;
 
 	/**
+	 * Attribute, when the last pong was recieved
+	 */
+	private long lastPong = System.currentTimeMillis();
+
+	/**
 	 * Creates a websocket with server role
 	 *
 	 * @param listener The listener for this instance
@@ -349,6 +354,7 @@ public class WebSocketImpl implements WebSocket {
 					wsl.onWebsocketPing( this, f );
 					continue;
 				} else if( curop == Opcode.PONG ) {
+					lastPong = System.currentTimeMillis();
 					wsl.onWebsocketPong( this, f );
 					continue;
 				} else if( !fin || curop == Opcode.CONTINUOUS ) {
@@ -764,5 +770,13 @@ public class WebSocketImpl implements WebSocket {
 	@Override
 	public String getResourceDescriptor() {
 		return resourceDescriptor;
+	}
+
+	/**
+	 * Getter for the last pong recieved
+	 * @return the timestamp for the last recieved pong
+	 */
+	long getLastPong() {
+		return lastPong;
 	}
 }

@@ -91,8 +91,20 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 		connectionLostTimerTask = new TimerTask() {
 			@Override
 			public void run() {
-				for (WebSocket conn: connections()) {
-					conn.sendPing();
+				Collection<WebSocket> con = connections();
+				synchronized ( con ) {
+					long current = (System.currentTimeMillis()-(connectionLostTimeout * 1500));
+					for( WebSocket conn : con ) {
+						if (conn instanceof WebSocketImpl) {
+							if( ((WebSocketImpl)conn).getLastPong() < current ) {
+								if (WebSocketImpl.DEBUG)
+									System.out.println("Closing connection due to no pong received: " + conn.toString());
+								conn.close( CloseFrame.ABNORMAL_CLOSE );
+							} else {
+								conn.sendPing();
+							}
+						}
+					}
 				}
 			}
 		};
@@ -217,6 +229,5 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 
 		return "<cross-domain-policy><allow-access-from domain=\"*\" to-ports=\"" + adr.getPort() + "\" /></cross-domain-policy>\0";
 	}
-
 
 }

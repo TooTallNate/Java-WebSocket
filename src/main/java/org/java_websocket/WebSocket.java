@@ -31,6 +31,11 @@ public interface WebSocket {
 	 */
 	public static final int DEFAULT_PORT = 80;
 
+	/**
+	 * The default wss port of WebSockets, as defined in the spec. If the nullary
+	 * constructor is used, DEFAULT_WSS_PORT will be the port the WebSocketServer
+	 * is binded to. Note that ports under 1024 usually require root permissions.
+	 */
 	public static final int DEFAULT_WSS_PORT = 443;
 
 	/**
