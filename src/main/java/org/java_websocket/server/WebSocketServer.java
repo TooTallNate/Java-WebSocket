@@ -328,6 +328,12 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
 			onStart();
 		} catch ( IOException ex ) {
 			handleFatal( null, ex );
+			//Shutting down WebSocketWorkers, see #222
+			if( decoders != null ) {
+				for( WebSocketWorker w : decoders ) {
+					w.interrupt();
+				}
+			}
 			return;
 		}
 		try {
