@@ -3,7 +3,6 @@ package org.java_websocket.client;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.ref.WeakReference;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.Socket;
@@ -47,8 +46,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
 	private Proxy proxy = Proxy.NO_PROXY;
 
-	private WeakReference<Thread> readThread;
- 	private WeakReference<Thread> writeThread;
+	private Thread writeThread;
 
 	private Draft draft;
 
@@ -157,11 +155,10 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 * Initiates the websocket connection. This method does not block.
 	 */
 	public void connect() {
-		if( readThread != null )
+		if( writeThread != null )
 			throw new IllegalStateException( "WebSocketClient objects are not reuseable" );
-		Thread reader = new Thread( this ,"WebsocketReadThread");
-		reader.start();
-		readThread = new WeakReference<Thread>( reader );
+		writeThread = new Thread( this );
+		writeThread.start();
 	}
 
 	/**
@@ -233,9 +230,8 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			return;
 		}
 
-		Thread write = new Thread( new WebsocketWriteThread() );
-		write.start();
-		writeThread = new WeakReference<Thread>( write );
+		writeThread = new Thread( new WebsocketWriteThread() );
+		writeThread.start();
 
 		byte[] rawbuffer = new byte[ WebSocketImpl.RCVBUF ];
 		int readBytes;
@@ -332,10 +328,8 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	 */
 	@Override
 	public final void onWebsocketClose( WebSocket conn, int code, String reason, boolean remote ) {
-		if( writeThread != null && writeThread.get() != null)
-			writeThread.get().interrupt();
-		if( readThread != null && readThread.get() != null)
-			readThread.get().interrupt();
+		if( writeThread != null )
+			writeThread.interrupt();
 		try {
 			if( socket != null )
 				socket.close();
