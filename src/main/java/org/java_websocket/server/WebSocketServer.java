@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
 import java.nio.channels.CancelledKeyException;
@@ -28,12 +27,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.java_websocket.SocketChannelIOHelper;
-import org.java_websocket.WebSocket;
-import org.java_websocket.WebSocketAdapter;
-import org.java_websocket.WebSocketFactory;
-import org.java_websocket.WebSocketImpl;
-import org.java_websocket.WrappedByteChannel;
+import org.java_websocket.*;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.framing.CloseFrame;
@@ -48,7 +42,7 @@ import org.java_websocket.handshake.ServerHandshakeBuilder;
  * functionality/purpose to the server.
  * 
  */
-public abstract class WebSocketServer extends WebSocketAdapter implements Runnable {
+public abstract class WebSocketServer extends AbstractWebSocket implements Runnable {
 
 	public static int DECODERS = Runtime.getRuntime().availableProcessors();
 

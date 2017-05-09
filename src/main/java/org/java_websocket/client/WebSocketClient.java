@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
+import org.java_websocket.AbstractWebSocket;
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketAdapter;
 import org.java_websocket.WebSocketImpl;
@@ -32,7 +33,7 @@ import org.java_websocket.handshake.ServerHandshake;
  * A subclass must implement at least <var>onOpen</var>, <var>onClose</var>, and <var>onMessage</var> to be
  * useful. At runtime the user is expected to establish a connection via {@link #connect()}, then receive events like {@link #onMessage(String)} via the overloaded methods and to {@link #send(String)} data to the server.
  */
-public abstract class WebSocketClient extends WebSocketAdapter implements Runnable, WebSocket {
+public abstract class WebSocketClient extends AbstractWebSocket implements Runnable, WebSocket {
 
 	/**
 	 * The URI this channel is supposed to connect to.
@@ -60,8 +61,6 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 	private CountDownLatch closeLatch = new CountDownLatch( 1 );
 
 	private int connectTimeout = 0;
-
-
 
 	/**
 	 * Constructs a WebSocketClient instance and sets it to the connect to the
