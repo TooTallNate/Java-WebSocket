@@ -1,6 +1,6 @@
 (defproject org.java-websocket/java-websocket "1.3.3"
   :description "A barebones WebSocket client and server implementation written 100% in Java"
-  :url "http://java-websocket.org/"
+  :url "https://github.com/TooTallNate/Java-WebSocket"
   :scm {:name "git"
         :url "https://github.com/TooTallNate/Java-WebSocket"}
   :license {:name "MIT License"

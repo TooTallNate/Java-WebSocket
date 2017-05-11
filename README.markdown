@@ -11,6 +11,9 @@ non-blocking event-driven model (similar to the
 Implemented WebSocket protocol versions are:
 
  * [RFC 6455](http://tools.ietf.org/html/rfc6455)
+ 
+Implemented, but deprecated, WebSocket protocol versions are:
+
  * [Hybi 17](http://tools.ietf.org/id/draft-ietf-hybi-thewebsocketprotocol-17.txt)
  * [Hybi 10](http://tools.ietf.org/id/draft-ietf-hybi-thewebsocketprotocol-10.txt)
  * [Hixie 76](http://tools.ietf.org/id/draft-hixie-thewebsocketprotocol-76.txt)
@@ -170,14 +173,6 @@ if ("google_sdk".equals( Build.PRODUCT )) {
   // ... disable IPv6
 }
 ```
-
-
-Getting Support
----------------
-
-If you are looking for help using `Java-WebSocket` you might want to check out the
-[#java-websocket](http://webchat.freenode.net/?channels=java-websocket) IRC room
-on the FreeNode IRC network. 
 
 
 License
