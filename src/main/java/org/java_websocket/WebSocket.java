@@ -7,6 +7,7 @@ import java.nio.channels.NotYetConnectedException;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.framing.Framedata.Opcode;
+import org.java_websocket.framing.FramedataImpl1;
 
 public interface WebSocket {
 	/**
@@ -30,6 +31,11 @@ public interface WebSocket {
 	 */
 	public static final int DEFAULT_PORT = 80;
 
+	/**
+	 * The default wss port of WebSockets, as defined in the spec. If the nullary
+	 * constructor is used, DEFAULT_WSS_PORT will be the port the WebSocketServer
+	 * is binded to. Note that ports under 1024 usually require root permissions.
+	 */
 	public static final int DEFAULT_WSS_PORT = 443;
 
 	/**
@@ -90,6 +96,11 @@ public interface WebSocket {
 	 */
 	public abstract void sendFrame( Framedata framedata );
 
+	/**
+	 * Send a ping to the other end
+	 * @throws NotYetConnectedException websocket is not yet connected
+	 */
+	public void sendPing() throws NotYetConnectedException;
 	/**
 	 * Allows to send continuous/fragmented frames conveniently. <br>
 	 * For more into on this frame type see http://tools.ietf.org/html/rfc6455#section-5.4<br>

@@ -11,6 +11,7 @@ import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.CloseFrameBuilder;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.framing.Framedata.Opcode;
+import org.java_websocket.framing.FramedataImpl1;
 import org.java_websocket.handshake.*;
 import org.java_websocket.server.WebSocketServer.WebSocketWorker;
 import org.java_websocket.util.Charsetfunctions;
@@ -92,6 +93,11 @@ public class WebSocketImpl implements WebSocket {
 	private Boolean closedremotely = null;
 
 	private String resourceDescriptor = null;
+
+	/**
+	 * Attribute, when the last pong was recieved
+	 */
+	private long lastPong = System.currentTimeMillis();
 
 	/**
 	 * Creates a websocket with server role
@@ -347,6 +353,7 @@ public class WebSocketImpl implements WebSocket {
 					wsl.onWebsocketPing( this, f );
 					continue;
 				} else if( curop == Opcode.PONG ) {
+					lastPong = System.currentTimeMillis();
 					wsl.onWebsocketPong( this, f );
 					continue;
 				} else if( !fin || curop == Opcode.CONTINUOUS ) {
@@ -612,6 +619,12 @@ public class WebSocketImpl implements WebSocket {
 		write( draft.createBinaryFrame( framedata ) );
 	}
 
+	public void sendPing() throws NotYetConnectedException {
+		FramedataImpl1 frame = new FramedataImpl1(Opcode.PING);
+		frame.setFin(true);
+		sendFrame(frame);
+	}
+
 	@Override
 	public boolean hasBufferedData() {
 		return !this.outQueue.isEmpty();
@@ -756,5 +769,13 @@ public class WebSocketImpl implements WebSocket {
 	@Override
 	public String getResourceDescriptor() {
 		return resourceDescriptor;
+	}
+
+	/**
+	 * Getter for the last pong recieved
+	 * @return the timestamp for the last recieved pong
+	 */
+	long getLastPong() {
+		return lastPong;
 	}
 }
