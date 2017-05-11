@@ -25,6 +25,7 @@ import org.java_websocket.handshake.Handshakedata;
 import org.java_websocket.handshake.ServerHandshake;
 import org.java_websocket.handshake.ServerHandshakeBuilder;
 
+@Deprecated
 public class Draft_76 extends Draft_75 {
 	private boolean failed = false;
 	private static final byte[] closehandshake = { -1, 0 };

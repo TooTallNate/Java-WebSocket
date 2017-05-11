@@ -23,6 +23,7 @@ import org.java_websocket.handshake.ServerHandshake;
 import org.java_websocket.handshake.ServerHandshakeBuilder;
 import org.java_websocket.util.Charsetfunctions;
 
+@Deprecated
 public class Draft_75 extends Draft {
 
 	/**
