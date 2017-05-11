@@ -18,6 +18,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
+@Deprecated
 public class Draft_10 extends Draft {
 
     private class IncompleteException extends Throwable {

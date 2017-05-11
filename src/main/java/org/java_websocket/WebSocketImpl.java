@@ -35,15 +35,12 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class WebSocketImpl implements WebSocket {
 
-	public static final List<Draft> defaultdraftlist = new ArrayList<Draft>( 4 );
+	public static final List<Draft> defaultdraftlist = new ArrayList<Draft>( 1 );
 	public static int RCVBUF = 16384;
 	public static/*final*/ boolean DEBUG = false; // must be final in the future in order to take advantage of VM optimization
 
 	static {
 		defaultdraftlist.add( new Draft_17() );
-		defaultdraftlist.add( new Draft_10() );
-		defaultdraftlist.add( new Draft_76() );
-		defaultdraftlist.add( new Draft_75() );
 	}
 
 	/**

@@ -16,10 +16,7 @@ import javax.swing.JTextField;
 import org.java_websocket.WebSocketImpl;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft;
-import org.java_websocket.drafts.Draft_10;
 import org.java_websocket.drafts.Draft_17;
-import org.java_websocket.drafts.Draft_75;
-import org.java_websocket.drafts.Draft_76;
 import org.java_websocket.handshake.ServerHandshake;
 
 public class ChatClient extends JFrame implements ActionListener {
@@ -41,7 +38,7 @@ public class ChatClient extends JFrame implements ActionListener {
 		layout.setRows( 6 );
 		c.setLayout( layout );
 
-		Draft[] drafts = { new Draft_17(), new Draft_10(), new Draft_76(), new Draft_75() };
+		Draft[] drafts = { new Draft_17() };
 		draft = new JComboBox( drafts );
 		c.add( draft );
 
