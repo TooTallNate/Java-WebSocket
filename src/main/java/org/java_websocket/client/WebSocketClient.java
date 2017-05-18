@@ -16,15 +16,13 @@ import java.util.concurrent.CountDownLatch;
 
 import org.java_websocket.AbstractWebSocket;
 import org.java_websocket.WebSocket;
-import org.java_websocket.WebSocketAdapter;
 import org.java_websocket.WebSocketImpl;
 import org.java_websocket.drafts.Draft;
-import org.java_websocket.drafts.Draft_17;
+import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.exceptions.InvalidHandshakeException;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.framing.Framedata.Opcode;
-import org.java_websocket.framing.FramedataImpl1;
 import org.java_websocket.handshake.HandshakeImpl1Client;
 import org.java_websocket.handshake.Handshakedata;
 import org.java_websocket.handshake.ServerHandshake;
@@ -70,7 +68,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	 * @param serverUri the server URI to connect to
 	 */
 	public WebSocketClient( URI serverUri ) {
-		this( serverUri, new Draft_17() );
+		this( serverUri, new Draft_6455());
 	}
 
 	/**

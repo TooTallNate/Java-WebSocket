@@ -7,7 +7,7 @@ import java.nio.ByteBuffer;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.client.WebSocketClient;
-import org.java_websocket.drafts.Draft_17;
+import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.framing.Framedata.Opcode;
 
 /**
@@ -22,7 +22,7 @@ public class FragmentedFramesExample {
 	public static void main( String[] args ) throws URISyntaxException , IOException , InterruptedException {
 		// WebSocketImpl.DEBUG = true; // will give extra output
 
-		WebSocketClient websocket = new ExampleClient( new URI( "ws://localhost:8887" ), new Draft_17() ); // Draft_17 is implementation of rfc6455
+		WebSocketClient websocket = new ExampleClient( new URI( "ws://localhost:8887" ), new Draft_6455() ); // Draft_6455 is implementation of rfc6455
 		if( !websocket.connectBlocking() ) {
 			System.err.println( "Could not connect to the server." );
 			return;

@@ -10,7 +10,7 @@ import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketImpl;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft;
-import org.java_websocket.drafts.Draft_17;
+import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.framing.FrameBuilder;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.handshake.ServerHandshake;
@@ -37,12 +37,12 @@ public class AutobahnClientTest extends WebSocketClient {
 			BufferedReader sysin = new BufferedReader( new InputStreamReader( System.in ) );
 
 			/*First of the thinks a programmer might want to change*/
-			Draft d = new Draft_17();
+			Draft d = new Draft_6455();
 			String clientname = "tootallnate/websocket";
 
 			String protocol = "ws";
 			String host = "localhost";
-			int port = 9001;
+			int port = 9003;
 
 			String serverlocation = protocol + "://" + host + ":" + port;
 			String line = "";
