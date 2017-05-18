@@ -8,7 +8,7 @@ import java.util.Collections;
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketImpl;
 import org.java_websocket.drafts.Draft;
-import org.java_websocket.drafts.Draft_17;
+import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.framing.FrameBuilder;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.handshake.ClientHandshake;
@@ -73,7 +73,8 @@ public class AutobahnServerTest extends WebSocketServer {
 			System.out.println( "No port specified. Defaulting to 9003" );
 			port = 9003;
 		}
-		new AutobahnServerTest( port, new Draft_17() ).start();
+		AutobahnServerTest test = new AutobahnServerTest( port, new Draft_6455() );
+		test.start();
 	}
 
 }
