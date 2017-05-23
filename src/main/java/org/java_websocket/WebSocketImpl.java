@@ -35,14 +35,12 @@ import java.util.concurrent.LinkedBlockingQueue;
  * text frames, and receiving frames through an event-based model.
  */
 public class WebSocketImpl implements WebSocket {
-
-	public static final List<Draft> defaultdraftlist = new ArrayList<Draft>( 1 );
 	public static int RCVBUF = 16384;
-	public static/*final*/ boolean DEBUG = false; // must be final in the future in order to take advantage of VM optimization
 
-	static {
-		defaultdraftlist.add( new Draft_6455() );
-	}
+    /**
+     * Activate debug mode for additional infos
+     */
+	public static boolean DEBUG = false; // must be final in the future in order to take advantage of VM optimization
 
 	/**
 	 * Queue of buffers that need to be sent to the client.
@@ -70,12 +68,25 @@ public class WebSocketImpl implements WebSocket {
 	 */
 	private volatile boolean flushandclosestate = false;
 	private READYSTATE readystate = READYSTATE.NOT_YET_CONNECTED;
+
+    /**
+     * A list of drafts available for this websocket
+     */
 	private List<Draft> knownDrafts;
 
+    /**
+     * The draft which is used by this websocket
+     */
 	private Draft draft = null;
 
+    /**
+     * The role which this websocket takes in the connection
+     */
 	private Role role;
 
+    /**
+     * The frame which had the opcode Continous set
+     */
 	private Framedata current_continuous_frame = null;
 
 	/**
@@ -110,7 +121,8 @@ public class WebSocketImpl implements WebSocket {
 		this.role = Role.SERVER;
 		// draft.copyInstance will be called when the draft is first needed
 		if( drafts == null || drafts.isEmpty() ) {
-			knownDrafts = defaultdraftlist;
+			knownDrafts = new ArrayList<Draft>();
+			knownDrafts.add(new Draft_6455());
 		} else {
 			knownDrafts = drafts;
 		}

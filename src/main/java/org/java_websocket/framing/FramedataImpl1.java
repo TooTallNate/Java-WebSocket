@@ -4,14 +4,10 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 import org.java_websocket.exceptions.InvalidDataException;
-import org.java_websocket.exceptions.InvalidFrameException;
+import org.java_websocket.util.ByteBufferUtils;
 import org.java_websocket.util.Charsetfunctions;
 
 public class FramedataImpl1 implements FrameBuilder {
-	/**
-	 * Attribute for just an empty array
-	 */
-	private static byte[] emptyarray = {};
 
 	/**
 	 * Indicates that this is the final fragment in a message.
@@ -44,7 +40,7 @@ public class FramedataImpl1 implements FrameBuilder {
 	 */
 	public FramedataImpl1( Opcode op ) {
 		this.optcode = op;
-		unmaskedpayload = ByteBuffer.wrap( emptyarray );
+		unmaskedpayload = ByteBufferUtils.getEmptyByteBuffer();
 	}
 
 	/**

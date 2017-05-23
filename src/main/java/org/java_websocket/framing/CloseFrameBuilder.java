@@ -2,15 +2,12 @@ package org.java_websocket.framing;
 
 import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.exceptions.InvalidFrameException;
+import org.java_websocket.util.ByteBufferUtils;
 import org.java_websocket.util.Charsetfunctions;
 
 import java.nio.ByteBuffer;
 
 public class CloseFrameBuilder extends FramedataImpl1 implements CloseFrame {
-	/**
-	 * Attribute for just an empty ByteBuffer
-	 */
-	static final ByteBuffer emptybytebuffer = ByteBuffer.allocate( 0 );
 
 	/**
 	 * The close code used in this close frame
@@ -150,7 +147,7 @@ public class CloseFrameBuilder extends FramedataImpl1 implements CloseFrame {
 	@Override
 	public ByteBuffer getPayloadData() {
 		if( code == NOCODE )
-			return emptybytebuffer;
+			return ByteBufferUtils.getEmptyByteBuffer();
 		return super.getPayloadData();
 	}
 
