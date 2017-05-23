@@ -12,6 +12,13 @@ import java.nio.charset.CodingErrorAction;
 
 public class Charsetfunctions {
 
+	/**
+	 * Private constructor for real static class
+	 */
+	private Charsetfunctions() {
+
+	}
+
 	public static CodingErrorAction codingErrorAction = CodingErrorAction.REPORT;
 
 	/*
@@ -52,20 +59,6 @@ public class Charsetfunctions {
 		return stringUtf8( ByteBuffer.wrap( bytes ) );
 	}
 
-	/*public static String stringUtf8( byte[] bytes, int off, int length ) throws InvalidDataException {
-		CharsetDecoder decode = Charset.forName( "UTF8" ).newDecoder();
-		decode.onMalformedInput( codingErrorAction );
-		decode.onUnmappableCharacter( codingErrorAction );
-		//decode.replaceWith( "X" );
-		String s;
-		try {
-			s = decode.decode( ByteBuffer.wrap( bytes, off, length ) ).toString();
-		} catch ( CharacterCodingException e ) {
-			throw new InvalidDataException( CloseFrame.NO_UTF8, e );
-		}
-		return s;
-	}*/
-
 	public static String stringUtf8( ByteBuffer bytes ) throws InvalidDataException {
 		CharsetDecoder decode = Charset.forName( "UTF8" ).newDecoder();
 		decode.onMalformedInput( codingErrorAction );
@@ -80,11 +73,6 @@ public class Charsetfunctions {
 			throw new InvalidDataException( CloseFrame.NO_UTF8, e );
 		}
 		return s;
-	}
-
-	public static void main( String[] args ) throws InvalidDataException {
-		stringUtf8( utf8Bytes( "\0" ) );
-		stringAscii( asciiBytes( "\0" ) );
 	}
 
 	/**
