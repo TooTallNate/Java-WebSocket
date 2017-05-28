@@ -1,6 +1,5 @@
 package org.java_websocket.server;
 import java.io.IOException;
-import java.net.Socket;
 import java.nio.channels.ByteChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
@@ -13,7 +12,7 @@ import java.util.concurrent.Executors;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 
-import org.java_websocket.SSLSocketChannel2;
+import org.java_websocket.SSLSocketChannel;
 import org.java_websocket.WebSocketAdapter;
 import org.java_websocket.WebSocketImpl;
 import org.java_websocket.drafts.Draft;
@@ -47,7 +46,7 @@ public class DefaultSSLWebSocketServerFactory implements WebSocketServer.WebSock
 		ciphers.remove("TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256");
 		e.setEnabledCipherSuites( ciphers.toArray(new String[]{}));
 		e.setUseClientMode( false );
-		return new SSLSocketChannel2( channel, e, exec, key );
+		return new SSLSocketChannel( channel, e, exec, key );
 	}
 
 	@Override
