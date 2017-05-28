@@ -73,7 +73,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 
 	private final AtomicBoolean isclosed = new AtomicBoolean( false );
 
-	private List<WebSocketWorker> decoders;
+	protected List<WebSocketWorker> decoders;
 
 	private List<WebSocketImpl> iqueue;
 	private BlockingQueue<ByteBuffer> buffers;
@@ -470,7 +470,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 		return ByteBuffer.allocate( WebSocketImpl.RCVBUF );
 	}
 
-	private void queue( WebSocketImpl ws ) throws InterruptedException {
+	protected void queue( WebSocketImpl ws ) throws InterruptedException {
 		if( ws.workerThread == null ) {
 			ws.workerThread = decoders.get( queueinvokes % decoders.size() );
 			queueinvokes++;
