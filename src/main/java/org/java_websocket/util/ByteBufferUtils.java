@@ -19,21 +19,19 @@ public class ByteBufferUtils {
 	 * @param source the ByteBuffer to copy from
 	 * @param dest   the ByteBuffer to copy to
 	 */
-	public static int transferByteBuffer( ByteBuffer source, ByteBuffer dest ) {
+	public static void transferByteBuffer( ByteBuffer source, ByteBuffer dest ) {
 		if( source == null || dest == null ) {
 			throw new IllegalArgumentException();
 		}
 		int fremain = source.remaining();
 		int toremain = dest.remaining();
 		if( fremain > toremain ) {
-			int limit = Math.min( fremain, toremain );
-			source.limit( limit );
+			source.limit( Math.min( fremain, toremain ) );
 			dest.put( source );
-			return limit;
 		} else {
 			dest.put( source );
-			return fremain;
 		}
+
 	}
 
 	/**
