@@ -4,10 +4,13 @@ import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.exceptions.InvalidFrameException;
 
 /**
- * Created by Admin on 23.05.2017.
+ * Absstract class to represent control frames
  */
 public abstract class ControlFrame extends FramedataImpl1 {
 
+	/**
+	 * Class to represent a control frame
+	 */
 	public ControlFrame( Opcode opcode ) {
 		super( opcode );
 	}

@@ -454,7 +454,16 @@ public class WebSocketImpl implements WebSocket {
 								wsl.onWebsocketError( this, e );
 							}
 						}
-						sendFrame( new CloseFrame( code, message ) );
+						CloseFrame closeFrame = new CloseFrame();
+						closeFrame.setReason(message);
+						closeFrame.setCode(code);
+						try {
+							closeFrame.isValid();
+							sendFrame(closeFrame);
+						} catch (InvalidDataException e) {
+							//Rethrow invalid data exception
+							throw e;
+						}
 					} catch ( InvalidDataException e ) {
 						wsl.onWebsocketError( this, e );
 						flushAndClose( CloseFrame.ABNORMAL_CLOSE, "generated frame is invalid", false );

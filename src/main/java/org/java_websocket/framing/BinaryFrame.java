@@ -1,10 +1,14 @@
 package org.java_websocket.framing;
 
 /**
- * Created by Admin on 23.05.2017.
+ * Class to represent a binary frame
  */
 public class BinaryFrame extends DataFrame {
-	public BinaryFrame() {
-		super( Opcode.BINARY );
-	}
+
+    /**
+     * constructor which sets the opcode of this frame to binary
+     */
+    public BinaryFrame() {
+        super(Opcode.BINARY);
+    }
 }

@@ -209,7 +209,10 @@ public class Draft_76 extends Draft_75 {
 			}
 			if( !currentFrame.hasRemaining() ) {
 				if( Arrays.equals( currentFrame.array(), closehandshake ) ) {
-					frames.add( new CloseFrame( CloseFrame.NORMAL ) );
+					CloseFrame closeFrame = new CloseFrame();
+					closeFrame.setCode(CloseFrame.NORMAL);
+					closeFrame.isValid();
+					frames.add(closeFrame);
 					return frames;
 				}
 				else{

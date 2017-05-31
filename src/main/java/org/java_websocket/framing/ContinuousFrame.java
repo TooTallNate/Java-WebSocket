@@ -1,9 +1,13 @@
 package org.java_websocket.framing;
 
 /**
- * Created by Admin on 23.05.2017.
+ * Class to represent a continuous frame
  */
 public class ContinuousFrame extends DataFrame {
+
+	/**
+	 * constructor which sets the opcode of this frame to continuous
+	 */
 	public ContinuousFrame() {
 		super( Opcode.CONTINUOUS );
 	}

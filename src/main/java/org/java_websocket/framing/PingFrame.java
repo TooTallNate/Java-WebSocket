@@ -1,10 +1,13 @@
 package org.java_websocket.framing;
 
 /**
- * Created by Admin on 23.05.2017.
+ * Class to represent a ping frame
  */
 public class PingFrame extends ControlFrame {
 
+	/**
+	 * constructor which sets the opcode of this frame to ping
+	 */
 	public PingFrame() {
 		super(Opcode.PING);
 	}
