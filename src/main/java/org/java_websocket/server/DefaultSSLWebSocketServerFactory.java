@@ -1,5 +1,6 @@
 package org.java_websocket.server;
 import java.io.IOException;
+import java.net.Socket;
 import java.nio.channels.ByteChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
