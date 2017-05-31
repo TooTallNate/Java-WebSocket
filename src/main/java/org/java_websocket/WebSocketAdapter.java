@@ -3,19 +3,15 @@ package org.java_websocket;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.exceptions.InvalidHandshakeException;
-import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.Framedata;
-import org.java_websocket.framing.Framedata.Opcode;
-import org.java_websocket.framing.FramedataImpl1;
+import org.java_websocket.framing.PingFrame;
+import org.java_websocket.framing.PongFrame;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.handshake.HandshakeImpl1Server;
 import org.java_websocket.handshake.ServerHandshake;
 import org.java_websocket.handshake.ServerHandshakeBuilder;
 
 import java.net.InetSocketAddress;
-import java.util.Collection;
-import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  * This class default implements all methods of the WebSocketListener that can be overridden optionally when advances functionalities is needed.<br>
@@ -62,9 +58,7 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	 */
 	@Override
 	public void onWebsocketPing( WebSocket conn, Framedata f ) {
-		FramedataImpl1 resp = new FramedataImpl1( f );
-		resp.setOptcode( Opcode.PONG );
-		conn.sendFrame( resp );
+		conn.sendFrame( new PongFrame( (PingFrame)f ) );
 	}
 
 	/**

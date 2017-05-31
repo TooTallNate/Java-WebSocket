@@ -8,10 +8,10 @@ import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.exceptions.InvalidHandshakeException;
 import org.java_websocket.exceptions.WebsocketNotConnectedException;
 import org.java_websocket.framing.CloseFrame;
-import org.java_websocket.framing.CloseFrameBuilder;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.framing.Framedata.Opcode;
 import org.java_websocket.framing.FramedataImpl1;
+import org.java_websocket.framing.PingFrame;
 import org.java_websocket.handshake.*;
 import org.java_websocket.server.WebSocketServer.WebSocketWorker;
 import org.java_websocket.util.Charsetfunctions;
@@ -454,7 +454,16 @@ public class WebSocketImpl implements WebSocket {
 								wsl.onWebsocketError( this, e );
 							}
 						}
-						sendFrame( new CloseFrameBuilder( code, message ) );
+						CloseFrame closeFrame = new CloseFrame();
+						closeFrame.setReason(message);
+						closeFrame.setCode(code);
+						try {
+							closeFrame.isValid();
+							sendFrame(closeFrame);
+						} catch (InvalidDataException e) {
+							//Rethrow invalid data exception
+							throw e;
+						}
 					} catch ( InvalidDataException e ) {
 						wsl.onWebsocketError( this, e );
 						flushAndClose( CloseFrame.ABNORMAL_CLOSE, "generated frame is invalid", false );
@@ -632,9 +641,7 @@ public class WebSocketImpl implements WebSocket {
 	}
 
 	public void sendPing() throws NotYetConnectedException {
-		FramedataImpl1 frame = new FramedataImpl1(Opcode.PING);
-		frame.setFin(true);
-		sendFrame(frame);
+		sendFrame(new PingFrame());
 	}
 
 	@Override

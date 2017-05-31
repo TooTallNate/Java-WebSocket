@@ -15,7 +15,6 @@ import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.exceptions.InvalidFrameException;
 import org.java_websocket.exceptions.InvalidHandshakeException;
 import org.java_websocket.framing.CloseFrame;
-import org.java_websocket.framing.CloseFrameBuilder;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.framing.Framedata.Opcode;
 import org.java_websocket.handshake.ClientHandshake;
@@ -210,7 +209,10 @@ public class Draft_76 extends Draft_75 {
 			}
 			if( !currentFrame.hasRemaining() ) {
 				if( Arrays.equals( currentFrame.array(), closehandshake ) ) {
-					frames.add( new CloseFrameBuilder( CloseFrame.NORMAL ) );
+					CloseFrame closeFrame = new CloseFrame();
+					closeFrame.setCode(CloseFrame.NORMAL);
+					closeFrame.isValid();
+					frames.add(closeFrame);
 					return frames;
 				}
 				else{
