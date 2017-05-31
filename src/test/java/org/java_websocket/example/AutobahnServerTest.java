@@ -1,26 +1,33 @@
 package org.java_websocket.example;
 
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
-import java.util.Collections;
-
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketImpl;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft_6455;
-import org.java_websocket.framing.FrameBuilder;
 import org.java_websocket.framing.Framedata;
+import org.java_websocket.framing.FramedataImpl1;
 import org.java_websocket.handshake.ClientHandshake;
+import org.java_websocket.server.DefaultSSLWebSocketServerFactory;
 import org.java_websocket.server.WebSocketServer;
+
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
+import java.io.File;
+import java.io.FileInputStream;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
+import java.security.KeyStore;
+import java.util.Collections;
 
 public class AutobahnServerTest extends WebSocketServer {
 	private static int counter = 0;
-	
-	public AutobahnServerTest( int port , Draft d ) throws UnknownHostException {
+
+	public AutobahnServerTest( int port, Draft d ) throws UnknownHostException {
 		super( new InetSocketAddress( port ), Collections.singletonList( d ) );
 	}
-	
+
 	public AutobahnServerTest( InetSocketAddress address, Draft d ) {
 		super( address, Collections.singletonList( d ) );
 	}
@@ -59,21 +66,22 @@ public class AutobahnServerTest extends WebSocketServer {
 
 	@Override
 	public void onWebsocketMessageFragment( WebSocket conn, Framedata frame ) {
-		FrameBuilder builder = (FrameBuilder) frame;
+		FramedataImpl1 builder = ( FramedataImpl1 ) frame;
 		builder.setTransferemasked( false );
 		conn.sendFrame( frame );
 	}
 
-	public static void main( String[] args ) throws  UnknownHostException {
+	public static void main( String[] args ) throws UnknownHostException {
 		WebSocketImpl.DEBUG = false;
 		int port;
 		try {
-			port = new Integer( args[ 0 ] );
+			port = new Integer( args[0] );
 		} catch ( Exception e ) {
 			System.out.println( "No port specified. Defaulting to 9003" );
 			port = 9003;
 		}
 		AutobahnServerTest test = new AutobahnServerTest( port, new Draft_6455() );
+		test.setConnectionLostTimeout( 0 );
 		test.start();
 	}
 

@@ -2,8 +2,13 @@ package org.java_websocket.framing;
 
 import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.exceptions.InvalidFrameException;
+import org.java_websocket.util.ByteBufferUtils;
+import org.java_websocket.util.Charsetfunctions;
 
-public interface CloseFrame extends Framedata {
+import java.nio.ByteBuffer;
+
+public class CloseFrame extends ControlFrame {
+
 	/**
 	 * indicates a normal closure, meaning whatever purpose the
 	 * connection was established for has been fulfilled.
@@ -88,20 +93,149 @@ public interface CloseFrame extends Framedata {
 	 **/
 	public static final int TLS_ERROR = 1015;
 
-	/** The connection had never been established */
+	/**
+	 * The connection had never been established
+	 */
 	public static final int NEVER_CONNECTED = -1;
 	public static final int BUGGYCLOSE = -2;
 	public static final int FLASHPOLICY = -3;
 
-	/**
-	 * Getter for the close code used in this close frame
-	 * @return the used close code
-	 */
-	int getCloseCode();
 
 	/**
-	 * Getter for the close message used in this close frame
-	 * @return the used close message
+	 * The close code used in this close frame
 	 */
-	String getMessage();
+	private int code;
+
+	/**
+	 * The close message used in this close frame
+	 */
+	private String reason;
+
+	/**
+	 * Constructor for a close frame
+	 * <p>
+	 * Using opcode closing and fin = true
+	 */
+	public CloseFrame() {
+		super( Opcode.CLOSING );
+	}
+
+	/**
+	 * Constructor for a close frame
+	 * <p>
+	 * Using opcode closing and fin = true
+	 *
+	 * @param code The close code causing this close frame
+	 */
+	public CloseFrame( int code ) throws InvalidDataException {
+		super( Opcode.CLOSING );
+		setCodeAndMessage( code, "" );
+	}
+
+	/**
+	 * Constructor for a close frame
+	 * <p>
+	 * Using opcode closing and fin = true
+	 *
+	 * @param code The close code causing this close frame
+	 * @param m    The close message explaining this close frame a bit more
+	 */
+	public CloseFrame( int code, String m ) throws InvalidDataException {
+		super( Opcode.CLOSING );
+		setCodeAndMessage( code, m );
+	}
+
+	private void setCodeAndMessage( int code, String m ) throws InvalidDataException {
+		if( m == null ) {
+			m = "";
+		}
+		// CloseFrame.TLS_ERROR is not allowed to be transfered over the wire
+		if( code == CloseFrame.TLS_ERROR ) {
+			code = CloseFrame.NOCODE;
+			m = "";
+		}
+		if( code == CloseFrame.NOCODE ) {
+			if( 0 < m.length() ) {
+				throw new InvalidDataException( PROTOCOL_ERROR, "A close frame must have a closecode if it has a reason" );
+			}
+			return;// empty payload
+		}
+		//Intentional check for code != CloseFrame.TLS_ERROR just to make sure even if the code earlier changes
+		if( ( code > CloseFrame.UNEXPECTED_CONDITION && code < 3000 && code != CloseFrame.TLS_ERROR ) ) {
+			throw new InvalidDataException( PROTOCOL_ERROR, "Trying to send an illegal close code!" );
+		}
+
+		byte[] by = Charsetfunctions.utf8Bytes( m );
+		ByteBuffer buf = ByteBuffer.allocate( 4 );
+		buf.putInt( code );
+		buf.position( 2 );
+		ByteBuffer pay = ByteBuffer.allocate( 2 + by.length );
+		pay.put( buf );
+		pay.put( by );
+		pay.rewind();
+		setPayload( pay );
+	}
+
+	private void initCloseCode() throws InvalidFrameException {
+		code = CloseFrame.NOCODE;
+		ByteBuffer payload = super.getPayloadData();
+		payload.mark();
+		if( payload.remaining() >= 2 ) {
+			ByteBuffer bb = ByteBuffer.allocate( 4 );
+			bb.position( 2 );
+			bb.putShort( payload.getShort() );
+			bb.position( 0 );
+			code = bb.getInt();
+
+			if( code == CloseFrame.ABNORMAL_CLOSE || code == CloseFrame.TLS_ERROR || code == CloseFrame.NOCODE || code > 4999 || code < 1000 || code == 1004 ) {
+				throw new InvalidFrameException( "closecode must not be sent over the wire: " + code );
+			}
+		}
+		payload.reset();
+	}
+
+	public int getCloseCode() {
+		return code;
+	}
+
+	private void initMessage() throws InvalidDataException {
+		if( code == CloseFrame.NOCODE ) {
+			reason = Charsetfunctions.stringUtf8( super.getPayloadData() );
+		} else {
+			ByteBuffer b = super.getPayloadData();
+			int mark = b.position();// because stringUtf8 also creates a mark
+			try {
+				b.position( b.position() + 2 );
+				reason = Charsetfunctions.stringUtf8( b );
+			} catch ( IllegalArgumentException e ) {
+				throw new InvalidFrameException( e );
+			} finally {
+				b.position( mark );
+			}
+		}
+	}
+
+	public String getMessage() {
+		return reason;
+	}
+
+	@Override
+	public String toString() {
+		return super.toString() + "code: " + code;
+	}
+
+	@Override
+	public void isValid() throws InvalidDataException {
+		super.isValid();
+		initCloseCode();
+		initMessage();
+	}
+
+	@Override
+	public ByteBuffer getPayloadData() {
+		if( code == NOCODE )
+			return ByteBufferUtils.getEmptyByteBuffer();
+		return super.getPayloadData();
+	}
+
 }

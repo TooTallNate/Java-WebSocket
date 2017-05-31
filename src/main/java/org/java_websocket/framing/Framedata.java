@@ -20,6 +20,24 @@ public interface Framedata {
 	boolean isFin();
 
 	/**
+	 * Indicates that this frame has the rsv1 bit set.
+	 * @return true, if this frame has the rsv1 bit set
+	 */
+	boolean isRSV1();
+
+	/**
+	 * Indicates that this frame has the rsv2 bit set.
+	 * @return true, if this frame has the rsv2 bit set
+	 */
+	boolean isRSV2();
+
+	/**
+	 * Indicates that this frame has the rsv3 bit set.
+	 * @return true, if this frame has the rsv3 bit set
+	 */
+	boolean isRSV3();
+
+	/**
 	 * Defines whether the "Payload data" is masked.
 	 * @return true, "Payload data" is masked
 	 */
