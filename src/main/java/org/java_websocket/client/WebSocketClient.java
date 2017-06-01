@@ -73,7 +73,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 
 	/**
 	 * Constructs a WebSocketClient instance and sets it to the connect to the
-	 * specified URI. The channel does not attampt to connect automatically. The connection
+	 * specified URI. The channel does not attempt to connect automatically. The connection
 	 * will be established once you call <var>connect</var>.
 	 * @param serverUri the server URI to connect to
 	 * @param protocolDraft The draft which should be used for this connection
