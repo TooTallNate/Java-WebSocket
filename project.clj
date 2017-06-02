@@ -1,4 +1,4 @@
-(defproject org.java-websocket/java-websocket "1.3.3"
+(defproject org.java-websocket/java-websocket "1.3.4"
   :description "A barebones WebSocket client and server implementation written 100% in Java"
   :url "https://github.com/TooTallNate/Java-WebSocket"
   :scm {:name "git"
