@@ -46,7 +46,7 @@ public abstract class FramedataImpl1 implements Framedata {
     /**
      * Check if the frame is valid due to specification
      *
-     * @throws InvalidDataException
+     * @throws InvalidDataException thrown if the frame is not a valid frame
      */
     public abstract void isValid() throws InvalidDataException;
 

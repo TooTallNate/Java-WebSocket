@@ -133,7 +133,11 @@ public class CloseFrame extends ControlFrame {
         setCode(CloseFrame.NORMAL);
     }
 
-    public void setCode(int code) {
+	/**
+	 * Set the close code for this close frame
+	 * @param code the close code
+	 */
+	public void setCode(int code) {
         this.code = code;
         // CloseFrame.TLS_ERROR is not allowed to be transfered over the wire
         if (code == CloseFrame.TLS_ERROR) {
@@ -143,6 +147,10 @@ public class CloseFrame extends ControlFrame {
         updatePayload();
     }
 
+	/**
+	 * Set the close reason for this close frame
+	 * @param reason the reason code
+	 */
     public void setReason(String reason) {
         if (reason == null) {
             reason = "";

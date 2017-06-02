@@ -9,6 +9,7 @@ public abstract class DataFrame extends FramedataImpl1 {
 
 	/**
 	 * Class to represent a data frame
+	 * @param opcode the opcode to use
 	 */
 	public DataFrame(Opcode opcode) {
 		super(opcode);
