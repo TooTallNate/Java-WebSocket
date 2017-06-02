@@ -176,6 +176,9 @@ public class CloseFrame extends ControlFrame {
     @Override
     public void isValid() throws InvalidDataException {
         super.isValid();
+        if (code == CloseFrame.NO_UTF8 && reason == null) {
+        	throw new InvalidDataException( CloseFrame.NO_UTF8 );
+		}
         if (code == CloseFrame.NOCODE && 0 < reason.length()) {
             throw new InvalidDataException(PROTOCOL_ERROR, "A close frame must have a closecode if it has a reason");
         }
@@ -190,35 +193,38 @@ public class CloseFrame extends ControlFrame {
 
     @Override
     public void setPayload(ByteBuffer payload) {
-        code = CloseFrame.NOCODE;
-        payload.mark();
-        if( payload.remaining() >= 2 ) {
-            ByteBuffer bb = ByteBuffer.allocate( 4 );
-            bb.position( 2 );
-            bb.putShort( payload.getShort() );
-            bb.position( 0 );
-            code = bb.getInt();
-        }
-        payload.reset();
-        try {
-            if (code == CloseFrame.NOCODE) {
-                reason = Charsetfunctions.stringUtf8(payload);
-            } else {
-                ByteBuffer b = super.getPayloadData();
-                int mark = b.position();// because stringUtf8 also creates a mark
-                try {
-                    b.position(b.position() + 2);
-                    reason = Charsetfunctions.stringUtf8(b);
-                } catch (IllegalArgumentException e) {
-                    throw new InvalidFrameException(e);
-                } finally {
-                    b.position(mark);
-                }
-            }
-        } catch (InvalidDataException e) {
-            reason = "";
-        }
-    }
+		code = CloseFrame.NOCODE;
+		reason = "";
+		payload.mark();
+		if( payload.remaining() == 0 ) {
+			code = CloseFrame.NORMAL;
+		} else if( payload.remaining() == 1 ) {
+			code = CloseFrame.PROTOCOL_ERROR;
+		} else {
+			if( payload.remaining() >= 2 ) {
+				ByteBuffer bb = ByteBuffer.allocate( 4 );
+				bb.position( 2 );
+				bb.putShort( payload.getShort() );
+				bb.position( 0 );
+				code = bb.getInt();
+			}
+			payload.reset();
+			try {
+				int mark = payload.position();// because stringUtf8 also creates a mark
+				try {
+					payload.position( payload.position() + 2 );
+					reason = Charsetfunctions.stringUtf8( payload );
+				} catch ( IllegalArgumentException e ) {
+					throw new InvalidDataException( CloseFrame.NO_UTF8 );
+				} finally {
+					payload.position( mark );
+				}
+			} catch ( InvalidDataException e ) {
+				code = CloseFrame.NO_UTF8;
+				reason = null;
+			}
+		}
+	}
 
     /**
      * Update the payload to represent the close code and the reason
