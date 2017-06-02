@@ -447,6 +447,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 			if( server != null ) {
 				try {
 					server.close();
+					selector.select();
 				} catch ( IOException e ) {
 					onError( null, e );
 				}
