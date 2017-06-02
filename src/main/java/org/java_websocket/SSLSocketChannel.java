@@ -18,12 +18,12 @@ import java.util.concurrent.ExecutorService;
 
 /**
  * A class that represents an SSL/TLS peer, and can be extended to create a client or a server.
- * <p/>
+ *
  * It makes use of the JSSE framework, and specifically the {@link SSLEngine} logic, which
  * is described by Oracle as "an advanced API, not appropriate for casual use", since
  * it requires the user to implement much of the communication establishment procedure himself.
  * More information about it can be found here: http://docs.oracle.com/javase/8/docs/technotes/guides/security/jsse/JSSERefGuide.html#SSLEngine
- * <p/>
+ *
  * {@link SSLSocketChannel} implements the handshake protocol, required to establish a connection between two peers,
  * which is common for both client and server and provides the abstract {@link SSLSocketChannel#read(ByteBuffer)} and
  * {@link SSLSocketChannel#write(ByteBuffer)} (String)} methods, that need to be implemented by the specific SSL/TLS peer

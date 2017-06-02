@@ -42,7 +42,7 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
 
     /**
      * Setter for the interval checking for lost connections
-     * A value >= 0 results in the check to be deactivated
+     * A value lower or equal 0 results in the check to be deactivated
      *
      * @param connectionLostTimeout the interval in seconds
      */
