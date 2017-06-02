@@ -1,7 +1,7 @@
 Java WebSockets
 ===============
-[![Build Status](https://travis-ci.org/marci4/Java-WebSocket-Dev.svg?branch=master)](https://travis-ci.org/marci4/Java-WebSocket-Dev) [![Clojars Project](https://img.shields.io/clojars/v/org.java-websocket/java-websocket.svg)](https://clojars.org/org.java-websocket/java-websocket)
-
+[![Build Status](https://travis-ci.org/marci4/Java-WebSocket-Dev.svg?branch=master)](https://travis-ci.org/marci4/Java-WebSocket-Dev)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.java-websocket/Java-WebSocket/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.java-websocket/Java-WebSocket)
 
 This repository contains a barebones WebSocket server and client implementation
 written in 100% Java. The underlying classes are implemented `java.nio`, which allows for a
@@ -36,37 +36,30 @@ will create the javadoc of this library at ```doc/``` and build the library itse
 The ant targets are: ```compile```, ```jar```, ```doc``` and ```clean```
 
 ### Maven
-To use maven add this repository to your pom.xml:
-```xml
-<repository>
-  <id>clojars.org</id>
-  <url>http://clojars.org/repo</url>
-</repository>
-```
-Also add this dependency to your pom.xml:
+To use maven add this dependency to your pom.xml:
 ```xml
 <dependency>
   <groupId>org.java-websocket</groupId>
-  <artifactId>java-websocket</artifactId>
-  <version>1.3.3</version>
+  <artifactId>Java-WebSocket</artifactId>
+  <version>1.3.4</version>
 </dependency>
 ```
 
 ### Gradle
-To use Gradle add this repository to your repositories list :
+To use Gradle add the maven central repository to your repositories list :
 ```xml
-maven { url "http://clojars.org/repo" }
+mavenCentral()
 ```
 Then you can just add the latest version to your build.
 ```xml
-compile "org.java-websocket:java-websocket:1.3.3"
+compile "org.java-websocket:Java-WebSocket:1.3.4"
 ```
 
 
 ### Leiningen
 
 ``` bash
-[org.java-websocket/java-websocket "1.3.3"]
+[org.java-websocket/java-websocket "1.3.4"]
 ```
 
 Running the Examples
