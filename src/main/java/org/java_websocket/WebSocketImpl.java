@@ -25,6 +25,7 @@ import java.nio.channels.NotYetConnectedException;
 import java.nio.channels.SelectionKey;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -109,6 +110,11 @@ public class WebSocketImpl implements WebSocket {
 	 * Attribute, when the last pong was recieved
 	 */
 	private long lastPong = System.currentTimeMillis();
+
+	/**
+	 * Attribut to synchronize the write
+	 */
+	private static final Object synchronizeWriteObject = new Object();
 
 	/**
 	 * Creates a websocket with server role
@@ -209,8 +215,8 @@ public class WebSocketImpl implements WebSocket {
 				HandshakeState isflashedgecase = isFlashEdgeCase( socketBuffer );
 				if( isflashedgecase == HandshakeState.MATCHED ) {
 					try {
-						write( ByteBuffer.wrap( Charsetfunctions.utf8Bytes( wsl.getFlashPolicy( this ) ) ) );
-						close( CloseFrame.FLASHPOLICY, "" );
+						write( Collections.singletonList( ByteBuffer.wrap(Charsetfunctions.utf8Bytes(wsl.getFlashPolicy(this)))));
+						close(CloseFrame.FLASHPOLICY, "");
 					} catch ( InvalidDataException e ) {
 						close( CloseFrame.ABNORMAL_CLOSE, "remote peer closed connection before flashpolicy could be transmitted", true );
 					}
@@ -623,9 +629,13 @@ public class WebSocketImpl implements WebSocket {
 	private void send( Collection<Framedata> frames ) {
 		if( !isOpen() )
 			throw new WebsocketNotConnectedException();
-		for( Framedata f : frames ) {
-			sendFrame( f );
+		ArrayList<ByteBuffer> outgoingFrames = new ArrayList<ByteBuffer>();
+		for (Framedata f : frames) {
+			if( DEBUG )
+				System.out.println( "send frame: " + f );
+			 outgoingFrames.add( draft.createBinaryFrame( f ) );
 		}
+		write( outgoingFrames );
 	}
 
 	@Override
@@ -635,9 +645,7 @@ public class WebSocketImpl implements WebSocket {
 
 	@Override
 	public void sendFrame( Framedata framedata ) {
-		if( DEBUG )
-			System.out.println( "send frame: " + framedata );
-		write( draft.createBinaryFrame( framedata ) );
+		send ( Collections.singletonList( framedata ) );
 	}
 
 	public void sendPing() throws NotYetConnectedException {
@@ -707,8 +715,10 @@ public class WebSocketImpl implements WebSocket {
 	}
 
 	private void write( List<ByteBuffer> bufs ) {
-		for( ByteBuffer b : bufs ) {
-			write( b );
+		synchronized ( synchronizeWriteObject ) {
+			for (ByteBuffer b : bufs) {
+				write(b);
+			}
 		}
 	}
 
