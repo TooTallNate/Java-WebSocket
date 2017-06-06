@@ -2,6 +2,7 @@ Java WebSockets
 ===============
 [![Build Status](https://travis-ci.org/marci4/Java-WebSocket-Dev.svg?branch=master)](https://travis-ci.org/marci4/Java-WebSocket-Dev)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.java-websocket/Java-WebSocket/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.java-websocket/Java-WebSocket)
+[![Javadocs](https://www.javadoc.io/badge/org.java-websocket/Java-WebSocket.svg)](https://www.javadoc.io/doc/org.java-websocket/Java-WebSocket)
 
 This repository contains a barebones WebSocket server and client implementation
 written in 100% Java. The underlying classes are implemented `java.nio`, which allows for a
