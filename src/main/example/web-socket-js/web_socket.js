@@ -4,10 +4,15 @@
 // Reference: http://tools.ietf.org/html/rfc6455
 
 (function() {
-  
+	/* Safari Fix */
+	if(typeof(navigator.userAgent) != 'undefined' && (navigator.userAgent.indexOf('Safari') && navigator.userAgent.indexOf('/5.1'))) {
+		WebSocket						= function(url) { return undefined; };
+		WebSocket.prototype.deprecated	= function() { return true; };
+	}
+
   if (window.WEB_SOCKET_FORCE_FLASH) {
     // Keeps going.
-  } else if (window.WebSocket) {
+  } else if (window.WebSocket && typeof(WebSocket.deprecated) != 'undefined') {
     return;
   } else if (window.MozWebSocket) {
     // Firefox.
