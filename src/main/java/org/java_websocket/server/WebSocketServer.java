@@ -25,6 +25,7 @@
 
 package org.java_websocket.server;
 
+import java.net.StandardSocketOptions;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -361,6 +362,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 							if(channel==null){
 								continue;
 							}
+							channel.setOption(StandardSocketOptions.TCP_NODELAY, new Boolean(true));
 							channel.configureBlocking( false );
 							Socket socket = channel.socket();
 							socket.setTcpNoDelay( isTcpNoDelay() );
