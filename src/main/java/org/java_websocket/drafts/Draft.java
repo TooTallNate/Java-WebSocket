@@ -134,7 +134,12 @@ public abstract class Draft {
 			String[] pair = line.split( ":", 2 );
 			if( pair.length != 2 )
 				throw new InvalidHandshakeException( "not an http header" );
-			handshake.put( pair[ 0 ], pair[ 1 ].replaceFirst( "^ +", "" ) );
+			// If the handshake contains already a specific key, append the new value
+			if ( handshake.hasFieldValue( pair[ 0 ] ) ) {
+				handshake.put( pair[0], handshake.getFieldValue( pair[ 0 ] ) + "; " + pair[1].replaceFirst( "^ +", "" ) );
+			} else {
+				handshake.put( pair[0], pair[1].replaceFirst( "^ +", "" ) );
+			}
 			line = readStringLine( buf );
 		}
 		if( line == null )
