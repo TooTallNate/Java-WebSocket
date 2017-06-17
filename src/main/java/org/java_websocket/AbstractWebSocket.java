@@ -27,6 +27,7 @@ package org.java_websocket;
 
 import org.java_websocket.framing.CloseFrame;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -104,23 +105,30 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
         cancelConnectionLostTimer();
         connectionLostTimer = new Timer();
         connectionLostTimerTask = new TimerTask() {
+
+			/**
+			 * Keep the connections in a separate list to not cause deadlocks
+			 */
+			private ArrayList<WebSocket> connections = new ArrayList<WebSocket>(  );
             @Override
             public void run() {
-                Collection<WebSocket> con = connections();
-                synchronized ( con ) {
-                    long current = (System.currentTimeMillis()-(connectionLostTimeout * 1500));
-                    for( WebSocket conn : con ) {
-                        if (conn instanceof WebSocketImpl) {
-                            if( ((WebSocketImpl)conn).getLastPong() < current ) {
-                                if (WebSocketImpl.DEBUG)
-                                    System.out.println("Closing connection due to no pong received: " + conn.toString());
-                                conn.close( CloseFrame.ABNORMAL_CLOSE );
-                            } else {
-                                conn.sendPing();
-                            }
-                        }
-                    }
-                }
+                connections.clear();
+                connections.addAll( connections() );
+				long current = (System.currentTimeMillis()-(connectionLostTimeout * 1500));
+				WebSocketImpl webSocketImpl;
+				for( WebSocket conn : connections ) {
+					if (conn instanceof WebSocketImpl) {
+						webSocketImpl = (WebSocketImpl)conn;
+						if( webSocketImpl.getLastPong() < current ) {
+							if (WebSocketImpl.DEBUG)
+								System.out.println("Closing connection due to no pong received: " + conn.toString());
+							webSocketImpl.closeConnection( CloseFrame.ABNORMAL_CLOSE , false );
+						} else {
+							webSocketImpl.sendPing();
+						}
+					}
+				}
+				connections.clear();
             }
         };
         connectionLostTimer.scheduleAtFixedRate( connectionLostTimerTask,connectionLostTimeout * 1000, connectionLostTimeout * 1000 );
