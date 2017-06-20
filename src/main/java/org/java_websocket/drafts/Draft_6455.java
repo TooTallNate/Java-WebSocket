@@ -39,6 +39,7 @@ import java.util.TimeZone;
  * Implementation for the RFC 6455 websocket protocol
  * This is the recommended class for your websocket connection
  */
+@SuppressWarnings("deprecation")
 public class Draft_6455 extends Draft_17 {
 
     @Override
