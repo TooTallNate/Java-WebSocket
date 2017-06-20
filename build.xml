@@ -12,6 +12,7 @@
 	</target>
 
 	<target name="jar" depends="compile">
+		<mkdir dir="dist"/>
 		<jar destfile="dist/java_websocket.jar">
 			<fileset dir="build/classes" includes="**/*.class" />
 		</jar>
