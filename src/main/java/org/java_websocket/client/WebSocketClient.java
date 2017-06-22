@@ -40,7 +40,7 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.SSLSocketFactory
 
 import org.java_websocket.AbstractWebSocket;
 import org.java_websocket.WebSocket;
@@ -227,22 +227,34 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	}
 
 	public void run() {
+
 		try {
+			boolean isNewSocket = false;
+
 			if( socket == null ) {
-				if (this.uri.getScheme().equals("wss")) {
-					SSLContext sslContext = SSLContext.getInstance("TLS");
-					sslContext.init(null, null, null);
-					SSLSocketFactory factory = sslContext.getSocketFactory();
-					socket = factory.createSocket();
-				} else {
-					socket = new Socket( proxy );
-				}
+				socket = new Socket( proxy );
+				isNewSocket = true;
+
 			} else if( socket.isClosed() ) {
 				throw new IOException();
 			}
+
 			socket.setTcpNoDelay( isTcpNoDelay() );
-			if( !socket.isBound() )
+
+			if( !socket.isBound() ) {
+
 				socket.connect( new InetSocketAddress( uri.getHost(), getPort() ), connectTimeout );
+			}
+
+			// if the socket is set by others we don't apply any TLS wrapper
+			if (isNewSocket && uri.getScheme().equals("wss")) {
+
+				SSLContext sslContext = SSLContext.getInstance("TLS");
+				sslContext.init(null, null, null);
+				SSLSocketFactory factory = sslContext.getSocketFactory();
+				socket = factory.createSocket(socket, uri.getHost(), getPort(), true);
+			}
+
 			istream = socket.getInputStream();
 			ostream = socket.getOutputStream();
 
