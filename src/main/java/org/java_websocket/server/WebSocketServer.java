@@ -593,6 +593,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 	 * @return Removing connection successful
 	 */
 	protected boolean removeConnection( WebSocket ws ) {
+		boolean removed = false;
 		synchronized ( connections ) {
 			if (this.connections.contains( ws )) {
 				removed = this.connections.remove( ws );
