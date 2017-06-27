@@ -40,7 +40,7 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory
+import javax.net.ssl.SSLSocketFactory;
 
 import org.java_websocket.AbstractWebSocket;
 import org.java_websocket.WebSocket;
