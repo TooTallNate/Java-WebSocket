@@ -593,10 +593,16 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 	 * @return Removing connection successful
 	 */
 	protected boolean removeConnection( WebSocket ws ) {
-		boolean removed;
+		boolean removed = false;
 		synchronized ( connections ) {
-			removed = this.connections.remove( ws );
-			assert ( removed );
+			if (this.connections.contains( ws )) {
+				removed = this.connections.remove( ws );
+			} else {
+				//Don't throw an assert error if the ws is not in the list. e.g. when the other endpoint did not send any handshake. see #512
+				if (WebSocketImpl.DEBUG) {
+					System.out.println("Removing connection which is not in the connections collection! Possible no handshake recieved! " + ws);
+				}
+			}
 		}
 		if( isclosed.get() && connections.size() == 0 ) {
 			selectorthread.interrupt();
