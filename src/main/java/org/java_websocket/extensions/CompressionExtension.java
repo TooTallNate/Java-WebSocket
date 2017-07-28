@@ -23,28 +23,30 @@
  *  OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package org.java_websocket.framing;
+package org.java_websocket.extensions;
 
 import org.java_websocket.exceptions.InvalidDataException;
-import org.java_websocket.util.Charsetfunctions;
+import org.java_websocket.exceptions.InvalidFrameException;
+import org.java_websocket.framing.ControlFrame;
+import org.java_websocket.framing.DataFrame;
+import org.java_websocket.framing.Framedata;
 
 /**
- * Class to represent a text frames
+ * Implementation for a compression extension specified by https://tools.ietf.org/html/rfc7692
  */
-public class TextFrame extends DataFrame {
+public abstract class CompressionExtension extends DefaultExtension {
 
-    /**
-     * constructor which sets the opcode of this frame to text
-     */
-    public TextFrame() {
-        super(Opcode.TEXT);
-    }
-
-    @Override
-    public void isValid() throws InvalidDataException {
-        super.isValid();
-        if (!Charsetfunctions.isValidUTF8( getPayloadData() )) {
-            throw new InvalidDataException(CloseFrame.NO_UTF8);
-        }
-    }
+	@Override
+	public void isFrameValid( Framedata inputFrame ) throws InvalidDataException {
+		if( inputFrame instanceof DataFrame ) {
+			if( inputFrame.isRSV2() || inputFrame.isRSV3() ) {
+				throw new InvalidFrameException( "bad rsv RSV1: " + inputFrame.isRSV1() + " RSV2: " + inputFrame.isRSV2() + " RSV3: " + inputFrame.isRSV3() );
+			}
+		}
+		if( inputFrame instanceof ControlFrame ) {
+			if( inputFrame.isRSV1() || inputFrame.isRSV2() || inputFrame.isRSV3() ) {
+				throw new InvalidFrameException( "bad rsv RSV1: " + inputFrame.isRSV1() + " RSV2: " + inputFrame.isRSV2() + " RSV3: " + inputFrame.isRSV3() );
+			}
+		}
+	}
 }

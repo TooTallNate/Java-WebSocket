@@ -87,7 +87,7 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
     protected void stopConnectionLostTimer() {
         if (connectionLostTimer != null ||connectionLostTimerTask != null) {
             if( WebSocketImpl.DEBUG )
-                System.out.println( "Connection lost timer stoped" );
+                System.out.println( "Connection lost timer stopped" );
             cancelConnectionLostTimer();
         }
     }

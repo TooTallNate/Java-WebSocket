@@ -749,7 +749,7 @@ public class WebSocketImpl implements WebSocket {
 
 	private void open( Handshakedata d ) {
 		if( DEBUG )
-			System.out.println( "open using draft: " + draft.getClass().getSimpleName() );
+			System.out.println( "open using draft: " + draft );
 		readystate = READYSTATE.OPEN;
 		try {
 			wsl.onWebsocketOpen( this, d );
