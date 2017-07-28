@@ -263,4 +263,8 @@ public abstract class Draft {
 		return role;
 	}
 
+	public String toString() {
+		return getClass().getSimpleName();
+	}
+
 }

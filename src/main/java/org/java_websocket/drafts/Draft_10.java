@@ -45,7 +45,7 @@ import java.util.Random;
 @Deprecated
 public class Draft_10 extends Draft {
 
-	private class IncompleteException extends Throwable {
+	class IncompleteException extends Throwable {
 
 		/**
 		 * It's Serializable.
@@ -77,7 +77,7 @@ public class Draft_10 extends Draft {
 		return -1;
 	}
 
-	private ByteBuffer incompleteframe;
+	ByteBuffer incompleteframe;
 
 	private final Random reuseableRandom = new Random();
 
@@ -232,7 +232,7 @@ public class Draft_10 extends Draft {
 		return buffer;
 	}
 
-	private Opcode toOpcode( byte opcode ) throws InvalidFrameException {
+	Opcode toOpcode( byte opcode ) throws InvalidFrameException {
 		switch(opcode) {
 			case 0:
 				return Opcode.CONTINUOUS;
