@@ -35,7 +35,6 @@ import org.java_websocket.extensions.IExtension;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.framing.FramedataImpl1;
 import org.java_websocket.handshake.*;
-import org.java_websocket.util.Charsetfunctions;
 
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -177,6 +176,8 @@ public class Draft_6455 extends Draft_17 {
 	@Override
 	public ByteBuffer createBinaryFrame( Framedata framedata ) {
 		getExtension().encodeFrame( framedata );
+		if( WebSocketImpl.DEBUG )
+			System.out.println( "afterEnconding(" + framedata.getPayloadData().remaining() + "): {" + ( framedata.getPayloadData().remaining() > 1000 ? "too big to display" : new String( framedata.getPayloadData().array() ) ) + "}" );
 		return super.createBinaryFrame( framedata );
 	}
 
@@ -262,7 +263,7 @@ public class Draft_6455 extends Draft_17 {
 		getExtension().isFrameValid( frame );
 		getExtension().decodeFrame( frame );
 		if( WebSocketImpl.DEBUG )
-			System.out.println( "Decode Payload after: " + Arrays.toString( Charsetfunctions.utf8Bytes( new String( frame.getPayloadData().array() ) ) ) );
+			System.out.println( "afterDecoding(" + frame.getPayloadData().remaining() + "): {" + ( frame.getPayloadData().remaining() > 1000 ? "too big to display" : new String( frame.getPayloadData().array() ) ) + "}" );
 		frame.isValid();
 		return frame;
 	}

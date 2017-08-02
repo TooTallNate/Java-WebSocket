@@ -201,6 +201,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 		this.address = address;
 		this.connections = connectionscontainer;
 		setTcpNoDelay(false);
+		setReuseAddr(false);
 		iqueue = new LinkedList<WebSocketImpl>();
 
 		decoders = new ArrayList<WebSocketWorker>( decodercount );
@@ -318,6 +319,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 			server.configureBlocking( false );
 			ServerSocket socket = server.socket();
 			socket.setReceiveBufferSize( WebSocketImpl.RCVBUF );
+			socket.setReuseAddress( isReuseAddr() );
 			socket.bind( address );
 			selector = Selector.open();
 			server.register( selector, server.validOps() );

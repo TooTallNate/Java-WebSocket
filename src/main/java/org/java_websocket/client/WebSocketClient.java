@@ -130,6 +130,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 		this.headers = httpHeaders;
 		this.connectTimeout = connectTimeout;
 		setTcpNoDelay( false );
+		setReuseAddr( false );
 		this.engine = new WebSocketImpl( this, protocolDraft );
 	}
 
@@ -240,9 +241,9 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 			}
 
 			socket.setTcpNoDelay( isTcpNoDelay() );
+			socket.setReuseAddress( isReuseAddr() );
 
 			if( !socket.isBound() ) {
-
 				socket.connect( new InetSocketAddress( uri.getHost(), getPort() ), connectTimeout );
 			}
 
