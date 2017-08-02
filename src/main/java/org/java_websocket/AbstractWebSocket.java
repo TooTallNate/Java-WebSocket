@@ -43,7 +43,12 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
      */
     private boolean tcpNoDelay;
 
-    /**
+	/**
+	 * Attribute which allows you to enable/disable the SO_REUSEADDR socket option.
+	 */
+	private boolean reuseAddr;
+
+	/**
      * Attribute for a timer allowing to check for lost connections
      */
     private Timer connectionLostTimer;
@@ -173,5 +178,25 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
     public void setTcpNoDelay( boolean tcpNoDelay ) {
         this.tcpNoDelay = tcpNoDelay;
     }
+
+	/**
+	 * Tests Tests if SO_REUSEADDR is enabled.
+	 *
+	 * @return a boolean indicating whether or not SO_REUSEADDR is enabled.
+	 */
+	public boolean isReuseAddr() {
+		return reuseAddr;
+	}
+
+	/**
+	 * Setter for soReuseAddr
+	 * <p>
+	 * Enable/disable SO_REUSEADDR for the socket
+	 *
+	 * @param reuseAddr whether to enable or disable SO_REUSEADDR
+	 */
+	public void setReuseAddr( boolean reuseAddr ) {
+		this.reuseAddr = reuseAddr;
+	}
 
 }
