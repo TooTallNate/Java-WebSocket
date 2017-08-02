@@ -100,6 +100,11 @@ public interface IExtension {
 	IExtension copyInstance();
 
 	/**
+	 * Cleaning up internal stats when the draft gets reset.
+	 */
+	void reset();
+
+	/**
 	 * Return a string which should contain the class name as well as additional information about the current configurations for this extension (DEBUG purposes)
 	 *
 	 * @return a string containing the class name as well as additional information

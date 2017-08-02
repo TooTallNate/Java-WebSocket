@@ -322,6 +322,15 @@ public class Draft_6455 extends Draft_17 {
 		}
 	}
 
+	@Override
+	public void reset() {
+		super.reset();
+		if (extension != null) {
+			extension.reset();
+		}
+		extension = null;
+	}
+
 	/**
 	 * Generate a date for for the date-header
 	 *
