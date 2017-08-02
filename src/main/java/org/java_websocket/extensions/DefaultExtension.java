@@ -79,6 +79,10 @@ public class DefaultExtension implements IExtension {
 		return new DefaultExtension();
 	}
 
+	public void reset() {
+		//Nothing to do here. No internal stats.
+	}
+
 	@Override
 	public String toString() {
 		return getClass().getSimpleName();
