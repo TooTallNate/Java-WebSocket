@@ -346,6 +346,9 @@ public class Draft_6455 extends Draft_17 {
 
 	@Override
 	public String toString() {
-		return super.toString() + " extension: " + getExtension().toString();
+		String result = super.toString();
+		if( getExtension() != null )
+			result += " extension: " + getExtension().toString();
+		return result;
 	}
 }

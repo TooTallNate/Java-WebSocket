@@ -260,7 +260,7 @@ public class WebSocketImpl implements WebSocket {
 								socketBuffer.reset();
 								Handshakedata tmphandshake = d.translateHandshake( socketBuffer );
 								if( !( tmphandshake instanceof ClientHandshake ) ) {
-									flushAndClose( CloseFrame.PROTOCOL_ERROR, "wrong http function", false );
+									closeConnectionDueToWrongHandshake( new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "wrong http function" ));
 									return false;
 								}
 								ClientHandshake handshake = ( ClientHandshake ) tmphandshake;
@@ -271,11 +271,11 @@ public class WebSocketImpl implements WebSocket {
 									try {
 										response = wsl.onWebsocketHandshakeReceivedAsServer( this, d, handshake );
 									} catch ( InvalidDataException e ) {
-										flushAndClose( e.getCloseCode(), e.getMessage(), false );
+										closeConnectionDueToWrongHandshake( e );
 										return false;
 									} catch ( RuntimeException e ) {
 										wsl.onWebsocketError( this, e );
-										flushAndClose( CloseFrame.NEVER_CONNECTED, e.getMessage(), false );
+										closeConnectionDueToInternalServerError( e );
 										return false;
 									}
 									write( d.createHandshake( d.postProcessHandshakeResponseAsServer( handshake, response ), role ) );
@@ -288,7 +288,7 @@ public class WebSocketImpl implements WebSocket {
 							}
 						}
 						if( draft == null ) {
-							close( CloseFrame.PROTOCOL_ERROR, "no draft matches" );
+							closeConnectionDueToWrongHandshake( new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "no draft matches"));
 						}
 						return false;
 					} else {
@@ -357,6 +357,42 @@ public class WebSocketImpl implements WebSocket {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Close the connection if the received handshake was not correct
+	 * @param exception the InvalidDataException causing this problem
+	 */
+	private void closeConnectionDueToWrongHandshake( InvalidDataException exception ) {
+		write(generateHttpResponseDueToError( 404 ));
+		flushAndClose( exception.getCloseCode(), exception.getMessage(), false );
+	}
+
+	/**
+	 * Close the connection if there was a server error by a RuntimeException
+	 * @param exception the RuntimeException causing this problem
+	 */
+	private void closeConnectionDueToInternalServerError(RuntimeException exception) {
+		write(generateHttpResponseDueToError( 500 ));
+		flushAndClose( CloseFrame.NEVER_CONNECTED, exception.getMessage(), false );
+	}
+
+	/**
+	 * Generate a simple response for the corresponding endpoint to indicate some error
+	 * @param errorCode the http error code
+	 * @return the complete response as ByteBuffer
+	 */
+	private ByteBuffer generateHttpResponseDueToError(int errorCode) {
+		String errorCodeDescription;
+		switch (errorCode) {
+			case 404:
+				errorCodeDescription = "404 WebSocket Upgrade Failure";
+				break;
+			case 500:
+			default:
+				errorCodeDescription =  "500 Internal Server Error";
+		}
+		return ByteBuffer.wrap( Charsetfunctions.asciiBytes( "HTTP/1.1 "+ errorCodeDescription +"\r\nContent-Type: text/html\nServer: TooTallNate Java-WebSocket\r\nContent-Length: " + (48 + errorCodeDescription.length()) +"\r\n\r\n<html><head></head><body><h1>" + errorCodeDescription + "</h1></body></html>" ));
 	}
 
 	private void decodeFrames( ByteBuffer socketBuffer ) {
