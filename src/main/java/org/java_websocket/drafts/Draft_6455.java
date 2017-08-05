@@ -147,6 +147,7 @@ public class Draft_6455 extends Draft_17 {
 		if( requestedExtensions.length() != 0 ) {
 			request.put( "Sec-WebSocket-Extensions", requestedExtensions.toString() );
 		}
+		request.put("origin", request.getFieldValue("host"));
 		return request;
 	}
 
