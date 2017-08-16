@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.java_websocket.WebSocket.Role;
+import org.java_websocket.WebSocketImpl;
 import org.java_websocket.exceptions.IncompleteHandshakeException;
 import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.exceptions.InvalidHandshakeException;
@@ -160,6 +161,14 @@ public abstract class Draft {
 	public abstract List<Framedata> createFrames( ByteBuffer binary, boolean mask );
 
 	public abstract List<Framedata> createFrames( String text, boolean mask );
+
+
+	/**
+	 * Handle the frame specific to the draft
+	 * @param webSocketImpl the websocketimpl used for this draft
+	 * @param frame the frame which is supposed to be handled
+	 */
+	public abstract void processFrame( WebSocketImpl webSocketImpl, Framedata frame ) throws InvalidDataException;
 
 	public List<Framedata> continuousFrame( Opcode op, ByteBuffer buffer, boolean fin ) {
 		if(op != Opcode.BINARY && op != Opcode.TEXT) {

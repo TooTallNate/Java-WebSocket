@@ -26,6 +26,7 @@
 package org.java_websocket.drafts;
 
 import org.java_websocket.WebSocket.Role;
+import org.java_websocket.WebSocketImpl;
 import org.java_websocket.exceptions.*;
 import org.java_websocket.framing.*;
 import org.java_websocket.framing.Framedata.Opcode;
@@ -168,6 +169,10 @@ public class Draft_10 extends Draft {
 			throw new NotSendableException( e );
 		}
 		return Collections.singletonList( ( Framedata ) curframe );
+	}
+
+	public void processFrame( WebSocketImpl webSocketImpl, Framedata frame ) throws InvalidDataException {
+		throw new UnsupportedOperationException( "This draft is not supported any more. Please use Draft_6455." );
 	}
 
 	private byte fromOpcode( Opcode opcode ) {

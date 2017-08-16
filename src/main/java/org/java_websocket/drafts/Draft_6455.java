@@ -25,6 +25,7 @@
 
 package org.java_websocket.drafts;
 
+import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketImpl;
 import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.exceptions.InvalidFrameException;
@@ -32,9 +33,11 @@ import org.java_websocket.exceptions.InvalidHandshakeException;
 import org.java_websocket.exceptions.LimitExedeedException;
 import org.java_websocket.extensions.DefaultExtension;
 import org.java_websocket.extensions.IExtension;
+import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.framing.FramedataImpl1;
 import org.java_websocket.handshake.*;
+import org.java_websocket.util.Charsetfunctions;
 
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -56,7 +59,12 @@ public class Draft_6455 extends Draft_17 {
 	/**
 	 * Attribute for all available extension in this draft
 	 */
-	private List<IExtension> knownExtensions;
+	List<IExtension> knownExtensions;
+
+	/**
+	 * Attribute for the current continuous frame
+	 */
+	private Framedata current_continuous_frame;
 
 	/**
 	 * Constructor for the websocket protocol specified by RFC 6455 with default extensions
@@ -325,7 +333,7 @@ public class Draft_6455 extends Draft_17 {
 	@Override
 	public void reset() {
 		super.reset();
-		if (extension != null) {
+		if( extension != null ) {
 			extension.reset();
 		}
 		extension = null;
@@ -342,6 +350,97 @@ public class Draft_6455 extends Draft_17 {
 				"EEE, dd MMM yyyy HH:mm:ss z", Locale.US );
 		dateFormat.setTimeZone( TimeZone.getTimeZone( "GMT" ) );
 		return dateFormat.format( calendar.getTime() );
+	}
+
+	@Override
+	public void processFrame( WebSocketImpl webSocketImpl, Framedata frame ) throws InvalidDataException {
+		Framedata.Opcode curop = frame.getOpcode();
+		if( curop == Framedata.Opcode.CLOSING ) {
+			int code = CloseFrame.NOCODE;
+			String reason = "";
+			if( frame instanceof CloseFrame ) {
+				CloseFrame cf = ( CloseFrame ) frame;
+				code = cf.getCloseCode();
+				reason = cf.getMessage();
+			}
+			if( webSocketImpl.getReadyState() == WebSocket.READYSTATE.CLOSING ) {
+				// complete the close handshake by disconnecting
+				webSocketImpl.closeConnection( code, reason, true );
+			} else {
+				// echo close handshake
+				if( getCloseHandshakeType() == CloseHandshakeType.TWOWAY )
+					webSocketImpl.close( code, reason, true );
+				else
+					webSocketImpl.flushAndClose( code, reason, false );
+			}
+			return;
+		} else if( curop == Framedata.Opcode.PING ) {
+			webSocketImpl.getWebSocketListener().onWebsocketPing( webSocketImpl, frame );
+			return;
+		} else if( curop == Framedata.Opcode.PONG ) {
+			webSocketImpl.setLastPong( System.currentTimeMillis() );
+			webSocketImpl.getWebSocketListener().onWebsocketPong( webSocketImpl, frame );
+			return;
+		} else if( !frame.isFin() || curop == Framedata.Opcode.CONTINUOUS ) {
+			if( curop != Framedata.Opcode.CONTINUOUS ) {
+				if( current_continuous_frame != null )
+					throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "Previous continuous frame sequence not completed." );
+				current_continuous_frame = frame;
+			} else if( frame.isFin() ) {
+				if( current_continuous_frame == null )
+					throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "Continuous frame sequence was not started." );
+				//Check if the whole payload is valid utf8, when the opcode indicates a text
+				if( current_continuous_frame.getOpcode() == Framedata.Opcode.TEXT ) {
+					//Checking a bit more from the frame before this one just to make sure all the code points are correct
+					int off = Math.max( current_continuous_frame.getPayloadData().limit() - 64, 0 );
+					current_continuous_frame.append( frame );
+					if( !Charsetfunctions.isValidUTF8( current_continuous_frame.getPayloadData(), off ) ) {
+						throw new InvalidDataException( CloseFrame.NO_UTF8 );
+					}
+				}
+				current_continuous_frame = null;
+			} else if( current_continuous_frame == null ) {
+				throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "Continuous frame sequence was not started." );
+			}
+			//Check if the whole payload is valid utf8, when the opcode indicates a text
+			if( curop == Framedata.Opcode.TEXT ) {
+				if( !Charsetfunctions.isValidUTF8( frame.getPayloadData() ) ) {
+					throw new InvalidDataException( CloseFrame.NO_UTF8 );
+				}
+			}
+			//Checking if the current continous frame contains a correct payload with the other frames combined
+			if( curop == Framedata.Opcode.CONTINUOUS && current_continuous_frame != null && current_continuous_frame.getOpcode() == Framedata.Opcode.TEXT ) {
+				//Checking a bit more from the frame before this one just to make sure all the code points are correct
+				int off = Math.max( current_continuous_frame.getPayloadData().limit() - 64, 0 );
+				current_continuous_frame.append( frame );
+				if( !Charsetfunctions.isValidUTF8( current_continuous_frame.getPayloadData(), off ) ) {
+					throw new InvalidDataException( CloseFrame.NO_UTF8 );
+				}
+			}
+			try {
+				webSocketImpl.getWebSocketListener().onWebsocketMessageFragment( webSocketImpl, frame );
+			} catch ( RuntimeException e ) {
+				webSocketImpl.getWebSocketListener().onWebsocketError( webSocketImpl, e );
+			}
+			return;
+		} else if( current_continuous_frame != null ) {
+			throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "Continuous frame sequence not completed." );
+		} else if( curop == Framedata.Opcode.TEXT ) {
+			try {
+				webSocketImpl.getWebSocketListener().onWebsocketMessage( webSocketImpl, Charsetfunctions.stringUtf8( frame.getPayloadData() ) );
+			} catch ( RuntimeException e ) {
+				webSocketImpl.getWebSocketListener().onWebsocketError( webSocketImpl, e );
+			}
+			return;
+		} else if( curop == Framedata.Opcode.BINARY ) {
+			try {
+				webSocketImpl.getWebSocketListener().onWebsocketMessage( webSocketImpl, frame.getPayloadData() );
+			} catch ( RuntimeException e ) {
+				webSocketImpl.getWebSocketListener().onWebsocketError( webSocketImpl, e );
+			}
+		} else {
+			throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "non control or continious frame expected" );
+		}
 	}
 
 	@Override

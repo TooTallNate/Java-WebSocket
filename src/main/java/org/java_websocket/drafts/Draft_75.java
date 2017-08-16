@@ -25,6 +25,7 @@
 
 package org.java_websocket.drafts;
 
+import org.java_websocket.WebSocketImpl;
 import org.java_websocket.exceptions.*;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.Framedata;
@@ -115,6 +116,10 @@ public class Draft_75 extends Draft {
 			throw new NotSendableException( e );
 		}
 		return Collections.singletonList( ( Framedata ) frame );
+	}
+
+	public void processFrame( WebSocketImpl webSocketImpl, Framedata frame ) throws InvalidDataException {
+		throw new UnsupportedOperationException( "This draft is not supported any more. Please use Draft_6455." );
 	}
 
 	@Override
