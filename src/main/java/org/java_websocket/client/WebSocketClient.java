@@ -40,6 +40,7 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSocketFactory;
 
 import org.java_websocket.AbstractWebSocket;
@@ -278,7 +279,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 			}
 			engine.eot();
 		} catch ( IOException e ) {
-			engine.eot();
+			handleIOException(e);
 		} catch ( RuntimeException e ) {
 			// this catch case covers internal errors only and indicates a bug in this websocket implementation
 			onError( e );
@@ -286,6 +287,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 		}
 		assert ( socket.isClosed() );
 	}
+
 	private int getPort() {
 		int port = uri.getPort();
 		if( port == -1 ) {
@@ -457,13 +459,13 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 		public void run() {
 			Thread.currentThread().setName( "WebsocketWriteThread" );
 			try {
-				while ( !Thread.interrupted() ) {
+				while( !Thread.interrupted() ) {
 					ByteBuffer buffer = engine.outQueue.take();
 					ostream.write( buffer.array(), 0, buffer.limit() );
 					ostream.flush();
 				}
 			} catch ( IOException e ) {
-				engine.eot();
+				handleIOException(e);
 			} catch ( InterruptedException e ) {
 				// this thread is regularly terminated via an interrupt
 			}
@@ -561,5 +563,17 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	@Override
 	public String getResourceDescriptor() {
 		return uri.getPath();
+	}
+
+
+	/**
+	 * Method to give some additional info for specific IOExceptions
+	 * @param e the IOException causing a eot.
+	 */
+	private void handleIOException( IOException e ) {
+		if (e instanceof SSLException) {
+			onError( e );
+		}
+		engine.eot();
 	}
 }

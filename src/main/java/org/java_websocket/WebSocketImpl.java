@@ -35,7 +35,6 @@ import org.java_websocket.exceptions.WebsocketNotConnectedException;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.framing.Framedata.Opcode;
-import org.java_websocket.framing.FramedataImpl1;
 import org.java_websocket.framing.PingFrame;
 import org.java_websocket.handshake.*;
 import org.java_websocket.server.WebSocketServer.WebSocketWorker;
@@ -48,10 +47,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
 import java.nio.channels.NotYetConnectedException;
 import java.nio.channels.SelectionKey;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -63,9 +59,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class WebSocketImpl implements WebSocket {
 	public static int RCVBUF = 16384;
 
-    /**
-     * Activate debug mode for additional infos
-     */
+	/**
+	 * Activate debug mode for additional infos
+	 */
 	public static boolean DEBUG = false; // must be final in the future in order to take advantage of VM optimization
 
 	/**
@@ -95,25 +91,20 @@ public class WebSocketImpl implements WebSocket {
 	private volatile boolean flushandclosestate = false;
 	private READYSTATE readystate = READYSTATE.NOT_YET_CONNECTED;
 
-    /**
-     * A list of drafts available for this websocket
-     */
+	/**
+	 * A list of drafts available for this websocket
+	 */
 	private List<Draft> knownDrafts;
 
-    /**
-     * The draft which is used by this websocket
-     */
+	/**
+	 * The draft which is used by this websocket
+	 */
 	private Draft draft = null;
 
-    /**
-     * The role which this websocket takes in the connection
-     */
+	/**
+	 * The role which this websocket takes in the connection
+	 */
 	private Role role;
-
-    /**
-     * The frame which had the opcode Continous set
-     */
-	private Framedata current_continuous_frame = null;
 
 	/**
 	 * the bytes of an incomplete received handshake
@@ -359,6 +350,22 @@ public class WebSocketImpl implements WebSocket {
 		return false;
 	}
 
+	private void decodeFrames( ByteBuffer socketBuffer ) {
+		List<Framedata> frames;
+		try {
+			frames = draft.translateFrame( socketBuffer );
+			for( Framedata f : frames ) {
+				if( DEBUG )
+					System.out.println( "matched frame: " + f );
+				draft.processFrame( this, f );
+			}
+		} catch ( InvalidDataException e1 ) {
+			wsl.onWebsocketError( this, e1 );
+			close( e1 );
+			return;
+		}
+	}
+
 	/**
 	 * Close the connection if the received handshake was not correct
 	 * @param exception the InvalidDataException causing this problem
@@ -395,115 +402,7 @@ public class WebSocketImpl implements WebSocket {
 		return ByteBuffer.wrap( Charsetfunctions.asciiBytes( "HTTP/1.1 "+ errorCodeDescription +"\r\nContent-Type: text/html\nServer: TooTallNate Java-WebSocket\r\nContent-Length: " + (48 + errorCodeDescription.length()) +"\r\n\r\n<html><head></head><body><h1>" + errorCodeDescription + "</h1></body></html>" ));
 	}
 
-	private void decodeFrames( ByteBuffer socketBuffer ) {
-
-		List<Framedata> frames;
-		try {
-			frames = draft.translateFrame( socketBuffer );
-			for( Framedata f : frames ) {
-				if( DEBUG )
-					System.out.println( "matched frame: " + f );
-				Opcode curop = f.getOpcode();
-				boolean fin = f.isFin();
-				//Not evaluating any further frames if the connection is in READYSTATE CLOSE
-				if( readystate == READYSTATE.CLOSING )
-					return;
-
-				if( curop == Opcode.CLOSING ) {
-					int code = CloseFrame.NOCODE;
-					String reason = "";
-					if( f instanceof CloseFrame ) {
-						CloseFrame cf = ( CloseFrame ) f;
-						code = cf.getCloseCode();
-						reason = cf.getMessage();
-					}
-					if( readystate == READYSTATE.CLOSING ) {
-						// complete the close handshake by disconnecting
-						closeConnection( code, reason, true );
-					} else {
-						// echo close handshake
-						if( draft.getCloseHandshakeType() == CloseHandshakeType.TWOWAY )
-							close( code, reason, true );
-						else
-							flushAndClose( code, reason, false );
-					}
-					continue;
-				} else if( curop == Opcode.PING ) {
-					wsl.onWebsocketPing( this, f );
-					continue;
-				} else if( curop == Opcode.PONG ) {
-					lastPong = System.currentTimeMillis();
-					wsl.onWebsocketPong( this, f );
-					continue;
-				} else if( !fin || curop == Opcode.CONTINUOUS ) {
-					if( curop != Opcode.CONTINUOUS ) {
-						if( current_continuous_frame != null )
-							throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "Previous continuous frame sequence not completed." );
-						current_continuous_frame = f;
-					} else if( fin ) {
-						if( current_continuous_frame == null )
-							throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "Continuous frame sequence was not started." );
-						//Check if the whole payload is valid utf8, when the opcode indicates a text
-						if( current_continuous_frame.getOpcode() == Opcode.TEXT ) {
-							//Checking a bit more from the frame before this one just to make sure all the code points are correct
-							int off = Math.max( current_continuous_frame.getPayloadData().limit() - 64, 0 );
-							current_continuous_frame.append( f );
-							if( !Charsetfunctions.isValidUTF8( current_continuous_frame.getPayloadData(), off ) ) {
-								throw new InvalidDataException( CloseFrame.NO_UTF8 );
-							}
-						}
-						current_continuous_frame = null;
-					} else if( current_continuous_frame == null ) {
-						throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "Continuous frame sequence was not started." );
-					}
-					//Check if the whole payload is valid utf8, when the opcode indicates a text
-					if( curop == Opcode.TEXT ) {
-						if( !Charsetfunctions.isValidUTF8( f.getPayloadData() ) ) {
-							throw new InvalidDataException( CloseFrame.NO_UTF8 );
-						}
-					}
-					//Checking if the current continous frame contains a correct payload with the other frames combined
-					if( curop == Opcode.CONTINUOUS && current_continuous_frame != null && current_continuous_frame.getOpcode() == Opcode.TEXT ) {
-						//Checking a bit more from the frame before this one just to make sure all the code points are correct
-						int off = Math.max( current_continuous_frame.getPayloadData().limit() - 64, 0 );
-						current_continuous_frame.append( f );
-						if( !Charsetfunctions.isValidUTF8( current_continuous_frame.getPayloadData(), off ) ) {
-							throw new InvalidDataException( CloseFrame.NO_UTF8 );
-						}
-					}
-					try {
-						wsl.onWebsocketMessageFragment( this, f );
-					} catch ( RuntimeException e ) {
-						wsl.onWebsocketError( this, e );
-					}
-
-				} else if( current_continuous_frame != null ) {
-					throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "Continuous frame sequence not completed." );
-				} else if( curop == Opcode.TEXT ) {
-					try {
-						wsl.onWebsocketMessage( this, Charsetfunctions.stringUtf8( f.getPayloadData() ) );
-					} catch ( RuntimeException e ) {
-						wsl.onWebsocketError( this, e );
-					}
-				} else if( curop == Opcode.BINARY ) {
-					try {
-						wsl.onWebsocketMessage( this, f.getPayloadData() );
-					} catch ( RuntimeException e ) {
-						wsl.onWebsocketError( this, e );
-					}
-				} else {
-					throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "non control or continious frame expected" );
-				}
-			}
-		} catch ( InvalidDataException e1 ) {
-			wsl.onWebsocketError( this, e1 );
-			close( e1 );
-			return;
-		}
-
-	}
-
-	private void close( int code, String message, boolean remote ) {
+	public void close( int code, String message, boolean remote ) {
 		if( readystate != READYSTATE.CLOSING && readystate != READYSTATE.CLOSED ) {
 			if( readystate == READYSTATE.OPEN ) {
 				if( code == CloseFrame.ABNORMAL_CLOSE ) {
@@ -524,13 +423,8 @@ public class WebSocketImpl implements WebSocket {
 						CloseFrame closeFrame = new CloseFrame();
 						closeFrame.setReason(message);
 						closeFrame.setCode(code);
-						try {
-							closeFrame.isValid();
-							sendFrame(closeFrame);
-						} catch (InvalidDataException e) {
-							//Rethrow invalid data exception
-							throw e;
-						}
+						closeFrame.isValid();
+						sendFrame(closeFrame);
 					} catch ( InvalidDataException e ) {
 						wsl.onWebsocketError( this, e );
 						flushAndClose( CloseFrame.ABNORMAL_CLOSE, "generated frame is invalid", false );
@@ -566,7 +460,7 @@ public class WebSocketImpl implements WebSocket {
 	 *               false means this endpoint decided to send the given code,<br>
 	 *               <code>remote</code> may also be true if this endpoint started the closing handshake since the other endpoint may not simply echo the <code>code</code> but close the connection the same time this endpoint does do but with an other <code>code</code>. <br>
 	 **/
-	protected synchronized void closeConnection( int code, String message, boolean remote ) {
+	public synchronized void closeConnection( int code, String message, boolean remote ) {
 		if( readystate == READYSTATE.CLOSED ) {
 			return;
 		}
@@ -610,7 +504,7 @@ public class WebSocketImpl implements WebSocket {
 		closeConnection( code, message, false );
 	}
 
-	protected synchronized void flushAndClose( int code, String message, boolean remote ) {
+	public synchronized void flushAndClose( int code, String message, boolean remote ) {
 		if( flushandclosestate ) {
 			return;
 		}
@@ -694,7 +588,7 @@ public class WebSocketImpl implements WebSocket {
 		for (Framedata f : frames) {
 			if( DEBUG )
 				System.out.println( "send frame: " + f );
-			 outgoingFrames.add( draft.createBinaryFrame( f ) );
+			outgoingFrames.add( draft.createBinaryFrame( f ) );
 		}
 		write( outgoingFrames );
 	}
@@ -867,5 +761,17 @@ public class WebSocketImpl implements WebSocket {
 	 */
 	long getLastPong() {
 		return lastPong;
+	}
+
+	public void setLastPong( long lastPong ) {
+		this.lastPong = lastPong;
+	}
+
+	/**
+	 * Getter for the websocket listener
+	 * @return the websocket listener associated with this instance
+	 */
+	public WebSocketListener getWebSocketListener() {
+		return wsl;
 	}
 }
