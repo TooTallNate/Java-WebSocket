@@ -763,8 +763,11 @@ public class WebSocketImpl implements WebSocket {
 		return lastPong;
 	}
 
-	public void setLastPong( long lastPong ) {
-		this.lastPong = lastPong;
+	/**
+	 * Update the timestamp when the last pong was received
+	 */
+	public void updateLastPong() {
+		this.lastPong = System.currentTimeMillis();
 	}
 
 	/**
