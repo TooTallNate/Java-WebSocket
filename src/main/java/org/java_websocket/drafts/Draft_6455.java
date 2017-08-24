@@ -378,7 +378,7 @@ public class Draft_6455 extends Draft_17 {
 			webSocketImpl.getWebSocketListener().onWebsocketPing( webSocketImpl, frame );
 			return;
 		} else if( curop == Framedata.Opcode.PONG ) {
-			webSocketImpl.setLastPong( System.currentTimeMillis() );
+			webSocketImpl.updateLastPong();
 			webSocketImpl.getWebSocketListener().onWebsocketPong( webSocketImpl, frame );
 			return;
 		} else if( !frame.isFin() || curop == Framedata.Opcode.CONTINUOUS ) {
