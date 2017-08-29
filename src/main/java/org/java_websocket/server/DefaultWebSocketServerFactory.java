@@ -32,7 +32,7 @@ import java.util.List;
 import org.java_websocket.WebSocketAdapter;
 import org.java_websocket.WebSocketImpl;
 import org.java_websocket.drafts.Draft;
-import org.java_websocket.server.WebSocketServer.WebSocketServerFactory;
+import org.java_websocket.WebSocketServerFactory;
 
 public class DefaultWebSocketServerFactory implements WebSocketServerFactory {
 	@Override

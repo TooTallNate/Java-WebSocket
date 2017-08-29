@@ -41,10 +41,10 @@ import javax.net.ssl.SSLEngine;
 import org.java_websocket.SSLSocketChannel2;
 import org.java_websocket.WebSocketAdapter;
 import org.java_websocket.WebSocketImpl;
+import org.java_websocket.WebSocketServerFactory;
 import org.java_websocket.drafts.Draft;
 
-
-public class DefaultSSLWebSocketServerFactory implements WebSocketServer.WebSocketServerFactory {
+public class DefaultSSLWebSocketServerFactory implements WebSocketServerFactory {
 	protected SSLContext sslcontext;
 	protected ExecutorService exec;
 
