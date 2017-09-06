@@ -38,14 +38,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -55,6 +48,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.java_websocket.*;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.exceptions.InvalidDataException;
+import org.java_websocket.exceptions.WebsocketNotConnectedException;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.handshake.ClientHandshake;
@@ -775,6 +769,69 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 	 * @param fragment The fragmented frame
 	 */
 	public void onFragment( WebSocket conn, Framedata fragment ) {
+	}
+
+	/**
+	 * Send a text to all connected endpoints
+	 * @param text the text to send to the endpoints
+	 */
+	public void broadcast(String text) {
+		broadcast( text, connections );
+	}
+
+	/**
+	 * Send a byte array to all connected endpoints
+	 * @param data the data to send to the endpoints
+	 */
+	public void broadcast(byte[] data) {
+		broadcast( data, connections );
+	}
+
+	/**
+	 * Send a byte array to a specific collection of websocket connections
+	 * @param data the data to send to the endpoints
+	 * @param clients a collection of endpoints to whom the text has to be send
+	 */
+	public void broadcast(byte[] data, Collection<WebSocket> clients) {
+		Map<Draft, List<Framedata>> draftFrames = new HashMap<Draft, List<Framedata>>();
+		ByteBuffer byteBufferData = ByteBuffer.wrap( data );
+		synchronized( clients ) {
+			for( WebSocket client : clients ) {
+				Draft draft = client.getDraft();
+				if( !draftFrames.containsKey( draft ) ) {
+					List<Framedata> frames = draft.createFrames( byteBufferData, false );
+					draftFrames.put( draft, frames );
+				}
+				try {
+					client.sendFrame( draftFrames.get( draft ) );
+				} catch ( WebsocketNotConnectedException e) {
+					//Ignore this exception in this case
+				}
+			}
+		}
+	}
+
+	/**
+	 * Send a text to a specific collection of websocket connections
+	 * @param text the text to send to the endpoints
+	 * @param clients a collection of endpoints to whom the text has to be send
+	 */
+	public void broadcast(String text, Collection<WebSocket> clients) {
+		Map<Draft, List<Framedata>> draftFrames = new HashMap<Draft, List<Framedata>>();
+		synchronized( clients ) {
+			for( WebSocket client : clients ) {
+				Draft draft = client.getDraft();
+				if( !draftFrames.containsKey( draft ) ) {
+					List<Framedata> frames = draft.createFrames( text, false );
+					draftFrames.put( draft, frames );
+				}
+				try {
+					client.sendFrame( draftFrames.get( draft ) );
+				} catch ( WebsocketNotConnectedException e) {
+					//Ignore this exception in this case
+				}
+			}
+		}
 	}
 
 	/**

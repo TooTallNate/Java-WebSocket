@@ -87,4 +87,16 @@ public class DefaultExtension implements IExtension {
 	public String toString() {
 		return getClass().getSimpleName();
 	}
+
+	@Override
+	public int hashCode() {
+		return getClass().hashCode();
+	}
+
+	@Override
+	public boolean equals( Object o ) {
+		if( this == o ) return true;
+		if( o == null ) return false;
+		return getClass() == o.getClass();
+	}
 }

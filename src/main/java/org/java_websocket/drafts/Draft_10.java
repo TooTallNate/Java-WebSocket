@@ -136,12 +136,13 @@ public class Draft_10 extends Draft {
 			for( int i = 0; mes.hasRemaining(); i++ ) {
 				buf.put( ( byte ) ( mes.get() ^ maskkey.get( i % 4 ) ) );
 			}
-		} else
+		} else {
 			buf.put( mes );
-		// translateFrame ( buf.array () , buf.array ().length );
+			//Reset the position of the bytebuffer e.g. for additional use
+			mes.flip();
+		}
 		assert ( buf.remaining() == 0 ) : buf.remaining();
 		buf.flip();
-
 		return buf;
 	}
 

@@ -552,6 +552,11 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	}
 
 	@Override
+	public void sendFrame( Collection<Framedata> frames ) {
+		engine.sendFrame( frames );
+	}
+
+	@Override
 	public InetSocketAddress getLocalSocketAddress() {
 		return engine.getLocalSocketAddress();
 	}

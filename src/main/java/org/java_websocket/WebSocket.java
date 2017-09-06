@@ -28,11 +28,11 @@ package org.java_websocket;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.NotYetConnectedException;
+import java.util.Collection;
 
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.framing.Framedata.Opcode;
-import org.java_websocket.framing.FramedataImpl1;
 
 public interface WebSocket {
 	/**
@@ -119,13 +119,20 @@ public interface WebSocket {
 	 * Send a frame to the other end
 	 * @param framedata the frame to send to the other end
 	 */
-	public abstract void sendFrame( Framedata framedata );
+	void sendFrame( Framedata framedata );
+
+	/**
+	 * Send a collection of frames to the other end
+	 * @param frames the frames to send to the other end
+	 */
+	void sendFrame( Collection<Framedata> frames );
 
 	/**
 	 * Send a ping to the other end
 	 * @throws NotYetConnectedException websocket is not yet connected
 	 */
-	public void sendPing() throws NotYetConnectedException;
+	void sendPing() throws NotYetConnectedException;
+
 	/**
 	 * Allows to send continuous/fragmented frames conveniently. <br>
 	 * For more into on this frame type see http://tools.ietf.org/html/rfc6455#section-5.4<br>

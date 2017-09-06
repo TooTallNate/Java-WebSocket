@@ -133,6 +133,11 @@ public class WebSocketImpl implements WebSocket {
 	private static final Object synchronizeWriteObject = new Object();
 
 	/**
+	 * Attribute to cache a ping frame
+	 */
+	private PingFrame pingFrame;
+
+	/**
 	 * Creates a websocket with server role
 	 *
 	 * @param listener The listener for this instance
@@ -582,8 +587,12 @@ public class WebSocketImpl implements WebSocket {
 	}
 
 	private void send( Collection<Framedata> frames ) {
-		if( !isOpen() )
+		if( !isOpen() ) {
 			throw new WebsocketNotConnectedException();
+		}
+		if ( frames == null || frames.isEmpty() ) {
+			throw new IllegalArgumentException();
+		}
 		ArrayList<ByteBuffer> outgoingFrames = new ArrayList<ByteBuffer>();
 		for (Framedata f : frames) {
 			if( DEBUG )
@@ -599,12 +608,20 @@ public class WebSocketImpl implements WebSocket {
 	}
 
 	@Override
+	public void sendFrame(Collection<Framedata> frames) {
+		send( frames );
+	}
+
+	@Override
 	public void sendFrame( Framedata framedata ) {
 		send ( Collections.singletonList( framedata ) );
 	}
 
 	public void sendPing() throws NotYetConnectedException {
-		sendFrame(new PingFrame());
+		if (pingFrame == null) {
+			pingFrame = new PingFrame();
+		}
+		sendFrame(pingFrame);
 	}
 
 	@Override
@@ -669,6 +686,10 @@ public class WebSocketImpl implements WebSocket {
 		wsl.onWriteDemand( this );
 	}
 
+	/**
+	 * Write a list of bytebuffer (frames in binary form) into the outgoing queue
+	 * @param bufs the list of bytebuffer
+	 */
 	private void write( List<ByteBuffer> bufs ) {
 		synchronized ( synchronizeWriteObject ) {
 			for (ByteBuffer b : bufs) {
