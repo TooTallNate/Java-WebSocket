@@ -167,6 +167,7 @@ public abstract class Draft {
 	 * Handle the frame specific to the draft
 	 * @param webSocketImpl the websocketimpl used for this draft
 	 * @param frame the frame which is supposed to be handled
+	 * @throws InvalidDataException will be thrown on invalid data
 	 */
 	public abstract void processFrame( WebSocketImpl webSocketImpl, Framedata frame ) throws InvalidDataException;
 

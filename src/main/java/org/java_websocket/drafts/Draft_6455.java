@@ -450,4 +450,19 @@ public class Draft_6455 extends Draft_17 {
 			result += " extension: " + getExtension().toString();
 		return result;
 	}
+
+	@Override
+	public boolean equals( Object o ) {
+		if( this == o ) return true;
+		if( o == null || getClass() != o.getClass() ) return false;
+
+		Draft_6455 that = ( Draft_6455 ) o;
+
+		return extension != null ? extension.equals( that.extension ) : that.extension == null;
+	}
+
+	@Override
+	public int hashCode() {
+		return extension != null ? extension.hashCode() : 0;
+	}
 }

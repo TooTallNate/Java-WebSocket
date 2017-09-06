@@ -51,19 +51,19 @@ public class ChatServer extends WebSocketServer {
 
 	@Override
 	public void onOpen( WebSocket conn, ClientHandshake handshake ) {
-		this.sendToAll( "new connection: " + handshake.getResourceDescriptor() );
+		broadcast( "new connection: " + handshake.getResourceDescriptor() );
 		System.out.println( conn.getRemoteSocketAddress().getAddress().getHostAddress() + " entered the room!" );
 	}
 
 	@Override
 	public void onClose( WebSocket conn, int code, String reason, boolean remote ) {
-		this.sendToAll( conn + " has left the room!" );
+		broadcast( conn + " has left the room!" );
 		System.out.println( conn + " has left the room!" );
 	}
 
 	@Override
 	public void onMessage( WebSocket conn, String message ) {
-		this.sendToAll( message );
+		broadcast( message );
 		System.out.println( conn + ": " + message );
 	}
 
@@ -86,7 +86,7 @@ public class ChatServer extends WebSocketServer {
 		BufferedReader sysin = new BufferedReader( new InputStreamReader( System.in ) );
 		while ( true ) {
 			String in = sysin.readLine();
-			s.sendToAll( in );
+			s.broadcast( in );
 			if( in.equals( "exit" ) ) {
 				s.stop();
 				break;
@@ -106,20 +106,4 @@ public class ChatServer extends WebSocketServer {
 		System.out.println("Server started!");
 	}
 
-	/**
-	 * Sends <var>text</var> to all currently connected WebSocket clients.
-	 * 
-	 * @param text
-	 *            The String to send across the network.
-	 * @throws InterruptedException
-	 *             When socket related I/O errors occur.
-	 */
-	public void sendToAll( String text ) {
-		Collection<WebSocket> con = connections();
-		synchronized ( con ) {
-			for( WebSocket c : con ) {
-				c.send( text );
-			}
-		}
-	}
 }
