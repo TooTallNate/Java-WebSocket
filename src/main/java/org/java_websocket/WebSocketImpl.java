@@ -478,7 +478,13 @@ public class WebSocketImpl implements WebSocket {
 			try {
 				channel.close();
 			} catch ( IOException e ) {
-				wsl.onWebsocketError( this, e );
+				if (e.getMessage().equals( "Broken pipe" )) {
+					if (WebSocketImpl.DEBUG) {
+						System.out.println("Caught IOException: Broken pipe during closeConnection()");
+					}
+				} else {
+					wsl.onWebsocketError( this, e );
+				}
 			}
 		}
 		try {
