@@ -38,14 +38,14 @@ public interface WebSocket {
 	/**
 	 * Enum which represents the states a websocket may be in
 	 */
-	public enum Role {
+	enum Role {
 		CLIENT, SERVER
 	}
 
 	/**
 	 * Enum which represents the state a websocket may be in
 	 */
-	public enum READYSTATE {
+	enum READYSTATE {
 		NOT_YET_CONNECTED, CONNECTING, OPEN, CLOSING, CLOSED
 	}
 
@@ -54,14 +54,14 @@ public interface WebSocket {
 	 * constructor is used, DEFAULT_PORT will be the port the WebSocketServer
 	 * is binded to. Note that ports under 1024 usually require root permissions.
 	 */
-	public static final int DEFAULT_PORT = 80;
+	int DEFAULT_PORT = 80;
 
 	/**
 	 * The default wss port of WebSockets, as defined in the spec. If the nullary
 	 * constructor is used, DEFAULT_WSS_PORT will be the port the WebSocketServer
 	 * is binded to. Note that ports under 1024 usually require root permissions.
 	 */
-	public static final int DEFAULT_WSS_PORT = 443;
+	int DEFAULT_WSS_PORT = 443;
 
 	/**
 	 * sends the closing handshake.
@@ -69,17 +69,17 @@ public interface WebSocket {
 	 * @param code the closing code
 	 * @param message the closing message
 	 */
-	public void close( int code, String message );
+	void close( int code, String message );
 
 	/**
 	 * sends the closing handshake.
 	 * may be send in response to an other handshake.
 	 * @param code the closing code
 	 */
-	public void close( int code );
+	void close( int code );
 
 	/** Convenience function which behaves like close(CloseFrame.NORMAL) */
-	public void close();
+	void close();
 
 	/**
 	 * This will close the connection immediately without a proper close handshake.
@@ -87,7 +87,7 @@ public interface WebSocket {
 	 * @param code the closing code
 	 * @param message the closing message
 	 **/
-	public abstract void closeConnection( int code, String message );
+	void closeConnection( int code, String message );
 
 	/**
 	 * Send Text data to the other end.
@@ -95,7 +95,7 @@ public interface WebSocket {
 	 * @param text the text data to send
 	 * @throws NotYetConnectedException websocket is not yet connected
 	 */
-	public abstract void send( String text ) throws NotYetConnectedException;
+	void send( String text ) throws NotYetConnectedException;
 
 	/**
 	 * Send Binary data (plain bytes) to the other end.
@@ -104,7 +104,7 @@ public interface WebSocket {
 	 * @throws IllegalArgumentException the data is null
 	 * @throws NotYetConnectedException websocket is not yet connected
 	 */
-	public abstract void send( ByteBuffer bytes ) throws IllegalArgumentException , NotYetConnectedException;
+	void send( ByteBuffer bytes ) throws IllegalArgumentException , NotYetConnectedException;
 
 	/**
 	 * Send Binary data (plain bytes) to the other end.
@@ -113,7 +113,7 @@ public interface WebSocket {
 	 * @throws IllegalArgumentException the data is null
 	 * @throws NotYetConnectedException websocket is not yet connected
 	 */
-	public abstract void send( byte[] bytes ) throws IllegalArgumentException , NotYetConnectedException;
+	void send( byte[] bytes ) throws IllegalArgumentException , NotYetConnectedException;
 
 	/**
 	 * Send a frame to the other end
@@ -146,64 +146,64 @@ public interface WebSocket {
 	 * @param fin
 	 *            true means the current frame is the last in the sequence.
 	 **/
-	public abstract void sendFragmentedFrame( Opcode op, ByteBuffer buffer, boolean fin );
+	void sendFragmentedFrame( Opcode op, ByteBuffer buffer, boolean fin );
 
 	/**
 	 * Checks if the websocket has buffered data
 	 * @return has the websocket buffered data
 	 */
-	public abstract boolean hasBufferedData();
+	boolean hasBufferedData();
 
 	/**
 	 * Returns the address of the endpoint this socket is connected to, or{@code null} if it is unconnected.
 	 *
 	 * @return never returns null
 	 */
-	public abstract InetSocketAddress getRemoteSocketAddress();
+	InetSocketAddress getRemoteSocketAddress();
 
 	/**
 	 * Returns the address of the endpoint this socket is bound to.
 	 *
 	 * @return never returns null
 	 */
-	public abstract InetSocketAddress getLocalSocketAddress();
+	InetSocketAddress getLocalSocketAddress();
 
 	/**
 	 * Is the websocket in the state CONNECTING
 	 * @return state equals READYSTATE.CONNECTING
 	 */
-	public abstract boolean isConnecting();
+	boolean isConnecting();
 
 	/**
 	 * Is the websocket in the state OPEN
 	 * @return state equals READYSTATE.OPEN
 	 */
-	public abstract boolean isOpen();
+	boolean isOpen();
 
 	/**
 	 * Is the websocket in the state CLOSING
 	 * @return state equals READYSTATE.CLOSING
 	 */
-	public abstract boolean isClosing();
+	boolean isClosing();
 
 	/**
 	 * Returns true when no further frames may be submitted<br>
 	 * This happens before the socket connection is closed.
 	 * @return true when no further frames may be submitted
 	 */
-	public abstract boolean isFlushAndClose();
+	boolean isFlushAndClose();
 
 	/**
 	 * Is the websocket in the state CLOSED
 	 * @return state equals READYSTATE.CLOSED
 	 */
-	public abstract boolean isClosed();
+	boolean isClosed();
 
 	/**
 	 * Getter for the draft
 	 * @return the used draft
 	 */
-	public abstract Draft getDraft();
+	Draft getDraft();
 
 	/**
 	 * Retrieve the WebSocket 'readyState'.
@@ -212,12 +212,12 @@ public interface WebSocket {
 	 * 
 	 * @return Returns '0 = CONNECTING', '1 = OPEN', '2 = CLOSING' or '3 = CLOSED'
 	 */
-	public abstract READYSTATE getReadyState();
+	READYSTATE getReadyState();
 	
 	/**
 	 * Returns the HTTP Request-URI as defined by http://tools.ietf.org/html/rfc2616#section-5.1.2<br>
 	 * If the opening handshake has not yet happened it will return null.
 	 * @return Returns the decoded path component of this URI.
 	 **/
-	public abstract String getResourceDescriptor();
+	String getResourceDescriptor();
 }

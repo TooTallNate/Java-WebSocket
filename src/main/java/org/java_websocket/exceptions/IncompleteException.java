@@ -23,36 +23,36 @@
  *  OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package org.java_websocket.drafts;
-
-import org.java_websocket.exceptions.InvalidHandshakeException;
-import org.java_websocket.handshake.ClientHandshake;
-import org.java_websocket.handshake.ClientHandshakeBuilder;
+package org.java_websocket.exceptions;
 
 /**
- * Implementation of the Hybi 17 Draft
- * Please use the Draft_6455 for your websocket implementation
+ * Exception which indicates that the frame is not yet complete
  */
-@Deprecated
-public class Draft_17 extends Draft_10 {
-	@Override
-	public HandshakeState acceptHandshakeAsServer( ClientHandshake handshakedata ) throws InvalidHandshakeException {
-		int v = readVersion( handshakedata );
-		if( v == 13 )
-			return HandshakeState.MATCHED;
-		return HandshakeState.NOT_MATCHED;
+public class IncompleteException extends Throwable {
+
+	/**
+	 * It's Serializable.
+	 */
+	private static final long serialVersionUID = 7330519489840500997L;
+
+	/**
+	 * The preferred size
+	 */
+	private int preferredSize;
+
+	/**
+	 * Constructor for the preferred size of a frame
+	 * @param preferredSize the preferred size of a frame
+	 */
+	public IncompleteException( int preferredSize ) {
+		this.preferredSize = preferredSize;
 	}
 
-	@Override
-	public ClientHandshakeBuilder postProcessHandshakeRequestAsClient( ClientHandshakeBuilder request ) {
-		super.postProcessHandshakeRequestAsClient( request );
-		request.put( "Sec-WebSocket-Version", "13" );// overwriting the previous
-		return request;
+	/**
+	 * Getter for the preferredSize
+	 * @return the value of the preferred size
+	 */
+	public int getPreferredSize() {
+		return preferredSize;
 	}
-
-	@Override
-	public Draft copyInstance() {
-		return new Draft_17();
-	}
-
 }

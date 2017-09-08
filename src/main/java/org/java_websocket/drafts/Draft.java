@@ -265,6 +265,20 @@ public abstract class Draft {
 		return bytecount;
 	}
 
+	int readVersion( Handshakedata handshakedata ) {
+		String vers = handshakedata.getFieldValue( "Sec-WebSocket-Version" );
+		if( vers.length() > 0 ) {
+			int v;
+			try {
+				v = new Integer( vers.trim() );
+				return v;
+			} catch ( NumberFormatException e ) {
+				return -1;
+			}
+		}
+		return -1;
+	}
+
 	public void setParseMode( Role role ) {
 		this.role = role;
 	}

@@ -25,9 +25,10 @@
 
 package org.java_websocket;
 
-import org.java_websocket.drafts.*;
+import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft.CloseHandshakeType;
 import org.java_websocket.drafts.Draft.HandshakeState;
+import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.exceptions.IncompleteHandshakeException;
 import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.exceptions.InvalidHandshakeException;
@@ -47,7 +48,10 @@ import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
 import java.nio.channels.NotYetConnectedException;
 import java.nio.channels.SelectionKey;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -141,7 +145,7 @@ public class WebSocketImpl implements WebSocket {
 	 * Creates a websocket with server role
 	 *
 	 * @param listener The listener for this instance
-	 * @param drafts The drafts which should be used
+	 * @param drafts   The drafts which should be used
 	 */
 	public WebSocketImpl( WebSocketListener listener, List<Draft> drafts ) {
 		this( listener, ( Draft ) null );
@@ -149,7 +153,7 @@ public class WebSocketImpl implements WebSocket {
 		// draft.copyInstance will be called when the draft is first needed
 		if( drafts == null || drafts.isEmpty() ) {
 			knownDrafts = new ArrayList<Draft>();
-			knownDrafts.add(new Draft_6455());
+			knownDrafts.add( new Draft_6455() );
 		} else {
 			knownDrafts = drafts;
 		}
@@ -159,7 +163,7 @@ public class WebSocketImpl implements WebSocket {
 	 * creates a websocket with client role
 	 *
 	 * @param listener The listener for this instance
-	 * @param draft The draft which should be used
+	 * @param draft    The draft which should be used
 	 */
 	public WebSocketImpl( WebSocketListener listener, Draft draft ) {
 		if( listener == null || ( draft == null && role == Role.SERVER ) )// socket can be null because we want do be able to create the object without already having a bound channel
@@ -184,6 +188,7 @@ public class WebSocketImpl implements WebSocket {
 
 	/**
 	 * Method to decode the provided ByteBuffer
+	 *
 	 * @param socketBuffer the ByteBuffer to decode
 	 */
 	public void decode( ByteBuffer socketBuffer ) {
@@ -193,7 +198,7 @@ public class WebSocketImpl implements WebSocket {
 			System.out.println( "process(" + socketBuffer.remaining() + "): {" + ( socketBuffer.remaining() > 1000 ? "too big to display" : new String( socketBuffer.array(), socketBuffer.position(), socketBuffer.remaining() ) ) + "}" );
 
 		if( readystate != READYSTATE.NOT_YET_CONNECTED ) {
-			if ( readystate == READYSTATE.OPEN ) {
+			if( readystate == READYSTATE.OPEN ) {
 				decodeFrames( socketBuffer );
 			}
 		} else {
@@ -236,8 +241,8 @@ public class WebSocketImpl implements WebSocket {
 				HandshakeState isflashedgecase = isFlashEdgeCase( socketBuffer );
 				if( isflashedgecase == HandshakeState.MATCHED ) {
 					try {
-						write( Collections.singletonList( ByteBuffer.wrap(Charsetfunctions.utf8Bytes(wsl.getFlashPolicy(this)))));
-						close(CloseFrame.FLASHPOLICY, "");
+						write( Collections.singletonList( ByteBuffer.wrap( Charsetfunctions.utf8Bytes( wsl.getFlashPolicy( this ) ) ) ) );
+						close( CloseFrame.FLASHPOLICY, "" );
 					} catch ( InvalidDataException e ) {
 						close( CloseFrame.ABNORMAL_CLOSE, "remote peer closed connection before flashpolicy could be transmitted", true );
 					}
@@ -256,7 +261,7 @@ public class WebSocketImpl implements WebSocket {
 								socketBuffer.reset();
 								Handshakedata tmphandshake = d.translateHandshake( socketBuffer );
 								if( !( tmphandshake instanceof ClientHandshake ) ) {
-									closeConnectionDueToWrongHandshake( new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "wrong http function" ));
+									closeConnectionDueToWrongHandshake( new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "wrong http function" ) );
 									return false;
 								}
 								ClientHandshake handshake = ( ClientHandshake ) tmphandshake;
@@ -284,7 +289,7 @@ public class WebSocketImpl implements WebSocket {
 							}
 						}
 						if( draft == null ) {
-							closeConnectionDueToWrongHandshake( new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "no draft matches"));
+							closeConnectionDueToWrongHandshake( new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "no draft matches" ) );
 						}
 						return false;
 					} else {
@@ -373,38 +378,41 @@ public class WebSocketImpl implements WebSocket {
 
 	/**
 	 * Close the connection if the received handshake was not correct
+	 *
 	 * @param exception the InvalidDataException causing this problem
 	 */
 	private void closeConnectionDueToWrongHandshake( InvalidDataException exception ) {
-		write(generateHttpResponseDueToError( 404 ));
+		write( generateHttpResponseDueToError( 404 ) );
 		flushAndClose( exception.getCloseCode(), exception.getMessage(), false );
 	}
 
 	/**
 	 * Close the connection if there was a server error by a RuntimeException
+	 *
 	 * @param exception the RuntimeException causing this problem
 	 */
-	private void closeConnectionDueToInternalServerError(RuntimeException exception) {
-		write(generateHttpResponseDueToError( 500 ));
+	private void closeConnectionDueToInternalServerError( RuntimeException exception ) {
+		write( generateHttpResponseDueToError( 500 ) );
 		flushAndClose( CloseFrame.NEVER_CONNECTED, exception.getMessage(), false );
 	}
 
 	/**
 	 * Generate a simple response for the corresponding endpoint to indicate some error
+	 *
 	 * @param errorCode the http error code
 	 * @return the complete response as ByteBuffer
 	 */
-	private ByteBuffer generateHttpResponseDueToError(int errorCode) {
+	private ByteBuffer generateHttpResponseDueToError( int errorCode ) {
 		String errorCodeDescription;
-		switch (errorCode) {
+		switch(errorCode) {
 			case 404:
 				errorCodeDescription = "404 WebSocket Upgrade Failure";
 				break;
 			case 500:
 			default:
-				errorCodeDescription =  "500 Internal Server Error";
+				errorCodeDescription = "500 Internal Server Error";
 		}
-		return ByteBuffer.wrap( Charsetfunctions.asciiBytes( "HTTP/1.1 "+ errorCodeDescription +"\r\nContent-Type: text/html\nServer: TooTallNate Java-WebSocket\r\nContent-Length: " + (48 + errorCodeDescription.length()) +"\r\n\r\n<html><head></head><body><h1>" + errorCodeDescription + "</h1></body></html>" ));
+		return ByteBuffer.wrap( Charsetfunctions.asciiBytes( "HTTP/1.1 " + errorCodeDescription + "\r\nContent-Type: text/html\nServer: TooTallNate Java-WebSocket\r\nContent-Length: " + ( 48 + errorCodeDescription.length() ) + "\r\n\r\n<html><head></head><body><h1>" + errorCodeDescription + "</h1></body></html>" ) );
 	}
 
 	public void close( int code, String message, boolean remote ) {
@@ -426,10 +434,10 @@ public class WebSocketImpl implements WebSocket {
 							}
 						}
 						CloseFrame closeFrame = new CloseFrame();
-						closeFrame.setReason(message);
-						closeFrame.setCode(code);
+						closeFrame.setReason( message );
+						closeFrame.setCode( code );
 						closeFrame.isValid();
-						sendFrame(closeFrame);
+						sendFrame( closeFrame );
 					} catch ( InvalidDataException e ) {
 						wsl.onWebsocketError( this, e );
 						flushAndClose( CloseFrame.ABNORMAL_CLOSE, "generated frame is invalid", false );
@@ -458,12 +466,13 @@ public class WebSocketImpl implements WebSocket {
 	/**
 	 * This will close the connection immediately without a proper close handshake.
 	 * The code and the message therefore won't be transfered over the wire also they will be forwarded to onClose/onWebsocketClose.
-	 * @param code the closing code
+	 *
+	 * @param code    the closing code
 	 * @param message the closing message
-	 * @param remote Indicates who "generated" <code>code</code>.<br>
-	 *               <code>true</code> means that this endpoint received the <code>code</code> from the other endpoint.<br>
-	 *               false means this endpoint decided to send the given code,<br>
-	 *               <code>remote</code> may also be true if this endpoint started the closing handshake since the other endpoint may not simply echo the <code>code</code> but close the connection the same time this endpoint does do but with an other <code>code</code>. <br>
+	 * @param remote  Indicates who "generated" <code>code</code>.<br>
+	 *                <code>true</code> means that this endpoint received the <code>code</code> from the other endpoint.<br>
+	 *                false means this endpoint decided to send the given code,<br>
+	 *                <code>remote</code> may also be true if this endpoint started the closing handshake since the other endpoint may not simply echo the <code>code</code> but close the connection the same time this endpoint does do but with an other <code>code</code>. <br>
 	 **/
 	public synchronized void closeConnection( int code, String message, boolean remote ) {
 		if( readystate == READYSTATE.CLOSED ) {
@@ -478,9 +487,9 @@ public class WebSocketImpl implements WebSocket {
 			try {
 				channel.close();
 			} catch ( IOException e ) {
-				if (e.getMessage().equals( "Broken pipe" )) {
-					if (WebSocketImpl.DEBUG) {
-						System.out.println("Caught IOException: Broken pipe during closeConnection()");
+				if( e.getMessage().equals( "Broken pipe" ) ) {
+					if( WebSocketImpl.DEBUG ) {
+						System.out.println( "Caught IOException: Broken pipe during closeConnection()" );
 					}
 				} else {
 					wsl.onWebsocketError( this, e );
@@ -596,11 +605,11 @@ public class WebSocketImpl implements WebSocket {
 		if( !isOpen() ) {
 			throw new WebsocketNotConnectedException();
 		}
-		if ( frames == null || frames.isEmpty() ) {
+		if( frames == null || frames.isEmpty() ) {
 			throw new IllegalArgumentException();
 		}
 		ArrayList<ByteBuffer> outgoingFrames = new ArrayList<ByteBuffer>();
-		for (Framedata f : frames) {
+		for( Framedata f : frames ) {
 			if( DEBUG )
 				System.out.println( "send frame: " + f );
 			outgoingFrames.add( draft.createBinaryFrame( f ) );
@@ -614,20 +623,20 @@ public class WebSocketImpl implements WebSocket {
 	}
 
 	@Override
-	public void sendFrame(Collection<Framedata> frames) {
+	public void sendFrame( Collection<Framedata> frames ) {
 		send( frames );
 	}
 
 	@Override
 	public void sendFrame( Framedata framedata ) {
-		send ( Collections.singletonList( framedata ) );
+		send( Collections.singletonList( framedata ) );
 	}
 
 	public void sendPing() throws NotYetConnectedException {
-		if (pingFrame == null) {
+		if( pingFrame == null ) {
 			pingFrame = new PingFrame();
 		}
-		sendFrame(pingFrame);
+		sendFrame( pingFrame );
 	}
 
 	@Override
@@ -694,12 +703,13 @@ public class WebSocketImpl implements WebSocket {
 
 	/**
 	 * Write a list of bytebuffer (frames in binary form) into the outgoing queue
+	 *
 	 * @param bufs the list of bytebuffer
 	 */
 	private void write( List<ByteBuffer> bufs ) {
-		synchronized ( synchronizeWriteObject ) {
-			for (ByteBuffer b : bufs) {
-				write(b);
+		synchronized(synchronizeWriteObject) {
+			for( ByteBuffer b : bufs ) {
+				write( b );
 			}
 		}
 	}
@@ -784,6 +794,7 @@ public class WebSocketImpl implements WebSocket {
 
 	/**
 	 * Getter for the last pong recieved
+	 *
 	 * @return the timestamp for the last recieved pong
 	 */
 	long getLastPong() {
@@ -799,6 +810,7 @@ public class WebSocketImpl implements WebSocket {
 
 	/**
 	 * Getter for the websocket listener
+	 *
 	 * @return the websocket listener associated with this instance
 	 */
 	public WebSocketListener getWebSocketListener() {

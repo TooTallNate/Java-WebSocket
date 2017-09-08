@@ -27,20 +27,17 @@ package org.java_websocket.drafts;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketImpl;
-import org.java_websocket.exceptions.InvalidDataException;
-import org.java_websocket.exceptions.InvalidFrameException;
-import org.java_websocket.exceptions.InvalidHandshakeException;
-import org.java_websocket.exceptions.LimitExedeedException;
-import org.java_websocket.extensions.DefaultExtension;
-import org.java_websocket.extensions.IExtension;
-import org.java_websocket.framing.CloseFrame;
-import org.java_websocket.framing.Framedata;
-import org.java_websocket.framing.FramedataImpl1;
+import org.java_websocket.exceptions.*;
+import org.java_websocket.extensions.*;
+import org.java_websocket.framing.*;
 import org.java_websocket.handshake.*;
-import org.java_websocket.util.Charsetfunctions;
+import org.java_websocket.util.*;
+import org.java_websocket.util.Base64;
 
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -48,8 +45,7 @@ import java.util.*;
  * Implementation for the RFC 6455 websocket protocol
  * This is the recommended class for your websocket connection
  */
-@SuppressWarnings("deprecation")
-public class Draft_6455 extends Draft_17 {
+public class Draft_6455 extends Draft {
 
 	/**
 	 * Attribute for the used extension in this draft
@@ -65,6 +61,16 @@ public class Draft_6455 extends Draft_17 {
 	 * Attribute for the current continuous frame
 	 */
 	private Framedata current_continuous_frame;
+
+	/**
+	 * Attribute for the current incomplete frame
+	 */
+	private ByteBuffer incompleteframe;
+
+	/**
+	 * Attribute for the reusable random instance
+	 */
+	private final Random reuseableRandom = new Random();
 
 	/**
 	 * Constructor for the websocket protocol specified by RFC 6455 with default extensions
@@ -105,9 +111,9 @@ public class Draft_6455 extends Draft_17 {
 
 	@Override
 	public HandshakeState acceptHandshakeAsServer( ClientHandshake handshakedata ) throws InvalidHandshakeException {
-		if( super.acceptHandshakeAsServer( handshakedata ) == HandshakeState.NOT_MATCHED ) {
+		int v = readVersion( handshakedata );
+		if( v != 13 )
 			return HandshakeState.NOT_MATCHED;
-		}
 		String requestedExtension = handshakedata.getFieldValue( "Sec-WebSocket-Extensions" );
 		for( IExtension knownExtension : knownExtensions ) {
 			if( knownExtension.acceptProvidedExtensionAsServer( requestedExtension ) ) {
@@ -121,9 +127,19 @@ public class Draft_6455 extends Draft_17 {
 
 	@Override
 	public HandshakeState acceptHandshakeAsClient( ClientHandshake request, ServerHandshake response ) throws InvalidHandshakeException {
-		if( super.acceptHandshakeAsClient( request, response ) == HandshakeState.NOT_MATCHED ) {
+		if (! basicAccept( response )) {
 			return HandshakeState.NOT_MATCHED;
 		}
+		if( !request.hasFieldValue( "Sec-WebSocket-Key" ) || !response.hasFieldValue( "Sec-WebSocket-Accept" ) )
+			return HandshakeState.NOT_MATCHED;
+
+		String seckey_answere = response.getFieldValue( "Sec-WebSocket-Accept" );
+		String seckey_challenge = request.getFieldValue( "Sec-WebSocket-Key" );
+		seckey_challenge = generateFinalKey( seckey_challenge );
+
+		if( !seckey_challenge.equals( seckey_answere ) )
+			return HandshakeState.NOT_MATCHED;
+
 		String requestedExtension = response.getFieldValue( "Sec-WebSocket-Extensions" );
 		for( IExtension knownExtension : knownExtensions ) {
 			if( knownExtension.acceptProvidedExtensionAsClient( requestedExtension ) ) {
@@ -145,7 +161,12 @@ public class Draft_6455 extends Draft_17 {
 
 	@Override
 	public ClientHandshakeBuilder postProcessHandshakeRequestAsClient( ClientHandshakeBuilder request ) {
-		super.postProcessHandshakeRequestAsClient( request );
+		request.put( "Upgrade", "websocket" );
+		request.put( "Connection", "Upgrade" ); // to respond to a Connection keep alives
+		byte[] random = new byte[16];
+		reuseableRandom.nextBytes( random );
+		request.put( "Sec-WebSocket-Key", Base64.encodeBytes( random ) );
+		request.put( "Sec-WebSocket-Version", "13" );// overwriting the previous
 		StringBuilder requestedExtensions = new StringBuilder();
 		for( IExtension knownExtension : knownExtensions ) {
 			if( knownExtension.getProvidedExtensionAsClient() != null && !knownExtension.getProvidedExtensionAsClient().equals( "" ) ) {
@@ -159,9 +180,13 @@ public class Draft_6455 extends Draft_17 {
 	}
 
 	@Override
-	public HandshakeBuilder postProcessHandshakeResponseAsServer( ClientHandshake request, ServerHandshakeBuilder
-			response ) throws InvalidHandshakeException {
-		super.postProcessHandshakeResponseAsServer( request, response );
+	public HandshakeBuilder postProcessHandshakeResponseAsServer( ClientHandshake request, ServerHandshakeBuilder response ) throws InvalidHandshakeException {
+		response.put( "Upgrade", "websocket" );
+		response.put( "Connection", request.getFieldValue( "Connection" ) ); // to respond to a Connection keep alives
+		String seckey = request.getFieldValue( "Sec-WebSocket-Key" );
+		if( seckey == null )
+			throw new InvalidHandshakeException( "missing Sec-WebSocket-Key" );
+		response.put( "Sec-WebSocket-Accept", generateFinalKey( seckey ) );
 		if( getExtension().getProvidedExtensionAsServer().length() != 0 ) {
 			response.put( "Sec-WebSocket-Extensions", getExtension().getProvidedExtensionAsServer() );
 		}
@@ -170,7 +195,6 @@ public class Draft_6455 extends Draft_17 {
 		response.put( "Date", getServerTime() );
 		return response;
 	}
-
 
 	@Override
 	public Draft copyInstance() {
@@ -186,10 +210,49 @@ public class Draft_6455 extends Draft_17 {
 		getExtension().encodeFrame( framedata );
 		if( WebSocketImpl.DEBUG )
 			System.out.println( "afterEnconding(" + framedata.getPayloadData().remaining() + "): {" + ( framedata.getPayloadData().remaining() > 1000 ? "too big to display" : new String( framedata.getPayloadData().array() ) ) + "}" );
-		return super.createBinaryFrame( framedata );
+		return createByteBufferFromFramedata( framedata );
 	}
 
-	@Override
+	private ByteBuffer createByteBufferFromFramedata( Framedata framedata ) {
+		ByteBuffer mes = framedata.getPayloadData();
+		boolean mask = role == WebSocket.Role.CLIENT; // framedata.getTransfereMasked();
+		int sizebytes = mes.remaining() <= 125 ? 1 : mes.remaining() <= 65535 ? 2 : 8;
+		ByteBuffer buf = ByteBuffer.allocate( 1 + ( sizebytes > 1 ? sizebytes + 1 : sizebytes ) + ( mask ? 4 : 0 ) + mes.remaining() );
+		byte optcode = fromOpcode( framedata.getOpcode() );
+		byte one = ( byte ) ( framedata.isFin() ? -128 : 0 );
+		one |= optcode;
+		buf.put( one );
+		byte[] payloadlengthbytes = toByteArray( mes.remaining(), sizebytes );
+		assert ( payloadlengthbytes.length == sizebytes );
+
+		if( sizebytes == 1 ) {
+			buf.put( ( byte ) ( payloadlengthbytes[0] | ( mask ? ( byte ) -128 : 0 ) ) );
+		} else if( sizebytes == 2 ) {
+			buf.put( ( byte ) ( ( byte ) 126 | ( mask ? ( byte ) -128 : 0 ) ) );
+			buf.put( payloadlengthbytes );
+		} else if( sizebytes == 8 ) {
+			buf.put( ( byte ) ( ( byte ) 127 | ( mask ? ( byte ) -128 : 0 ) ) );
+			buf.put( payloadlengthbytes );
+		} else
+			throw new RuntimeException( "Size representation not supported/specified" );
+
+		if( mask ) {
+			ByteBuffer maskkey = ByteBuffer.allocate( 4 );
+			maskkey.putInt( reuseableRandom.nextInt() );
+			buf.put( maskkey.array() );
+			for( int i = 0; mes.hasRemaining(); i++ ) {
+				buf.put( ( byte ) ( mes.get() ^ maskkey.get( i % 4 ) ) );
+			}
+		} else {
+			buf.put( mes );
+			//Reset the position of the bytebuffer e.g. for additional use
+			mes.flip();
+		}
+		assert ( buf.remaining() == 0 ) : buf.remaining();
+		buf.flip();
+		return buf;
+	}
+
 	public Framedata translateSingleFrame( ByteBuffer buffer ) throws IncompleteException, InvalidDataException {
 		int maxpacketsize = buffer.remaining();
 		int realpacketsize = 2;
@@ -303,7 +366,7 @@ public class Draft_6455 extends Draft_17 {
 				} catch ( IncompleteException e ) {
 					// extending as much as suggested
 					int oldsize = incompleteframe.limit();
-					ByteBuffer extendedframe = ByteBuffer.allocate( checkAlloc( e.getPreferedSize() ) );
+					ByteBuffer extendedframe = ByteBuffer.allocate( checkAlloc( e.getPreferredSize() ) );
 					assert ( extendedframe.limit() > incompleteframe.limit() );
 					incompleteframe.rewind();
 					extendedframe.put( incompleteframe );
@@ -320,7 +383,7 @@ public class Draft_6455 extends Draft_17 {
 				} catch ( IncompleteException e ) {
 					// remember the incomplete data
 					buffer.reset();
-					int pref = e.getPreferedSize();
+					int pref = e.getPreferredSize();
 					incompleteframe = ByteBuffer.allocate( checkAlloc( pref ) );
 					incompleteframe.put( buffer );
 					break;
@@ -331,8 +394,34 @@ public class Draft_6455 extends Draft_17 {
 	}
 
 	@Override
+	public List<Framedata> createFrames( ByteBuffer binary, boolean mask ) {
+		BinaryFrame curframe = new BinaryFrame();
+		curframe.setPayload( binary );
+		curframe.setTransferemasked( mask );
+		try {
+			curframe.isValid();
+		} catch ( InvalidDataException e ) {
+			throw new NotSendableException( e );
+		}
+		return Collections.singletonList( ( Framedata ) curframe );
+	}
+
+	@Override
+	public List<Framedata> createFrames( String text, boolean mask ) {
+		TextFrame curframe = new TextFrame();
+		curframe.setPayload( ByteBuffer.wrap( Charsetfunctions.utf8Bytes( text ) ) );
+		curframe.setTransferemasked( mask );
+		try {
+			curframe.isValid();
+		} catch ( InvalidDataException e ) {
+			throw new NotSendableException( e );
+		}
+		return Collections.singletonList( ( Framedata ) curframe );
+	}
+
+	@Override
 	public void reset() {
-		super.reset();
+		incompleteframe = null;
 		if( extension != null ) {
 			extension.reset();
 		}
@@ -350,6 +439,71 @@ public class Draft_6455 extends Draft_17 {
 				"EEE, dd MMM yyyy HH:mm:ss z", Locale.US );
 		dateFormat.setTimeZone( TimeZone.getTimeZone( "GMT" ) );
 		return dateFormat.format( calendar.getTime() );
+	}
+
+	/**
+	 * Generate a final key from a input string
+	 * @param in the input string
+	 * @return a final key
+	 */
+	private String generateFinalKey( String in ) {
+		String seckey = in.trim();
+		String acc = seckey + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+		MessageDigest sh1;
+		try {
+			sh1 = MessageDigest.getInstance( "SHA1" );
+		} catch ( NoSuchAlgorithmException e ) {
+			throw new RuntimeException( e );
+		}
+		return Base64.encodeBytes( sh1.digest( acc.getBytes() ) );
+	}
+
+	private byte[] toByteArray( long val, int bytecount ) {
+		byte[] buffer = new byte[bytecount];
+		int highest = 8 * bytecount - 8;
+		for( int i = 0; i < bytecount; i++ ) {
+			buffer[i] = ( byte ) ( val >>> ( highest - 8 * i ) );
+		}
+		return buffer;
+	}
+
+
+	private byte fromOpcode( Framedata.Opcode opcode ) {
+		if( opcode == Framedata.Opcode.CONTINUOUS )
+			return 0;
+		else if( opcode == Framedata.Opcode.TEXT )
+			return 1;
+		else if( opcode == Framedata.Opcode.BINARY )
+			return 2;
+		else if( opcode == Framedata.Opcode.CLOSING )
+			return 8;
+		else if( opcode == Framedata.Opcode.PING )
+			return 9;
+		else if( opcode == Framedata.Opcode.PONG )
+			return 10;
+		throw new RuntimeException( "Don't know how to handle " + opcode.toString() );
+	}
+
+
+	private Framedata.Opcode toOpcode( byte opcode ) throws InvalidFrameException {
+		switch(opcode) {
+			case 0:
+				return Framedata.Opcode.CONTINUOUS;
+			case 1:
+				return Framedata.Opcode.TEXT;
+			case 2:
+				return Framedata.Opcode.BINARY;
+			// 3-7 are not yet defined
+			case 8:
+				return Framedata.Opcode.CLOSING;
+			case 9:
+				return Framedata.Opcode.PING;
+			case 10:
+				return Framedata.Opcode.PONG;
+			// 11-15 are not yet defined
+			default:
+				throw new InvalidFrameException( "Unknown opcode " + ( short ) opcode );
+		}
 	}
 
 	@Override
@@ -441,6 +595,11 @@ public class Draft_6455 extends Draft_17 {
 		} else {
 			throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "non control or continious frame expected" );
 		}
+	}
+
+	@Override
+	public Draft.CloseHandshakeType getCloseHandshakeType() {
+		return Draft.CloseHandshakeType.TWOWAY;
 	}
 
 	@Override
