@@ -91,6 +91,8 @@ public class ChatServer extends WebSocketServer {
 				s.stop();
 				break;
 			}
+			
+			Thread.sleep(1000);
 		}
 	}
 	@Override
