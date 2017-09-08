@@ -12,13 +12,6 @@ non-blocking event-driven model (similar to the
 Implemented WebSocket protocol versions are:
 
  * [RFC 6455](http://tools.ietf.org/html/rfc6455)
- 
-Implemented, but deprecated, WebSocket protocol versions are:
-
- * [Hybi 17](http://tools.ietf.org/id/draft-ietf-hybi-thewebsocketprotocol-17.txt)
- * [Hybi 10](http://tools.ietf.org/id/draft-ietf-hybi-thewebsocketprotocol-10.txt)
- * [Hixie 76](http://tools.ietf.org/id/draft-hixie-thewebsocketprotocol-76.txt)
- * [Hixie 75](http://tools.ietf.org/id/draft-hixie-thewebsocketprotocol-75.txt)
 
 [Here](https://github.com/TooTallNate/Java-WebSocket/wiki/Drafts) some more details about protocol versions/drafts. 
 
