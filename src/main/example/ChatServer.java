@@ -91,9 +91,7 @@ public class ChatServer extends WebSocketServer {
 				s.stop();
 				break;
 			}
-			//if there is no sleep
-			//, there will be about 20% cpu usage(4 cpu threads) without any websocket client connections
-			//, then some people will give up this websocket server solution.
+			
 			Thread.sleep(1000);
 		}
 	}
