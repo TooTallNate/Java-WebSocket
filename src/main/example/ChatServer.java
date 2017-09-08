@@ -118,7 +118,14 @@ public class ChatServer extends WebSocketServer {
 		Collection<WebSocket> con = connections();
 		synchronized ( con ) {
 			for( WebSocket c : con ) {
-				c.send( text );
+				if (c != null) {
+					try {
+						c.send(text);
+					} catch(WebsocketNotConnectedException wncException) {
+						if (WebSocketImpl.DEBUG == true)
+							System.out.println("The client is disconnected now.");
+					}
+				}
 			}
 		}
 	}
