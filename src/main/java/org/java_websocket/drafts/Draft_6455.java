@@ -50,7 +50,7 @@ public class Draft_6455 extends Draft {
 	/**
 	 * Attribute for the used extension in this draft
 	 */
-	private IExtension extension;
+	private IExtension extension = new DefaultExtension();
 
 	/**
 	 * Attribute for all available extension in this draft
@@ -104,8 +104,7 @@ public class Draft_6455 extends Draft {
 		knownExtensions.addAll( inputExtensions );
 		//We always add the DefaultExtension to implement the normal RFC 6455 specification
 		if( !hasDefault ) {
-			DefaultExtension defaultExtension = new DefaultExtension();
-			knownExtensions.add( this.knownExtensions.size(), defaultExtension );
+			knownExtensions.add( this.knownExtensions.size(), extension );
 		}
 	}
 
@@ -331,8 +330,8 @@ public class Draft_6455 extends Draft {
 		frame.setRSV3( rsv3 );
 		payload.flip();
 		frame.setPayload( payload );
-		getExtension().isFrameValid( frame );
-		getExtension().decodeFrame( frame );
+		getExtension().isFrameValid(frame);
+		getExtension().decodeFrame(frame);
 		if( WebSocketImpl.DEBUG )
 			System.out.println( "afterDecoding(" + frame.getPayloadData().remaining() + "): {" + ( frame.getPayloadData().remaining() > 1000 ? "too big to display" : new String( frame.getPayloadData().array() ) ) + "}" );
 		frame.isValid();
@@ -425,7 +424,7 @@ public class Draft_6455 extends Draft {
 		if( extension != null ) {
 			extension.reset();
 		}
-		extension = null;
+		extension = new DefaultExtension();
 	}
 
 	/**
