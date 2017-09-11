@@ -26,10 +26,7 @@
 package org.java_websocket.framing;
 
 import org.java_websocket.exceptions.InvalidDataException;
-import org.java_websocket.util.ByteBufferUtils;
 import org.junit.Test;
-
-import java.nio.ByteBuffer;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -64,6 +61,11 @@ public class BinaryFrameTest {
 
     @Test
     public void testIsValid() {
-        //Nothing specific to test
+        BinaryFrame frame = new BinaryFrame();
+        try {
+            frame.isValid();
+        } catch (InvalidDataException e) {
+            fail("InvalidDataException should not be thrown");
+        }
     }
 }

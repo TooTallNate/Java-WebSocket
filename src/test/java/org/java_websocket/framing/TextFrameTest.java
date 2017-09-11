@@ -61,6 +61,11 @@ public class TextFrameTest {
 
     @Test
     public void testIsValid() {
-        //Nothing specific to test
+        TextFrame frame = new TextFrame();
+        try {
+            frame.isValid();
+        } catch (InvalidDataException e) {
+            fail("InvalidDataException should not be thrown");
+        }
     }
 }
