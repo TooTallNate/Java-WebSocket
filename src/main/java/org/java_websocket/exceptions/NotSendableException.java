@@ -37,13 +37,6 @@ public class NotSendableException extends RuntimeException {
 
     /**
      * constructor for a NotSendableException
-     */
-    public NotSendableException() {
-        super();
-    }
-
-    /**
-     * constructor for a NotSendableException
      *
      * @param s the detail message.
      */

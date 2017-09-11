@@ -793,19 +793,24 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 	 * @param clients a collection of endpoints to whom the text has to be send
 	 */
 	public void broadcast(byte[] data, Collection<WebSocket> clients) {
+		if (data == null || clients == null) {
+			throw new IllegalArgumentException();
+		}
 		Map<Draft, List<Framedata>> draftFrames = new HashMap<Draft, List<Framedata>>();
 		ByteBuffer byteBufferData = ByteBuffer.wrap( data );
 		synchronized( clients ) {
 			for( WebSocket client : clients ) {
-				Draft draft = client.getDraft();
-				if( !draftFrames.containsKey( draft ) ) {
-					List<Framedata> frames = draft.createFrames( byteBufferData, false );
-					draftFrames.put( draft, frames );
-				}
-				try {
-					client.sendFrame( draftFrames.get( draft ) );
-				} catch ( WebsocketNotConnectedException e) {
-					//Ignore this exception in this case
+				if( client != null ) {
+					Draft draft = client.getDraft();
+					if( !draftFrames.containsKey( draft ) ) {
+						List<Framedata> frames = draft.createFrames( byteBufferData, false );
+						draftFrames.put( draft, frames );
+					}
+					try {
+						client.sendFrame( draftFrames.get( draft ) );
+					} catch ( WebsocketNotConnectedException e ) {
+						//Ignore this exception in this case
+					}
 				}
 			}
 		}
@@ -817,18 +822,23 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 	 * @param clients a collection of endpoints to whom the text has to be send
 	 */
 	public void broadcast(String text, Collection<WebSocket> clients) {
+		if (text == null || clients == null) {
+			throw new IllegalArgumentException();
+		}
 		Map<Draft, List<Framedata>> draftFrames = new HashMap<Draft, List<Framedata>>();
 		synchronized( clients ) {
 			for( WebSocket client : clients ) {
-				Draft draft = client.getDraft();
-				if( !draftFrames.containsKey( draft ) ) {
-					List<Framedata> frames = draft.createFrames( text, false );
-					draftFrames.put( draft, frames );
-				}
-				try {
-					client.sendFrame( draftFrames.get( draft ) );
-				} catch ( WebsocketNotConnectedException e) {
-					//Ignore this exception in this case
+				if( client != null ) {
+					Draft draft = client.getDraft();
+					if( !draftFrames.containsKey( draft ) ) {
+						List<Framedata> frames = draft.createFrames( text, false );
+						draftFrames.put( draft, frames );
+					}
+					try {
+						client.sendFrame( draftFrames.get( draft ) );
+					} catch ( WebsocketNotConnectedException e ) {
+						//Ignore this exception in this case
+					}
 				}
 			}
 		}

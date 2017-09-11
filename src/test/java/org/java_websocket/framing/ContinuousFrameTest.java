@@ -61,6 +61,11 @@ public class ContinuousFrameTest {
 
     @Test
     public void testIsValid() {
-        //Nothing specific to test
+        ContinuousFrame frame = new ContinuousFrame();
+        try {
+            frame.isValid();
+        } catch (InvalidDataException e) {
+            fail("InvalidDataException should not be thrown");
+        }
     }
 }
