@@ -55,7 +55,7 @@ public class Draft_6455 extends Draft {
 	/**
 	 * Attribute for all available extension in this draft
 	 */
-	List<IExtension> knownExtensions;
+	private List<IExtension> knownExtensions;
 
 	/**
 	 * Attribute for the current continuous frame
@@ -158,6 +158,14 @@ public class Draft_6455 extends Draft {
 		return extension;
 	}
 
+	/**
+	 * Getter for all available extensions for this draft
+	 * @return the extensions which are enabled for this draft
+	 */
+	public List<IExtension> getKnownExtensions() {
+		return knownExtensions;
+	}
+
 	@Override
 	public ClientHandshakeBuilder postProcessHandshakeRequestAsClient( ClientHandshakeBuilder request ) {
 		request.put( "Upgrade", "websocket" );
@@ -198,7 +206,7 @@ public class Draft_6455 extends Draft {
 	@Override
 	public Draft copyInstance() {
 		ArrayList<IExtension> newExtensions = new ArrayList<IExtension>();
-		for( IExtension extension : knownExtensions ) {
+		for( IExtension extension : getKnownExtensions() ) {
 			newExtensions.add( extension.copyInstance() );
 		}
 		return new Draft_6455( newExtensions );
