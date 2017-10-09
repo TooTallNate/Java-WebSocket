@@ -27,10 +27,8 @@ package org.java_websocket.framing;
 
 import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.util.ByteBufferUtils;
-import org.java_websocket.util.Charsetfunctions;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 public abstract class FramedataImpl1 implements Framedata {
 

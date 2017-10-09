@@ -249,7 +249,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 			}
 
 			// if the socket is set by others we don't apply any TLS wrapper
-			if (isNewSocket && uri.getScheme().equals("wss")) {
+			if (isNewSocket && "wss".equals( uri.getScheme())) {
 
 				SSLContext sslContext = SSLContext.getInstance("TLS");
 				sslContext.init(null, null, null);
@@ -292,7 +292,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 		int port = uri.getPort();
 		if( port == -1 ) {
 			String scheme = uri.getScheme();
-			if( scheme.equals( "wss" ) ) {
+			if( "wss".equals( scheme ) ) {
 				return WebSocket.DEFAULT_WSS_PORT;
 			} else if( scheme.equals( "ws" ) ) {
 				return WebSocket.DEFAULT_PORT;
