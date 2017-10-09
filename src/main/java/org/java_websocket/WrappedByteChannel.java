@@ -29,8 +29,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
 
-import javax.net.ssl.SSLException;
-
 public interface WrappedByteChannel extends ByteChannel {
 	/**
 	 * returns whether writeMore should be called write additional data.

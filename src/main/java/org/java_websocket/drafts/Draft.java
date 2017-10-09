@@ -82,7 +82,7 @@ public abstract class Draft {
 
 	public static ByteBuffer readLine( ByteBuffer buf ) {
 		ByteBuffer sbuf = ByteBuffer.allocate( buf.remaining() );
-		byte prev = '0';
+		byte prev;
 		byte cur = '0';
 		while ( buf.hasRemaining() ) {
 			prev = cur;
@@ -191,7 +191,7 @@ public abstract class Draft {
 		try {
 			bui.isValid();
 		} catch ( InvalidDataException e ) {
-			throw new RuntimeException( e ); // can only happen when one builds close frames(Opcode.Close)
+			throw new IllegalArgumentException( e ); // can only happen when one builds close frames(Opcode.Close)
 		}
 		if( fin ) {
 			continuousFrameType = null;
@@ -216,7 +216,7 @@ public abstract class Draft {
 		} else if( handshakedata instanceof ServerHandshake ) {
 			bui.append("HTTP/1.1 101 ").append(((ServerHandshake) handshakedata).getHttpStatusMessage());
 		} else {
-			throw new RuntimeException( "unknown role" );
+			throw new IllegalArgumentException( "unknown role" );
 		}
 		bui.append( "\r\n" );
 		Iterator<String> it = handshakedata.iterateHttpFields();

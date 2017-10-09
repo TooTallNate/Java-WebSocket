@@ -55,7 +55,7 @@ public class Draft_6455 extends Draft {
 	/**
 	 * Attribute for all available extension in this draft
 	 */
-	List<IExtension> knownExtensions;
+	private List<IExtension> knownExtensions;
 
 	/**
 	 * Attribute for the current continuous frame
@@ -158,6 +158,14 @@ public class Draft_6455 extends Draft {
 		return extension;
 	}
 
+	/**
+	 * Getter for all available extensions for this draft
+	 * @return the extensions which are enabled for this draft
+	 */
+	public List<IExtension> getKnownExtensions() {
+		return knownExtensions;
+	}
+
 	@Override
 	public ClientHandshakeBuilder postProcessHandshakeRequestAsClient( ClientHandshakeBuilder request ) {
 		request.put( "Upgrade", "websocket" );
@@ -198,7 +206,7 @@ public class Draft_6455 extends Draft {
 	@Override
 	public Draft copyInstance() {
 		ArrayList<IExtension> newExtensions = new ArrayList<IExtension>();
-		for( IExtension extension : knownExtensions ) {
+		for( IExtension extension : getKnownExtensions() ) {
 			newExtensions.add( extension.copyInstance() );
 		}
 		return new Draft_6455( newExtensions );
@@ -259,7 +267,9 @@ public class Draft_6455 extends Draft {
 			throw new IncompleteException( realpacketsize );
 		byte b1 = buffer.get( /*0*/ );
 		boolean FIN = b1 >> 8 != 0;
-		boolean rsv1 = false, rsv2 = false, rsv3 = false;
+		boolean rsv1 = false;
+		boolean rsv2 = false;
+		boolean rsv3 = false;
 		if( ( b1 & 0x40 ) != 0 ) {
 			rsv1 = true;
 		}
@@ -364,7 +374,6 @@ public class Draft_6455 extends Draft {
 					incompleteframe = null;
 				} catch ( IncompleteException e ) {
 					// extending as much as suggested
-					int oldsize = incompleteframe.limit();
 					ByteBuffer extendedframe = ByteBuffer.allocate( checkAlloc( e.getPreferredSize() ) );
 					assert ( extendedframe.limit() > incompleteframe.limit() );
 					incompleteframe.rewind();
@@ -452,7 +461,7 @@ public class Draft_6455 extends Draft {
 		try {
 			sh1 = MessageDigest.getInstance( "SHA1" );
 		} catch ( NoSuchAlgorithmException e ) {
-			throw new RuntimeException( e );
+			throw new IllegalStateException( e );
 		}
 		return Base64.encodeBytes( sh1.digest( acc.getBytes() ) );
 	}
@@ -480,7 +489,7 @@ public class Draft_6455 extends Draft {
 			return 9;
 		else if( opcode == Framedata.Opcode.PONG )
 			return 10;
-		throw new RuntimeException( "Don't know how to handle " + opcode.toString() );
+		throw new IllegalArgumentException( "Don't know how to handle " + opcode.toString() );
 	}
 
 
