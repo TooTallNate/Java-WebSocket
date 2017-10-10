@@ -55,11 +55,6 @@ public class ExampleClient extends WebSocketClient {
 	}
 
 	@Override
-	public void onFragment( Framedata fragment ) {
-		System.out.println( "received fragment: " + new String( fragment.getPayloadData().array() ) );
-	}
-
-	@Override
 	public void onClose( int code, String reason, boolean remote ) {
 		// The codecodes are documented in class org.java_websocket.framing.CloseFrame
 		System.out.println( "Connection closed by " + ( remote ? "remote peer" : "us" ) );

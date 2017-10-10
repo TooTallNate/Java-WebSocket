@@ -28,7 +28,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.util.Collection;
+import java.nio.ByteBuffer;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketImpl;
@@ -66,6 +66,12 @@ public class ChatServer extends WebSocketServer {
 		broadcast( message );
 		System.out.println( conn + ": " + message );
 	}
+	@Override
+	public void onMessage( WebSocket conn, ByteBuffer message ) {
+		broadcast( message.array() );
+		System.out.println( conn + ": " + message );
+	}
+
 
 	@Override
 	public void onFragment( WebSocket conn, Framedata fragment ) {
