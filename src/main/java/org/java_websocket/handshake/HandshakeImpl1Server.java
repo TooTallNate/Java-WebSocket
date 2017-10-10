@@ -29,9 +29,6 @@ public class HandshakeImpl1Server extends HandshakedataImpl1 implements ServerHa
 	private short httpstatus;
 	private String httpstatusmessage;
 
-	public HandshakeImpl1Server() {
-	}
-
 	@Override
 	public String getHttpStatusMessage() {
 		return httpstatusmessage;

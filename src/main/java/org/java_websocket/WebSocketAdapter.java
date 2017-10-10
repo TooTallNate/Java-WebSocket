@@ -55,6 +55,7 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 
 	@Override
 	public void onWebsocketHandshakeReceivedAsClient( WebSocket conn, ClientHandshake request, ServerHandshake response ) throws InvalidDataException {
+		//To overwrite
 	}
 
 	/**
@@ -64,6 +65,7 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	 */
 	@Override
 	public void onWebsocketHandshakeSentAsClient( WebSocket conn, ClientHandshake request ) throws InvalidDataException {
+		//To overwrite
 	}
 
 	/**
@@ -72,7 +74,9 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	 * @see org.java_websocket.WebSocketListener#onWebsocketMessageFragment(WebSocket, Framedata)
 	 */
 	@Override
+	@Deprecated
 	public void onWebsocketMessageFragment( WebSocket conn, Framedata frame ) {
+		//To overwrite
 	}
 
 	/**
@@ -93,6 +97,7 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	 */
 	@Override
 	public void onWebsocketPong( WebSocket conn, Framedata f ) {
+		//To overwrite
 	}
 
 	/**

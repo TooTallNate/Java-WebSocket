@@ -294,10 +294,10 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 			String scheme = uri.getScheme();
 			if( "wss".equals( scheme ) ) {
 				return WebSocket.DEFAULT_WSS_PORT;
-			} else if( scheme.equals( "ws" ) ) {
+			} else if(  "ws".equals( scheme ) ) {
 				return WebSocket.DEFAULT_PORT;
 			} else {
-				throw new RuntimeException( "unknown scheme: " + scheme );
+				throw new IllegalArgumentException( "unknown scheme: " + scheme );
 			}
 		}
 		return port;
@@ -411,6 +411,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	 * @param reason Additional information string
 	 */
 	public void onCloseInitiated( int code, String reason ) {
+		//To overwrite
 	}
 
 	/** Called as soon as no further frames are accepted
@@ -420,6 +421,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	 * @param remote Returns whether or not the closing of the connection was initiated by the remote host.
 	 */
 	public void onClosing( int code, String reason, boolean remote ) {
+		//To overwrite
 	}
 
 	/**
@@ -450,8 +452,11 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	public abstract void onClose( int code, String reason, boolean remote );
 	public abstract void onError( Exception ex );
 	public void onMessage( ByteBuffer bytes ) {
+		//To overwrite
 	}
+	@Deprecated
 	public void onFragment( Framedata frame ) {
+		//To overwrite
 	}
 
 	private class WebsocketWriteThread implements Runnable {
