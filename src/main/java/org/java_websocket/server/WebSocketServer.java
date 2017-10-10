@@ -767,6 +767,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 	 *            The <tt>WebSocket</tt> instance this event is occurring on.
 	 * @param fragment The fragmented frame
 	 */
+	@Deprecated
 	public void onFragment( WebSocket conn, Framedata fragment ) {
 	}
 

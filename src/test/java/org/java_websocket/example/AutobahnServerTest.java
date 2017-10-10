@@ -48,7 +48,6 @@ import java.util.Collections;
 
 public class AutobahnServerTest extends WebSocketServer {
 	private static int counter = 0;
-
 	public AutobahnServerTest( int port, Draft d ) throws UnknownHostException {
 		super( new InetSocketAddress( port ), Collections.singletonList( d ) );
 	}
@@ -83,17 +82,14 @@ public class AutobahnServerTest extends WebSocketServer {
 	public void onMessage( WebSocket conn, String message ) {
 		conn.send( message );
 	}
+	@Override
+	public void onFragment( WebSocket conn, Framedata fragment ) {
+		System.out.println( "received fragment: " + fragment );
+	}
 
 	@Override
 	public void onMessage( WebSocket conn, ByteBuffer blob ) {
 		conn.send( blob );
-	}
-
-	@Override
-	public void onWebsocketMessageFragment( WebSocket conn, Framedata frame ) {
-		FramedataImpl1 builder = ( FramedataImpl1 ) frame;
-		builder.setTransferemasked( false );
-		conn.sendFrame( frame );
 	}
 
 	public static void main( String[] args ) throws UnknownHostException {
