@@ -605,7 +605,7 @@ public class WebSocketImpl implements WebSocket {
 		if( !isOpen() ) {
 			throw new WebsocketNotConnectedException();
 		}
-		if( frames == null || frames.isEmpty() ) {
+		if( frames == null) {
 			throw new IllegalArgumentException();
 		}
 		ArrayList<ByteBuffer> outgoingFrames = new ArrayList<ByteBuffer>();

@@ -63,6 +63,11 @@ public class Draft_6455 extends Draft {
 	private Framedata current_continuous_frame;
 
 	/**
+	 * Attribute for the payload of the current continuous frame
+	 */
+	private List<ByteBuffer> byteBufferList;
+
+	/**
 	 * Attribute for the current incomplete frame
 	 */
 	private ByteBuffer incompleteframe;
@@ -96,6 +101,7 @@ public class Draft_6455 extends Draft {
 	public Draft_6455( List<IExtension> inputExtensions ) {
 		knownExtensions = new ArrayList<IExtension>();
 		boolean hasDefault = false;
+		byteBufferList = new ArrayList<ByteBuffer>();
 		for( IExtension inputExtension : inputExtensions ) {
 			if( inputExtension.getClass().equals( DefaultExtension.class ) ) {
 				hasDefault = true;
@@ -548,19 +554,30 @@ public class Draft_6455 extends Draft {
 				if( current_continuous_frame != null )
 					throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "Previous continuous frame sequence not completed." );
 				current_continuous_frame = frame;
+				byteBufferList.add( frame.getPayloadData() );
 			} else if( frame.isFin() ) {
 				if( current_continuous_frame == null )
 					throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "Continuous frame sequence was not started." );
-				//Check if the whole payload is valid utf8, when the opcode indicates a text
+				byteBufferList.add( frame.getPayloadData() );
 				if( current_continuous_frame.getOpcode() == Framedata.Opcode.TEXT ) {
-					//Checking a bit more from the frame before this one just to make sure all the code points are correct
-					int off = Math.max( current_continuous_frame.getPayloadData().limit() - 64, 0 );
-					current_continuous_frame.append( frame );
-					if( !Charsetfunctions.isValidUTF8( current_continuous_frame.getPayloadData(), off ) ) {
-						throw new InvalidDataException( CloseFrame.NO_UTF8 );
+					((FramedataImpl1) current_continuous_frame).setPayload( getPayloadFromByteBufferList() );
+					((FramedataImpl1) current_continuous_frame ).isValid();
+					try {
+						webSocketImpl.getWebSocketListener().onWebsocketMessage( webSocketImpl, Charsetfunctions.stringUtf8( current_continuous_frame.getPayloadData() ) );
+					} catch ( RuntimeException e ) {
+						webSocketImpl.getWebSocketListener().onWebsocketError( webSocketImpl, e );
+					}
+				} else if( current_continuous_frame.getOpcode() == Framedata.Opcode.BINARY ) {
+					((FramedataImpl1) current_continuous_frame).setPayload( getPayloadFromByteBufferList() );
+					((FramedataImpl1) current_continuous_frame ).isValid();
+					try {
+						webSocketImpl.getWebSocketListener().onWebsocketMessage( webSocketImpl, current_continuous_frame.getPayloadData() );
+					} catch ( RuntimeException e ) {
+						webSocketImpl.getWebSocketListener().onWebsocketError( webSocketImpl, e );
 					}
 				}
 				current_continuous_frame = null;
+				byteBufferList.clear();
 			} else if( current_continuous_frame == null ) {
 				throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "Continuous frame sequence was not started." );
 			}
@@ -571,18 +588,8 @@ public class Draft_6455 extends Draft {
 				}
 			}
 			//Checking if the current continous frame contains a correct payload with the other frames combined
-			if( curop == Framedata.Opcode.CONTINUOUS && current_continuous_frame != null && current_continuous_frame.getOpcode() == Framedata.Opcode.TEXT ) {
-				//Checking a bit more from the frame before this one just to make sure all the code points are correct
-				int off = Math.max( current_continuous_frame.getPayloadData().limit() - 64, 0 );
-				current_continuous_frame.append( frame );
-				if( !Charsetfunctions.isValidUTF8( current_continuous_frame.getPayloadData(), off ) ) {
-					throw new InvalidDataException( CloseFrame.NO_UTF8 );
-				}
-			}
-			try {
-				webSocketImpl.getWebSocketListener().onWebsocketMessageFragment( webSocketImpl, frame );
-			} catch ( RuntimeException e ) {
-				webSocketImpl.getWebSocketListener().onWebsocketError( webSocketImpl, e );
+			if( curop == Framedata.Opcode.CONTINUOUS && current_continuous_frame != null ) {
+				byteBufferList.add( frame.getPayloadData() );
 			}
 			return;
 		} else if( current_continuous_frame != null ) {
@@ -631,5 +638,26 @@ public class Draft_6455 extends Draft {
 	@Override
 	public int hashCode() {
 		return extension != null ? extension.hashCode() : 0;
+	}
+
+	/**
+	 * Method to generate a full bytebuffer out of all the fragmented frame payload
+	 * @return a bytebuffer containing all the data
+	 * @throws LimitExedeedException will be thrown when the totalSize is bigger then Integer.MAX_VALUE due to not being able to allocate more
+	 */
+	private ByteBuffer getPayloadFromByteBufferList() throws LimitExedeedException {
+		long totalSize = 0;
+		for (ByteBuffer buffer : byteBufferList) {
+			totalSize +=buffer.limit();
+		}
+		if (totalSize > Integer.MAX_VALUE) {
+			throw new LimitExedeedException( "Payloadsize is to big..." );
+		}
+		ByteBuffer resultingByteBuffer = ByteBuffer.allocate( (int) totalSize );
+		for (ByteBuffer buffer : byteBufferList) {
+			resultingByteBuffer.put( buffer );
+		}
+		resultingByteBuffer.flip();
+		return resultingByteBuffer;
 	}
 }
