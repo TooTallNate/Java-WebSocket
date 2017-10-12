@@ -447,11 +447,11 @@ public class WebSocketImpl implements WebSocket {
 			} else if( code == CloseFrame.FLASHPOLICY ) {
 				assert ( remote );
 				flushAndClose( CloseFrame.FLASHPOLICY, message, true );
+			} else if( code == CloseFrame.PROTOCOL_ERROR ) { // this endpoint found a PROTOCOL_ERROR
+				flushAndClose( code, message, remote );
 			} else {
 				flushAndClose( CloseFrame.NEVER_CONNECTED, message, false );
 			}
-			if( code == CloseFrame.PROTOCOL_ERROR )// this endpoint found a PROTOCOL_ERROR
-				flushAndClose( code, message, remote );
 			readystate = READYSTATE.CLOSING;
 			tmpHandshakeBytes = null;
 			return;
