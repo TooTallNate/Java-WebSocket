@@ -119,12 +119,24 @@ public abstract class Draft {
 
 		if( role == Role.CLIENT ) {
 			// translating/parsing the response from the SERVER
+			if (!"HTTP/1.1".equalsIgnoreCase(firstLineTokens[0])) {
+				throw new InvalidHandshakeException( "Invalid status line received: " + firstLineTokens[0] );
+			}
+			if (!"101".equals(firstLineTokens[1])) {
+				throw new InvalidHandshakeException( "Invalid status code received: " + firstLineTokens[1] );
+			}
 			handshake = new HandshakeImpl1Server();
 			ServerHandshakeBuilder serverhandshake = (ServerHandshakeBuilder) handshake;
 			serverhandshake.setHttpStatus( Short.parseShort( firstLineTokens[ 1 ] ) );
 			serverhandshake.setHttpStatusMessage( firstLineTokens[ 2 ] );
 		} else {
 			// translating/parsing the request from the CLIENT
+			if (!"GET".equalsIgnoreCase(firstLineTokens[0])) {
+				throw new InvalidHandshakeException( "Invalid request method received: " + firstLineTokens[0] );
+			}
+			if (!"HTTP/1.1".equalsIgnoreCase(firstLineTokens[2])) {
+				throw new InvalidHandshakeException( "Invalid status line received: " + firstLineTokens[2] );
+			}
 			ClientHandshakeBuilder clienthandshake = new HandshakeImpl1Client();
 			clienthandshake.setResourceDescriptor( firstLineTokens[ 1 ] );
 			handshake = clienthandshake;
