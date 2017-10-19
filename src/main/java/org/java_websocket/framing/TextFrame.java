@@ -44,7 +44,7 @@ public class TextFrame extends DataFrame {
     public void isValid() throws InvalidDataException {
         super.isValid();
         if (!Charsetfunctions.isValidUTF8( getPayloadData() )) {
-            throw new InvalidDataException(CloseFrame.NO_UTF8);
+            throw new InvalidDataException(CloseFrame.NO_UTF8, "Received text is no valid utf8 string!");
         }
     }
 }
