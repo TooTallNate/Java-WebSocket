@@ -370,12 +370,6 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 		stopConnectionLostTimer();
 		if( writeThread != null )
 			writeThread.interrupt();
-		try {
-			if( socket != null )
-				socket.close();
-		} catch ( IOException e ) {
-			onWebsocketError( this, e );
-		}
 		onClose( code, reason, remote );
 		connectLatch.countDown();
 		closeLatch.countDown();
@@ -464,16 +458,34 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 		public void run() {
 			Thread.currentThread().setName( "WebsocketWriteThread" );
 			try {
-				while( !Thread.interrupted() ) {
-					ByteBuffer buffer = engine.outQueue.take();
-					ostream.write( buffer.array(), 0, buffer.limit() );
-					ostream.flush();
+				try {
+					while( !Thread.interrupted() ) {
+						ByteBuffer buffer = engine.outQueue.take();
+						ostream.write( buffer.array(), 0, buffer.limit() );
+						ostream.flush();
+					}
+				} catch ( InterruptedException e ) {
+					for (ByteBuffer buffer : engine.outQueue) {
+						ostream.write( buffer.array(), 0, buffer.limit() );
+						ostream.flush();
+					}
 				}
 			} catch ( IOException e ) {
-				handleIOException(e);
-			} catch ( InterruptedException e ) {
-				// this thread is regularly terminated via an interrupt
+				handleIOException( e );
+			} finally {
+				closeOutputAndSocket();
 			}
+		}
+	}
+
+	private void closeOutputAndSocket() {
+		try {
+			if( socket != null ) {
+				socket.shutdownOutput();
+				socket.close();
+			}
+		} catch ( IOException ex ) {
+			onWebsocketError( this, ex );
 		}
 	}
 

@@ -210,7 +210,7 @@ public class CloseFrame extends ControlFrame {
     public void isValid() throws InvalidDataException {
         super.isValid();
         if (code == CloseFrame.NO_UTF8 && reason == null) {
-        	throw new InvalidDataException( CloseFrame.NO_UTF8 );
+        	throw new InvalidDataException( CloseFrame.NO_UTF8, "Received text is no valid utf8 string!");
 		}
         if (code == CloseFrame.NOCODE && 0 < reason.length()) {
             throw new InvalidDataException(PROTOCOL_ERROR, "A close frame must have a closecode if it has a reason");
