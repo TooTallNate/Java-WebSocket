@@ -42,6 +42,8 @@ import java.util.concurrent.CountDownLatch;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import org.java_websocket.AbstractWebSocket;
 import org.java_websocket.WebSocket;
@@ -88,6 +90,22 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	private CountDownLatch closeLatch = new CountDownLatch( 1 );
 
 	private int connectTimeout = 0;
+        
+        private boolean validateCertificates = true;
+        
+        private static TrustManager[] trustAllCerts = new TrustManager[]{
+        new X509TrustManager() {
+            public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                return null;
+            }
+            public void checkClientTrusted(
+                java.security.cert.X509Certificate[] certs, String authType) {
+            }
+            public void checkServerTrusted(
+                java.security.cert.X509Certificate[] certs, String authType) {
+            }
+        }
+        };
 
 	/**
 	 * Constructs a WebSocketClient instance and sets it to the connect to the
@@ -120,7 +138,21 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	 * @param httpHeaders Additional HTTP-Headers
 	 * @param connectTimeout The Timeout for the connection
 	 */
-	public WebSocketClient( URI serverUri , Draft protocolDraft , Map<String,String> httpHeaders , int connectTimeout ) {
+        public WebSocketClient( URI serverUri , Draft protocolDraft , Map<String,String> httpHeaders , int connectTimeout ) {
+		this( serverUri, protocolDraft, null, 0, false );
+        }
+        
+	/**
+	 * Constructs a WebSocketClient instance and sets it to the connect to the
+	 * specified URI. The channel does not attampt to connect automatically. The connection
+	 * will be established once you call <var>connect</var>.
+	 * @param serverUri the server URI to connect to
+	 * @param protocolDraft The draft which should be used for this connection
+	 * @param httpHeaders Additional HTTP-Headers
+	 * @param connectTimeout The Timeout for the connection
+         * @param trustAllCerts Set to true to disable certificate validation.
+	 */
+	public WebSocketClient( URI serverUri , Draft protocolDraft , Map<String,String> httpHeaders , int connectTimeout, boolean trustAllCerts ) {
 		if( serverUri == null ) {
 			throw new IllegalArgumentException();
 		} else if( protocolDraft == null ) {
@@ -130,6 +162,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 		this.draft = protocolDraft;
 		this.headers = httpHeaders;
 		this.connectTimeout = connectTimeout;
+                if (trustAllCerts) this.validateCertificates = false;
 		setTcpNoDelay( false );
 		setReuseAddr( false );
 		this.engine = new WebSocketImpl( this, protocolDraft );
@@ -252,7 +285,14 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 			if (isNewSocket && "wss".equals( uri.getScheme())) {
 
 				SSLContext sslContext = SSLContext.getInstance("TLS");
-				sslContext.init(null, null, null);
+                                
+                                if (validateCertificates){
+                                    sslContext.init(null, null, null);
+                                }
+                                else{
+                                    sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+                                }
+                                
 				SSLSocketFactory factory = sslContext.getSocketFactory();
 				socket = factory.createSocket(socket, uri.getHost(), getPort(), true);
 			}
