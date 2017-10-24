@@ -81,9 +81,12 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
         this.connectionLostTimeout = connectionLostTimeout;
         if (this.connectionLostTimeout <= 0) {
             stopConnectionLostTimer();
-        } else {
-            startConnectionLostTimer();
         }
+        if (connectionLostTimer != null || connectionLostTimerTask != null) {
+			if( WebSocketImpl.DEBUG )
+				System.out.println( "Connection lost timer restarted" );
+			restartConnectionLostTimer();
+		}
     }
 
     /**
@@ -107,18 +110,25 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
         }
         if (WebSocketImpl.DEBUG)
             System.out.println("Connection lost timer started");
-        cancelConnectionLostTimer();
-        connectionLostTimer = new Timer();
-        connectionLostTimerTask = new TimerTask() {
+       	restartConnectionLostTimer();
+    }
+
+	/**
+	 * This methods allows the reset of the connection lost timer in case of a changed parameter
+	 */
+	private void restartConnectionLostTimer() {
+		cancelConnectionLostTimer();
+		connectionLostTimer = new Timer();
+		connectionLostTimerTask = new TimerTask() {
 
 			/**
 			 * Keep the connections in a separate list to not cause deadlocks
 			 */
 			private ArrayList<WebSocket> connections = new ArrayList<WebSocket>(  );
-            @Override
-            public void run() {
-                connections.clear();
-                connections.addAll( connections() );
+			@Override
+			public void run() {
+				connections.clear();
+				connections.addAll( connections() );
 				long current = (System.currentTimeMillis()-(connectionLostTimeout * 1500));
 				WebSocketImpl webSocketImpl;
 				for( WebSocket conn : connections ) {
@@ -134,12 +144,12 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
 					}
 				}
 				connections.clear();
-            }
-        };
-        connectionLostTimer.scheduleAtFixedRate( connectionLostTimerTask,connectionLostTimeout * 1000, connectionLostTimeout * 1000 );
-    }
+			}
+		};
+		connectionLostTimer.scheduleAtFixedRate( connectionLostTimerTask,connectionLostTimeout * 1000, connectionLostTimeout * 1000 );
+	}
 
-    /**
+	/**
      * Getter to get all the currently available connections
      * @return the currently available connections
      */
