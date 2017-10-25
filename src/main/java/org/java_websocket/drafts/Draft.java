@@ -119,12 +119,13 @@ public abstract class Draft {
 
 		if( role == Role.CLIENT ) {
 			// translating/parsing the response from the SERVER
-			if (!"HTTP/1.1".equalsIgnoreCase(firstLineTokens[0])) {
-				throw new InvalidHandshakeException( "Invalid status line received: " + firstLineTokens[0] );
-			}
 			if (!"101".equals(firstLineTokens[1])) {
-				throw new InvalidHandshakeException( "Invalid status code received: " + firstLineTokens[1] );
+				throw new InvalidHandshakeException( "Invalid status code received: " + firstLineTokens[1] + " Status line: " + line);
 			}
+			if (!"HTTP/1.1".equalsIgnoreCase(firstLineTokens[0])) {
+				throw new InvalidHandshakeException( "Invalid status line received: " + firstLineTokens[0] + " Status line: " + line);
+			}
+
 			handshake = new HandshakeImpl1Server();
 			ServerHandshakeBuilder serverhandshake = (ServerHandshakeBuilder) handshake;
 			serverhandshake.setHttpStatus( Short.parseShort( firstLineTokens[ 1 ] ) );
@@ -132,10 +133,10 @@ public abstract class Draft {
 		} else {
 			// translating/parsing the request from the CLIENT
 			if (!"GET".equalsIgnoreCase(firstLineTokens[0])) {
-				throw new InvalidHandshakeException( "Invalid request method received: " + firstLineTokens[0] );
+				throw new InvalidHandshakeException( "Invalid request method received: " + firstLineTokens[0] + " Status line: " + line);
 			}
 			if (!"HTTP/1.1".equalsIgnoreCase(firstLineTokens[2])) {
-				throw new InvalidHandshakeException( "Invalid status line received: " + firstLineTokens[2] );
+				throw new InvalidHandshakeException( "Invalid status line received: " + firstLineTokens[2] + " Status line: " + line);
 			}
 			ClientHandshakeBuilder clienthandshake = new HandshakeImpl1Client();
 			clienthandshake.setResourceDescriptor( firstLineTokens[ 1 ] );

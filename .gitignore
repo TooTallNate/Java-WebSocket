@@ -16,3 +16,4 @@ bin
 /doc
 *.xml
 .idea/.name
+*.jks
