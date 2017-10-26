@@ -481,7 +481,6 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	private void closeOutputAndSocket() {
 		try {
 			if( socket != null ) {
-				socket.shutdownOutput();
 				socket.close();
 			}
 		} catch ( IOException ex ) {

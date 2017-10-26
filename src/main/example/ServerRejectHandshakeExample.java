@@ -82,7 +82,7 @@ public class ServerRejectHandshakeExample extends ChatServer {
 			String in = sysin.readLine();
 			s.broadcast( in );
 			if( in.equals( "exit" ) ) {
-				s.stop();
+				s.stop(1000);
 				break;
 			}
 		}

@@ -94,7 +94,7 @@ public class ChatServer extends WebSocketServer {
 			String in = sysin.readLine();
 			s.broadcast( in );
 			if( in.equals( "exit" ) ) {
-				s.stop();
+				s.stop(1000);
 				break;
 			}
 		}
