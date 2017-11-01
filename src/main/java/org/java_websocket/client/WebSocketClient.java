@@ -71,8 +71,6 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 
 	private Socket socket = null;
 
-	private InputStream istream;
-
 	private OutputStream ostream;
 
 	private Proxy proxy = Proxy.NO_PROXY;
@@ -230,6 +228,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 
 	public void run() {
 
+		InputStream istream;
 		try {
 			boolean isNewSocket = false;
 
@@ -313,7 +312,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 		else
 			path = part1;
 		if( part2 != null )
-			path += "?" + part2;
+			path += '?' + part2;
 		int port = getPort();
 		String host = uri.getHost() + ( port != WebSocket.DEFAULT_PORT ? ":" + port : "" );
 

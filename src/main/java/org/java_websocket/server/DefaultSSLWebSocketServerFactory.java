@@ -61,7 +61,7 @@ public class DefaultSSLWebSocketServerFactory implements WebSocketServerFactory 
 	@Override
 	public ByteChannel wrapChannel( SocketChannel channel, SelectionKey key ) throws IOException {
 		SSLEngine e = sslcontext.createSSLEngine();
-		/**
+		/*
 		 * See https://github.com/TooTallNate/Java-WebSocket/issues/466
 		 *
 		 * We remove TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 from the enabled ciphers since it is just available when you patch your java installation directly.
@@ -69,7 +69,7 @@ public class DefaultSSLWebSocketServerFactory implements WebSocketServerFactory 
 		 */
 		List<String> ciphers = new ArrayList<String>( Arrays.asList(e.getEnabledCipherSuites()));
 		ciphers.remove("TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256");
-		e.setEnabledCipherSuites( ciphers.toArray(new String[]{}));
+		e.setEnabledCipherSuites( ciphers.toArray( new String[ciphers.size()] ) );
 		e.setUseClientMode( false );
 		return new SSLSocketChannel2( channel, e, exec, key );
 	}
