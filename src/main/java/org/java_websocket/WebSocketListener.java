@@ -188,15 +188,6 @@ public interface WebSocketListener {
 	 **/
 	void onWebsocketPong( WebSocket conn, Framedata f );
 
-	/**
-	 * @see WebSocketAdapter#getFlashPolicy(WebSocket)
-	 * @param conn The <tt>WebSocket</tt> instance this event is occuring on.
-	 * @throws InvalidDataException thrown when some data that is required to generate the flash-policy like the websocket local port could not be obtained.
-	 * @return An XML String that comforts to Flash's security policy. You MUST not include the null char at the end, it is appended automatically.
-	 */
-	@Deprecated
-	String getFlashPolicy( WebSocket conn ) throws InvalidDataException;
-
 	/** This method is used to inform the selector thread that there is data queued to be written to the socket.
 	 * @param conn The <tt>WebSocket</tt> instance this event is occuring on.
 	 */

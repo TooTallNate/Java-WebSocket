@@ -72,12 +72,6 @@ public class SSLSocketChannel implements WrappedByteChannel, ByteChannel {
 	 */
 	private final SSLEngine engine;
 
-	/**
-	 * The selection key for this socket channel
-	 * Used to set interestOP SelectionKey.OP_WRITE for the underlying channel
-	 */
-	private SelectionKey selectionKey;
-
 
 	/**
 	 * Will contain this peer's application data in plaintext, that will be later encrypted
@@ -130,7 +124,6 @@ public class SSLSocketChannel implements WrappedByteChannel, ByteChannel {
 		if( doHandshake() ) {
 			if( key != null ) {
 				key.interestOps( key.interestOps() | SelectionKey.OP_WRITE );
-				this.selectionKey = key;
 			}
 		} else {
 			try {
@@ -153,7 +146,7 @@ public class SSLSocketChannel implements WrappedByteChannel, ByteChannel {
 		peerNetData.compact();
 
 		int bytesRead = socketChannel.read( peerNetData );
-		/**
+		/*
 		 * If bytesRead are 0 put we still have some data in peerNetData still to an unwrap (for testcase 1.1.6)
 		 */
 		if( bytesRead > 0 || peerNetData.hasRemaining() ) {

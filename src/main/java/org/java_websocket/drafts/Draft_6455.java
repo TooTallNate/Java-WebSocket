@@ -182,7 +182,7 @@ public class Draft_6455 extends Draft {
 		request.put( "Sec-WebSocket-Version", "13" );// overwriting the previous
 		StringBuilder requestedExtensions = new StringBuilder();
 		for( IExtension knownExtension : knownExtensions ) {
-			if( knownExtension.getProvidedExtensionAsClient() != null && !knownExtension.getProvidedExtensionAsClient().equals( "" ) ) {
+			if( knownExtension.getProvidedExtensionAsClient() != null && knownExtension.getProvidedExtensionAsClient().length() != 0 ) {
 				requestedExtensions.append( knownExtension.getProvidedExtensionAsClient() ).append( "; " );
 			}
 		}
@@ -222,7 +222,7 @@ public class Draft_6455 extends Draft {
 	public ByteBuffer createBinaryFrame( Framedata framedata ) {
 		getExtension().encodeFrame( framedata );
 		if( WebSocketImpl.DEBUG )
-			System.out.println( "afterEnconding(" + framedata.getPayloadData().remaining() + "): {" + ( framedata.getPayloadData().remaining() > 1000 ? "too big to display" : new String( framedata.getPayloadData().array() ) ) + "}" );
+			System.out.println( "afterEnconding(" + framedata.getPayloadData().remaining() + "): {" + ( framedata.getPayloadData().remaining() > 1000 ? "too big to display" : new String( framedata.getPayloadData().array() ) ) + '}' );
 		return createByteBufferFromFramedata( framedata );
 	}
 
@@ -349,7 +349,7 @@ public class Draft_6455 extends Draft {
 		getExtension().isFrameValid(frame);
 		getExtension().decodeFrame(frame);
 		if( WebSocketImpl.DEBUG )
-			System.out.println( "afterDecoding(" + frame.getPayloadData().remaining() + "): {" + ( frame.getPayloadData().remaining() > 1000 ? "too big to display" : new String( frame.getPayloadData().array() ) ) + "}" );
+			System.out.println( "afterDecoding(" + frame.getPayloadData().remaining() + "): {" + ( frame.getPayloadData().remaining() > 1000 ? "too big to display" : new String( frame.getPayloadData().array() ) ) + '}' );
 		frame.isValid();
 		return frame;
 	}
@@ -541,14 +541,11 @@ public class Draft_6455 extends Draft {
 				else
 					webSocketImpl.flushAndClose( code, reason, false );
 			}
-			return;
 		} else if( curop == Framedata.Opcode.PING ) {
 			webSocketImpl.getWebSocketListener().onWebsocketPing( webSocketImpl, frame );
-			return;
 		} else if( curop == Framedata.Opcode.PONG ) {
 			webSocketImpl.updateLastPong();
 			webSocketImpl.getWebSocketListener().onWebsocketPong( webSocketImpl, frame );
-			return;
 		} else if( !frame.isFin() || curop == Framedata.Opcode.CONTINUOUS ) {
 			if( curop != Framedata.Opcode.CONTINUOUS ) {
 				if( current_continuous_frame != null )
@@ -591,7 +588,6 @@ public class Draft_6455 extends Draft {
 			if( curop == Framedata.Opcode.CONTINUOUS && current_continuous_frame != null ) {
 				byteBufferList.add( frame.getPayloadData() );
 			}
-			return;
 		} else if( current_continuous_frame != null ) {
 			throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "Continuous frame sequence not completed." );
 		} else if( curop == Framedata.Opcode.TEXT ) {
@@ -600,7 +596,6 @@ public class Draft_6455 extends Draft {
 			} catch ( RuntimeException e ) {
 				webSocketImpl.getWebSocketListener().onWebsocketError( webSocketImpl, e );
 			}
-			return;
 		} else if( curop == Framedata.Opcode.BINARY ) {
 			try {
 				webSocketImpl.getWebSocketListener().onWebsocketMessage( webSocketImpl, frame.getPayloadData() );

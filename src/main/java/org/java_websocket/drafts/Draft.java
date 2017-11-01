@@ -73,8 +73,6 @@ public abstract class Draft {
 	public static int MAX_FAME_SIZE = 1000;
 	public static int INITIAL_FAMESIZE = 64;
 
-	public static final byte[] FLASH_POLICY_REQUEST = Charsetfunctions.utf8Bytes( "<policy-file-request/>\0" );
-
 	/** In some cases the handshake will be parsed different depending on whether */
 	protected Role role = null;
 

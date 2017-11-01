@@ -199,7 +199,7 @@ public class WebSocketImpl implements WebSocket {
 		assert ( socketBuffer.hasRemaining() );
 
 		if( DEBUG )
-			System.out.println( "process(" + socketBuffer.remaining() + "): {" + ( socketBuffer.remaining() > 1000 ? "too big to display" : new String( socketBuffer.array(), socketBuffer.position(), socketBuffer.remaining() ) ) + "}" );
+			System.out.println( "process(" + socketBuffer.remaining() + "): {" + ( socketBuffer.remaining() > 1000 ? "too big to display" : new String( socketBuffer.array(), socketBuffer.position(), socketBuffer.remaining() ) ) + '}' );
 
 		if( getReadyState()  != READYSTATE.NOT_YET_CONNECTED ) {
 			if( getReadyState()  == READYSTATE.OPEN ) {
@@ -241,20 +241,7 @@ public class WebSocketImpl implements WebSocket {
 		}
 		socketBuffer.mark();
 		try {
-			if( draft == null ) {
-				HandshakeState isflashedgecase = isFlashEdgeCase( socketBuffer );
-				if( isflashedgecase == HandshakeState.MATCHED ) {
-					try {
-						write( Collections.singletonList( ByteBuffer.wrap( Charsetfunctions.utf8Bytes( wsl.getFlashPolicy( this ) ) ) ) );
-						close( CloseFrame.FLASHPOLICY, "" );
-					} catch ( InvalidDataException e ) {
-						close( CloseFrame.ABNORMAL_CLOSE, "remote peer closed connection before flashpolicy could be transmitted", true );
-					}
-					return false;
-				}
-			}
 			HandshakeState handshakestate;
-
 			try {
 				if( role == Role.SERVER ) {
 					if( draft == null ) {
@@ -647,24 +634,6 @@ public class WebSocketImpl implements WebSocket {
 		return !this.outQueue.isEmpty();
 	}
 
-	private HandshakeState isFlashEdgeCase( ByteBuffer request ) throws IncompleteHandshakeException {
-		request.mark();
-		if( request.limit() > Draft.FLASH_POLICY_REQUEST.length ) {
-			return HandshakeState.NOT_MATCHED;
-		} else if( request.limit() < Draft.FLASH_POLICY_REQUEST.length ) {
-			throw new IncompleteHandshakeException( Draft.FLASH_POLICY_REQUEST.length );
-		} else {
-
-			for( int flash_policy_index = 0; request.hasRemaining(); flash_policy_index++ ) {
-				if( Draft.FLASH_POLICY_REQUEST[flash_policy_index] != request.get() ) {
-					request.reset();
-					return HandshakeState.NOT_MATCHED;
-				}
-			}
-			return HandshakeState.MATCHED;
-		}
-	}
-
 	public void startHandshake( ClientHandshakeBuilder handshakedata ) throws InvalidHandshakeException {
 		assert ( getReadyState() != READYSTATE.CONNECTING ) : "shall only be called once";
 
@@ -691,7 +660,7 @@ public class WebSocketImpl implements WebSocket {
 
 	private void write( ByteBuffer buf ) {
 		if( DEBUG )
-			System.out.println( "write(" + buf.remaining() + "): {" + ( buf.remaining() > 1000 ? "too big to display" : new String( buf.array() ) ) + "}" );
+			System.out.println( "write(" + buf.remaining() + "): {" + ( buf.remaining() > 1000 ? "too big to display" : new String( buf.array() ) ) + '}' );
 
 		outQueue.add( buf );
 		/*try {
