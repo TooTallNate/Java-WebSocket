@@ -285,7 +285,8 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 			onError( e );
 			engine.closeConnection( CloseFrame.ABNORMAL_CLOSE, e.getMessage() );
 		}
-		assert ( socket.isClosed() );
+		//I have no idea why this was added.
+		//assert ( socket.isClosed() );
 	}
 
 	private int getPort() {
