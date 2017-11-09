@@ -7,6 +7,9 @@
   <name>Java-WebSocket</name>
   <description>A barebones WebSocket client and server implementation written 100% in Java</description>
   <url>https://github.com/TooTallNate/Java-WebSocket</url>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
   <licenses>
     <license>
       <name>MIT License</name>
