@@ -139,7 +139,12 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
 								System.out.println("Closing connection due to no pong received: " + conn.toString());
 							webSocketImpl.closeConnection( CloseFrame.ABNORMAL_CLOSE , false );
 						} else {
-							webSocketImpl.sendPing();
+							if (webSocketImpl.isOpen()) {
+								webSocketImpl.sendPing();
+							} else {
+								if (WebSocketImpl.DEBUG)
+									System.out.println("Trying to ping a non open connection: " + conn.toString());
+							}
 						}
 					}
 				}
