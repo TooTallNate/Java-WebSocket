@@ -31,6 +31,7 @@ import org.java_websocket.exceptions.*;
 import org.java_websocket.extensions.*;
 import org.java_websocket.framing.*;
 import org.java_websocket.handshake.*;
+import org.java_websocket.protocols.IProtocol;
 import org.java_websocket.util.*;
 import org.java_websocket.util.Base64;
 
@@ -56,6 +57,10 @@ public class Draft_6455 extends Draft {
 	 * Attribute for all available extension in this draft
 	 */
 	private List<IExtension> knownExtensions;
+
+	private IProtocol protocol;
+
+	private List<IProtocol> knownProtocols;
 
 	/**
 	 * Attribute for the current continuous frame
@@ -172,6 +177,23 @@ public class Draft_6455 extends Draft {
 		return knownExtensions;
 	}
 
+	/**
+	 * Getter for the protocol which is used by this draft
+	 *
+	 * @return the protocol which is used or null, if handshake is not yet done or no valid protocols
+	 */
+	public IProtocol getProtocol() {
+		return protocol;
+	}
+
+	/**
+	 * Getter for all available protocols for this draft
+	 * @return the protocols which are enabled for this draft
+	 */
+	public List<IProtocol> getKnownProtocols() {
+		return knownProtocols;
+	}
+
 	@Override
 	public ClientHandshakeBuilder postProcessHandshakeRequestAsClient( ClientHandshakeBuilder request ) {
 		request.put( "Upgrade", "websocket" );
@@ -189,6 +211,15 @@ public class Draft_6455 extends Draft {
 		if( requestedExtensions.length() != 0 ) {
 			request.put( "Sec-WebSocket-Extensions", requestedExtensions.toString() );
 		}
+		StringBuilder requestedProtocols = new StringBuilder();
+		for( IProtocol knownProtocol : knownProtocols ) {
+			if( knownProtocol.getProvidedProtocol() != null && knownProtocol.getProvidedProtocol().length() != 0 ) {
+				requestedProtocols.append( knownProtocol.getProvidedProtocol() ).append( ", " );
+			}
+		}
+		if( requestedProtocols.length() != 0 ) {
+			request.put( "Sec-WebSocket-Protocol", requestedProtocols.toString() );
+		}
 		return request;
 	}
 
@@ -202,6 +233,9 @@ public class Draft_6455 extends Draft {
 		response.put( "Sec-WebSocket-Accept", generateFinalKey( seckey ) );
 		if( getExtension().getProvidedExtensionAsServer().length() != 0 ) {
 			response.put( "Sec-WebSocket-Extensions", getExtension().getProvidedExtensionAsServer() );
+		}
+		if( getProtocol() != null && getProtocol().getProvidedProtocol().length() != 0 ) {
+			response.put( "Sec-WebSocket-Protocol", getProtocol().getProvidedProtocol() );
 		}
 		response.setHttpStatusMessage( "Web Socket Protocol Handshake" );
 		response.put( "Server", "TooTallNate Java-WebSocket" );
@@ -440,6 +474,7 @@ public class Draft_6455 extends Draft {
 			extension.reset();
 		}
 		extension = new DefaultExtension();
+		protocol = null;
 	}
 
 	/**
