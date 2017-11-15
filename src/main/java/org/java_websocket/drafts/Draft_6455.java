@@ -720,12 +720,15 @@ public class Draft_6455 extends Draft {
 
 		Draft_6455 that = ( Draft_6455 ) o;
 
-		return extension != null ? extension.equals( that.extension ) : that.extension == null;
+		if( extension != null ? !extension.equals( that.extension ) : that.extension != null ) return false;
+		return protocol != null ? protocol.equals( that.protocol ) : that.protocol == null;
 	}
 
 	@Override
 	public int hashCode() {
-		return extension != null ? extension.hashCode() : 0;
+		int result = extension != null ? extension.hashCode() : 0;
+		result = 31 * result + ( protocol != null ? protocol.hashCode() : 0 );
+		return result;
 	}
 
 	/**

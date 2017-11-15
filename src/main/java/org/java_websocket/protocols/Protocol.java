@@ -73,4 +73,17 @@ public class Protocol implements IProtocol {
 	public String toString() {
 		return getProvidedProtocol();
 	}
+
+	@Override
+	public boolean equals( Object o ) {
+		if( this == o ) return true;
+		if( o == null || getClass() != o.getClass() ) return false;
+		Protocol protocol = ( Protocol ) o;
+		return providedProtocol.equals( protocol.providedProtocol );
+	}
+
+	@Override
+	public int hashCode() {
+		return providedProtocol.hashCode();
+	}
 }
