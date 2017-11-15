@@ -46,5 +46,16 @@ public interface IProtocol {
 	 */
 	String getProvidedProtocol();
 
+	/**
+	 * To prevent protocols to be used more than once the Websocket implementation should call this method in order to create a new usable version of a given protocol instance.
+	 * @return a copy of the protocol
+	 */
 	IProtocol copyInstance();
+
+	/**
+	 * Return a string which should contain the protocol name as well as additional information about the current configurations for this protocol (DEBUG purposes)
+	 *
+	 * @return a string containing the protocol name as well as additional information
+	 */
+	String toString();
 }

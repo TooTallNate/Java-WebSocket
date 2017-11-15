@@ -32,6 +32,7 @@ import org.java_websocket.extensions.*;
 import org.java_websocket.framing.*;
 import org.java_websocket.handshake.*;
 import org.java_websocket.protocols.IProtocol;
+import org.java_websocket.protocols.Protocol;
 import org.java_websocket.util.*;
 import org.java_websocket.util.Base64;
 
@@ -58,8 +59,14 @@ public class Draft_6455 extends Draft {
 	 */
 	private List<IExtension> knownExtensions;
 
+	/**
+	 * Attribute for the used protocol in this draft
+	 */
 	private IProtocol protocol;
 
+	/**
+	 * Attribute for all available protocols in this draft
+	 */
 	private List<IProtocol> knownProtocols;
 
 	/**
@@ -104,7 +111,7 @@ public class Draft_6455 extends Draft {
 	 * @param inputExtensions the extensions which should be used for this draft
 	 */
 	public Draft_6455( List<IExtension> inputExtensions ) {
-		this( inputExtensions, Collections.<IProtocol>emptyList() );
+		this( inputExtensions, Collections.<IProtocol>singletonList( new Protocol( "" ) ));
 	}
 
 	/**
@@ -114,8 +121,8 @@ public class Draft_6455 extends Draft {
 	 * @param inputProtocols the protocols which should be used for this draft
 	 */
 	public Draft_6455( List<IExtension> inputExtensions , List<IProtocol> inputProtocols ) {
-		knownExtensions = new ArrayList<IExtension>();
-		knownProtocols = new ArrayList<IProtocol>();
+		knownExtensions = new ArrayList<IExtension>( inputExtensions.size());
+		knownProtocols = new ArrayList<IProtocol>( inputProtocols.size());
 		boolean hasDefault = false;
 		byteBufferList = new ArrayList<ByteBuffer>();
 		for( IExtension inputExtension : inputExtensions ) {
@@ -136,12 +143,26 @@ public class Draft_6455 extends Draft {
 		int v = readVersion( handshakedata );
 		if( v != 13 )
 			return HandshakeState.NOT_MATCHED;
+		HandshakeState extensionState= HandshakeState.NOT_MATCHED;
 		String requestedExtension = handshakedata.getFieldValue( "Sec-WebSocket-Extensions" );
 		for( IExtension knownExtension : knownExtensions ) {
 			if( knownExtension.acceptProvidedExtensionAsServer( requestedExtension ) ) {
 				extension = knownExtension;
-				return HandshakeState.MATCHED;
+				extensionState = HandshakeState.MATCHED;
+				break;
 			}
+		}
+		HandshakeState protocolState = HandshakeState.NOT_MATCHED;
+		String requestedProtocol = handshakedata.getFieldValue( "Sec-WebSocket-Protocol" );
+		for( IProtocol knownProtocol : knownProtocols ) {
+			if( knownProtocol.acceptProvidedProtocol( requestedProtocol ) ) {
+				protocol = knownProtocol;
+				protocolState = HandshakeState.MATCHED;
+				break;
+			}
+		}
+		if (protocolState == HandshakeState.MATCHED && extensionState == HandshakeState.MATCHED) {
+			return HandshakeState.MATCHED;
 		}
 		return HandshakeState.NOT_MATCHED;
 	}
@@ -161,12 +182,26 @@ public class Draft_6455 extends Draft {
 		if( !seckey_challenge.equals( seckey_answere ) )
 			return HandshakeState.NOT_MATCHED;
 
+		HandshakeState extensionState= HandshakeState.NOT_MATCHED;
 		String requestedExtension = response.getFieldValue( "Sec-WebSocket-Extensions" );
 		for( IExtension knownExtension : knownExtensions ) {
 			if( knownExtension.acceptProvidedExtensionAsClient( requestedExtension ) ) {
 				extension = knownExtension;
-				return HandshakeState.MATCHED;
+				extensionState = HandshakeState.MATCHED;
+				break;
 			}
+		}
+		HandshakeState protocolState = HandshakeState.NOT_MATCHED;
+		String requestedProtocol = response.getFieldValue( "Sec-WebSocket-Protocol" );
+		for( IProtocol knownProtocol : knownProtocols ) {
+			if( knownProtocol.acceptProvidedProtocol( requestedProtocol ) ) {
+				protocol = knownProtocol;
+				protocolState = HandshakeState.MATCHED;
+				break;
+			}
+		}
+		if (protocolState == HandshakeState.MATCHED && extensionState == HandshakeState.MATCHED) {
+			return HandshakeState.MATCHED;
 		}
 		return HandshakeState.NOT_MATCHED;
 	}

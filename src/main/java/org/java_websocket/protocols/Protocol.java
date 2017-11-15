@@ -30,17 +30,18 @@ package org.java_websocket.protocols;
  */
 public class Protocol implements IProtocol {
 
-    /**
-     * Attribute for the provided protocol
-     */
+	/**
+	 * Attribute for the provided protocol
+	 */
 	private final String providedProtocol;
 
-    /**
-     * Constructor for a Sec-Websocket-Protocol
-     * @param providedProtocol the protocol string
-     */
-	public Protocol( String providedProtocol) {
-		if (providedProtocol == null) {
+	/**
+	 * Constructor for a Sec-Websocket-Protocol
+	 *
+	 * @param providedProtocol the protocol string
+	 */
+	public Protocol( String providedProtocol ) {
+		if( providedProtocol == null ) {
 			throw new IllegalArgumentException();
 		}
 		this.providedProtocol = providedProtocol;
@@ -48,12 +49,12 @@ public class Protocol implements IProtocol {
 
 	@Override
 	public boolean acceptProvidedProtocol( String inputProtocolHeader ) {
-		String protocolHeader = inputProtocolHeader.replaceAll(" ", "");
-		String[] headers = protocolHeader.split(",");
-		for (String header: headers) {
-			if (providedProtocol.equals(header)) {
-			    return true;
-            }
+		String protocolHeader = inputProtocolHeader.replaceAll( " ", "" );
+		String[] headers = protocolHeader.split( "," );
+		for( String header : headers ) {
+			if( providedProtocol.equals( header ) ) {
+				return true;
+			}
 		}
 		return false;
 	}
@@ -63,7 +64,13 @@ public class Protocol implements IProtocol {
 		return this.providedProtocol;
 	}
 
-    public IProtocol copyInstance() {
-        return new Protocol(getProvidedProtocol());
-    }
+	@Override
+	public IProtocol copyInstance() {
+		return new Protocol( getProvidedProtocol() );
+	}
+
+	@Override
+	public String toString() {
+		return getProvidedProtocol();
+	}
 }
