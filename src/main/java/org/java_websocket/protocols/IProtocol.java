@@ -45,4 +45,6 @@ public interface IProtocol {
 	 * @return the specific Sec-WebSocket-Protocol header for this protocol
 	 */
 	String getProvidedProtocol();
+
+	IProtocol copyInstance();
 }

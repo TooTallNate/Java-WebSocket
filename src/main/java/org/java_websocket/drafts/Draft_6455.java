@@ -104,7 +104,18 @@ public class Draft_6455 extends Draft {
 	 * @param inputExtensions the extensions which should be used for this draft
 	 */
 	public Draft_6455( List<IExtension> inputExtensions ) {
+		this( inputExtensions, Collections.<IProtocol>emptyList() );
+	}
+
+	/**
+	 * Constructor for the websocket protocol specified by RFC 6455 with custom extensions and protocols
+	 *
+	 * @param inputExtensions the extensions which should be used for this draft
+	 * @param inputProtocols the protocols which should be used for this draft
+	 */
+	public Draft_6455( List<IExtension> inputExtensions , List<IProtocol> inputProtocols ) {
 		knownExtensions = new ArrayList<IExtension>();
+		knownProtocols = new ArrayList<IProtocol>();
 		boolean hasDefault = false;
 		byteBufferList = new ArrayList<ByteBuffer>();
 		for( IExtension inputExtension : inputExtensions ) {
@@ -113,6 +124,7 @@ public class Draft_6455 extends Draft {
 			}
 		}
 		knownExtensions.addAll( inputExtensions );
+		knownProtocols.addAll( inputProtocols );
 		//We always add the DefaultExtension to implement the normal RFC 6455 specification
 		if( !hasDefault ) {
 			knownExtensions.add( this.knownExtensions.size(), extension );
@@ -133,7 +145,6 @@ public class Draft_6455 extends Draft {
 		}
 		return HandshakeState.NOT_MATCHED;
 	}
-
 
 	@Override
 	public HandshakeState acceptHandshakeAsClient( ClientHandshake request, ServerHandshake response ) throws InvalidHandshakeException {
@@ -205,7 +216,10 @@ public class Draft_6455 extends Draft {
 		StringBuilder requestedExtensions = new StringBuilder();
 		for( IExtension knownExtension : knownExtensions ) {
 			if( knownExtension.getProvidedExtensionAsClient() != null && knownExtension.getProvidedExtensionAsClient().length() != 0 ) {
-				requestedExtensions.append( knownExtension.getProvidedExtensionAsClient() ).append( "; " );
+				if (requestedExtensions.length() > 0) {
+					requestedExtensions.append( ", " );
+				}
+				requestedExtensions.append( knownExtension.getProvidedExtensionAsClient() );
 			}
 		}
 		if( requestedExtensions.length() != 0 ) {
@@ -213,8 +227,11 @@ public class Draft_6455 extends Draft {
 		}
 		StringBuilder requestedProtocols = new StringBuilder();
 		for( IProtocol knownProtocol : knownProtocols ) {
-			if( knownProtocol.getProvidedProtocol() != null && knownProtocol.getProvidedProtocol().length() != 0 ) {
-				requestedProtocols.append( knownProtocol.getProvidedProtocol() ).append( ", " );
+			if( knownProtocol.getProvidedProtocol().length() != 0 ) {
+				if (requestedProtocols.length() > 0) {
+					requestedProtocols.append( ", " );
+				}
+				requestedProtocols.append( knownProtocol.getProvidedProtocol() );
 			}
 		}
 		if( requestedProtocols.length() != 0 ) {
@@ -249,7 +266,11 @@ public class Draft_6455 extends Draft {
 		for( IExtension extension : getKnownExtensions() ) {
 			newExtensions.add( extension.copyInstance() );
 		}
-		return new Draft_6455( newExtensions );
+		ArrayList<IProtocol> newProtocols = new ArrayList<IProtocol>();
+		for( IProtocol protocol : getKnownProtocols() ) {
+			newProtocols.add( protocol.copyInstance() );
+		}
+		return new Draft_6455( newExtensions, newProtocols );
 	}
 
 	@Override
@@ -652,6 +673,8 @@ public class Draft_6455 extends Draft {
 		String result = super.toString();
 		if( getExtension() != null )
 			result += " extension: " + getExtension().toString();
+		if ( getProtocol() != null )
+			result += " protocol: " + getProtocol().toString();
 		return result;
 	}
 
