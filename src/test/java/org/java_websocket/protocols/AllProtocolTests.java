@@ -23,7 +23,7 @@
  *  OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package org.java_websocket;
+package org.java_websocket.protocols;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
@@ -31,13 +31,11 @@ import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-        org.java_websocket.util.ByteBufferUtilsTest.class,
-		org.java_websocket.misc.AllMiscTests.class,
-		org.java_websocket.protocols.AllProtocolTests.class,
-        org.java_websocket.framing.AllFramingTests.class
+		org.java_websocket.protocols.ProtocolTest.class,
+		org.java_websocket.protocols.ProtoclHandshakeRejectionTest.class
 })
 /**
- * Start all tests
+ * Start all tests for protocols
  */
-public class AllTests {
+public class AllProtocolTests {
 }
