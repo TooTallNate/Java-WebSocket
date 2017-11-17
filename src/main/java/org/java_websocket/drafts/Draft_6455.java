@@ -121,6 +121,9 @@ public class Draft_6455 extends Draft {
 	 * @param inputProtocols the protocols which should be used for this draft
 	 */
 	public Draft_6455( List<IExtension> inputExtensions , List<IProtocol> inputProtocols ) {
+		if (inputExtensions == null || inputProtocols == null) {
+			throw new IllegalArgumentException();
+		}
 		knownExtensions = new ArrayList<IExtension>( inputExtensions.size());
 		knownProtocols = new ArrayList<IProtocol>( inputProtocols.size());
 		boolean hasDefault = false;
@@ -131,11 +134,11 @@ public class Draft_6455 extends Draft {
 			}
 		}
 		knownExtensions.addAll( inputExtensions );
-		knownProtocols.addAll( inputProtocols );
 		//We always add the DefaultExtension to implement the normal RFC 6455 specification
 		if( !hasDefault ) {
 			knownExtensions.add( this.knownExtensions.size(), extension );
 		}
+		knownProtocols.addAll( inputProtocols );
 	}
 
 	@Override

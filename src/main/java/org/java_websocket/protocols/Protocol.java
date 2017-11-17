@@ -78,7 +78,9 @@ public class Protocol implements IProtocol {
 	public boolean equals( Object o ) {
 		if( this == o ) return true;
 		if( o == null || getClass() != o.getClass() ) return false;
+
 		Protocol protocol = ( Protocol ) o;
+
 		return providedProtocol.equals( protocol.providedProtocol );
 	}
 

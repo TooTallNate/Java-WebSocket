@@ -15,7 +15,6 @@ public class ProtocolTest {
 		} catch ( IllegalArgumentException e ) {
 			//Fine
 		}
-
 	}
 
 	@Test
