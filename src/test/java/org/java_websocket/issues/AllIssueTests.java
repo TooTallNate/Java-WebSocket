@@ -23,23 +23,17 @@
  *  OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package org.java_websocket;
-
+package org.java_websocket.issues;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-        org.java_websocket.util.ByteBufferUtilsTest.class,
-        org.java_websocket.drafts.AllDraftTests.class,
-        org.java_websocket.issues.AllIssueTests.class,
-		org.java_websocket.misc.AllMiscTests.class,
-		org.java_websocket.protocols.AllProtocolTests.class,
-        org.java_websocket.framing.AllFramingTests.class
+		org.java_websocket.issues.Issue609.class
 })
 /**
- * Start all tests
+ * Start all tests for issues
  */
-public class AllTests {
+public class AllIssueTests {
 }
