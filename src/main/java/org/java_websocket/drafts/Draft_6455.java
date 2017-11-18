@@ -31,6 +31,8 @@ import org.java_websocket.exceptions.*;
 import org.java_websocket.extensions.*;
 import org.java_websocket.framing.*;
 import org.java_websocket.handshake.*;
+import org.java_websocket.protocols.IProtocol;
+import org.java_websocket.protocols.Protocol;
 import org.java_websocket.util.*;
 import org.java_websocket.util.Base64;
 
@@ -56,6 +58,16 @@ public class Draft_6455 extends Draft {
 	 * Attribute for all available extension in this draft
 	 */
 	private List<IExtension> knownExtensions;
+
+	/**
+	 * Attribute for the used protocol in this draft
+	 */
+	private IProtocol protocol;
+
+	/**
+	 * Attribute for all available protocols in this draft
+	 */
+	private List<IProtocol> knownProtocols;
 
 	/**
 	 * Attribute for the current continuous frame
@@ -99,7 +111,21 @@ public class Draft_6455 extends Draft {
 	 * @param inputExtensions the extensions which should be used for this draft
 	 */
 	public Draft_6455( List<IExtension> inputExtensions ) {
-		knownExtensions = new ArrayList<IExtension>();
+		this( inputExtensions, Collections.<IProtocol>singletonList( new Protocol( "" ) ));
+	}
+
+	/**
+	 * Constructor for the websocket protocol specified by RFC 6455 with custom extensions and protocols
+	 *
+	 * @param inputExtensions the extensions which should be used for this draft
+	 * @param inputProtocols the protocols which should be used for this draft
+	 */
+	public Draft_6455( List<IExtension> inputExtensions , List<IProtocol> inputProtocols ) {
+		if (inputExtensions == null || inputProtocols == null) {
+			throw new IllegalArgumentException();
+		}
+		knownExtensions = new ArrayList<IExtension>( inputExtensions.size());
+		knownProtocols = new ArrayList<IProtocol>( inputProtocols.size());
 		boolean hasDefault = false;
 		byteBufferList = new ArrayList<ByteBuffer>();
 		for( IExtension inputExtension : inputExtensions ) {
@@ -112,6 +138,7 @@ public class Draft_6455 extends Draft {
 		if( !hasDefault ) {
 			knownExtensions.add( this.knownExtensions.size(), extension );
 		}
+		knownProtocols.addAll( inputProtocols );
 	}
 
 	@Override
@@ -119,16 +146,29 @@ public class Draft_6455 extends Draft {
 		int v = readVersion( handshakedata );
 		if( v != 13 )
 			return HandshakeState.NOT_MATCHED;
+		HandshakeState extensionState= HandshakeState.NOT_MATCHED;
 		String requestedExtension = handshakedata.getFieldValue( "Sec-WebSocket-Extensions" );
 		for( IExtension knownExtension : knownExtensions ) {
 			if( knownExtension.acceptProvidedExtensionAsServer( requestedExtension ) ) {
 				extension = knownExtension;
-				return HandshakeState.MATCHED;
+				extensionState = HandshakeState.MATCHED;
+				break;
 			}
+		}
+		HandshakeState protocolState = HandshakeState.NOT_MATCHED;
+		String requestedProtocol = handshakedata.getFieldValue( "Sec-WebSocket-Protocol" );
+		for( IProtocol knownProtocol : knownProtocols ) {
+			if( knownProtocol.acceptProvidedProtocol( requestedProtocol ) ) {
+				protocol = knownProtocol;
+				protocolState = HandshakeState.MATCHED;
+				break;
+			}
+		}
+		if (protocolState == HandshakeState.MATCHED && extensionState == HandshakeState.MATCHED) {
+			return HandshakeState.MATCHED;
 		}
 		return HandshakeState.NOT_MATCHED;
 	}
-
 
 	@Override
 	public HandshakeState acceptHandshakeAsClient( ClientHandshake request, ServerHandshake response ) throws InvalidHandshakeException {
@@ -145,12 +185,26 @@ public class Draft_6455 extends Draft {
 		if( !seckey_challenge.equals( seckey_answere ) )
 			return HandshakeState.NOT_MATCHED;
 
+		HandshakeState extensionState= HandshakeState.NOT_MATCHED;
 		String requestedExtension = response.getFieldValue( "Sec-WebSocket-Extensions" );
 		for( IExtension knownExtension : knownExtensions ) {
 			if( knownExtension.acceptProvidedExtensionAsClient( requestedExtension ) ) {
 				extension = knownExtension;
-				return HandshakeState.MATCHED;
+				extensionState = HandshakeState.MATCHED;
+				break;
 			}
+		}
+		HandshakeState protocolState = HandshakeState.NOT_MATCHED;
+		String requestedProtocol = response.getFieldValue( "Sec-WebSocket-Protocol" );
+		for( IProtocol knownProtocol : knownProtocols ) {
+			if( knownProtocol.acceptProvidedProtocol( requestedProtocol ) ) {
+				protocol = knownProtocol;
+				protocolState = HandshakeState.MATCHED;
+				break;
+			}
+		}
+		if (protocolState == HandshakeState.MATCHED && extensionState == HandshakeState.MATCHED) {
+			return HandshakeState.MATCHED;
 		}
 		return HandshakeState.NOT_MATCHED;
 	}
@@ -172,6 +226,23 @@ public class Draft_6455 extends Draft {
 		return knownExtensions;
 	}
 
+	/**
+	 * Getter for the protocol which is used by this draft
+	 *
+	 * @return the protocol which is used or null, if handshake is not yet done or no valid protocols
+	 */
+	public IProtocol getProtocol() {
+		return protocol;
+	}
+
+	/**
+	 * Getter for all available protocols for this draft
+	 * @return the protocols which are enabled for this draft
+	 */
+	public List<IProtocol> getKnownProtocols() {
+		return knownProtocols;
+	}
+
 	@Override
 	public ClientHandshakeBuilder postProcessHandshakeRequestAsClient( ClientHandshakeBuilder request ) {
 		request.put( "Upgrade", "websocket" );
@@ -183,11 +254,26 @@ public class Draft_6455 extends Draft {
 		StringBuilder requestedExtensions = new StringBuilder();
 		for( IExtension knownExtension : knownExtensions ) {
 			if( knownExtension.getProvidedExtensionAsClient() != null && knownExtension.getProvidedExtensionAsClient().length() != 0 ) {
-				requestedExtensions.append( knownExtension.getProvidedExtensionAsClient() ).append( "; " );
+				if (requestedExtensions.length() > 0) {
+					requestedExtensions.append( ", " );
+				}
+				requestedExtensions.append( knownExtension.getProvidedExtensionAsClient() );
 			}
 		}
 		if( requestedExtensions.length() != 0 ) {
 			request.put( "Sec-WebSocket-Extensions", requestedExtensions.toString() );
+		}
+		StringBuilder requestedProtocols = new StringBuilder();
+		for( IProtocol knownProtocol : knownProtocols ) {
+			if( knownProtocol.getProvidedProtocol().length() != 0 ) {
+				if (requestedProtocols.length() > 0) {
+					requestedProtocols.append( ", " );
+				}
+				requestedProtocols.append( knownProtocol.getProvidedProtocol() );
+			}
+		}
+		if( requestedProtocols.length() != 0 ) {
+			request.put( "Sec-WebSocket-Protocol", requestedProtocols.toString() );
 		}
 		return request;
 	}
@@ -203,6 +289,9 @@ public class Draft_6455 extends Draft {
 		if( getExtension().getProvidedExtensionAsServer().length() != 0 ) {
 			response.put( "Sec-WebSocket-Extensions", getExtension().getProvidedExtensionAsServer() );
 		}
+		if( getProtocol() != null && getProtocol().getProvidedProtocol().length() != 0 ) {
+			response.put( "Sec-WebSocket-Protocol", getProtocol().getProvidedProtocol() );
+		}
 		response.setHttpStatusMessage( "Web Socket Protocol Handshake" );
 		response.put( "Server", "TooTallNate Java-WebSocket" );
 		response.put( "Date", getServerTime() );
@@ -215,7 +304,11 @@ public class Draft_6455 extends Draft {
 		for( IExtension extension : getKnownExtensions() ) {
 			newExtensions.add( extension.copyInstance() );
 		}
-		return new Draft_6455( newExtensions );
+		ArrayList<IProtocol> newProtocols = new ArrayList<IProtocol>();
+		for( IProtocol protocol : getKnownProtocols() ) {
+			newProtocols.add( protocol.copyInstance() );
+		}
+		return new Draft_6455( newExtensions, newProtocols );
 	}
 
 	@Override
@@ -440,6 +533,7 @@ public class Draft_6455 extends Draft {
 			extension.reset();
 		}
 		extension = new DefaultExtension();
+		protocol = null;
 	}
 
 	/**
@@ -617,6 +711,8 @@ public class Draft_6455 extends Draft {
 		String result = super.toString();
 		if( getExtension() != null )
 			result += " extension: " + getExtension().toString();
+		if ( getProtocol() != null )
+			result += " protocol: " + getProtocol().toString();
 		return result;
 	}
 
@@ -627,12 +723,15 @@ public class Draft_6455 extends Draft {
 
 		Draft_6455 that = ( Draft_6455 ) o;
 
-		return extension != null ? extension.equals( that.extension ) : that.extension == null;
+		if( extension != null ? !extension.equals( that.extension ) : that.extension != null ) return false;
+		return protocol != null ? protocol.equals( that.protocol ) : that.protocol == null;
 	}
 
 	@Override
 	public int hashCode() {
-		return extension != null ? extension.hashCode() : 0;
+		int result = extension != null ? extension.hashCode() : 0;
+		result = 31 * result + ( protocol != null ? protocol.hashCode() : 0 );
+		return result;
 	}
 
 	/**
