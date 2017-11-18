@@ -239,4 +239,32 @@ public abstract class FramedataImpl1 implements Framedata {
                 throw new IllegalArgumentException("Supplied opcode is invalid");
         }
     }
+
+    @Override
+    public boolean equals( Object o ) {
+        if( this == o ) return true;
+        if( o == null || getClass() != o.getClass() ) return false;
+
+        FramedataImpl1 that = ( FramedataImpl1 ) o;
+
+        if( fin != that.fin ) return false;
+        if( transferemasked != that.transferemasked ) return false;
+        if( rsv1 != that.rsv1 ) return false;
+        if( rsv2 != that.rsv2 ) return false;
+        if( rsv3 != that.rsv3 ) return false;
+        if( optcode != that.optcode ) return false;
+        return unmaskedpayload != null ? unmaskedpayload.equals( that.unmaskedpayload ) : that.unmaskedpayload == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = ( fin ? 1 : 0 );
+        result = 31 * result + optcode.hashCode();
+        result = 31 * result + ( unmaskedpayload != null ? unmaskedpayload.hashCode() : 0 );
+        result = 31 * result + ( transferemasked ? 1 : 0 );
+        result = 31 * result + ( rsv1 ? 1 : 0 );
+        result = 31 * result + ( rsv2 ? 1 : 0 );
+        result = 31 * result + ( rsv3 ? 1 : 0 );
+        return result;
+    }
 }
