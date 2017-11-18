@@ -201,8 +201,8 @@ public class WebSocketImpl implements WebSocket {
 		if( DEBUG )
 			System.out.println( "process(" + socketBuffer.remaining() + "): {" + ( socketBuffer.remaining() > 1000 ? "too big to display" : new String( socketBuffer.array(), socketBuffer.position(), socketBuffer.remaining() ) ) + '}' );
 
-		if( getReadyState()  != READYSTATE.NOT_YET_CONNECTED ) {
-			if( getReadyState()  == READYSTATE.OPEN ) {
+		if( getReadyState() != READYSTATE.NOT_YET_CONNECTED ) {
+			if( getReadyState() == READYSTATE.OPEN ) {
 				decodeFrames( socketBuffer );
 			}
 		} else {
@@ -406,12 +406,12 @@ public class WebSocketImpl implements WebSocket {
 		return ByteBuffer.wrap( Charsetfunctions.asciiBytes( "HTTP/1.1 " + errorCodeDescription + "\r\nContent-Type: text/html\nServer: TooTallNate Java-WebSocket\r\nContent-Length: " + ( 48 + errorCodeDescription.length() ) + "\r\n\r\n<html><head></head><body><h1>" + errorCodeDescription + "</h1></body></html>" ) );
 	}
 
-	public void close( int code, String message, boolean remote ) {
-		if( getReadyState()  != READYSTATE.CLOSING && readystate != READYSTATE.CLOSED ) {
-			if( getReadyState()  == READYSTATE.OPEN ) {
+	public synchronized void close( int code, String message, boolean remote ) {
+		if( getReadyState() != READYSTATE.CLOSING && readystate != READYSTATE.CLOSED ) {
+			if( getReadyState() == READYSTATE.OPEN ) {
 				if( code == CloseFrame.ABNORMAL_CLOSE ) {
 					assert ( !remote );
-					setReadyState(READYSTATE.CLOSING);
+					setReadyState( READYSTATE.CLOSING );
 					flushAndClose( code, message, false );
 					return;
 				}
@@ -424,7 +424,7 @@ public class WebSocketImpl implements WebSocket {
 								wsl.onWebsocketError( this, e );
 							}
 						}
-						if (isOpen()) {
+						if( isOpen() ) {
 							CloseFrame closeFrame = new CloseFrame();
 							closeFrame.setReason( message );
 							closeFrame.setCode( code );
@@ -445,7 +445,7 @@ public class WebSocketImpl implements WebSocket {
 			} else {
 				flushAndClose( CloseFrame.NEVER_CONNECTED, message, false );
 			}
-			setReadyState(READYSTATE.CLOSING);
+			setReadyState( READYSTATE.CLOSING );
 			tmpHandshakeBytes = null;
 			return;
 		}
@@ -471,7 +471,12 @@ public class WebSocketImpl implements WebSocket {
 		if( getReadyState() == READYSTATE.CLOSED ) {
 			return;
 		}
-
+		//Methods like eot() call this method without calling onClose(). Due to that reason we have to adjust the readystate manually
+		if( getReadyState() == READYSTATE.OPEN ) {
+			if( code == CloseFrame.ABNORMAL_CLOSE ) {
+				setReadyState( READYSTATE.CLOSING );
+			}
+		}
 		if( key != null ) {
 			// key.attach( null ); //see issue #114
 			key.cancel();
@@ -497,8 +502,7 @@ public class WebSocketImpl implements WebSocket {
 		if( draft != null )
 			draft.reset();
 		handshakerequest = null;
-
-		setReadyState(READYSTATE.CLOSED);
+		setReadyState( READYSTATE.CLOSED );
 	}
 
 	protected void closeConnection( int code, boolean remote ) {
@@ -597,7 +601,7 @@ public class WebSocketImpl implements WebSocket {
 		if( !isOpen() ) {
 			throw new WebsocketNotConnectedException();
 		}
-		if( frames == null) {
+		if( frames == null ) {
 			throw new IllegalArgumentException();
 		}
 		ArrayList<ByteBuffer> outgoingFrames = new ArrayList<ByteBuffer>();
@@ -691,7 +695,7 @@ public class WebSocketImpl implements WebSocket {
 	private void open( Handshakedata d ) {
 		if( DEBUG )
 			System.out.println( "open using draft: " + draft );
-		setReadyState(READYSTATE.OPEN);
+		setReadyState( READYSTATE.OPEN );
 		try {
 			wsl.onWebsocketOpen( this, d );
 		} catch ( RuntimeException e ) {
