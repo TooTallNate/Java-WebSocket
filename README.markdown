@@ -49,13 +49,6 @@ Then you can just add the latest version to your build.
 compile "org.java-websocket:Java-WebSocket:1.3.6"
 ```
 
-
-### Leiningen
-
-``` bash
-[org.java-websocket/java-websocket "1.3.6"]
-```
-
 Running the Examples
 -------------------
 
@@ -79,10 +72,7 @@ The chat client is a simple Swing GUI application that allows you to send
 messages to all other connected clients, and receive messages from others in a
 text box.
 
-In the example folder is also a simple HTML file chat client `chat.html`, which can be opened by any browser. If the browser natively supports the WebSocket API, then it's
-implementation will be used, otherwise it will fall back to a
-[Flash-based WebSocket Implementation](http://github.com/gimite/web-socket-js).
-
+In the example folder is also a simple HTML file chat client `chat.html`, which can be opened by any browser.
 
 Writing your own WebSocket Server
 ---------------------------------
@@ -99,7 +89,7 @@ Writing your own WebSocket Client
 
 The `org.java_websocket.client.WebSocketClient` abstract class can connect to
 valid WebSocket servers. The constructor expects a valid `ws://` URI to
-connect to. Important events `onOpen`, `onClose`, `onMessage` and `onIOError` 
+connect to. Important events `onOpen`, `onClose`, `onMessage` and `onError`
 get fired throughout the life of the WebSocketClient, and must be implemented 
 in **your** subclass.
 
@@ -129,8 +119,8 @@ Minimum Required JDK
 
 `Java-WebSocket` is known to work with:
 
- * Java 1.5 (aka SE 6)
- * Android 1.6 (API 4)
+ * Java 1.6 and higher
+ * Android 4.0 and higher
 
 Other JRE implementations may work as well, but haven't been tested.
 
