@@ -42,6 +42,7 @@ import static org.junit.Assert.assertTrue;
 public class Issue609Test {
 
 	CountDownLatch countDownLatch = new CountDownLatch( 1 );
+	CountDownLatch countServerDownLatch = new CountDownLatch( 1 );
 
 	boolean wasOpenClient;
 	boolean wasOpenServer;
@@ -49,32 +50,6 @@ public class Issue609Test {
 	@Test
 	public void testIssue() throws Exception {
 		int port = SocketUtil.getAvailablePort();
-		WebSocketServer server = new WebSocketServer( new InetSocketAddress( port ) ) {
-			@Override
-			public void onOpen( WebSocket conn, ClientHandshake handshake ) {
-			}
-
-			@Override
-			public void onClose( WebSocket conn, int code, String reason, boolean remote ) {
-				wasOpenServer = conn.isOpen();
-			}
-
-			@Override
-			public void onMessage( WebSocket conn, String message ) {
-
-			}
-
-			@Override
-			public void onError( WebSocket conn, Exception ex ) {
-
-			}
-
-			@Override
-			public void onStart() {
-
-			}
-		};
-		server.start();
 		WebSocketClient webSocket = new WebSocketClient( new URI( "ws://localhost:" + port ) ) {
 			@Override
 			public void onOpen( ServerHandshake handshakedata ) {
@@ -97,6 +72,33 @@ public class Issue609Test {
 
 			}
 		};
+		WebSocketServer server = new WebSocketServer( new InetSocketAddress( port ) ) {
+			@Override
+			public void onOpen( WebSocket conn, ClientHandshake handshake ) {
+			}
+
+			@Override
+			public void onClose( WebSocket conn, int code, String reason, boolean remote ) {
+				wasOpenServer = conn.isOpen();
+			}
+
+			@Override
+			public void onMessage( WebSocket conn, String message ) {
+
+			}
+
+			@Override
+			public void onError( WebSocket conn, Exception ex ) {
+
+			}
+
+			@Override
+			public void onStart() {
+				countServerDownLatch.countDown();
+			}
+		};
+		server.start();
+		countServerDownLatch.await();
 		webSocket.connectBlocking();
 		assertTrue( "webSocket.isOpen()", webSocket.isOpen() );
 		webSocket.getSocket().close();
