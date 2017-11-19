@@ -96,12 +96,12 @@ public class Issue609Test {
 			}
 		};
 		webSocket.connectBlocking();
-		assertTrue( webSocket.isOpen() );
+		assertTrue( "webSocket.isOpen()", webSocket.isOpen() );
 		webSocket.getSocket().close();
 		countDownLatch.await();
-		assertTrue( !webSocket.isOpen() );
-		assertTrue( !wasOpenClient );
-		assertTrue( !wasOpenServer );
+		assertTrue( "!webSocket.isOpen()", !webSocket.isOpen() );
+		assertTrue( "!wasOpenClient", !wasOpenClient );
+		assertTrue( "!wasOpenServer", !wasOpenServer );
 		server.stop();
 	}
 }
