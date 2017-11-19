@@ -29,6 +29,7 @@ import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.handshake.ServerHandshake;
 import org.java_websocket.util.Charsetfunctions;
+import org.java_websocket.util.SocketUtil;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -51,13 +52,16 @@ public class OpeningHandshakeRejectionTest {
 
 	private static boolean debugPrintouts = false;
 
+	private static int port;
+
 	@BeforeClass
-	public static void startServer() {
+	public static void startServer() throws Exception {
+		port = SocketUtil.getAvailablePort();
 		thread = new Thread(
 				new Runnable() {
 					public void run() {
 						try {
-							serverSocket = new ServerSocket( 8887 );
+							serverSocket = new ServerSocket( port );
 							serverSocket.setReuseAddress( true );
 							while( true ) {
 								Socket client = null;
@@ -198,7 +202,7 @@ public class OpeningHandshakeRejectionTest {
 	private void testHandshakeRejection( int i ) throws Exception {
 		final int finalI = i;
 		final boolean[] threadReturned = { false };
-		WebSocketClient webSocketClient = new WebSocketClient( new URI( "ws://localhost:8887/" + finalI ) ) {
+		WebSocketClient webSocketClient = new WebSocketClient( new URI( "ws://localhost:"+ port + "/" + finalI ) ) {
 			@Override
 			public void onOpen( ServerHandshake handshakedata ) {
 				fail( "There should not be a connection!" );

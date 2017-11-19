@@ -30,6 +30,7 @@ import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.handshake.ServerHandshake;
 import org.java_websocket.server.WebSocketServer;
+import org.java_websocket.util.SocketUtil;
 import org.junit.Test;
 
 import java.net.InetSocketAddress;
@@ -47,7 +48,8 @@ public class Issue609Test {
 
 	@Test
 	public void testIssue() throws Exception {
-		WebSocketServer server = new WebSocketServer( new InetSocketAddress( 8887 ) ) {
+		int port = SocketUtil.getAvailablePort();
+		WebSocketServer server = new WebSocketServer( new InetSocketAddress( port ) ) {
 			@Override
 			public void onOpen( WebSocket conn, ClientHandshake handshake ) {
 			}
@@ -73,7 +75,7 @@ public class Issue609Test {
 			}
 		};
 		server.start();
-		WebSocketClient webSocket = new WebSocketClient( new URI( "ws://localhost:8887" ) ) {
+		WebSocketClient webSocket = new WebSocketClient( new URI( "ws://localhost:" + port ) ) {
 			@Override
 			public void onOpen( ServerHandshake handshakedata ) {
 
