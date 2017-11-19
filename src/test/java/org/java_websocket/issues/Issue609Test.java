@@ -38,12 +38,13 @@ import java.util.concurrent.CountDownLatch;
 
 import static org.junit.Assert.assertTrue;
 
-public class Issue609 {
+public class Issue609Test {
 
 	CountDownLatch countDownLatch = new CountDownLatch( 1 );
 
 	boolean wasOpenClient;
 	boolean wasOpenServer;
+
 	@Test
 	public void testIssue() throws Exception {
 		WebSocketServer server = new WebSocketServer( new InetSocketAddress( 8887 ) ) {
@@ -85,7 +86,7 @@ public class Issue609 {
 
 			@Override
 			public void onClose( int code, String reason, boolean remote ) {
-				 wasOpenClient= isOpen();
+				wasOpenClient = isOpen();
 				countDownLatch.countDown();
 			}
 

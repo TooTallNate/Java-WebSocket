@@ -30,7 +30,7 @@ import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-		org.java_websocket.issues.Issue609.class
+		org.java_websocket.issues.Issue609Test.class
 })
 /**
  * Start all tests for issues
