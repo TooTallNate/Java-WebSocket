@@ -23,17 +23,17 @@
  *  OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package org.java_websocket.issues;
+package org.java_websocket.extensions;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-		org.java_websocket.issues.Issue609Test.class
+		org.java_websocket.extensions.DefaultExtensionTest.class
 })
 /**
- * Start all tests for issues
+ * Start all tests for extensuins
  */
-public class AllIssueTests {
+public class AllExtensionTests {
 }
