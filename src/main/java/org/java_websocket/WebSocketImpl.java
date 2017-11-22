@@ -206,7 +206,7 @@ public class WebSocketImpl implements WebSocket {
 				decodeFrames( socketBuffer );
 			}
 		} else {
-			if( decodeHandshake( socketBuffer ) ) {
+			if( decodeHandshake( socketBuffer ) && (!isClosing() && !isClosed())) {
 				assert ( tmpHandshakeBytes.hasRemaining() != socketBuffer.hasRemaining() || !socketBuffer.hasRemaining() ); // the buffers will never have remaining bytes at the same time
 
 				if( socketBuffer.hasRemaining() ) {
