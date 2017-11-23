@@ -43,8 +43,8 @@ public class AutobahnServerResults {
 
 	@BeforeClass
 	public static void getJSONObject() throws FileNotFoundException {
-		File file = new File( "reports/servers/index.json" );
-		//File file = new File( "C:\\Python27\\Scripts\\reports\\servers\\index.json" );
+		//File file = new File( "reports/servers/index.json" );
+		File file = new File( "C:\\Python27\\Scripts\\reports\\servers\\index.json" );
 		if( file.exists() ) {
 			String content = new Scanner( file ).useDelimiter( "\\Z" ).next();
 			jsonObject = new JSONObject( content );
@@ -146,7 +146,7 @@ public class AutobahnServerResults {
 		JSONObject testResult = jsonObject.getJSONObject( "1.2.4" );
 		assertEquals( "OK", testResult.get( "behavior" ) );
 		assertEquals( "OK", testResult.get( "behaviorClose" ) );
-		assertTrue( testResult.getInt( "duration" ) < 10 );
+		assertTrue( testResult.getInt( "duration" ) < 20 );
 	}
 
 	@Test
@@ -359,7 +359,7 @@ public class AutobahnServerResults {
 	@Test
 	public void test4_1_5() {
 		JSONObject testResult = jsonObject.getJSONObject( "4.1.5" );
-		assertEquals( "NON-STRICT", testResult.get( "behavior" ) );
+		assertEquals( "OK", testResult.get( "behavior" ) );
 		assertEquals( "OK", testResult.get( "behaviorClose" ) );
 		assertTrue( testResult.getInt( "duration" ) < 10 );
 	}
@@ -1769,7 +1769,7 @@ public class AutobahnServerResults {
 		JSONObject testResult = jsonObject.getJSONObject( "7.1.6" );
 		assertEquals( "INFORMATIONAL", testResult.get( "behavior" ) );
 		assertEquals( "INFORMATIONAL", testResult.get( "behaviorClose" ) );
-		assertTrue( testResult.getInt( "duration" ) < 35 );
+		assertTrue( testResult.getInt( "duration" ) < 50 );
 	}
 
 	@Test
@@ -2281,7 +2281,7 @@ public class AutobahnServerResults {
 		JSONObject testResult = jsonObject.getJSONObject( "9.5.1" );
 		assertEquals( "OK", testResult.get( "behavior" ) );
 		assertEquals( "OK", testResult.get( "behaviorClose" ) );
-		assertTrue( testResult.getInt( "duration" ) < 2700 );
+		assertTrue( testResult.getInt( "duration" ) < 3200 );
 	}
 
 	@Test
@@ -2297,7 +2297,7 @@ public class AutobahnServerResults {
 		JSONObject testResult = jsonObject.getJSONObject( "9.5.3" );
 		assertEquals( "OK", testResult.get( "behavior" ) );
 		assertEquals( "OK", testResult.get( "behaviorClose" ) );
-		assertTrue( testResult.getInt( "duration" ) < 625 );
+		assertTrue( testResult.getInt( "duration" ) < 700 );
 	}
 
 	@Test
@@ -2305,7 +2305,7 @@ public class AutobahnServerResults {
 		JSONObject testResult = jsonObject.getJSONObject( "9.5.4" );
 		assertEquals( "OK", testResult.get( "behavior" ) );
 		assertEquals( "OK", testResult.get( "behaviorClose" ) );
-		assertTrue( testResult.getInt( "duration" ) < 400 );
+		assertTrue( testResult.getInt( "duration" ) < 450 );
 	}
 
 	@Test
@@ -2313,7 +2313,7 @@ public class AutobahnServerResults {
 		JSONObject testResult = jsonObject.getJSONObject( "9.5.5" );
 		assertEquals( "OK", testResult.get( "behavior" ) );
 		assertEquals( "OK", testResult.get( "behaviorClose" ) );
-		assertTrue( testResult.getInt( "duration" ) < 200 );
+		assertTrue( testResult.getInt( "duration" ) < 250 );
 	}
 
 	@Test
@@ -2329,7 +2329,7 @@ public class AutobahnServerResults {
 		JSONObject testResult = jsonObject.getJSONObject( "9.6.1" );
 		assertEquals( "OK", testResult.get( "behavior" ) );
 		assertEquals( "OK", testResult.get( "behaviorClose" ) );
-		assertTrue( testResult.getInt( "duration" ) < 2500 );
+		assertTrue( testResult.getInt( "duration" ) < 3000 );
 	}
 
 	@Test
@@ -2337,7 +2337,7 @@ public class AutobahnServerResults {
 		JSONObject testResult = jsonObject.getJSONObject( "9.6.2" );
 		assertEquals( "OK", testResult.get( "behavior" ) );
 		assertEquals( "OK", testResult.get( "behaviorClose" ) );
-		assertTrue( testResult.getInt( "duration" ) < 1250 );
+		assertTrue( testResult.getInt( "duration" ) < 1500 );
 	}
 
 	@Test
@@ -2345,7 +2345,7 @@ public class AutobahnServerResults {
 		JSONObject testResult = jsonObject.getJSONObject( "9.6.3" );
 		assertEquals( "OK", testResult.get( "behavior" ) );
 		assertEquals( "OK", testResult.get( "behaviorClose" ) );
-		assertTrue( testResult.getInt( "duration" ) < 600 );
+		assertTrue( testResult.getInt( "duration" ) < 750 );
 	}
 
 	@Test
@@ -2353,7 +2353,7 @@ public class AutobahnServerResults {
 		JSONObject testResult = jsonObject.getJSONObject( "9.6.4" );
 		assertEquals( "OK", testResult.get( "behavior" ) );
 		assertEquals( "OK", testResult.get( "behaviorClose" ) );
-		assertTrue( testResult.getInt( "duration" ) < 400 );
+		assertTrue( testResult.getInt( "duration" ) < 450 );
 	}
 
 	@Test
@@ -2369,7 +2369,7 @@ public class AutobahnServerResults {
 		JSONObject testResult = jsonObject.getJSONObject( "9.6.6" );
 		assertEquals( "OK", testResult.get( "behavior" ) );
 		assertEquals( "OK", testResult.get( "behaviorClose" ) );
-		assertTrue( testResult.getInt( "duration" ) < 125 );
+		assertTrue( testResult.getInt( "duration" ) < 200 );
 	}
 
 	@Test
@@ -2377,7 +2377,7 @@ public class AutobahnServerResults {
 		JSONObject testResult = jsonObject.getJSONObject( "9.7.1" );
 		assertEquals( "OK", testResult.get( "behavior" ) );
 		assertEquals( "OK", testResult.get( "behaviorClose" ) );
-		assertTrue( testResult.getInt( "duration" ) < 400 );
+		assertTrue( testResult.getInt( "duration" ) < 500 );
 	}
 
 	@Test
