@@ -43,8 +43,8 @@ public class AutobahnServerResults {
 
 	@BeforeClass
 	public static void getJSONObject() throws FileNotFoundException {
-		//File file = new File( "reports/servers/index.json" );
-		File file = new File( "C:\\Python27\\Scripts\\reports\\servers\\index.json" );
+		File file = new File( "reports/servers/index.json" );
+		//File file = new File( "C:\\Python27\\Scripts\\reports\\servers\\index.json" );
 		if( file.exists() ) {
 			String content = new Scanner( file ).useDelimiter( "\\Z" ).next();
 			jsonObject = new JSONObject( content );
