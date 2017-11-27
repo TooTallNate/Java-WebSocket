@@ -33,6 +33,7 @@ import org.java_websocket.framing.Framedata;
 
 /**
  * Implementation for a compression extension specified by https://tools.ietf.org/html/rfc7692
+ * @since 1.3.5
  */
 public abstract class CompressionExtension extends DefaultExtension {
 

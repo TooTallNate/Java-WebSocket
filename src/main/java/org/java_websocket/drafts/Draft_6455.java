@@ -91,6 +91,7 @@ public class Draft_6455 extends Draft {
 
 	/**
 	 * Constructor for the websocket protocol specified by RFC 6455 with default extensions
+	 * @since 1.3.5
 	 */
 	public Draft_6455() {
 		this( Collections.<IExtension>emptyList() );
@@ -100,6 +101,7 @@ public class Draft_6455 extends Draft {
 	 * Constructor for the websocket protocol specified by RFC 6455 with custom extensions
 	 *
 	 * @param inputExtension the extension which should be used for this draft
+	 * @since 1.3.5
 	 */
 	public Draft_6455( IExtension inputExtension ) {
 		this( Collections.singletonList( inputExtension ) );
@@ -109,6 +111,7 @@ public class Draft_6455 extends Draft {
 	 * Constructor for the websocket protocol specified by RFC 6455 with custom extensions
 	 *
 	 * @param inputExtensions the extensions which should be used for this draft
+	 * @since 1.3.5
 	 */
 	public Draft_6455( List<IExtension> inputExtensions ) {
 		this( inputExtensions, Collections.<IProtocol>singletonList( new Protocol( "" ) ));
@@ -119,6 +122,8 @@ public class Draft_6455 extends Draft {
 	 *
 	 * @param inputExtensions the extensions which should be used for this draft
 	 * @param inputProtocols the protocols which should be used for this draft
+	 *
+	 * @since 1.3.7
 	 */
 	public Draft_6455( List<IExtension> inputExtensions , List<IProtocol> inputProtocols ) {
 		if (inputExtensions == null || inputProtocols == null) {
@@ -230,6 +235,7 @@ public class Draft_6455 extends Draft {
 	 * Getter for the protocol which is used by this draft
 	 *
 	 * @return the protocol which is used or null, if handshake is not yet done or no valid protocols
+	 * @since 1.3.7
 	 */
 	public IProtocol getProtocol() {
 		return protocol;
@@ -238,6 +244,7 @@ public class Draft_6455 extends Draft {
 	/**
 	 * Getter for all available protocols for this draft
 	 * @return the protocols which are enabled for this draft
+	 * @since 1.3.7
 	 */
 	public List<IProtocol> getKnownProtocols() {
 		return knownProtocols;
