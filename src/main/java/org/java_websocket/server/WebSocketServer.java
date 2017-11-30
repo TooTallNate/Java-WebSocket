@@ -253,8 +253,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 		wsf.close();
 
 		synchronized ( this ) {
-			if( selectorthread != null && selectorthread != Thread.currentThread() ) {
-				selectorthread.interrupt();
+			if( selectorthread != null  ) {
 				selector.wakeup();
 				selectorthread.join( timeout );
 			}
@@ -329,11 +328,19 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 			return;
 		}
 		try {
-			while ( !selectorthread.isInterrupted() ) {
+			int iShutdownCount = 5;
+			int selectTimeout = 0;
+			while ( !selectorthread.isInterrupted() && iShutdownCount != 0) {
 				SelectionKey key = null;
 				WebSocketImpl conn = null;
 				try {
-					selector.select();
+					if (isclosed.get()) {
+						selectTimeout = 5;
+					}
+					int keyCount = selector.select( selectTimeout );
+					if (keyCount == 0 && isclosed.get()) {
+						iShutdownCount--;
+					}
 					Set<SelectionKey> keys = selector.selectedKeys();
 					Iterator<SelectionKey> i = keys.iterator();
 

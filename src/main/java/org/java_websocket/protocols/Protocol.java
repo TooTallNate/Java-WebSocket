@@ -27,6 +27,8 @@ package org.java_websocket.protocols;
 
 /**
  * Class which represents the protocol used as Sec-WebSocket-Protocol
+ *
+ * @since 1.3.7
  */
 public class Protocol implements IProtocol {
 

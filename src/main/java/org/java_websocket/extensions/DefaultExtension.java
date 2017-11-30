@@ -34,6 +34,7 @@ import org.java_websocket.framing.Framedata;
  *
  * This is a fallback and will always be available for a Draft_6455
  *
+ * @since 1.3.5
  */
 public class DefaultExtension implements IExtension {
 
