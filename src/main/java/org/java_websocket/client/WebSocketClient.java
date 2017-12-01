@@ -217,17 +217,17 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 		engine.send( data );
 	}
 
+	@Override
 	protected Collection<WebSocket> connections() {
 		return Collections.singletonList((WebSocket ) engine );
 	}
 
-
+	@Override
 	public void sendPing() throws NotYetConnectedException {
 		engine.sendPing( );
 	}
 
 	public void run() {
-
 		InputStream istream;
 		try {
 			boolean isNewSocket = false;
@@ -288,6 +288,10 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 		//assert ( socket.isClosed() );
 	}
 
+	/**
+	 * Extract the specified port
+	 * @return the specified port or the default port for the specific scheme
+	 */
 	private int getPort() {
 		int port = uri.getPort();
 		if( port == -1 ) {
@@ -303,6 +307,10 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 		return port;
 	}
 
+	/**
+	 * Create and send the handshake to the other endpoint
+	 * @throws InvalidHandshakeException  a invalid handshake was created
+	 */
 	private void sendHandshake() throws InvalidHandshakeException {
 		String path;
 		String part1 = uri.getRawPath();
@@ -441,13 +449,59 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	}
 
 	// ABTRACT METHODS /////////////////////////////////////////////////////////
+
+	/**
+	 * Called after an opening handshake has been performed and the given websocket is ready to be written on.
+	 * @param handshakedata The handshake of the websocket instance
+	 */
 	public abstract void onOpen( ServerHandshake handshakedata );
+
+	/**
+	 * Callback for string messages received from the remote host
+	 *
+	 * @see #onMessage(ByteBuffer)
+	 * @param message The UTF-8 decoded message that was received.
+	 **/
 	public abstract void onMessage( String message );
+
+	/**
+	 * Called after the websocket connection has been closed.
+	 *
+	 * @param code
+	 *            The codes can be looked up here: {@link CloseFrame}
+	 * @param reason
+	 *            Additional information string
+	 * @param remote
+	 *            Returns whether or not the closing of the connection was initiated by the remote host.
+	 **/
 	public abstract void onClose( int code, String reason, boolean remote );
+
+	/**
+	 * Called when errors occurs. If an error causes the websocket connection to fail {@link #onClose(int, String, boolean)} will be called additionally.<br>
+	 * This method will be called primarily because of IO or protocol errors.<br>
+	 * If the given exception is an RuntimeException that probably means that you encountered a bug.<br>
+	 *
+	 * @param ex The exception causing this error
+	 **/
 	public abstract void onError( Exception ex );
+
+	/**
+	 * Callback for binary messages received from the remote host
+	 *
+	 * @see #onMessage(String)
+	 *
+	 * @param bytes
+	 *            The binary message that was received.
+	 **/
 	public void onMessage( ByteBuffer bytes ) {
 		//To overwrite
 	}
+
+	/**
+	 * Callback for fragmented frames
+	 * @see WebSocket#sendFragmentedFrame(org.java_websocket.framing.Framedata.Opcode, ByteBuffer, boolean)
+	 * @param frame The fragmented frame
+	 */
 	@Deprecated
 	public void onFragment( Framedata frame ) {
 		//To overwrite
@@ -473,12 +527,15 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 			} catch ( IOException e ) {
 				handleIOException( e );
 			} finally {
-				closeOutputAndSocket();
+				closeSocket();
 			}
 		}
 	}
 
-	private void closeOutputAndSocket() {
+	/**
+	 * Closing the socket
+	 */
+	private void closeSocket() {
 		try {
 			if( socket != null ) {
 				socket.close();
@@ -488,6 +545,10 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 		}
 	}
 
+	/**
+	 * Method to set a proxy for this connection
+	 * @param proxy the proxy to use for this websocket client
+	 */
 	public void setProxy( Proxy proxy ) {
 		if( proxy == null )
 			throw new IllegalArgumentException();
