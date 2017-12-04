@@ -23,6 +23,12 @@
  *  OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import org.java_websocket.WebSocket;
+import org.java_websocket.WebSocketImpl;
+import org.java_websocket.framing.Framedata;
+import org.java_websocket.handshake.ClientHandshake;
+import org.java_websocket.server.WebSocketServer;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -30,48 +36,40 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 
-import org.java_websocket.WebSocket;
-import org.java_websocket.WebSocketImpl;
-import org.java_websocket.framing.Framedata;
-import org.java_websocket.handshake.ClientHandshake;
-import org.java_websocket.server.WebSocketServer;
-
 /**
  * A simple WebSocketServer implementation. Keeps track of a "chatroom".
  */
-public class ChatServer extends WebSocketServer {
+public class ChatServerAttachmentExample extends WebSocketServer {
+	Integer index = 0;
 
-	public ChatServer( int port ) throws UnknownHostException {
+	public ChatServerAttachmentExample( int port ) throws UnknownHostException {
 		super( new InetSocketAddress( port ) );
 	}
 
-	public ChatServer( InetSocketAddress address ) {
+	public ChatServerAttachmentExample( InetSocketAddress address ) {
 		super( address );
 	}
 
 	@Override
 	public void onOpen( WebSocket conn, ClientHandshake handshake ) {
-		broadcast( "new connection: " + handshake.getResourceDescriptor() );
-		System.out.println( conn.getRemoteSocketAddress().getAddress().getHostAddress() + " entered the room!" );
+		conn.setAttachment( index );
+		index++;
+		System.out.println( conn.getRemoteSocketAddress().getAddress().getHostAddress() + " entered the room! ID: " + conn.<Integer>getAttachment() );
 	}
 
 	@Override
 	public void onClose( WebSocket conn, int code, String reason, boolean remote ) {
-		broadcast( conn + " has left the room!" );
-		System.out.println( conn + " has left the room!" );
+		System.out.println( conn + " has left the room! ID: " + conn.<Integer>getAttachment() );
 	}
 
 	@Override
 	public void onMessage( WebSocket conn, String message ) {
-		broadcast( message );
 		System.out.println( conn + ": " + message );
 	}
 	@Override
 	public void onMessage( WebSocket conn, ByteBuffer message ) {
-		broadcast( message.array() );
 		System.out.println( conn + ": " + message );
 	}
-
 
 	public static void main( String[] args ) throws InterruptedException , IOException {
 		WebSocketImpl.DEBUG = true;
@@ -80,7 +78,7 @@ public class ChatServer extends WebSocketServer {
 			port = Integer.parseInt( args[ 0 ] );
 		} catch ( Exception ex ) {
 		}
-		ChatServer s = new ChatServer( port );
+		ChatServerAttachmentExample s = new ChatServerAttachmentExample( port );
 		s.start();
 		System.out.println( "ChatServer started on port: " + s.getPort() );
 
