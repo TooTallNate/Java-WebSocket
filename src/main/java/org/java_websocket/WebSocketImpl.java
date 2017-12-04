@@ -147,6 +147,7 @@ public class WebSocketImpl implements WebSocket {
 
 	/**
 	 * Attribute to store connection attachment
+	 * @since 1.3.7
 	 */
 	private Object attachment;
 

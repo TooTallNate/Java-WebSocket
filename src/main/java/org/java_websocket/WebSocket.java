@@ -226,6 +226,7 @@ public interface WebSocket {
 	 * The attachment may be of any type.
 	 * 
 	 * @param attachment The object to be attached to the user
+	 * @since 1.3.7
 	 **/
 	<T> void setAttachment(T attachment);
 
@@ -233,6 +234,7 @@ public interface WebSocket {
 	 * Getter for the connection attachment.
 	 * 
 	 * @return Returns the user attachment
+	 * @since 1.3.7
 	 **/
 	<T> T getAttachment();
 }
