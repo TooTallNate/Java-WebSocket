@@ -218,6 +218,16 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	}
 
 	@Override
+	public <T> T getAttachment() {
+		return engine.getAttachment();
+	}
+
+	@Override
+	public <T> void setAttachment(T attachment) {
+		engine.setAttachment( attachment );
+	}
+
+	@Override
 	protected Collection<WebSocket> connections() {
 		return Collections.singletonList((WebSocket ) engine );
 	}
