@@ -146,6 +146,12 @@ public class WebSocketImpl implements WebSocket {
 	private PingFrame pingFrame;
 
 	/**
+	 * Attribute to store connection attachment
+	 * @since 1.3.7
+	 */
+	private Object attachment;
+
+	/**
 	 * Creates a websocket with server role
 	 *
 	 * @param listener The listener for this instance
@@ -797,6 +803,17 @@ public class WebSocketImpl implements WebSocket {
 	 */
 	public WebSocketListener getWebSocketListener() {
 		return wsl;
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public <T> T getAttachment() {
+		return (T) attachment;
+	}
+
+	@Override
+	public <T> void setAttachment(T attachment) {
+		this.attachment = attachment;
 	}
 
 }

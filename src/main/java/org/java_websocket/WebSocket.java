@@ -220,4 +220,21 @@ public interface WebSocket {
 	 * @return Returns the decoded path component of this URI.
 	 **/
 	String getResourceDescriptor();
+
+	/**
+	 * Setter for an attachment on the socket connection.
+	 * The attachment may be of any type.
+	 * 
+	 * @param attachment The object to be attached to the user
+	 * @since 1.3.7
+	 **/
+	<T> void setAttachment(T attachment);
+
+	/**
+	 * Getter for the connection attachment.
+	 * 
+	 * @return Returns the user attachment
+	 * @since 1.3.7
+	 **/
+	<T> T getAttachment();
 }
