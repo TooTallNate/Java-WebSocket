@@ -226,13 +226,15 @@ public interface WebSocket {
 	 * The attachment may be of any type.
 	 * 
 	 * @param attachment The object to be attached to the user
+	 * @param <T> The type of the attachment
 	 * @since 1.3.7
 	 **/
 	<T> void setAttachment(T attachment);
 
 	/**
 	 * Getter for the connection attachment.
-	 * 
+	 *
+	 * @param <T> The type of the attachment
 	 * @return Returns the user attachment
 	 * @since 1.3.7
 	 **/
