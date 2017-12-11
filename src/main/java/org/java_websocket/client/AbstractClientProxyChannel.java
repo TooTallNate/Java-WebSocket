@@ -32,6 +32,7 @@ import java.nio.channels.ByteChannel;
 
 import org.java_websocket.AbstractWrappedByteChannel;
 
+@Deprecated
 public abstract class AbstractClientProxyChannel extends AbstractWrappedByteChannel {
 	protected final ByteBuffer proxyHandshake;
 
@@ -40,6 +41,7 @@ public abstract class AbstractClientProxyChannel extends AbstractWrappedByteChan
 	 * @param towrap
 	 *            The channel to the proxy server
 	 **/
+	@Deprecated
 	public AbstractClientProxyChannel( ByteChannel towrap ) {
 		super( towrap );
 		try {
@@ -50,6 +52,7 @@ public abstract class AbstractClientProxyChannel extends AbstractWrappedByteChan
 	}
 
 	@Override
+	@Deprecated
 	public int write( ByteBuffer src ) throws IOException {
 		if( !proxyHandshake.hasRemaining() ) {
 			return super.write( src );
@@ -58,6 +61,7 @@ public abstract class AbstractClientProxyChannel extends AbstractWrappedByteChan
 		}
 	}
 
+	@Deprecated
 	public abstract String buildHandShake();
 
 }
