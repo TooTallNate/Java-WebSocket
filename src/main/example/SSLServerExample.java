@@ -1,7 +1,7 @@
 
 
 /*
- * Copyright (c) 2010-2017 Nathan Rajlich
+ * Copyright (c) 2010-2018 Nathan Rajlich
  *
  *  Permission is hereby granted, free of charge, to any person
  *  obtaining a copy of this software and associated documentation
