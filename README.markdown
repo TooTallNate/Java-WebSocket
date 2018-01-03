@@ -15,6 +15,39 @@ Implemented WebSocket protocol versions are:
 
 [Here](https://github.com/TooTallNate/Java-WebSocket/wiki/Drafts) some more details about protocol versions/drafts. 
 
+## Usage
+
+The library is very easy to use. Using these imports:
+
+    import org.java_websocket.client.WebSocketClient;
+    import org.java_websocket.handshake.ServerHandshake;
+
+You can easily open a WebSocket stream like this:
+
+    public static void main(String[] args) throws URISyntaxException {
+        WebSocketClient ws = new WebSocketClient(new URI("wss://example.com/your/websocket/stream")) {
+            @Override
+            public void onOpen(ServerHandshake handshake) {
+                System.out.println("Connected");
+            }
+
+            @Override
+            public void onMessage(String message) {
+                System.out.println(message);
+            }
+
+            @Override
+            public void onError(Exception error) {
+                System.out.println("Error: " + error);
+            }
+
+            @Override
+            public void onClose(int arg0, String arg1, boolean arg2) {
+                System.out.println("Disconnected");
+            }
+        };
+        ws.connect();
+    }
 
 ## Build
 You can build using Ant, Maven, Gradle or Leiningen but there is nothing against just putting the source path ```src/main/java ``` on your applications buildpath.
