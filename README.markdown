@@ -83,6 +83,7 @@ server-side of the
 A WebSocket server by itself doesn't do anything except establish socket
 connections though HTTP. After that it's up to **your** subclass to add purpose.
 
+An example for a WebSocketServer can be found in both the [wiki](https://github.com/TooTallNate/Java-WebSocket/wiki#server-example) and the [example](https://github.com/TooTallNate/Java-WebSocket/tree/master/src/main/example) folder.
 
 Writing your own WebSocket Client
 ---------------------------------
@@ -92,6 +93,8 @@ valid WebSocket servers. The constructor expects a valid `ws://` URI to
 connect to. Important events `onOpen`, `onClose`, `onMessage` and `onError`
 get fired throughout the life of the WebSocketClient, and must be implemented 
 in **your** subclass.
+
+An example for a WebSocketClient can be found in both the [wiki](https://github.com/TooTallNate/Java-WebSocket/wiki#client-example) and the [example](https://github.com/TooTallNate/Java-WebSocket/tree/master/src/main/example) folder.
 
 WSS Support
 ---------------------------------

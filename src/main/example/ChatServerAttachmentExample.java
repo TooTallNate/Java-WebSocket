@@ -38,6 +38,9 @@ import java.nio.ByteBuffer;
 
 /**
  * A simple WebSocketServer implementation. Keeps track of a "chatroom".
+ *
+ * Shows how to use the attachment for a WebSocket. This example just uses a simple integer as ID.
+ * Setting an attachment also works in the WebSocketClient
  */
 public class ChatServerAttachmentExample extends WebSocketServer {
 	Integer index = 0;
@@ -52,13 +55,15 @@ public class ChatServerAttachmentExample extends WebSocketServer {
 
 	@Override
 	public void onOpen( WebSocket conn, ClientHandshake handshake ) {
-		conn.setAttachment( index );
+		conn.setAttachment( index ); //Set the attachment to the current index
 		index++;
+		// Get the attachment of this connection as Integer
 		System.out.println( conn.getRemoteSocketAddress().getAddress().getHostAddress() + " entered the room! ID: " + conn.<Integer>getAttachment() );
 	}
 
 	@Override
 	public void onClose( WebSocket conn, int code, String reason, boolean remote ) {
+		// Get the attachment of this connection as Integer
 		System.out.println( conn + " has left the room! ID: " + conn.<Integer>getAttachment() );
 	}
 
