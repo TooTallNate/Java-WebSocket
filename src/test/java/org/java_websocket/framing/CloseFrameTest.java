@@ -167,6 +167,24 @@ public class CloseFrameTest {
         } catch (InvalidDataException e) {
             fail("InvalidDataException should not be thrown");
         }
+        frame.setCode(CloseFrame.SERVICE_RESTART);
+        try {
+            frame.isValid();
+        } catch (InvalidDataException e) {
+            fail("InvalidDataException should not be thrown");
+        }
+        frame.setCode(CloseFrame.TRY_AGAIN_LATER);
+        try {
+            frame.isValid();
+        } catch (InvalidDataException e) {
+            fail("InvalidDataException should not be thrown");
+        }
+        frame.setCode(CloseFrame.BAD_GATEWAY);
+        try {
+            frame.isValid();
+        } catch (InvalidDataException e) {
+            fail("InvalidDataException should not be thrown");
+        }
         frame.setCode(CloseFrame.TLS_ERROR);
         try {
             frame.isValid();

@@ -1970,15 +1970,7 @@ public class AutobahnServerResults {
 		assertEquals( "OK", testResult.get( "behaviorClose" ) );
 		Assume.assumeTrue("Duration: " + testResult.getInt( "duration" ), testResult.getInt( "duration" ) < 10 );
 	}
-
-	@Test
-	public void test7_9_6() {
-		JSONObject testResult = jsonObject.getJSONObject( "7.9.6" );
-		assertEquals( "OK", testResult.get( "behavior" ) );
-		assertEquals( "OK", testResult.get( "behaviorClose" ) );
-		Assume.assumeTrue("Duration: " + testResult.getInt( "duration" ), testResult.getInt( "duration" ) < 10 );
-	}
-
+	
 	@Test
 	public void test7_9_7() {
 		JSONObject testResult = jsonObject.getJSONObject( "7.9.7" );
