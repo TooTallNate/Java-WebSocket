@@ -159,6 +159,51 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	}
 
 	/**
+	 * Reinitiates the websocket connection. This method does not block.
+	 * @since 1.3.8
+	 */
+	public void reconnect() {
+		reset();
+		connect();
+	}
+
+	/**
+	 * Same as <code>reconnect</code> but blocks until the websocket reconnected or failed to do so.<br>
+	 * @return Returns whether it succeeded or not.
+	 * @throws InterruptedException Thrown when the threads get interrupted
+	 * @since 1.3.8
+	 */
+	public boolean reconnectBlocking() throws InterruptedException {
+		reset();
+		return connectBlocking();
+	}
+
+	/**
+	 * Reset everything relevant to allow a reconnect
+	 *
+	 * @since 1.3.8
+	 */
+	private void reset() {
+		close();
+		this.draft.reset();
+		if (this.socket != null) {
+			try {
+				this.socket.close();
+			} catch ( IOException e ) {
+				e.printStackTrace();
+			}
+			try {
+				this.socket = new Socket( this.socket.getInetAddress(), this.socket.getPort() );
+			} catch ( IOException e ) {
+				e.printStackTrace();
+			}
+		}
+		connectLatch = new CountDownLatch( 1 );
+		closeLatch = new CountDownLatch( 1 );
+		this.engine = new WebSocketImpl( this, this.draft );
+	}
+
+	/**
 	 * Initiates the websocket connection. This method does not block.
 	 */
 	public void connect() {
@@ -538,6 +583,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 				handleIOException( e );
 			} finally {
 				closeSocket();
+				writeThread = null;
 			}
 		}
 	}

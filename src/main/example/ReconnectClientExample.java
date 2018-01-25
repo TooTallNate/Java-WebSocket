@@ -23,20 +23,33 @@
  *  OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package org.java_websocket.issues;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import org.java_websocket.WebSocketImpl;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 
-@RunWith(Suite.class)
-@Suite.SuiteClasses({
-		org.java_websocket.issues.Issue609Test.class,
-		org.java_websocket.issues.Issue621Test.class,
-		org.java_websocket.issues.Issue580Test.class,
-		org.java_websocket.issues.Issue256Test.class
-})
 /**
- * Start all tests for issues
+ * Simple example to reconnect blocking and non-blocking.
  */
-public class AllIssueTests {
+public class ReconnectClientExample {
+	public static void main( String[] args ) throws URISyntaxException, InterruptedException {
+		WebSocketImpl.DEBUG = true;
+		ExampleClient c = new ExampleClient( new URI( "ws://localhost:8887" ) );
+		//Connect to a server normally
+		c.connectBlocking();
+		c.send( "hi" );
+		Thread.sleep( 10 );
+		c.closeBlocking();
+		//Disconnect manually and reconnect blocking
+		c.reconnectBlocking();
+		c.send( "it's" );
+		Thread.sleep( 10000 );
+		c.closeBlocking();
+		//Disconnect manually and reconnect
+		c.reconnect();
+		Thread.sleep( 100 );
+		c.send( "me" );
+		Thread.sleep( 100 );
+		c.closeBlocking();
+	}
 }
