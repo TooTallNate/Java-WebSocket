@@ -184,19 +184,21 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	 * @since 1.3.8
 	 */
 	private void reset() {
-		close();
-		this.draft.reset();
-		if (this.socket != null) {
-			try {
+		try {
+			closeBlocking();
+			if( writeThread != null ) {
+				this.writeThread.interrupt();
+				this.writeThread = null;
+			}
+			this.draft.reset();
+			if( this.socket != null ) {
 				this.socket.close();
-			} catch ( IOException e ) {
-				e.printStackTrace();
+				this.socket = null;
 			}
-			try {
-				this.socket = new Socket( this.socket.getInetAddress(), this.socket.getPort() );
-			} catch ( IOException e ) {
-				e.printStackTrace();
-			}
+		} catch ( Exception e ) {
+			onError( e );
+			engine.closeConnection( CloseFrame.ABNORMAL_CLOSE, e.getMessage() );
+			return;
 		}
 		connectLatch = new CountDownLatch( 1 );
 		closeLatch = new CountDownLatch( 1 );
