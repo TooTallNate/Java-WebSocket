@@ -27,6 +27,9 @@ package org.java_websocket.framing;
 
 import java.nio.ByteBuffer;
 
+/**
+ * The interface for the frame
+ */
 public interface Framedata {
 	/**
 	 * Enum which contains the different valid opcodes

@@ -30,6 +30,9 @@ import org.java_websocket.util.ByteBufferUtils;
 
 import java.nio.ByteBuffer;
 
+/**
+ * Abstract implementation of a frame
+ */
 public abstract class FramedataImpl1 implements Framedata {
 
     /**

@@ -29,25 +29,27 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.TreeMap;
 
+/**
+ * Implementation of a handshake builder
+ */
 public class HandshakedataImpl1 implements HandshakeBuilder {
+
+	/**
+	 * Attribute for the content of the handshake
+	 */
 	private byte[] content;
+
+	/**
+	 * Attribute for the http fields and values
+	 */
 	private TreeMap<String,String> map;
 
+	/**
+	 * Constructor for handshake implementation
+	 */
 	public HandshakedataImpl1() {
 		map = new TreeMap<String,String>( String.CASE_INSENSITIVE_ORDER );
 	}
-
-	/*public HandshakedataImpl1( Handshakedata h ) {
-		httpstatusmessage = h.getHttpStatusMessage();
-		resourcedescriptor = h.getResourceDescriptor();
-		content = h.getContent();
-		map = new LinkedHashMap<String,String>();
-		Iterator<String> it = h.iterateHttpFields();
-		while ( it.hasNext() ) {
-			String key = (String) it.next();
-			map.put( key, h.getFieldValue( key ) );
-		}
-	}*/
 
 	@Override
 	public Iterator<String> iterateHttpFields() {

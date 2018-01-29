@@ -29,7 +29,7 @@ import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.exceptions.InvalidFrameException;
 
 /**
- * Absstract class to represent control frames
+ * Abstract class to represent control frames
  */
 public abstract class ControlFrame extends FramedataImpl1 {
 
