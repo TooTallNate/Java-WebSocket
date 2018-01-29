@@ -67,24 +67,54 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	 */
 	protected URI uri = null;
 
+	/**
+	 * The underlying engine
+	 */
 	private WebSocketImpl engine = null;
 
+	/**
+	 * The socket for this WebSocketClient
+	 */
 	private Socket socket = null;
 
+	/**
+	 * The used OutputStream
+	 */
 	private OutputStream ostream;
 
+	/**
+	 * The used proxy, if any
+	 */
 	private Proxy proxy = Proxy.NO_PROXY;
 
+	/**
+	 * The thread to write outgoing message
+	 */
 	private Thread writeThread;
 
+	/**
+	 * The draft to use
+	 */
 	private Draft draft;
 
+	/**
+	 * The additional headers to use
+	 */
 	private Map<String,String> headers;
 
+	/**
+	 * The latch for connectBlocking()
+	 */
 	private CountDownLatch connectLatch = new CountDownLatch( 1 );
 
+	/**
+	 * The latch for closeBlocking()
+	 */
 	private CountDownLatch closeLatch = new CountDownLatch( 1 );
 
+	/**
+	 * The socket timeout value to be used in milliseconds.
+	 */
 	private int connectTimeout = 0;
 
 	/**
@@ -107,6 +137,31 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	 */
 	public WebSocketClient( URI serverUri , Draft protocolDraft ) {
 		this( serverUri, protocolDraft, null, 0 );
+	}
+
+	/**
+	 * Constructs a WebSocketClient instance and sets it to the connect to the
+	 * specified URI. The channel does not attampt to connect automatically. The connection
+	 * will be established once you call <var>connect</var>.
+	 * @param serverUri the server URI to connect to
+	 * @param httpHeaders Additional HTTP-Headers
+	 * @since 1.3.8
+	 */
+	public WebSocketClient( URI serverUri, Map<String,String> httpHeaders) {
+		this(serverUri, new Draft_6455(), httpHeaders);
+	}
+
+	/**
+	 * Constructs a WebSocketClient instance and sets it to the connect to the
+	 * specified URI. The channel does not attampt to connect automatically. The connection
+	 * will be established once you call <var>connect</var>.
+	 * @param serverUri the server URI to connect to
+	 * @param protocolDraft The draft which should be used for this connection
+	 * @param httpHeaders Additional HTTP-Headers
+	 * @since 1.3.8
+	 */
+	public WebSocketClient( URI serverUri , Draft protocolDraft , Map<String,String> httpHeaders) {
+		this(serverUri, protocolDraft, httpHeaders, 0);
 	}
 
 	/**
@@ -180,7 +235,6 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 
 	/**
 	 * Reset everything relevant to allow a reconnect
-	 *
 	 * @since 1.3.8
 	 */
 	private void reset() {
