@@ -25,6 +25,7 @@
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Map;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft;
@@ -41,6 +42,10 @@ public class ExampleClient extends WebSocketClient {
 
 	public ExampleClient( URI serverURI ) {
 		super( serverURI );
+	}
+
+	public ExampleClient( URI serverUri, Map<String, String> httpHeaders ) {
+		super(serverUri, httpHeaders);
 	}
 
 	@Override

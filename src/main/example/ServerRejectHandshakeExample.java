@@ -62,6 +62,12 @@ public class ServerRejectHandshakeExample extends ChatServer {
 		if (!request.getFieldValue( "Cookie" ).equals( "username=nemo" )) {
 			throw new InvalidDataException( CloseFrame.POLICY_VALIDATION, "Not accepted!");
 		}
+		//If there is a Origin Field, it has to be localhost:8887
+		if (request.hasFieldValue( "Origin" )) {
+			if (!request.getFieldValue( "Origin" ).equals( "localhost:8887" )) {
+				throw new InvalidDataException( CloseFrame.POLICY_VALIDATION, "Not accepted!");
+			}
+		}
 		return builder;
 	}
 
