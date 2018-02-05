@@ -253,7 +253,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 		wsf.close();
 
 		synchronized ( this ) {
-			if( selectorthread != null  ) {
+			if( selectorthread != null  && selector != null) {
 				selector.wakeup();
 				selectorthread.join( timeout );
 			}
@@ -319,12 +319,6 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 			onStart();
 		} catch ( IOException ex ) {
 			handleFatal( null, ex );
-			//Shutting down WebSocketWorkers, see #222
-			if( decoders != null ) {
-				for( WebSocketWorker w : decoders ) {
-					w.interrupt();
-				}
-			}
 			return;
 		}
 		try {
@@ -535,6 +529,15 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 
 	private void handleFatal( WebSocket conn, Exception e ) {
 		onError( conn, e );
+		//Shutting down WebSocketWorkers, see #222
+		if( decoders != null ) {
+			for( WebSocketWorker w : decoders ) {
+				w.interrupt();
+			}
+		}
+		if (selectorthread != null) {
+			selectorthread.interrupt();
+		}
 		try {
 			stop();
 		} catch ( IOException e1 ) {
