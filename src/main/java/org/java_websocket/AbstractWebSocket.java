@@ -138,7 +138,7 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
 			@Override
 			public void run() {
 				connections.clear();
-				connections.addAll( connections() );
+				connections.addAll( getConnections() );
 				long current = (System.currentTimeMillis()-(connectionLostTimeout * 1500));
 				WebSocketImpl webSocketImpl;
 				for( WebSocket conn : connections ) {
@@ -169,7 +169,7 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
      * @return the currently available connections
 	 * @since 1.3.4
      */
-    protected abstract Collection<WebSocket> connections();
+    protected abstract Collection<WebSocket> getConnections();
 
     /**
      * Cancel any running timer for the connection lost detection

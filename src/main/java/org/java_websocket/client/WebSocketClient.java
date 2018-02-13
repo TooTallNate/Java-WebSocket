@@ -329,7 +329,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	}
 
 	@Override
-	protected Collection<WebSocket> connections() {
+	protected Collection<WebSocket> getConnections() {
 		return Collections.singletonList((WebSocket ) engine );
 	}
 
