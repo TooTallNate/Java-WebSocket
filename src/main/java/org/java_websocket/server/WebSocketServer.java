@@ -320,7 +320,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 				return;
 			}
 		}
-		selectorthread.setName( "WebsocketSelector" + selectorthread.getId() );
+		selectorthread.setName( "WebSocketSelector-" + selectorthread.getId() );
 		try {
 			server = ServerSocketChannel.open();
 			server.configureBlocking( false );

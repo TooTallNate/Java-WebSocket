@@ -128,7 +128,7 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
 	 */
 	private void restartConnectionLostTimer() {
 		cancelConnectionLostTimer();
-		connectionLostTimer = new Timer();
+		connectionLostTimer = new Timer("WebSocketTimer");
 		connectionLostTimerTask = new TimerTask() {
 
 			/**
