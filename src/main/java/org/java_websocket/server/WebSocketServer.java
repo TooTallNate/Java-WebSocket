@@ -264,14 +264,29 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 	}
 
 	/**
+	 * PLEASE use the method getConnections() in the future!
+	 *
 	 * Returns a WebSocket[] of currently connected clients.
 	 * Its iterators will be failfast and its not judicious
 	 * to modify it.
 	 * 
 	 * @return The currently connected clients.
+	 *
 	 */
+	@Deprecated
 	public Collection<WebSocket> connections() {
-		return this.connections;
+		return getConnections();
+	}
+
+	/**
+	 * Returns  all currently connected clients.
+	 * This collection does not allow any modification e.g. removing a client.
+	 *
+	 * @return A unmodifiable collection of all currently connected clients
+	 * @since 1.3.8
+	 */
+	public Collection<WebSocket> getConnections() {
+		return Collections.unmodifiableCollection( new ArrayList<WebSocket>(connections) );
 	}
 
 	public InetSocketAddress getAddress() {
@@ -305,7 +320,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 				return;
 			}
 		}
-		selectorthread.setName( "WebsocketSelector" + selectorthread.getId() );
+		selectorthread.setName( "WebSocketSelector-" + selectorthread.getId() );
 		try {
 			server = ServerSocketChannel.open();
 			server.configureBlocking( false );

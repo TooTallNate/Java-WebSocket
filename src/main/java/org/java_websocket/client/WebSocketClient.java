@@ -266,6 +266,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 		if( writeThread != null )
 			throw new IllegalStateException( "WebSocketClient objects are not reuseable" );
 		writeThread = new Thread( this );
+		writeThread.setName( "WebSocketWriteThread-" + writeThread.getId() );
 		writeThread.start();
 	}
 
@@ -329,7 +330,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	}
 
 	@Override
-	protected Collection<WebSocket> connections() {
+	protected Collection<WebSocket> getConnections() {
 		return Collections.singletonList((WebSocket ) engine );
 	}
 
@@ -621,7 +622,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	private class WebsocketWriteThread implements Runnable {
 		@Override
 		public void run() {
-			Thread.currentThread().setName( "WebsocketWriteThread" );
+			Thread.currentThread().setName( "WebSocketWriteThread-" + Thread.currentThread().getId() );
 			try {
 				try {
 					while( !Thread.interrupted() ) {

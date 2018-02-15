@@ -71,7 +71,7 @@ public class ThreadCheck extends ExternalResource {
 		return zombies > 0;
 	}
 
-	private Map<Long,Thread> getThreadMap() {
+	public static Map<Long,Thread> getThreadMap() {
 		Map<Long,Thread> map = new HashMap<Long,Thread>();
 		Thread[] threads = new Thread[ Thread.activeCount() * 2 ];
 		int actualNb = Thread.enumerate( threads );
