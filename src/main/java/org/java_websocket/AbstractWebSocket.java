@@ -147,7 +147,7 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
 						if( webSocketImpl.getLastPong() < current ) {
 							if (WebSocketImpl.DEBUG)
 								System.out.println("Closing connection due to no pong received: " + conn.toString());
-							webSocketImpl.closeConnection( CloseFrame.ABNORMAL_CLOSE , false );
+							webSocketImpl.closeConnection( CloseFrame.ABNORMAL_CLOSE , "The connection was closed because the other endpoint did not respond with a pong in time. For more information check: https://github.com/TooTallNate/Java-WebSocket/wiki/Lost-connection-detection");
 						} else {
 							if (webSocketImpl.isOpen()) {
 								webSocketImpl.sendPing();
