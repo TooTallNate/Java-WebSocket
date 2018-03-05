@@ -145,7 +145,7 @@ public class Issue666Test {
 		}
 		for( Thread thread : mapAfter.values() ) {
 			String name = thread.getName();
-			if( !name.equals( "WebSocketTimer" ) && !name.startsWith( "WebSocketWriteThread-" ) ) {
+			if( !name.equals( "WebSocketTimer" ) && !name.startsWith( "WebSocketWriteThread-" ) && !name.startsWith( "WebSocketConnectReadThread-" )) {
 				Assert.fail( "Thread not correctly named! Is: " + name );
 			}
 		}

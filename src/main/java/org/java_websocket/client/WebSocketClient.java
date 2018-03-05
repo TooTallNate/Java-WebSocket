@@ -266,7 +266,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 		if( writeThread != null )
 			throw new IllegalStateException( "WebSocketClient objects are not reuseable" );
 		writeThread = new Thread( this );
-		writeThread.setName( "WebSocketWriteThread-" + writeThread.getId() );
+		writeThread.setName( "WebSocketConnectReadThread-" + writeThread.getId() );
 		writeThread.start();
 	}
 
