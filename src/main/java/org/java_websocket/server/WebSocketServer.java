@@ -53,6 +53,8 @@ import org.java_websocket.framing.Framedata;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.handshake.Handshakedata;
 import org.java_websocket.handshake.ServerHandshakeBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <tt>WebSocketServer</tt> is an abstract class that only takes care of the
@@ -61,6 +63,13 @@ import org.java_websocket.handshake.ServerHandshakeBuilder;
  * 
  */
 public abstract class WebSocketServer extends AbstractWebSocket implements Runnable {
+
+	/**
+	 * Logger instance
+	 *
+	 * @since 1.4.0
+	 */
+	private static final Logger log = LoggerFactory.getLogger(WebSocketServer.class);
 
 	public static int DECODERS = Runtime.getRuntime().availableProcessors();
 
@@ -477,6 +486,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 				try {
 					selector.close();
 				} catch ( IOException e ) {
+					log.error( "IOException during selector.close", e );
 					onError( null, e );
 				}
 			}
@@ -484,6 +494,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 				try {
 					server.close();
 				} catch ( IOException e ) {
+					log.error( "IOException during server.close", e );
 					onError( null, e );
 				}
 			}
@@ -536,13 +547,13 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 				} catch ( IOException e ) {
 					// there is nothing that must be done here
 				}
-				if( WebSocketImpl.DEBUG )
-					System.out.println("Connection closed because of " + ex);
+				log.warn("Connection closed because of " + ex);
 			}
 		}
 	}
 
 	private void handleFatal( WebSocket conn, Exception e ) {
+		log.error( "Shutdown due to fatal error", e );
 		onError( conn, e );
 		//Shutting down WebSocketWorkers, see #222
 		if( decoders != null ) {
@@ -556,9 +567,11 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 		try {
 			stop();
 		} catch ( IOException e1 ) {
+			log.error( "Error during shutdown", e1 );
 			onError( null, e1 );
 		} catch ( InterruptedException e1 ) {
 			Thread.currentThread().interrupt();
+			log.error( "Interrupt during stop", e );
 			onError( null, e1 );
 		}
 	}
@@ -619,9 +632,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 				removed = this.connections.remove( ws );
 			} else {
 				//Don't throw an assert error if the ws is not in the list. e.g. when the other endpoint did not send any handshake. see #512
-				if (WebSocketImpl.DEBUG) {
-					System.out.println("Removing connection which is not in the connections collection! Possible no handshake recieved! " + ws);
-				}
+				log.warn("Removing connection which is not in the connections collection! Possible no handshake recieved! " + ws);
 			}
 		}
 		if( isclosed.get() && connections.size() == 0 ) {

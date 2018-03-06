@@ -58,7 +58,6 @@ public class ServerAdditionalHeaderExample extends ChatServer {
 
 
 	public static void main( String[] args ) throws InterruptedException , IOException {
-		WebSocketImpl.DEBUG = true;
 		int port = 8887; // 843 flash policy port
 		try {
 			port = Integer.parseInt( args[ 0 ] );

@@ -48,8 +48,6 @@ public class SSLServerCustomWebsocketFactoryExample {
      *keytool -genkey -validity 3650 -keystore "keystore.jks" -storepass "storepassword" -keypass "keypassword" -alias "default" -dname "CN=127.0.0.1, OU=MyOrgUnit, O=MyOrg, L=MyCity, S=MyRegion, C=MyCountry"
      */
     public static void main(String[] args) throws Exception {
-        WebSocketImpl.DEBUG = true;
-
         ChatServer chatserver = new ChatServer(8887); // Firefox does allow multible ssl connection only via port 443 //tested on FF16
 
         // load up the key store

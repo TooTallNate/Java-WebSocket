@@ -40,7 +40,6 @@ import java.util.Collections;
 public class SecWebSocketProtocolClientExample {
 
     public static void main( String[] args ) throws URISyntaxException {
-        WebSocketImpl.DEBUG = true;
         // This draft only allows you to use the specific Sec-WebSocket-Protocol without a fallback.
         Draft_6455 draft_ocppOnly = new Draft_6455(Collections.<IExtension>emptyList(), Collections.<IProtocol>singletonList(new Protocol("ocpp2.0")));
 

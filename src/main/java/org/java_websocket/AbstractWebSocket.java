@@ -26,6 +26,8 @@
 package org.java_websocket;
 
 import org.java_websocket.framing.CloseFrame;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,6 +39,13 @@ import java.util.TimerTask;
  * Base class for additional implementations for the server as well as the client
  */
 public abstract class AbstractWebSocket extends WebSocketAdapter {
+
+	/**
+	 * Logger instance
+	 *
+	 * @since 1.4.0
+	 */
+	private static final Logger log = LoggerFactory.getLogger(AbstractWebSocket.class);
 
     /**
      * Attribute which allows you to deactivate the Nagle's algorithm
@@ -90,8 +99,7 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
             stopConnectionLostTimer();
         }
         if (connectionLostTimer != null || connectionLostTimerTask != null) {
-			if( WebSocketImpl.DEBUG )
-				System.out.println( "Connection lost timer restarted" );
+			log.info( "Connection lost timer restarted" );
 			restartConnectionLostTimer();
 		}
     }
@@ -102,8 +110,7 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
      */
     protected void stopConnectionLostTimer() {
         if (connectionLostTimer != null ||connectionLostTimerTask != null) {
-            if( WebSocketImpl.DEBUG )
-                System.out.println( "Connection lost timer stopped" );
+           log.info( "Connection lost timer stopped" );
             cancelConnectionLostTimer();
         }
     }
@@ -113,12 +120,10 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
      */
     protected void startConnectionLostTimer() {
         if (this.connectionLostTimeout <= 0) {
-            if (WebSocketImpl.DEBUG)
-                System.out.println("Connection lost timer deactivated");
+          	log.info("Connection lost timer deactivated");
             return;
         }
-        if (WebSocketImpl.DEBUG)
-            System.out.println("Connection lost timer started");
+       	log.info("Connection lost timer started");
        	restartConnectionLostTimer();
     }
 
@@ -145,15 +150,13 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
 					if (conn instanceof WebSocketImpl) {
 						webSocketImpl = (WebSocketImpl)conn;
 						if( webSocketImpl.getLastPong() < current ) {
-							if (WebSocketImpl.DEBUG)
-								System.out.println("Closing connection due to no pong received: " + conn.toString());
+							log.warn("Closing connection due to no pong received: " + conn.toString());
 							webSocketImpl.closeConnection( CloseFrame.ABNORMAL_CLOSE , "The connection was closed because the other endpoint did not respond with a pong in time. For more information check: https://github.com/TooTallNate/Java-WebSocket/wiki/Lost-connection-detection");
 						} else {
 							if (webSocketImpl.isOpen()) {
 								webSocketImpl.sendPing();
 							} else {
-								if (WebSocketImpl.DEBUG)
-									System.out.println("Trying to ping a non open connection: " + conn.toString());
+								log.warn("Trying to ping a non open connection: " + conn.toString());
 							}
 						}
 					}

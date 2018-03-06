@@ -98,7 +98,6 @@ public class AutobahnSSLServerTest extends WebSocketServer {
 	}
 
 	public static void main( String[] args ) throws UnknownHostException {
-		WebSocketImpl.DEBUG = false;
 		int port;
 		try {
 			port = new Integer( args[0] );
