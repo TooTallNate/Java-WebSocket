@@ -35,7 +35,8 @@ import org.junit.runners.Suite;
 		org.java_websocket.issues.Issue580Test.class,
 		org.java_websocket.issues.Issue256Test.class,
 		org.java_websocket.issues.Issue661Test.class,
-		org.java_websocket.issues.Issue666Test.class
+		org.java_websocket.issues.Issue666Test.class,
+		org.java_websocket.issues.Issue677Test.class
 })
 /**
  * Start all tests for issues

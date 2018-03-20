@@ -707,6 +707,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	}
 
 	@Override
+	@Deprecated
 	public boolean isConnecting() {
 		return engine.isConnecting();
 	}

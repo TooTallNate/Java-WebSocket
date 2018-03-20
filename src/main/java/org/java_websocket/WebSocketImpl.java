@@ -647,8 +647,6 @@ public class WebSocketImpl implements WebSocket {
 	}
 
 	public void startHandshake( ClientHandshakeBuilder handshakedata ) throws InvalidHandshakeException {
-		assert ( getReadyState() != READYSTATE.CONNECTING ) : "shall only be called once";
-
 		// Store the Handshake Request we are about to send
 		this.handshakerequest = draft.postProcessHandshakeRequestAsClient( handshakedata );
 
@@ -710,6 +708,7 @@ public class WebSocketImpl implements WebSocket {
 	}
 
 	@Override
+	@Deprecated
 	public boolean isConnecting() {
 		assert ( !flushandclosestate || getReadyState() == READYSTATE.CONNECTING );
 		return getReadyState() == READYSTATE.CONNECTING; // ifflushandclosestate

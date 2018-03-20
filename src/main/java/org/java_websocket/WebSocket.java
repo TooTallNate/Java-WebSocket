@@ -46,7 +46,9 @@ public interface WebSocket {
 	 * Enum which represents the state a websocket may be in
 	 */
 	enum READYSTATE {
-		NOT_YET_CONNECTED, CONNECTING, OPEN, CLOSING, CLOSED
+		NOT_YET_CONNECTED,
+		@Deprecated
+		CONNECTING, OPEN, CLOSING, CLOSED
 	}
 
 	/**
@@ -172,6 +174,7 @@ public interface WebSocket {
 	 * Is the websocket in the state CONNECTING
 	 * @return state equals READYSTATE.CONNECTING
 	 */
+	@Deprecated
 	boolean isConnecting();
 
 	/**
