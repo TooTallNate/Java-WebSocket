@@ -434,7 +434,10 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 		if( part2 != null )
 			path += '?' + part2;
 		int port = getPort();
-		String host = uri.getHost() + ( port != WebSocket.DEFAULT_PORT ? ":" + port : "" );
+		String host = uri.getHost() + ( 
+			(port != WebSocket.DEFAULT_PORT && port != WebSocket.DEFAULT_WSS_PORT)
+			? ":" + port 
+			: "" );
 
 		HandshakeImpl1Client handshake = new HandshakeImpl1Client();
 		handshake.setResourceDescriptor( path );
