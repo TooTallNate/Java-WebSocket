@@ -716,7 +716,6 @@ public class WebSocketImpl implements WebSocket {
 
 	@Override
 	public boolean isOpen() {
-		assert ( getReadyState() != READYSTATE.OPEN || !flushandclosestate );
 		return getReadyState() == READYSTATE.OPEN;
 	}
 
