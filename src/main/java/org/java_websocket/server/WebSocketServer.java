@@ -812,6 +812,10 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 		broadcast( data, connections );
 	}
 
+	public void broadcast(ByteBuffer data) {
+		broadcast(data, connections);
+	}
+
 	/**
 	 * Send a byte array to a specific collection of websocket connections
 	 * @param data the data to send to the endpoints
@@ -829,6 +833,29 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 					Draft draft = client.getDraft();
 					if( !draftFrames.containsKey( draft ) ) {
 						List<Framedata> frames = draft.createFrames( byteBufferData, false );
+						draftFrames.put( draft, frames );
+					}
+					try {
+						client.sendFrame( draftFrames.get( draft ) );
+					} catch ( WebsocketNotConnectedException e ) {
+						//Ignore this exception in this case
+					}
+				}
+			}
+		}
+	}
+
+	public void broadcast(ByteBuffer data, Collection<WebSocket> clients) {
+		if (data == null || clients == null) {
+			throw new IllegalArgumentException();
+		}
+		Map<Draft, List<Framedata>> draftFrames = new HashMap<Draft, List<Framedata>>();
+		synchronized( clients ) {
+			for( WebSocket client : clients ) {
+				if( client != null ) {
+					Draft draft = client.getDraft();
+					if( !draftFrames.containsKey( draft ) ) {
+						List<Framedata> frames = draft.createFrames( data, false );
 						draftFrames.put( draft, frames );
 					}
 					try {
