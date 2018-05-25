@@ -812,6 +812,10 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 		broadcast( data, connections );
 	}
 
+	/**
+	 * Send a ByteBuffer to all connected endpoints
+	 * @param data the data to send to the endpoints
+	 */
 	public void broadcast(ByteBuffer data) {
 		broadcast(data, connections);
 	}
@@ -845,6 +849,11 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 		}
 	}
 
+	/**
+	 * Send a ByteBuffer to a specific collection of websocket connections
+	 * @param data the data to send to the endpoints
+	 * @param clients a collection of endpoints to whom the text has to be send
+	 */
 	public void broadcast(ByteBuffer data, Collection<WebSocket> clients) {
 		if (data == null || clients == null) {
 			throw new IllegalArgumentException();
