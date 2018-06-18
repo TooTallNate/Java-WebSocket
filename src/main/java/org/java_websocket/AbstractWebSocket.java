@@ -102,13 +102,18 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
 			if( WebSocketImpl.DEBUG )
 				System.out.println( "Connection lost timer restarted" );
 			//Reset all the pings
-			ArrayList<WebSocket> connections = new ArrayList<WebSocket>( getConnections() );
-			WebSocketImpl webSocketImpl;
-			for( WebSocket conn : connections ) {
-				if( conn instanceof WebSocketImpl ) {
-					webSocketImpl = ( WebSocketImpl ) conn;
-					webSocketImpl.updateLastPong();
+			try {
+				ArrayList<WebSocket> connections = new ArrayList<WebSocket>( getConnections() );
+				WebSocketImpl webSocketImpl;
+				for( WebSocket conn : connections ) {
+					if( conn instanceof WebSocketImpl ) {
+						webSocketImpl = ( WebSocketImpl ) conn;
+						webSocketImpl.updateLastPong();
+					}
 				}
+			} catch (Exception e) {
+				if (WebSocketImpl.DEBUG)
+					System.out.println("Exception during connection lost restart: " + e.getMessage());
 			}
 			restartConnectionLostTimer();
 		}
@@ -158,25 +163,30 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
 			@Override
 			public void run() {
 				connections.clear();
-				connections.addAll( getConnections() );
-				long current = (System.currentTimeMillis()-(connectionLostTimeout * 1500));
-				WebSocketImpl webSocketImpl;
-				for( WebSocket conn : connections ) {
-					if (conn instanceof WebSocketImpl) {
-						webSocketImpl = (WebSocketImpl)conn;
-						if( webSocketImpl.getLastPong() < current ) {
-							if (WebSocketImpl.DEBUG)
-								System.out.println("Closing connection due to no pong received: " + conn.toString());
-							webSocketImpl.closeConnection( CloseFrame.ABNORMAL_CLOSE , "The connection was closed because the other endpoint did not respond with a pong in time. For more information check: https://github.com/TooTallNate/Java-WebSocket/wiki/Lost-connection-detection");
-						} else {
-							if (webSocketImpl.isOpen()) {
-								webSocketImpl.sendPing();
+				try {
+					connections.addAll( getConnections() );
+					long current = ( System.currentTimeMillis() - ( connectionLostTimeout * 1500 ) );
+					WebSocketImpl webSocketImpl;
+					for( WebSocket conn : connections ) {
+						if( conn instanceof WebSocketImpl ) {
+							webSocketImpl = ( WebSocketImpl ) conn;
+							if( webSocketImpl.getLastPong() < current ) {
+								if( WebSocketImpl.DEBUG )
+									System.out.println( "Closing connection due to no pong received: " + conn.toString() );
+								webSocketImpl.closeConnection( CloseFrame.ABNORMAL_CLOSE, "The connection was closed because the other endpoint did not respond with a pong in time. For more information check: https://github.com/TooTallNate/Java-WebSocket/wiki/Lost-connection-detection" );
 							} else {
-								if (WebSocketImpl.DEBUG)
-									System.out.println("Trying to ping a non open connection: " + conn.toString());
+								if( webSocketImpl.isOpen() ) {
+									webSocketImpl.sendPing();
+								} else {
+									if( WebSocketImpl.DEBUG )
+										System.out.println( "Trying to ping a non open connection: " + conn.toString() );
+								}
 							}
 						}
 					}
+				} catch ( Exception e ) {
+					if (WebSocketImpl.DEBUG)
+						System.out.println("Exception during connection lost ping: " + e.getMessage());
 				}
 				connections.clear();
 			}
