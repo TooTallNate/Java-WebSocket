@@ -282,19 +282,19 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 		return engine.isOpen();
 	}
 
-  /**
-   * Same as <code>connect</code> but blocks with a timeout until the websocket connected or failed to do so.<br>
-   * @param timeout
-   *               The connect timeout
-   * @param timeUnit
-   *                The timeout time unit
-   * @return Returns whether it succeeded or not.
-   * @throws InterruptedException Thrown when the threads get interrupted
-   */
-  public boolean connectBlocking(long timeout, TimeUnit timeUnit) throws InterruptedException {
-    connect();
-    return connectLatch.await(timeout, timeUnit) && engine.isOpen();
-  }
+	/**
+	 * Same as <code>connect</code> but blocks with a timeout until the websocket connected or failed to do so.<br>
+	 * @param timeout
+	 *               The connect timeout
+	 * @param timeUnit
+	 *                The timeout time unit
+	 * @return Returns whether it succeeded or not.
+	 * @throws InterruptedException Thrown when the threads get interrupted
+	 */
+	public boolean connectBlocking(long timeout, TimeUnit timeUnit) throws InterruptedException {
+		connect();
+		return connectLatch.await(timeout, timeUnit) && engine.isOpen();
+	}
 
 	/**
 	 * Initiates the websocket close handshake. This method does not block<br>
