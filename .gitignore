@@ -18,4 +18,3 @@ bin
 .idea/.name
 *.jks
 lib/junit-4.7.jar
-*.jar
