@@ -138,7 +138,7 @@ public class WebSocketImpl implements WebSocket {
 	/**
 	 * Attribut to synchronize the write
 	 */
-	private static final Object synchronizeWriteObject = new Object();
+	private final Object synchronizeWriteObject = new Object();
 
 	/**
 	 * Attribute to cache a ping frame
