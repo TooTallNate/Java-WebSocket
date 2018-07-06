@@ -49,31 +49,6 @@ Then you can just add the latest version to your build.
 compile "org.java-websocket:Java-WebSocket:1.3.8"
 ```
 
-Running the Examples
--------------------
-
-**Note:** If you're on Windows, then replace the `:` (colon) in the classpath
-in the commands below with a `;` (semicolon).
-
-After you build the library you can start the chat server (a `WebSocketServer` subclass):
-
-``` bash
-java -cp build/examples:dist/java_websocket.jar ChatServer
-```
-
-Now that the server is started, you need to connect some clients. Run the
-Java chat client (a `WebSocketClient` subclass):
-
-``` bash
-java -cp build/examples:dist/java_websocket.jar ChatClient
-```
-
-The chat client is a simple Swing GUI application that allows you to send
-messages to all other connected clients, and receive messages from others in a
-text box.
-
-In the example folder is also a simple HTML file chat client `chat.html`, which can be opened by any browser.
-
 Writing your own WebSocket Server
 ---------------------------------
 
@@ -95,6 +70,11 @@ get fired throughout the life of the WebSocketClient, and must be implemented
 in **your** subclass.
 
 An example for a WebSocketClient can be found in both the [wiki](https://github.com/TooTallNate/Java-WebSocket/wiki#client-example) and the [example](https://github.com/TooTallNate/Java-WebSocket/tree/master/src/main/example) folder.
+
+Examples
+-------------------
+ 
+You can find a lot of examples [here](https://github.com/TooTallNate/Java-WebSocket/tree/master/src/main/example).
 
 WSS Support
 ---------------------------------
