@@ -94,6 +94,11 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	private Thread writeThread;
 
 	/**
+	 * The thread to connect and read message
+	 */
+	private Thread connectReadThread;
+
+	/**
 	 * The draft to use
 	 */
 	private Draft draft;
@@ -239,11 +244,19 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	 * @since 1.3.8
 	 */
 	private void reset() {
+		Thread current = Thread.currentThread();
+		if (current == writeThread || current == connectReadThread) {
+			throw new IllegalStateException("You cannot initialize a reconnect out of the websocket thread. Use reconnect in another thread to insure a successful cleanup.");
+		}
 		try {
 			closeBlocking();
 			if( writeThread != null ) {
 				this.writeThread.interrupt();
 				this.writeThread = null;
+			}
+			if( connectReadThread != null ) {
+				this.connectReadThread.interrupt();
+				this.connectReadThread = null;
 			}
 			this.draft.reset();
 			if( this.socket != null ) {
@@ -264,11 +277,11 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	 * Initiates the websocket connection. This method does not block.
 	 */
 	public void connect() {
-		if( writeThread != null )
+		if( connectReadThread != null )
 			throw new IllegalStateException( "WebSocketClient objects are not reuseable" );
-		writeThread = new Thread( this );
-		writeThread.setName( "WebSocketConnectReadThread-" + writeThread.getId() );
-		writeThread.start();
+		connectReadThread = new Thread( this );
+		connectReadThread.setName( "WebSocketConnectReadThread-" + connectReadThread.getId() );
+		connectReadThread.start();
 	}
 
 	/**
@@ -316,7 +329,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 
 	/**
 	 * Sends <var>text</var> to the connected websocket server.
-	 * 
+	 *
 	 * @param text
 	 *            The string which will be transmitted.
 	 */
@@ -326,7 +339,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 
 	/**
 	 * Sends binary <var> data</var> to the connected webSocket server.
-	 * 
+	 *
 	 * @param data
 	 *            The byte-Array of data to send to the WebSocket server.
 	 */
@@ -411,8 +424,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 			onError( e );
 			engine.closeConnection( CloseFrame.ABNORMAL_CLOSE, e.getMessage() );
 		}
-		//I have no idea why this was added.
-		//assert ( socket.isClosed() );
+		connectReadThread = null;
 	}
 
 	/**
