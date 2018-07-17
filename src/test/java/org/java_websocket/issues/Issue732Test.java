@@ -52,7 +52,6 @@ public class Issue732Test {
 
     @Test(timeout = 2000)
     public void testIssue() throws Exception {
-        WebSocketImpl.DEBUG = true;
         int port = SocketUtil.getAvailablePort();
         final WebSocketClient webSocket = new WebSocketClient(new URI("ws://localhost:" + port)) {
             @Override
