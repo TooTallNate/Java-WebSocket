@@ -149,14 +149,17 @@ public class Draft_6455 extends Draft {
 	@Override
 	public HandshakeState acceptHandshakeAsServer( ClientHandshake handshakedata ) throws InvalidHandshakeException {
 		int v = readVersion( handshakedata );
-		if( v != 13 )
+		if( v != 13 ) {
+			logDebug("acceptHandshakeAsServer - Wrong websocket version.");
 			return HandshakeState.NOT_MATCHED;
-		HandshakeState extensionState= HandshakeState.NOT_MATCHED;
+		}
+		HandshakeState extensionState = HandshakeState.NOT_MATCHED;
 		String requestedExtension = handshakedata.getFieldValue( "Sec-WebSocket-Extensions" );
 		for( IExtension knownExtension : knownExtensions ) {
 			if( knownExtension.acceptProvidedExtensionAsServer( requestedExtension ) ) {
 				extension = knownExtension;
 				extensionState = HandshakeState.MATCHED;
+				logDebug("acceptHandshakeAsServer - Matching extension found: " + extension.toString());
 				break;
 			}
 		}
@@ -166,29 +169,36 @@ public class Draft_6455 extends Draft {
 			if( knownProtocol.acceptProvidedProtocol( requestedProtocol ) ) {
 				protocol = knownProtocol;
 				protocolState = HandshakeState.MATCHED;
+				logDebug("acceptHandshakeAsServer - Matching protocol found: " + protocol.toString());
 				break;
 			}
 		}
 		if (protocolState == HandshakeState.MATCHED && extensionState == HandshakeState.MATCHED) {
 			return HandshakeState.MATCHED;
 		}
+		logDebug("acceptHandshakeAsServer - No matching extension or protocol found.");
 		return HandshakeState.NOT_MATCHED;
 	}
 
 	@Override
 	public HandshakeState acceptHandshakeAsClient( ClientHandshake request, ServerHandshake response ) throws InvalidHandshakeException {
 		if (! basicAccept( response )) {
+			logDebug("acceptHandshakeAsClient - Missing/wrong upgrade or connection in handshake.");
 			return HandshakeState.NOT_MATCHED;
 		}
-		if( !request.hasFieldValue( "Sec-WebSocket-Key" ) || !response.hasFieldValue( "Sec-WebSocket-Accept" ) )
+		if( !request.hasFieldValue( "Sec-WebSocket-Key" ) || !response.hasFieldValue( "Sec-WebSocket-Accept" ) ) {
+			logDebug("acceptHandshakeAsClient - Missing Sec-WebSocket-Key or Sec-WebSocket-Accept");
 			return HandshakeState.NOT_MATCHED;
+		}
 
 		String seckey_answere = response.getFieldValue( "Sec-WebSocket-Accept" );
 		String seckey_challenge = request.getFieldValue( "Sec-WebSocket-Key" );
 		seckey_challenge = generateFinalKey( seckey_challenge );
 
-		if( !seckey_challenge.equals( seckey_answere ) )
+		if( !seckey_challenge.equals( seckey_answere ) ) {
+			logDebug("acceptHandshakeAsClient - Wrong key for Sec-WebSocket-Key.");
 			return HandshakeState.NOT_MATCHED;
+		}
 
 		HandshakeState extensionState= HandshakeState.NOT_MATCHED;
 		String requestedExtension = response.getFieldValue( "Sec-WebSocket-Extensions" );
@@ -196,6 +206,7 @@ public class Draft_6455 extends Draft {
 			if( knownExtension.acceptProvidedExtensionAsClient( requestedExtension ) ) {
 				extension = knownExtension;
 				extensionState = HandshakeState.MATCHED;
+				logDebug("acceptHandshakeAsClient - Matching extension found: " + extension.toString());
 				break;
 			}
 		}
@@ -205,12 +216,14 @@ public class Draft_6455 extends Draft {
 			if( knownProtocol.acceptProvidedProtocol( requestedProtocol ) ) {
 				protocol = knownProtocol;
 				protocolState = HandshakeState.MATCHED;
+				logDebug("acceptHandshakeAsClient - Matching protocol found: " + protocol.toString());
 				break;
 			}
 		}
 		if (protocolState == HandshakeState.MATCHED && extensionState == HandshakeState.MATCHED) {
 			return HandshakeState.MATCHED;
 		}
+		logDebug("acceptHandshakeAsClient - No matching extension or protocol found.");
 		return HandshakeState.NOT_MATCHED;
 	}
 
@@ -760,5 +773,11 @@ public class Draft_6455 extends Draft {
 		}
 		resultingByteBuffer.flip();
 		return resultingByteBuffer;
+	}
+
+	private static void logDebug(Object object) {
+		if (WebSocketImpl.DEBUG) {
+			System.out.println(object);
+		}
 	}
 }
