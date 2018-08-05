@@ -698,7 +698,7 @@ public class Draft_6455 extends Draft {
 					throw new InvalidDataException( CloseFrame.NO_UTF8 );
 				}
 			}
-			//Checking if the current continous frame contains a correct payload with the other frames combined
+			//Checking if the current continuous frame contains a correct payload with the other frames combined
 			if( curop == Framedata.Opcode.CONTINUOUS && current_continuous_frame != null ) {
 				byteBufferList.add( frame.getPayloadData() );
 			}
