@@ -191,7 +191,8 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
 				connections.clear();
 			}
 		};
-		connectionLostTimer.scheduleAtFixedRate( connectionLostTimerTask,connectionLostTimeout * 1000, connectionLostTimeout * 1000 );
+		connectionLostTimer.scheduleAtFixedRate( connectionLostTimerTask,1000L*connectionLostTimeout , 1000L*connectionLostTimeout );
+
 	}
 
 	/**

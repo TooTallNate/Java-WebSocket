@@ -61,7 +61,11 @@ import java.util.concurrent.LinkedBlockingQueue;
  * text frames, and receiving frames through an event-based model.
  */
 public class WebSocketImpl implements WebSocket {
-	public static int RCVBUF = 16384;
+
+	/**
+	 * Initial buffer size
+	 */
+	public static final int RCVBUF = 16384;
 
 	/**
 	 * Activate debug mode for additional infos
@@ -184,16 +188,6 @@ public class WebSocketImpl implements WebSocket {
 		this.role = Role.CLIENT;
 		if( draft != null )
 			this.draft = draft.copyInstance();
-	}
-
-	@Deprecated
-	public WebSocketImpl( WebSocketListener listener, Draft draft, Socket socket ) {
-		this( listener, draft );
-	}
-
-	@Deprecated
-	public WebSocketImpl( WebSocketListener listener, List<Draft> drafts, Socket socket ) {
-		this( listener, drafts );
 	}
 
 	/**
@@ -741,11 +735,6 @@ public class WebSocketImpl implements WebSocket {
 
 	private void setReadyState( READYSTATE readystate ) {
 		this.readystate = readystate;
-	}
-
-	@Override
-	public int hashCode() {
-		return super.hashCode();
 	}
 
 	@Override

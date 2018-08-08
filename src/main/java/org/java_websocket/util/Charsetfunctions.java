@@ -40,11 +40,9 @@ public class Charsetfunctions {
 	/**
 	 * Private constructor for real static class
 	 */
-	private Charsetfunctions() {
+	private Charsetfunctions() {}
 
-	}
-
-	public static CodingErrorAction codingErrorAction = CodingErrorAction.REPORT;
+	private static final CodingErrorAction codingErrorAction = CodingErrorAction.REPORT;
 
 	/*
 	* @return UTF-8 encoding in bytes

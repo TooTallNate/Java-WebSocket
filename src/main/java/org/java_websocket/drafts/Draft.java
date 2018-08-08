@@ -70,9 +70,6 @@ public abstract class Draft {
 		NONE, ONEWAY, TWOWAY
 	}
 
-	public static int MAX_FAME_SIZE = 1000;
-	public static int INITIAL_FAMESIZE = 64;
-
 	/** In some cases the handshake will be parsed different depending on whether */
 	protected Role role = null;
 

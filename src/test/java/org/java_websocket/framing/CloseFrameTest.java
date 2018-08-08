@@ -213,5 +213,28 @@ public class CloseFrameTest {
         } catch (InvalidDataException e) {
             //fine
         }
+        frame.setCode(CloseFrame.NOCODE);
+        try {
+            frame.isValid();
+            fail("InvalidDataException should be thrown");
+        } catch (InvalidDataException e) {
+            //fine
+        }
+        frame.setCode(CloseFrame.NO_UTF8);
+        frame.setReason(null);
+        try {
+            frame.isValid();
+            fail("InvalidDataException should be thrown");
+        } catch (InvalidDataException e) {
+            //fine
+        }
+        frame.setCode(CloseFrame.NOCODE);
+        frame.setReason("Close");
+        try {
+            frame.isValid();
+            fail("InvalidDataException should be thrown");
+        } catch (InvalidDataException e) {
+            //fine
+        }
     }
 }

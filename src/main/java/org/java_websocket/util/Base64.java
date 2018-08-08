@@ -692,9 +692,9 @@ public class Base64
                 throw e;
             }   // end catch
             finally {
-                try{ gzos.close();  } catch( Exception e ){}
-                try{ b64os.close(); } catch( Exception e ){}
-                try{ baos.close();  } catch( Exception e ){}
+                try{ if (gzos != null) gzos.close();  } catch( Exception e ){}
+                try{ if (b64os != null) b64os.close(); } catch( Exception e ){}
+                try{ if (baos != null) baos.close();  } catch( Exception e ){}
             }   // end finally
 
             return baos.toByteArray();
@@ -1039,9 +1039,9 @@ public class Base64
                     // Just return originally-decoded bytes
                 }   // end catch
                 finally {
-                    try{ baos.close(); } catch( Exception e ){}
-                    try{ gzis.close(); } catch( Exception e ){}
-                    try{ bais.close(); } catch( Exception e ){}
+                    try{ if (baos != null) baos.close(); } catch( Exception e ){}
+                    try{ if (gzis != null) gzis.close(); } catch( Exception e ){}
+                    try{ if (bais != null) bais.close(); } catch( Exception e ){}
                 }   // end finally
 
             }   // end if: gzipped
@@ -1103,7 +1103,7 @@ public class Base64
             throw e; // Catch and release to execute finally{}
         }   // end catch: java.io.IOException
         finally {
-            try{ bis.close(); } catch( Exception e) {}
+            try{ if (bis != null) bis.close(); } catch( Exception e) {}
         }   // end finally
         
         return decodedData;
@@ -1156,7 +1156,7 @@ public class Base64
             throw e; // Catch and release to execute finally{}
         }   // end catch: java.io.IOException
         finally {
-            try{ bis.close(); } catch( Exception e) {}
+            try{ if (bis != null) bis.close(); } catch( Exception e) {}
         }   // end finally
         
         return encodedData;

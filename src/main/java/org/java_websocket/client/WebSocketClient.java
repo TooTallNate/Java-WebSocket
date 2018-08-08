@@ -665,6 +665,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 						ostream.write( buffer.array(), 0, buffer.limit() );
 						ostream.flush();
 					}
+					Thread.currentThread().interrupt();
 				}
 			} catch ( IOException e ) {
 				handleIOException( e );
