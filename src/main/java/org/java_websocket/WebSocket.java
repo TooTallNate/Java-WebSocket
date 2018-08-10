@@ -31,25 +31,11 @@ import java.nio.channels.NotYetConnectedException;
 import java.util.Collection;
 
 import org.java_websocket.drafts.Draft;
+import org.java_websocket.enums.Opcode;
+import org.java_websocket.enums.ReadyState;
 import org.java_websocket.framing.Framedata;
-import org.java_websocket.framing.Framedata.Opcode;
 
 public interface WebSocket {
-	/**
-	 * Enum which represents the states a websocket may be in
-	 */
-	enum Role {
-		CLIENT, SERVER
-	}
-
-	/**
-	 * Enum which represents the state a websocket may be in
-	 */
-	enum READYSTATE {
-		NOT_YET_CONNECTED,
-		@Deprecated
-		CONNECTING, OPEN, CLOSING, CLOSED
-	}
 
 	/**
 	 * The default port of WebSockets, as defined in the spec. If the nullary
@@ -97,7 +83,7 @@ public interface WebSocket {
 	 * @param text the text data to send
 	 * @throws NotYetConnectedException websocket is not yet connected
 	 */
-	void send( String text ) throws NotYetConnectedException;
+	void send( String text );
 
 	/**
 	 * Send Binary data (plain bytes) to the other end.
@@ -106,7 +92,7 @@ public interface WebSocket {
 	 * @throws IllegalArgumentException the data is null
 	 * @throws NotYetConnectedException websocket is not yet connected
 	 */
-	void send( ByteBuffer bytes ) throws IllegalArgumentException , NotYetConnectedException;
+	void send( ByteBuffer bytes );
 
 	/**
 	 * Send Binary data (plain bytes) to the other end.
@@ -115,7 +101,7 @@ public interface WebSocket {
 	 * @throws IllegalArgumentException the data is null
 	 * @throws NotYetConnectedException websocket is not yet connected
 	 */
-	void send( byte[] bytes ) throws IllegalArgumentException , NotYetConnectedException;
+	void send( byte[] bytes );
 
 	/**
 	 * Send a frame to the other end
@@ -172,20 +158,21 @@ public interface WebSocket {
 
 	/**
 	 * Is the websocket in the state CONNECTING
-	 * @return state equals READYSTATE.CONNECTING
+	 * @return state equals ReadyState.CONNECTING
+	 * @deprecated
 	 */
 	@Deprecated
 	boolean isConnecting();
 
 	/**
 	 * Is the websocket in the state OPEN
-	 * @return state equals READYSTATE.OPEN
+	 * @return state equals ReadyState.OPEN
 	 */
 	boolean isOpen();
 
 	/**
 	 * Is the websocket in the state CLOSING
-	 * @return state equals READYSTATE.CLOSING
+	 * @return state equals ReadyState.CLOSING
 	 */
 	boolean isClosing();
 
@@ -198,7 +185,7 @@ public interface WebSocket {
 
 	/**
 	 * Is the websocket in the state CLOSED
-	 * @return state equals READYSTATE.CLOSED
+	 * @return state equals ReadyState.CLOSED
 	 */
 	boolean isClosed();
 
@@ -209,13 +196,13 @@ public interface WebSocket {
 	Draft getDraft();
 
 	/**
-	 * Retrieve the WebSocket 'readyState'.
+	 * Retrieve the WebSocket 'ReadyState'.
 	 * This represents the state of the connection.
 	 * It returns a numerical value, as per W3C WebSockets specs.
 	 * 
 	 * @return Returns '0 = CONNECTING', '1 = OPEN', '2 = CLOSING' or '3 = CLOSED'
 	 */
-	READYSTATE getReadyState();
+	ReadyState getReadyState();
 	
 	/**
 	 * Returns the HTTP Request-URI as defined by http://tools.ietf.org/html/rfc2616#section-5.1.2<br>

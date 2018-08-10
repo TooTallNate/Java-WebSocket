@@ -31,14 +31,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
-import org.java_websocket.WebSocket.Role;
 import org.java_websocket.WebSocketImpl;
+import org.java_websocket.enums.Opcode;
+import org.java_websocket.enums.Role;
 import org.java_websocket.exceptions.IncompleteHandshakeException;
 import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.exceptions.InvalidHandshakeException;
 import org.java_websocket.exceptions.LimitExedeedException;
 import org.java_websocket.framing.*;
-import org.java_websocket.framing.Framedata.Opcode;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.handshake.ClientHandshakeBuilder;
 import org.java_websocket.handshake.HandshakeBuilder;
@@ -179,7 +179,7 @@ public abstract class Draft {
 	 */
 	public abstract void processFrame( WebSocketImpl webSocketImpl, Framedata frame ) throws InvalidDataException;
 
-	public List<Framedata> continuousFrame( Opcode op, ByteBuffer buffer, boolean fin ) {
+	public List<Framedata> continuousFrame(Opcode op, ByteBuffer buffer, boolean fin ) {
 		if(op != Opcode.BINARY && op != Opcode.TEXT) {
 			throw new IllegalArgumentException( "Only Opcode.BINARY or  Opcode.TEXT are allowed" );
 		}

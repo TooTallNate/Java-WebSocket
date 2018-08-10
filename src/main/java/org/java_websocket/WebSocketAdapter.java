@@ -69,6 +69,7 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	 * This default implementation does not do anything. Go ahead and overwrite it
 	 *
 	 * @see org.java_websocket.WebSocketListener#onWebsocketMessageFragment(WebSocket, Framedata)
+	 * @deprecated
 	 */
 	@Override
 	@Deprecated

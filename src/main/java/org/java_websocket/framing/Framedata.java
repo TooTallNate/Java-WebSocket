@@ -25,19 +25,13 @@
 
 package org.java_websocket.framing;
 
+import org.java_websocket.enums.Opcode;
 import java.nio.ByteBuffer;
 
 /**
  * The interface for the frame
  */
 public interface Framedata {
-	/**
-	 * Enum which contains the different valid opcodes
-	 */
-	enum Opcode {
-		CONTINUOUS, TEXT, BINARY, PING, PONG, CLOSING
-		// more to come
-	}
 
 	/**
 	 * Indicates that this is the final fragment in a message.  The first fragment MAY also be the final fragment.

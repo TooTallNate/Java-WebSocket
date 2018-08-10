@@ -29,13 +29,15 @@ import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft.CloseHandshakeType;
 import org.java_websocket.drafts.Draft.HandshakeState;
 import org.java_websocket.drafts.Draft_6455;
+import org.java_websocket.enums.Opcode;
+import org.java_websocket.enums.ReadyState;
+import org.java_websocket.enums.Role;
 import org.java_websocket.exceptions.IncompleteHandshakeException;
 import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.exceptions.InvalidHandshakeException;
 import org.java_websocket.exceptions.WebsocketNotConnectedException;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.Framedata;
-import org.java_websocket.framing.Framedata.Opcode;
 import org.java_websocket.framing.PingFrame;
 import org.java_websocket.handshake.*;
 import org.java_websocket.server.WebSocketServer.WebSocketWorker;
@@ -43,7 +45,6 @@ import org.java_websocket.util.Charsetfunctions;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
 import java.nio.channels.NotYetConnectedException;
@@ -101,7 +102,7 @@ public class WebSocketImpl implements WebSocket {
 	/**
 	 * The current state of the connection
 	 */
-	private READYSTATE readystate = READYSTATE.NOT_YET_CONNECTED;
+	private ReadyState readyState = ReadyState.NOT_YET_CONNECTED;
 
 	/**
 	 * A list of drafts available for this websocket
@@ -201,8 +202,8 @@ public class WebSocketImpl implements WebSocket {
 		if( DEBUG )
 			System.out.println( "process(" + socketBuffer.remaining() + "): {" + ( socketBuffer.remaining() > 1000 ? "too big to display" : new String( socketBuffer.array(), socketBuffer.position(), socketBuffer.remaining() ) ) + '}' );
 
-		if( getReadyState() != READYSTATE.NOT_YET_CONNECTED ) {
-			if( getReadyState() == READYSTATE.OPEN ) {
+		if( getReadyState() != ReadyState.NOT_YET_CONNECTED ) {
+			if( getReadyState() == ReadyState.OPEN ) {
 				decodeFrames( socketBuffer );
 			}
 		} else {
@@ -407,11 +408,11 @@ public class WebSocketImpl implements WebSocket {
 	}
 
 	public synchronized void close( int code, String message, boolean remote ) {
-		if( getReadyState() != READYSTATE.CLOSING && readystate != READYSTATE.CLOSED ) {
-			if( getReadyState() == READYSTATE.OPEN ) {
+		if( getReadyState() != ReadyState.CLOSING && readyState != ReadyState.CLOSED ) {
+			if( getReadyState() == ReadyState.OPEN ) {
 				if( code == CloseFrame.ABNORMAL_CLOSE ) {
 					assert ( !remote );
-					setReadyState( READYSTATE.CLOSING );
+					setReadyState( ReadyState.CLOSING );
 					flushAndClose( code, message, false );
 					return;
 				}
@@ -445,7 +446,7 @@ public class WebSocketImpl implements WebSocket {
 			} else {
 				flushAndClose( CloseFrame.NEVER_CONNECTED, message, false );
 			}
-			setReadyState( READYSTATE.CLOSING );
+			setReadyState( ReadyState.CLOSING );
 			tmpHandshakeBytes = null;
 			return;
 		}
@@ -468,13 +469,13 @@ public class WebSocketImpl implements WebSocket {
 	 *                <code>remote</code> may also be true if this endpoint started the closing handshake since the other endpoint may not simply echo the <code>code</code> but close the connection the same time this endpoint does do but with an other <code>code</code>. <br>
 	 **/
 	public synchronized void closeConnection( int code, String message, boolean remote ) {
-		if( getReadyState() == READYSTATE.CLOSED ) {
+		if( getReadyState() == ReadyState.CLOSED ) {
 			return;
 		}
-		//Methods like eot() call this method without calling onClose(). Due to that reason we have to adjust the readystate manually
-		if( getReadyState() == READYSTATE.OPEN ) {
+		//Methods like eot() call this method without calling onClose(). Due to that reason we have to adjust the ReadyState manually
+		if( getReadyState() == ReadyState.OPEN ) {
 			if( code == CloseFrame.ABNORMAL_CLOSE ) {
-				setReadyState( READYSTATE.CLOSING );
+				setReadyState( ReadyState.CLOSING );
 			}
 		}
 		if( key != null ) {
@@ -502,7 +503,7 @@ public class WebSocketImpl implements WebSocket {
 		if( draft != null )
 			draft.reset();
 		handshakerequest = null;
-		setReadyState( READYSTATE.CLOSED );
+		setReadyState( ReadyState.CLOSED );
 	}
 
 	protected void closeConnection( int code, boolean remote ) {
@@ -542,7 +543,7 @@ public class WebSocketImpl implements WebSocket {
 	}
 
 	public void eot() {
-		if( getReadyState() == READYSTATE.NOT_YET_CONNECTED ) {
+		if( getReadyState() == ReadyState.NOT_YET_CONNECTED ) {
 			closeConnection( CloseFrame.NEVER_CONNECTED, true );
 		} else if( flushandclosestate ) {
 			closeConnection( closecode, closemessage, closedremotely );
@@ -614,7 +615,7 @@ public class WebSocketImpl implements WebSocket {
 	}
 
 	@Override
-	public void sendFragmentedFrame( Opcode op, ByteBuffer buffer, boolean fin ) {
+	public void sendFragmentedFrame(Opcode op, ByteBuffer buffer, boolean fin ) {
 		send( draft.continuousFrame( op, buffer, fin ) );
 	}
 
@@ -693,7 +694,7 @@ public class WebSocketImpl implements WebSocket {
 	private void open( Handshakedata d ) {
 		if( DEBUG )
 			System.out.println( "open using draft: " + draft );
-		setReadyState( READYSTATE.OPEN );
+		setReadyState( ReadyState.OPEN );
 		try {
 			wsl.onWebsocketOpen( this, d );
 		} catch ( RuntimeException e ) {
@@ -704,18 +705,18 @@ public class WebSocketImpl implements WebSocket {
 	@Override
 	@Deprecated
 	public boolean isConnecting() {
-		assert ( !flushandclosestate || getReadyState() == READYSTATE.CONNECTING );
-		return getReadyState() == READYSTATE.CONNECTING; // ifflushandclosestate
+		assert ( !flushandclosestate || getReadyState() == ReadyState.CONNECTING );
+		return getReadyState() == ReadyState.CONNECTING; // ifflushandclosestate
 	}
 
 	@Override
 	public boolean isOpen() {
-		return getReadyState() == READYSTATE.OPEN;
+		return getReadyState() == ReadyState.OPEN;
 	}
 
 	@Override
 	public boolean isClosing() {
-		return getReadyState() == READYSTATE.CLOSING;
+		return getReadyState() == ReadyState.CLOSING;
 	}
 
 	@Override
@@ -725,16 +726,16 @@ public class WebSocketImpl implements WebSocket {
 
 	@Override
 	public boolean isClosed() {
-		return getReadyState() == READYSTATE.CLOSED;
+		return getReadyState() == ReadyState.CLOSED;
 	}
 
 	@Override
-	public READYSTATE getReadyState() {
-		return readystate;
+	public ReadyState getReadyState() {
+		return readyState;
 	}
 
-	private void setReadyState( READYSTATE readystate ) {
-		this.readystate = readystate;
+	private void setReadyState( ReadyState ReadyState ) {
+		this.readyState = ReadyState;
 	}
 
 	@Override

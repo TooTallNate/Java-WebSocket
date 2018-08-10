@@ -49,10 +49,11 @@ import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketImpl;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft_6455;
+import org.java_websocket.enums.Opcode;
+import org.java_websocket.enums.ReadyState;
 import org.java_websocket.exceptions.InvalidHandshakeException;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.Framedata;
-import org.java_websocket.framing.Framedata.Opcode;
 import org.java_websocket.handshake.HandshakeImpl1Client;
 import org.java_websocket.handshake.Handshakedata;
 import org.java_websocket.handshake.ServerHandshake;
@@ -480,7 +481,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	/**
 	 * This represents the state of the connection.
 	 */
-	public READYSTATE getReadyState() {
+	public ReadyState getReadyState() {
 		return engine.getReadyState();
 	}
 
@@ -641,8 +642,9 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 
 	/**
 	 * Callback for fragmented frames
-	 * @see WebSocket#sendFragmentedFrame(org.java_websocket.framing.Framedata.Opcode, ByteBuffer, boolean)
+	 * @see WebSocket#sendFragmentedFrame(org.java_websocket.enums.Opcode, ByteBuffer, boolean)
 	 * @param frame The fragmented frame
+	 * @deprecated
 	 */
 	@Deprecated
 	public void onFragment( Framedata frame ) {
@@ -713,7 +715,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	}
 
 	@Override
-	public void sendFragmentedFrame( Opcode op, ByteBuffer buffer, boolean fin ) {
+	public void sendFragmentedFrame(Opcode op, ByteBuffer buffer, boolean fin ) {
 		engine.sendFragmentedFrame( op, buffer, fin );
 	}
 

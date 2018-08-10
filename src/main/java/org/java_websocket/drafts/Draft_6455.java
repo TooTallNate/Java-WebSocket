@@ -25,8 +25,10 @@
 
 package org.java_websocket.drafts;
 
-import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketImpl;
+import org.java_websocket.enums.Opcode;
+import org.java_websocket.enums.ReadyState;
+import org.java_websocket.enums.Role;
 import org.java_websocket.exceptions.*;
 import org.java_websocket.extensions.*;
 import org.java_websocket.framing.*;
@@ -341,7 +343,7 @@ public class Draft_6455 extends Draft {
 
 	private ByteBuffer createByteBufferFromFramedata( Framedata framedata ) {
 		ByteBuffer mes = framedata.getPayloadData();
-		boolean mask = role == WebSocket.Role.CLIENT; // framedata.getTransfereMasked();
+		boolean mask = role == Role.CLIENT; // framedata.getTransfereMasked();
 		int sizebytes = mes.remaining() <= 125 ? 1 : mes.remaining() <= 65535 ? 2 : 8;
 		ByteBuffer buf = ByteBuffer.allocate( 1 + ( sizebytes > 1 ? sizebytes + 1 : sizebytes ) + ( mask ? 4 : 0 ) + mes.remaining() );
 		byte optcode = fromOpcode( framedata.getOpcode() );
@@ -401,10 +403,10 @@ public class Draft_6455 extends Draft {
 		byte b2 = buffer.get( /*1*/ );
 		boolean MASK = ( b2 & -128 ) != 0;
 		int payloadlength = ( byte ) ( b2 & ~( byte ) 128 );
-		Framedata.Opcode optcode = toOpcode( ( byte ) ( b1 & 15 ) );
+		Opcode optcode = toOpcode( ( byte ) ( b1 & 15 ) );
 
 		if( !( payloadlength >= 0 && payloadlength <= 125 ) ) {
-			if( optcode == Framedata.Opcode.PING || optcode == Framedata.Opcode.PONG || optcode == Framedata.Opcode.CLOSING ) {
+			if( optcode == Opcode.PING || optcode == Opcode.PONG || optcode == Opcode.CLOSING ) {
 				throw new InvalidFrameException( "more than 125 octets" );
 			}
 			if( payloadlength == 126 ) {
@@ -596,38 +598,38 @@ public class Draft_6455 extends Draft {
 	}
 
 
-	private byte fromOpcode( Framedata.Opcode opcode ) {
-		if( opcode == Framedata.Opcode.CONTINUOUS )
+	private byte fromOpcode( Opcode opcode ) {
+		if( opcode == Opcode.CONTINUOUS )
 			return 0;
-		else if( opcode == Framedata.Opcode.TEXT )
+		else if( opcode == Opcode.TEXT )
 			return 1;
-		else if( opcode == Framedata.Opcode.BINARY )
+		else if( opcode == Opcode.BINARY )
 			return 2;
-		else if( opcode == Framedata.Opcode.CLOSING )
+		else if( opcode == Opcode.CLOSING )
 			return 8;
-		else if( opcode == Framedata.Opcode.PING )
+		else if( opcode == Opcode.PING )
 			return 9;
-		else if( opcode == Framedata.Opcode.PONG )
+		else if( opcode == Opcode.PONG )
 			return 10;
 		throw new IllegalArgumentException( "Don't know how to handle " + opcode.toString() );
 	}
 
 
-	private Framedata.Opcode toOpcode( byte opcode ) throws InvalidFrameException {
+	private Opcode toOpcode( byte opcode ) throws InvalidFrameException {
 		switch(opcode) {
 			case 0:
-				return Framedata.Opcode.CONTINUOUS;
+				return Opcode.CONTINUOUS;
 			case 1:
-				return Framedata.Opcode.TEXT;
+				return Opcode.TEXT;
 			case 2:
-				return Framedata.Opcode.BINARY;
+				return Opcode.BINARY;
 			// 3-7 are not yet defined
 			case 8:
-				return Framedata.Opcode.CLOSING;
+				return Opcode.CLOSING;
 			case 9:
-				return Framedata.Opcode.PING;
+				return Opcode.PING;
 			case 10:
-				return Framedata.Opcode.PONG;
+				return Opcode.PONG;
 			// 11-15 are not yet defined
 			default:
 				throw new InvalidFrameException( "Unknown opcode " + ( short ) opcode );
@@ -636,8 +638,8 @@ public class Draft_6455 extends Draft {
 
 	@Override
 	public void processFrame( WebSocketImpl webSocketImpl, Framedata frame ) throws InvalidDataException {
-		Framedata.Opcode curop = frame.getOpcode();
-		if( curop == Framedata.Opcode.CLOSING ) {
+		Opcode curop = frame.getOpcode();
+		if( curop == Opcode.CLOSING ) {
 			int code = CloseFrame.NOCODE;
 			String reason = "";
 			if( frame instanceof CloseFrame ) {
@@ -645,7 +647,7 @@ public class Draft_6455 extends Draft {
 				code = cf.getCloseCode();
 				reason = cf.getMessage();
 			}
-			if( webSocketImpl.getReadyState() == WebSocket.READYSTATE.CLOSING ) {
+			if( webSocketImpl.getReadyState() == ReadyState.CLOSING ) {
 				// complete the close handshake by disconnecting
 				webSocketImpl.closeConnection( code, reason, true );
 			} else {
@@ -655,13 +657,13 @@ public class Draft_6455 extends Draft {
 				else
 					webSocketImpl.flushAndClose( code, reason, false );
 			}
-		} else if( curop == Framedata.Opcode.PING ) {
+		} else if( curop == Opcode.PING ) {
 			webSocketImpl.getWebSocketListener().onWebsocketPing( webSocketImpl, frame );
-		} else if( curop == Framedata.Opcode.PONG ) {
+		} else if( curop == Opcode.PONG ) {
 			webSocketImpl.updateLastPong();
 			webSocketImpl.getWebSocketListener().onWebsocketPong( webSocketImpl, frame );
-		} else if( !frame.isFin() || curop == Framedata.Opcode.CONTINUOUS ) {
-			if( curop != Framedata.Opcode.CONTINUOUS ) {
+		} else if( !frame.isFin() || curop == Opcode.CONTINUOUS ) {
+			if( curop != Opcode.CONTINUOUS ) {
 				if( current_continuous_frame != null )
 					throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "Previous continuous frame sequence not completed." );
 				current_continuous_frame = frame;
@@ -670,7 +672,7 @@ public class Draft_6455 extends Draft {
 				if( current_continuous_frame == null )
 					throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "Continuous frame sequence was not started." );
 				byteBufferList.add( frame.getPayloadData() );
-				if( current_continuous_frame.getOpcode() == Framedata.Opcode.TEXT ) {
+				if( current_continuous_frame.getOpcode() == Opcode.TEXT ) {
 					((FramedataImpl1) current_continuous_frame).setPayload( getPayloadFromByteBufferList() );
 					((FramedataImpl1) current_continuous_frame ).isValid();
 					try {
@@ -678,7 +680,7 @@ public class Draft_6455 extends Draft {
 					} catch ( RuntimeException e ) {
 						webSocketImpl.getWebSocketListener().onWebsocketError( webSocketImpl, e );
 					}
-				} else if( current_continuous_frame.getOpcode() == Framedata.Opcode.BINARY ) {
+				} else if( current_continuous_frame.getOpcode() == Opcode.BINARY ) {
 					((FramedataImpl1) current_continuous_frame).setPayload( getPayloadFromByteBufferList() );
 					((FramedataImpl1) current_continuous_frame ).isValid();
 					try {
@@ -693,24 +695,24 @@ public class Draft_6455 extends Draft {
 				throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "Continuous frame sequence was not started." );
 			}
 			//Check if the whole payload is valid utf8, when the opcode indicates a text
-			if( curop == Framedata.Opcode.TEXT ) {
+			if( curop == Opcode.TEXT ) {
 				if( !Charsetfunctions.isValidUTF8( frame.getPayloadData() ) ) {
 					throw new InvalidDataException( CloseFrame.NO_UTF8 );
 				}
 			}
 			//Checking if the current continuous frame contains a correct payload with the other frames combined
-			if( curop == Framedata.Opcode.CONTINUOUS && current_continuous_frame != null ) {
+			if( curop == Opcode.CONTINUOUS && current_continuous_frame != null ) {
 				byteBufferList.add( frame.getPayloadData() );
 			}
 		} else if( current_continuous_frame != null ) {
 			throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "Continuous frame sequence not completed." );
-		} else if( curop == Framedata.Opcode.TEXT ) {
+		} else if( curop == Opcode.TEXT ) {
 			try {
 				webSocketImpl.getWebSocketListener().onWebsocketMessage( webSocketImpl, Charsetfunctions.stringUtf8( frame.getPayloadData() ) );
 			} catch ( RuntimeException e ) {
 				webSocketImpl.getWebSocketListener().onWebsocketError( webSocketImpl, e );
 			}
-		} else if( curop == Framedata.Opcode.BINARY ) {
+		} else if( curop == Opcode.BINARY ) {
 			try {
 				webSocketImpl.getWebSocketListener().onWebsocketMessage( webSocketImpl, frame.getPayloadData() );
 			} catch ( RuntimeException e ) {

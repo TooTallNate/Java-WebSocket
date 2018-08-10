@@ -96,8 +96,6 @@ public class DefaultExtension implements IExtension {
 
 	@Override
 	public boolean equals( Object o ) {
-		if( this == o ) return true;
-		if( o == null ) return false;
-		return getClass() == o.getClass();
+		return this == o || o != null && getClass() == o.getClass();
 	}
 }

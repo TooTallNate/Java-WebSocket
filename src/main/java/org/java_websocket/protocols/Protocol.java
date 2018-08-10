@@ -25,12 +25,17 @@
 
 package org.java_websocket.protocols;
 
+import java.util.regex.Pattern;
+
 /**
  * Class which represents the protocol used as Sec-WebSocket-Protocol
  *
  * @since 1.3.7
  */
 public class Protocol implements IProtocol {
+
+	private static final Pattern COMPILE = Pattern.compile(" ");
+	private static final Pattern PATTERN = Pattern.compile(",");
 
 	/**
 	 * Attribute for the provided protocol
@@ -51,8 +56,8 @@ public class Protocol implements IProtocol {
 
 	@Override
 	public boolean acceptProvidedProtocol( String inputProtocolHeader ) {
-		String protocolHeader = inputProtocolHeader.replaceAll( " ", "" );
-		String[] headers = protocolHeader.split( "," );
+		String protocolHeader = COMPILE.matcher(inputProtocolHeader).replaceAll("");
+		String[] headers = PATTERN.split(protocolHeader);
 		for( String header : headers ) {
 			if( providedProtocol.equals( header ) ) {
 				return true;
