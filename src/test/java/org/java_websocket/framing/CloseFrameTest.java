@@ -138,12 +138,6 @@ public class CloseFrameTest {
         } catch (InvalidDataException e) {
             //fine
         }
-        frame.setCode(CloseFrame.NO_UTF8);
-        try {
-            frame.isValid();
-        } catch (InvalidDataException e) {
-            fail("InvalidDataException should not be thrown");
-        }
         frame.setCode(CloseFrame.POLICY_VALIDATION);
         try {
             frame.isValid();
