@@ -170,7 +170,6 @@ public class ChatClient extends JFrame implements ActionListener {
 	}
 
 	public static void main( String[] args ) {
-		WebSocketImpl.DEBUG = true;
 		String location;
 		if( args.length != 0 ) {
 			location = args[ 0 ];

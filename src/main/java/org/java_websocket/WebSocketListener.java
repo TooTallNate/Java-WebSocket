@@ -112,17 +112,6 @@ public interface WebSocketListener {
 	void onWebsocketMessage( WebSocket conn, ByteBuffer blob );
 
 	/**
-	 * Called when a frame fragment has been recieved
-	 *
-	 * This method will be removed in a future version since the lib will also call the respective onWebsocketMessage method
-	 * @param conn
-	 *            The <tt>WebSocket</tt> instance this event is occurring on.
-	 * @param frame The fragmented frame
-	 */
-	@Deprecated
-	void onWebsocketMessageFragment( WebSocket conn, Framedata frame );
-
-	/**
 	 * Called after <var>onHandshakeReceived</var> returns <var>true</var>.
 	 * Indicates that a complete WebSocket connection has been established,
 	 * and we are ready to send/receive data.

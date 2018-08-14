@@ -38,7 +38,6 @@ import java.util.Map;
 public class CustomHeaderClientExample {
 
 	public static void main( String[] args ) throws URISyntaxException, InterruptedException {
-		WebSocketImpl.DEBUG = true;
 		Map<String,String> httpHeaders = new HashMap<String, String>();
 		httpHeaders.put( "Cookie", "test" );
 		ExampleClient c = new ExampleClient( new URI( "ws://localhost:8887" ), httpHeaders);

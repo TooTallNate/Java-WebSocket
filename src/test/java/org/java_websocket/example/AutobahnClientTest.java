@@ -83,11 +83,9 @@ public class AutobahnClientTest extends WebSocketClient {
 					if( nextline != null ) {
 						line = nextline;
 						nextline = null;
-						WebSocketImpl.DEBUG = false;
 					} else {
 						System.out.print( ">" );
 						line = sysin.readLine();
-						WebSocketImpl.DEBUG = true;
 					}
 					if( line.equals( "l" ) ) {
 						line = perviousline;
@@ -112,7 +110,6 @@ public class AutobahnClientTest extends WebSocketClient {
 						uri = URI.create( serverlocation + "/runCase?case=" + spl[ 1 ] + "&agent=" + clientname );
 
 					} else if( line.startsWith( "u" ) ) {
-						WebSocketImpl.DEBUG = false;
 						uri = URI.create( serverlocation + "/updateReports?agent=" + clientname );
 					} else if( line.startsWith( "d" ) ) {
 						try {
@@ -178,13 +175,6 @@ public class AutobahnClientTest extends WebSocketClient {
 	@Override
 	public void onClose( int code, String reason, boolean remote ) {
 		System.out.println( "Closed: " + code + " " + reason );
-	}
-
-	@Override
-	public void onWebsocketMessageFragment( WebSocket conn, Framedata frame ) {
-		FramedataImpl1 builder = (FramedataImpl1) frame;
-		builder.setTransferemasked( true );
-		getConnection().sendFrame( frame );
 	}
 
 }

@@ -25,6 +25,8 @@
 
 package org.java_websocket.drafts;
 
+import org.java_websocket.enums.CloseHandshakeType;
+import org.java_websocket.enums.HandshakeState;
 import org.java_websocket.extensions.DefaultExtension;
 import org.java_websocket.extensions.IExtension;
 import org.java_websocket.framing.BinaryFrame;
@@ -172,7 +174,7 @@ public class Draft_6455Test {
 	@Test
 	public void testGetCloseHandshakeType() throws Exception {
 		Draft_6455 draft_6455 = new Draft_6455();
-		assertEquals( Draft.CloseHandshakeType.TWOWAY, draft_6455.getCloseHandshakeType() );
+		assertEquals( CloseHandshakeType.TWOWAY, draft_6455.getCloseHandshakeType() );
 	}
 
 	@Test
@@ -278,28 +280,28 @@ public class Draft_6455Test {
 	@Test
 	public void acceptHandshakeAsServer() throws Exception {
 		Draft_6455 draft_6455 = new Draft_6455();
-		assertEquals( Draft.HandshakeState.MATCHED, draft_6455.acceptHandshakeAsServer( handshakedata ) );
-		assertEquals( Draft.HandshakeState.NOT_MATCHED, draft_6455.acceptHandshakeAsServer( handshakedataProtocol ) );
-		assertEquals( Draft.HandshakeState.MATCHED, draft_6455.acceptHandshakeAsServer( handshakedataExtension ) );
-		assertEquals( Draft.HandshakeState.NOT_MATCHED, draft_6455.acceptHandshakeAsServer( handshakedataProtocolExtension ) );
+		assertEquals( HandshakeState.MATCHED, draft_6455.acceptHandshakeAsServer( handshakedata ) );
+		assertEquals( HandshakeState.NOT_MATCHED, draft_6455.acceptHandshakeAsServer( handshakedataProtocol ) );
+		assertEquals( HandshakeState.MATCHED, draft_6455.acceptHandshakeAsServer( handshakedataExtension ) );
+		assertEquals( HandshakeState.NOT_MATCHED, draft_6455.acceptHandshakeAsServer( handshakedataProtocolExtension ) );
 		draft_6455 = new Draft_6455( new TestExtension() );
-		assertEquals( Draft.HandshakeState.MATCHED, draft_6455.acceptHandshakeAsServer( handshakedata ) );
-		assertEquals( Draft.HandshakeState.NOT_MATCHED, draft_6455.acceptHandshakeAsServer( handshakedataProtocol ) );
-		assertEquals( Draft.HandshakeState.MATCHED, draft_6455.acceptHandshakeAsServer( handshakedataExtension ) );
-		assertEquals( Draft.HandshakeState.NOT_MATCHED, draft_6455.acceptHandshakeAsServer( handshakedataProtocolExtension ) );
+		assertEquals( HandshakeState.MATCHED, draft_6455.acceptHandshakeAsServer( handshakedata ) );
+		assertEquals( HandshakeState.NOT_MATCHED, draft_6455.acceptHandshakeAsServer( handshakedataProtocol ) );
+		assertEquals( HandshakeState.MATCHED, draft_6455.acceptHandshakeAsServer( handshakedataExtension ) );
+		assertEquals( HandshakeState.NOT_MATCHED, draft_6455.acceptHandshakeAsServer( handshakedataProtocolExtension ) );
 		draft_6455 = new Draft_6455( Collections.<IExtension>emptyList(), Collections.<IProtocol>singletonList( new Protocol( "chat" ) ) );
-		assertEquals( Draft.HandshakeState.NOT_MATCHED, draft_6455.acceptHandshakeAsServer( handshakedata ) );
-		assertEquals( Draft.HandshakeState.MATCHED, draft_6455.acceptHandshakeAsServer( handshakedataProtocol ) );
-		assertEquals( Draft.HandshakeState.NOT_MATCHED, draft_6455.acceptHandshakeAsServer( handshakedataExtension ) );
-		assertEquals( Draft.HandshakeState.MATCHED, draft_6455.acceptHandshakeAsServer( handshakedataProtocolExtension ) );
+		assertEquals( HandshakeState.NOT_MATCHED, draft_6455.acceptHandshakeAsServer( handshakedata ) );
+		assertEquals( HandshakeState.MATCHED, draft_6455.acceptHandshakeAsServer( handshakedataProtocol ) );
+		assertEquals( HandshakeState.NOT_MATCHED, draft_6455.acceptHandshakeAsServer( handshakedataExtension ) );
+		assertEquals( HandshakeState.MATCHED, draft_6455.acceptHandshakeAsServer( handshakedataProtocolExtension ) );
 		ArrayList<IProtocol> protocols = new ArrayList<IProtocol>();
 		protocols.add( new Protocol( "chat" ) );
 		protocols.add( new Protocol( "" ) );
 		draft_6455 = new Draft_6455( Collections.<IExtension>emptyList(), protocols );
-		assertEquals( Draft.HandshakeState.MATCHED, draft_6455.acceptHandshakeAsServer( handshakedata ) );
-		assertEquals( Draft.HandshakeState.MATCHED, draft_6455.acceptHandshakeAsServer( handshakedataProtocol ) );
-		assertEquals( Draft.HandshakeState.MATCHED, draft_6455.acceptHandshakeAsServer( handshakedataExtension ) );
-		assertEquals( Draft.HandshakeState.MATCHED, draft_6455.acceptHandshakeAsServer( handshakedataProtocolExtension ) );
+		assertEquals( HandshakeState.MATCHED, draft_6455.acceptHandshakeAsServer( handshakedata ) );
+		assertEquals( HandshakeState.MATCHED, draft_6455.acceptHandshakeAsServer( handshakedataProtocol ) );
+		assertEquals( HandshakeState.MATCHED, draft_6455.acceptHandshakeAsServer( handshakedataExtension ) );
+		assertEquals( HandshakeState.MATCHED, draft_6455.acceptHandshakeAsServer( handshakedataProtocolExtension ) );
 	}
 
 	@Test
@@ -308,31 +310,31 @@ public class Draft_6455Test {
 		HandshakeImpl1Client request = new HandshakeImpl1Client();
 		Draft_6455 draft_6455 = new Draft_6455();
 		response.put( "Upgrade", "websocket" );
-		assertEquals( Draft.HandshakeState.NOT_MATCHED, draft_6455.acceptHandshakeAsClient( request, response ) );
+		assertEquals( HandshakeState.NOT_MATCHED, draft_6455.acceptHandshakeAsClient( request, response ) );
 		response.put( "Connection", "upgrade" );
-		assertEquals( Draft.HandshakeState.NOT_MATCHED, draft_6455.acceptHandshakeAsClient( request, response ) );
+		assertEquals( HandshakeState.NOT_MATCHED, draft_6455.acceptHandshakeAsClient( request, response ) );
 		response.put( "Sec-WebSocket-Version", "13" );
-		assertEquals( Draft.HandshakeState.NOT_MATCHED, draft_6455.acceptHandshakeAsClient( request, response ) );
+		assertEquals( HandshakeState.NOT_MATCHED, draft_6455.acceptHandshakeAsClient( request, response ) );
 		request.put( "Sec-WebSocket-Key", "dGhlIHNhbXBsZSBub25jZQ==" );
-		assertEquals( Draft.HandshakeState.NOT_MATCHED, draft_6455.acceptHandshakeAsClient( request, response ) );
+		assertEquals( HandshakeState.NOT_MATCHED, draft_6455.acceptHandshakeAsClient( request, response ) );
 		response.put( "Sec-WebSocket-Accept", "s3pPLMBiTxaQ9kYGzzhZRbK+xOo=" );
-		assertEquals( Draft.HandshakeState.MATCHED, draft_6455.acceptHandshakeAsClient( request, response ) );
+		assertEquals( HandshakeState.MATCHED, draft_6455.acceptHandshakeAsClient( request, response ) );
 		response.put( "Sec-WebSocket-Protocol", "chat" );
-		assertEquals( Draft.HandshakeState.NOT_MATCHED, draft_6455.acceptHandshakeAsClient( request, response ) );
+		assertEquals( HandshakeState.NOT_MATCHED, draft_6455.acceptHandshakeAsClient( request, response ) );
 		draft_6455 = new Draft_6455( Collections.<IExtension>emptyList(), Collections.<IProtocol>singletonList( new Protocol( "chat" ) ) );
-		assertEquals( Draft.HandshakeState.MATCHED, draft_6455.acceptHandshakeAsClient( request, response ) );
+		assertEquals( HandshakeState.MATCHED, draft_6455.acceptHandshakeAsClient( request, response ) );
 		ArrayList<IProtocol> protocols = new ArrayList<IProtocol>();
 		protocols.add( new Protocol( "" ) );
 		protocols.add( new Protocol( "chat" ) );
 		draft_6455 = new Draft_6455( Collections.<IExtension>emptyList(), protocols );
-		assertEquals( Draft.HandshakeState.MATCHED, draft_6455.acceptHandshakeAsClient( request, response ) );
+		assertEquals( HandshakeState.MATCHED, draft_6455.acceptHandshakeAsClient( request, response ) );
 		draft_6455 = new Draft_6455();
-		assertEquals( Draft.HandshakeState.NOT_MATCHED, draft_6455.acceptHandshakeAsClient( request, response ) );
+		assertEquals( HandshakeState.NOT_MATCHED, draft_6455.acceptHandshakeAsClient( request, response ) );
 		protocols.clear();
 		protocols.add( new Protocol( "chat3" ) );
 		protocols.add( new Protocol( "3chat" ) );
 		draft_6455 = new Draft_6455( Collections.<IExtension>emptyList(), protocols );
-		assertEquals( Draft.HandshakeState.NOT_MATCHED, draft_6455.acceptHandshakeAsClient( request, response ) );
+		assertEquals( HandshakeState.NOT_MATCHED, draft_6455.acceptHandshakeAsClient( request, response ) );
 	}
 
 	@Test

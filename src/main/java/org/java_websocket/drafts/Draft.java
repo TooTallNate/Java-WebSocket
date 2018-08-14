@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Locale;
 
 import org.java_websocket.WebSocketImpl;
+import org.java_websocket.enums.CloseHandshakeType;
+import org.java_websocket.enums.HandshakeState;
 import org.java_websocket.enums.Opcode;
 import org.java_websocket.enums.Role;
 import org.java_websocket.exceptions.IncompleteHandshakeException;
@@ -53,22 +55,6 @@ import org.java_websocket.util.Charsetfunctions;
  * Base class for everything of a websocket specification which is not common such as the way the handshake is read or frames are transfered.
  **/
 public abstract class Draft {
-
-	/**
-	 * Enum which represents the states a handshake may be in
-	 */
-	public enum HandshakeState {
-		/** Handshake matched this Draft successfully */
-		MATCHED,
-		/** Handshake is does not match this Draft */
-		NOT_MATCHED
-	}
-	/**
-	 * Enum which represents type of handshake is required for a close
-	 */
-	public enum CloseHandshakeType {
-		NONE, ONEWAY, TWOWAY
-	}
 
 	/** In some cases the handshake will be parsed different depending on whether */
 	protected Role role = null;
@@ -158,7 +144,7 @@ public abstract class Draft {
 
 	public abstract HandshakeState acceptHandshakeAsClient( ClientHandshake request, ServerHandshake response ) throws InvalidHandshakeException;
 
-	public abstract HandshakeState acceptHandshakeAsServer( ClientHandshake handshakedata ) throws InvalidHandshakeException;
+	public abstract HandshakeState acceptHandshakeAsServer(ClientHandshake handshakedata ) throws InvalidHandshakeException;
 
 	protected boolean basicAccept( Handshakedata handshakedata ) {
 		return handshakedata.getFieldValue( "Upgrade" ).equalsIgnoreCase( "websocket" ) && handshakedata.getFieldValue( "Connection" ).toLowerCase( Locale.ENGLISH ).contains( "upgrade" );

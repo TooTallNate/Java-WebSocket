@@ -53,8 +53,6 @@ import java.security.spec.PKCS8EncodedKeySpec;
 public class SSLServerLetsEncryptExample {
 
 	public static void main( String[] args ) throws Exception {
-		WebSocketImpl.DEBUG = true;
-
 		ChatServer chatserver = new ChatServer( 8887 );
 
 		SSLContext context = getContext();

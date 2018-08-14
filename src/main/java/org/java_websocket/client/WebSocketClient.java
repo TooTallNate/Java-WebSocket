@@ -498,11 +498,6 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 		onMessage( blob );
 	}
 
-	@Override
-	public void onWebsocketMessageFragment( WebSocket conn, Framedata frame ) {
-		onFragment( frame );
-	}
-
 	/**
 	 * Calls subclass' implementation of <var>onOpen</var>.
 	 */
@@ -640,16 +635,6 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 		//To overwrite
 	}
 
-	/**
-	 * Callback for fragmented frames
-	 * @see WebSocket#sendFragmentedFrame(org.java_websocket.enums.Opcode, ByteBuffer, boolean)
-	 * @param frame The fragmented frame
-	 * @deprecated
-	 */
-	@Deprecated
-	public void onFragment( Framedata frame ) {
-		//To overwrite
-	}
 
 	private class WebsocketWriteThread implements Runnable {
 		@Override
@@ -737,12 +722,6 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	@Override
 	public boolean isClosing() {
 		return engine.isClosing();
-	}
-
-	@Override
-	@Deprecated
-	public boolean isConnecting() {
-		return engine.isConnecting();
 	}
 
 	@Override

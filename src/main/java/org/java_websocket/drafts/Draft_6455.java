@@ -26,9 +26,7 @@
 package org.java_websocket.drafts;
 
 import org.java_websocket.WebSocketImpl;
-import org.java_websocket.enums.Opcode;
-import org.java_websocket.enums.ReadyState;
-import org.java_websocket.enums.Role;
+import org.java_websocket.enums.*;
 import org.java_websocket.exceptions.*;
 import org.java_websocket.extensions.*;
 import org.java_websocket.framing.*;
@@ -37,6 +35,8 @@ import org.java_websocket.protocols.IProtocol;
 import org.java_websocket.protocols.Protocol;
 import org.java_websocket.util.*;
 import org.java_websocket.util.Base64;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -50,6 +50,13 @@ import java.util.*;
  * This is the recommended class for your websocket connection
  */
 public class Draft_6455 extends Draft {
+
+	/**
+	 * Logger instance
+	 *
+	 * @since 1.4.0
+	 */
+	private static final Logger log = LoggerFactory.getLogger(Draft_6455.class);
 
 	/**
 	 * Attribute for the used extension in this draft
@@ -152,7 +159,7 @@ public class Draft_6455 extends Draft {
 	public HandshakeState acceptHandshakeAsServer( ClientHandshake handshakedata ) throws InvalidHandshakeException {
 		int v = readVersion( handshakedata );
 		if( v != 13 ) {
-			logDebug("acceptHandshakeAsServer - Wrong websocket version.");
+			log.debug("acceptHandshakeAsServer - Wrong websocket version.");
 			return HandshakeState.NOT_MATCHED;
 		}
 		HandshakeState extensionState = HandshakeState.NOT_MATCHED;
@@ -161,7 +168,7 @@ public class Draft_6455 extends Draft {
 			if( knownExtension.acceptProvidedExtensionAsServer( requestedExtension ) ) {
 				extension = knownExtension;
 				extensionState = HandshakeState.MATCHED;
-				logDebug("acceptHandshakeAsServer - Matching extension found: " + extension.toString());
+				log.debug("acceptHandshakeAsServer - Matching extension found: " + extension.toString());
 				break;
 			}
 		}
@@ -171,25 +178,25 @@ public class Draft_6455 extends Draft {
 			if( knownProtocol.acceptProvidedProtocol( requestedProtocol ) ) {
 				protocol = knownProtocol;
 				protocolState = HandshakeState.MATCHED;
-				logDebug("acceptHandshakeAsServer - Matching protocol found: " + protocol.toString());
+				log.debug("acceptHandshakeAsServer - Matching protocol found: " + protocol.toString());
 				break;
 			}
 		}
 		if (protocolState == HandshakeState.MATCHED && extensionState == HandshakeState.MATCHED) {
 			return HandshakeState.MATCHED;
 		}
-		logDebug("acceptHandshakeAsServer - No matching extension or protocol found.");
+		log.debug("acceptHandshakeAsServer - No matching extension or protocol found.");
 		return HandshakeState.NOT_MATCHED;
 	}
 
 	@Override
 	public HandshakeState acceptHandshakeAsClient( ClientHandshake request, ServerHandshake response ) throws InvalidHandshakeException {
 		if (! basicAccept( response )) {
-			logDebug("acceptHandshakeAsClient - Missing/wrong upgrade or connection in handshake.");
+			log.debug("acceptHandshakeAsClient - Missing/wrong upgrade or connection in handshake.");
 			return HandshakeState.NOT_MATCHED;
 		}
 		if( !request.hasFieldValue( "Sec-WebSocket-Key" ) || !response.hasFieldValue( "Sec-WebSocket-Accept" ) ) {
-			logDebug("acceptHandshakeAsClient - Missing Sec-WebSocket-Key or Sec-WebSocket-Accept");
+			log.debug("acceptHandshakeAsClient - Missing Sec-WebSocket-Key or Sec-WebSocket-Accept");
 			return HandshakeState.NOT_MATCHED;
 		}
 
@@ -198,7 +205,7 @@ public class Draft_6455 extends Draft {
 		seckey_challenge = generateFinalKey( seckey_challenge );
 
 		if( !seckey_challenge.equals( seckey_answere ) ) {
-			logDebug("acceptHandshakeAsClient - Wrong key for Sec-WebSocket-Key.");
+			log.debug("acceptHandshakeAsClient - Wrong key for Sec-WebSocket-Key.");
 			return HandshakeState.NOT_MATCHED;
 		}
 
@@ -208,7 +215,7 @@ public class Draft_6455 extends Draft {
 			if( knownExtension.acceptProvidedExtensionAsClient( requestedExtension ) ) {
 				extension = knownExtension;
 				extensionState = HandshakeState.MATCHED;
-				logDebug("acceptHandshakeAsClient - Matching extension found: " + extension.toString());
+				log.debug("acceptHandshakeAsClient - Matching extension found: " + extension.toString());
 				break;
 			}
 		}
@@ -218,14 +225,14 @@ public class Draft_6455 extends Draft {
 			if( knownProtocol.acceptProvidedProtocol( requestedProtocol ) ) {
 				protocol = knownProtocol;
 				protocolState = HandshakeState.MATCHED;
-				logDebug("acceptHandshakeAsClient - Matching protocol found: " + protocol.toString());
+				log.debug("acceptHandshakeAsClient - Matching protocol found: " + protocol.toString());
 				break;
 			}
 		}
 		if (protocolState == HandshakeState.MATCHED && extensionState == HandshakeState.MATCHED) {
 			return HandshakeState.MATCHED;
 		}
-		logDebug("acceptHandshakeAsClient - No matching extension or protocol found.");
+		log.debug("acceptHandshakeAsClient - No matching extension or protocol found.");
 		return HandshakeState.NOT_MATCHED;
 	}
 
@@ -336,8 +343,7 @@ public class Draft_6455 extends Draft {
 	@Override
 	public ByteBuffer createBinaryFrame( Framedata framedata ) {
 		getExtension().encodeFrame( framedata );
-		if( WebSocketImpl.DEBUG )
-			System.out.println( "afterEnconding(" + framedata.getPayloadData().remaining() + "): {" + ( framedata.getPayloadData().remaining() > 1000 ? "too big to display" : new String( framedata.getPayloadData().array() ) ) + '}' );
+		log.debug( "afterEnconding(" + framedata.getPayloadData().remaining() + "): {" + ( framedata.getPayloadData().remaining() > 1000 ? "too big to display" : new String( framedata.getPayloadData().array() ) ) + '}' );
 		return createByteBufferFromFramedata( framedata );
 	}
 
@@ -384,8 +390,10 @@ public class Draft_6455 extends Draft {
 	public Framedata translateSingleFrame( ByteBuffer buffer ) throws IncompleteException, InvalidDataException {
 		int maxpacketsize = buffer.remaining();
 		int realpacketsize = 2;
-		if( maxpacketsize < realpacketsize )
+		if( maxpacketsize < realpacketsize ) {
+			log.debug( "Incomplete frame" );
 			throw new IncompleteException( realpacketsize );
+		}
 		byte b1 = buffer.get( /*0*/ );
 		boolean FIN = b1 >> 8 != 0;
 		boolean rsv1 = false;
@@ -406,27 +414,34 @@ public class Draft_6455 extends Draft {
 		Opcode optcode = toOpcode( ( byte ) ( b1 & 15 ) );
 
 		if( !( payloadlength >= 0 && payloadlength <= 125 ) ) {
+
 			if( optcode == Opcode.PING || optcode == Opcode.PONG || optcode == Opcode.CLOSING ) {
+				log.debug( "Invalid frame: more than 125 octets" );
 				throw new InvalidFrameException( "more than 125 octets" );
 			}
 			if( payloadlength == 126 ) {
 				realpacketsize += 2; // additional length bytes
-				if( maxpacketsize < realpacketsize )
+				if( maxpacketsize < realpacketsize ) {
+					log.debug( "Incomplete frame" );
 					throw new IncompleteException( realpacketsize );
+				}
 				byte[] sizebytes = new byte[3];
 				sizebytes[1] = buffer.get( /*1 + 1*/ );
 				sizebytes[2] = buffer.get( /*1 + 2*/ );
 				payloadlength = new BigInteger( sizebytes ).intValue();
 			} else {
 				realpacketsize += 8; // additional length bytes
-				if( maxpacketsize < realpacketsize )
+				if( maxpacketsize < realpacketsize ) {
+					log.debug( "Incomplete frame" );
 					throw new IncompleteException( realpacketsize );
+				}
 				byte[] bytes = new byte[8];
 				for( int i = 0; i < 8; i++ ) {
 					bytes[i] = buffer.get( /*1 + i*/ );
 				}
 				long length = new BigInteger( bytes ).longValue();
 				if( length > Integer.MAX_VALUE ) {
+					log.debug( "Limit exedeed: Payloadsize is to big..." );
 					throw new LimitExedeedException( "Payloadsize is to big..." );
 				} else {
 					payloadlength = ( int ) length;
@@ -463,8 +478,7 @@ public class Draft_6455 extends Draft {
 		frame.setPayload( payload );
 		getExtension().isFrameValid(frame);
 		getExtension().decodeFrame(frame);
-		if( WebSocketImpl.DEBUG )
-			System.out.println( "afterDecoding(" + frame.getPayloadData().remaining() + "): {" + ( frame.getPayloadData().remaining() > 1000 ? "too big to display" : new String( frame.getPayloadData().array() ) ) + '}' );
+		log.debug( "afterDecoding(" + frame.getPayloadData().remaining() + "): {" + ( frame.getPayloadData().remaining() > 1000 ? "too big to display" : new String( frame.getPayloadData().array() ) ) + '}' );
 		frame.isValid();
 		return frame;
 	}
@@ -614,7 +628,6 @@ public class Draft_6455 extends Draft {
 		throw new IllegalArgumentException( "Don't know how to handle " + opcode.toString() );
 	}
 
-
 	private Opcode toOpcode( byte opcode ) throws InvalidFrameException {
 		switch(opcode) {
 			case 0:
@@ -664,13 +677,17 @@ public class Draft_6455 extends Draft {
 			webSocketImpl.getWebSocketListener().onWebsocketPong( webSocketImpl, frame );
 		} else if( !frame.isFin() || curop == Opcode.CONTINUOUS ) {
 			if( curop != Opcode.CONTINUOUS ) {
-				if( current_continuous_frame != null )
+				if( current_continuous_frame != null ) {
+					log.debug( "Protocol error: Previous continuous frame sequence not completed." );
 					throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "Previous continuous frame sequence not completed." );
+				}
 				current_continuous_frame = frame;
 				byteBufferList.add( frame.getPayloadData() );
 			} else if( frame.isFin() ) {
-				if( current_continuous_frame == null )
+				if( current_continuous_frame == null ) {
+					log.debug( "Protocol error: Previous continuous frame sequence not completed." );
 					throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "Continuous frame sequence was not started." );
+				}
 				byteBufferList.add( frame.getPayloadData() );
 				if( current_continuous_frame.getOpcode() == Opcode.TEXT ) {
 					((FramedataImpl1) current_continuous_frame).setPayload( getPayloadFromByteBufferList() );
@@ -678,6 +695,7 @@ public class Draft_6455 extends Draft {
 					try {
 						webSocketImpl.getWebSocketListener().onWebsocketMessage( webSocketImpl, Charsetfunctions.stringUtf8( current_continuous_frame.getPayloadData() ) );
 					} catch ( RuntimeException e ) {
+						log.error( "Runtime exception during onWebsocketMessage", e );
 						webSocketImpl.getWebSocketListener().onWebsocketError( webSocketImpl, e );
 					}
 				} else if( current_continuous_frame.getOpcode() == Opcode.BINARY ) {
@@ -686,17 +704,20 @@ public class Draft_6455 extends Draft {
 					try {
 						webSocketImpl.getWebSocketListener().onWebsocketMessage( webSocketImpl, current_continuous_frame.getPayloadData() );
 					} catch ( RuntimeException e ) {
+						log.error( "Runtime exception during onWebsocketMessage", e );
 						webSocketImpl.getWebSocketListener().onWebsocketError( webSocketImpl, e );
 					}
 				}
 				current_continuous_frame = null;
 				byteBufferList.clear();
 			} else if( current_continuous_frame == null ) {
+				log.error( "Protocol error: Continuous frame sequence was not started." );
 				throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "Continuous frame sequence was not started." );
 			}
 			//Check if the whole payload is valid utf8, when the opcode indicates a text
 			if( curop == Opcode.TEXT ) {
 				if( !Charsetfunctions.isValidUTF8( frame.getPayloadData() ) ) {
+					log.error( "Protocol error: Payload is not UTF8" );
 					throw new InvalidDataException( CloseFrame.NO_UTF8 );
 				}
 			}
@@ -705,27 +726,31 @@ public class Draft_6455 extends Draft {
 				byteBufferList.add( frame.getPayloadData() );
 			}
 		} else if( current_continuous_frame != null ) {
+			log.error( "Protocol error: Continuous frame sequence not completed." );
 			throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "Continuous frame sequence not completed." );
 		} else if( curop == Opcode.TEXT ) {
 			try {
 				webSocketImpl.getWebSocketListener().onWebsocketMessage( webSocketImpl, Charsetfunctions.stringUtf8( frame.getPayloadData() ) );
 			} catch ( RuntimeException e ) {
+				log.error( "Runtime exception during onWebsocketMessage", e );
 				webSocketImpl.getWebSocketListener().onWebsocketError( webSocketImpl, e );
 			}
 		} else if( curop == Opcode.BINARY ) {
 			try {
 				webSocketImpl.getWebSocketListener().onWebsocketMessage( webSocketImpl, frame.getPayloadData() );
 			} catch ( RuntimeException e ) {
+				log.error( "Runtime exception during onWebsocketMessage", e );
 				webSocketImpl.getWebSocketListener().onWebsocketError( webSocketImpl, e );
 			}
 		} else {
+			log.error( "non control or continious frame expected");
 			throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "non control or continious frame expected" );
 		}
 	}
 
 	@Override
-	public Draft.CloseHandshakeType getCloseHandshakeType() {
-		return Draft.CloseHandshakeType.TWOWAY;
+	public CloseHandshakeType getCloseHandshakeType() {
+		return CloseHandshakeType.TWOWAY;
 	}
 
 	@Override
@@ -767,6 +792,7 @@ public class Draft_6455 extends Draft {
 			totalSize +=buffer.limit();
 		}
 		if (totalSize > Integer.MAX_VALUE) {
+			log.debug( "Payloadsize is to big...");
 			throw new LimitExedeedException( "Payloadsize is to big..." );
 		}
 		ByteBuffer resultingByteBuffer = ByteBuffer.allocate( (int) totalSize );
@@ -775,11 +801,5 @@ public class Draft_6455 extends Draft {
 		}
 		resultingByteBuffer.flip();
 		return resultingByteBuffer;
-	}
-
-	private static void logDebug(Object object) {
-		if (WebSocketImpl.DEBUG) {
-			System.out.println(object);
-		}
 	}
 }

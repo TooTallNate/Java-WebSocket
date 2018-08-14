@@ -24,6 +24,9 @@
  */
 package org.java_websocket;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLEngineResult;
 import javax.net.ssl.SSLEngineResult.HandshakeStatus;
@@ -51,7 +54,14 @@ import java.util.concurrent.Future;
  */
 public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 
-  /**
+    /**
+     * Logger instance
+     *
+     * @since 1.4.0
+     */
+    private static final Logger log = LoggerFactory.getLogger(SSLSocketChannel2.class);
+
+    /**
      * This object is used to feed the {@link SSLEngine}'s wrap and unwrap methods during the handshake phase.
      **/
     protected static ByteBuffer emptybuffer = ByteBuffer.allocate( 0 );
@@ -222,8 +232,14 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
             if( inCrypt.capacity() != netBufferMax )
                 inCrypt = ByteBuffer.allocate( netBufferMax );
         }
+        if (inData.remaining() != 0) {
+            log.debug(new String( inData.array(), inData.position(), inData.remaining()));
+        }
         inData.rewind();
         inData.flip();
+        if (inCrypt.remaining() != 0) {
+            log.debug(new String( inCrypt.array(), inCrypt.position(), inCrypt.remaining()));
+        }
         inCrypt.rewind();
         inCrypt.flip();
         outCrypt.rewind();

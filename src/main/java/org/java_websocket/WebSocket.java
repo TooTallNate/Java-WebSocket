@@ -157,14 +157,6 @@ public interface WebSocket {
 	InetSocketAddress getLocalSocketAddress();
 
 	/**
-	 * Is the websocket in the state CONNECTING
-	 * @return state equals ReadyState.CONNECTING
-	 * @deprecated
-	 */
-	@Deprecated
-	boolean isConnecting();
-
-	/**
 	 * Is the websocket in the state OPEN
 	 * @return state equals ReadyState.OPEN
 	 */
