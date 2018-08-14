@@ -199,7 +199,7 @@ public class WebSocketImpl implements WebSocket {
 	 */
 	public void decode( ByteBuffer socketBuffer ) {
 		assert ( socketBuffer.hasRemaining() );
-		log.debug( "process({}): ({})", socketBuffer.remaining(),  ( socketBuffer.remaining() > 1000 ? "too big to display" : new String( socketBuffer.array(), socketBuffer.position(), socketBuffer.remaining() ) ));
+		log.trace( "process({}): ({})", socketBuffer.remaining(),  ( socketBuffer.remaining() > 1000 ? "too big to display" : new String( socketBuffer.array(), socketBuffer.position(), socketBuffer.remaining() ) ));
 
 		if( getReadyState() != ReadyState.NOT_YET_CONNECTED ) {
 			if( getReadyState() == ReadyState.OPEN ) {
@@ -251,7 +251,7 @@ public class WebSocketImpl implements WebSocket {
 								socketBuffer.reset();
 								Handshakedata tmphandshake = d.translateHandshake( socketBuffer );
 								if( !( tmphandshake instanceof ClientHandshake ) ) {
-									log.debug("Closing due to wrong handshake");
+									log.trace("Closing due to wrong handshake");
 									closeConnectionDueToWrongHandshake( new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "wrong http function" ) );
 									return false;
 								}
@@ -263,7 +263,7 @@ public class WebSocketImpl implements WebSocket {
 									try {
 										response = wsl.onWebsocketHandshakeReceivedAsServer( this, d, handshake );
 									} catch ( InvalidDataException e ) {
-										log.debug("Closing due to wrong handshake. Possible handshake rejection: ", e);
+										log.trace("Closing due to wrong handshake. Possible handshake rejection: ", e);
 										closeConnectionDueToWrongHandshake( e );
 										return false;
 									} catch ( RuntimeException e ) {
@@ -282,7 +282,7 @@ public class WebSocketImpl implements WebSocket {
 							}
 						}
 						if( draft == null ) {
-							log.debug("Closing due to protocol error: no draft matches");
+							log.trace("Closing due to protocol error: no draft matches");
 							closeConnectionDueToWrongHandshake( new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "no draft matches" ) );
 						}
 						return false;
@@ -290,7 +290,7 @@ public class WebSocketImpl implements WebSocket {
 						// special case for multiple step handshakes
 						Handshakedata tmphandshake = draft.translateHandshake( socketBuffer );
 						if( !( tmphandshake instanceof ClientHandshake ) ) {
-							log.debug("Closing due to protocol error: wrong http function");
+							log.trace("Closing due to protocol error: wrong http function");
 							flushAndClose( CloseFrame.PROTOCOL_ERROR, "wrong http function", false );
 							return false;
 						}
@@ -301,7 +301,7 @@ public class WebSocketImpl implements WebSocket {
 							open( handshake );
 							return true;
 						} else {
-							log.debug("Closing due to protocol error: the handshake did finally not match");
+							log.trace("Closing due to protocol error: the handshake did finally not match");
 							close( CloseFrame.PROTOCOL_ERROR, "the handshake did finally not match" );
 						}
 						return false;
@@ -310,7 +310,7 @@ public class WebSocketImpl implements WebSocket {
 					draft.setParseMode( role );
 					Handshakedata tmphandshake = draft.translateHandshake( socketBuffer );
 					if( !( tmphandshake instanceof ServerHandshake ) ) {
-						log.debug("Closing due to protocol error: wrong http function");
+						log.trace("Closing due to protocol error: wrong http function");
 						flushAndClose( CloseFrame.PROTOCOL_ERROR, "wrong http function", false );
 						return false;
 					}
@@ -320,7 +320,7 @@ public class WebSocketImpl implements WebSocket {
 						try {
 							wsl.onWebsocketHandshakeReceivedAsClient( this, handshakerequest, handshake );
 						} catch ( InvalidDataException e ) {
-							log.debug("Closing due to invalid data exception. Possible handshake rejection: ", e);
+							log.trace("Closing due to invalid data exception. Possible handshake rejection: ", e);
 							flushAndClose( e.getCloseCode(), e.getMessage(), false );
 							return false;
 						} catch ( RuntimeException e ) {
@@ -332,12 +332,12 @@ public class WebSocketImpl implements WebSocket {
 						open( handshake );
 						return true;
 					} else {
-						log.debug("Closing due to protocol error: draft {} refuses handshake", draft );
+						log.trace("Closing due to protocol error: draft {} refuses handshake", draft );
 						close( CloseFrame.PROTOCOL_ERROR, "draft " + draft + " refuses handshake" );
 					}
 				}
 			} catch ( InvalidHandshakeException e ) {
-				log.debug("Closing due to invalid handshake", e);
+				log.trace("Closing due to invalid handshake", e);
 				close( e );
 			}
 		} catch ( IncompleteHandshakeException e ) {
@@ -366,7 +366,7 @@ public class WebSocketImpl implements WebSocket {
 		try {
 			frames = draft.translateFrame( socketBuffer );
 			for( Framedata f : frames ) {
-				log.debug( "matched frame: {}" , f );
+				log.trace( "matched frame: {}" , f );
 				draft.processFrame( this, f );
 			}
 		} catch ( InvalidDataException e ) {
@@ -617,7 +617,7 @@ public class WebSocketImpl implements WebSocket {
 		}
 		ArrayList<ByteBuffer> outgoingFrames = new ArrayList<ByteBuffer>();
 		for( Framedata f : frames ) {
-			log.debug( "send frame: " + f );
+			log.trace( "send frame: " + f );
 			outgoingFrames.add( draft.createBinaryFrame( f ) );
 		}
 		write( outgoingFrames );
@@ -674,7 +674,7 @@ public class WebSocketImpl implements WebSocket {
 	}
 
 	private void write( ByteBuffer buf ) {
-		log.debug( "write(" + buf.remaining() + "): {" + ( buf.remaining() > 1000 ? "too big to display" : new String( buf.array() ) ) + '}' );
+		log.trace( "write(" + buf.remaining() + "): {" + ( buf.remaining() > 1000 ? "too big to display" : new String( buf.array() ) ) + '}' );
 
 		outQueue.add( buf );
 		wsl.onWriteDemand( this );
@@ -694,7 +694,7 @@ public class WebSocketImpl implements WebSocket {
 	}
 
 	private void open( Handshakedata d ) {
-		log.info( "open using draft: " + draft );
+		log.trace( "open using draft: " + draft );
 		setReadyState( ReadyState.OPEN );
 		try {
 			wsl.onWebsocketOpen( this, d );

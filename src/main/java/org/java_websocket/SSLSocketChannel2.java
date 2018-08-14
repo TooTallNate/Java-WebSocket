@@ -233,12 +233,12 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
                 inCrypt = ByteBuffer.allocate( netBufferMax );
         }
         if (inData.remaining() != 0) {
-            log.debug(new String( inData.array(), inData.position(), inData.remaining()));
+            log.trace(new String( inData.array(), inData.position(), inData.remaining()));
         }
         inData.rewind();
         inData.flip();
         if (inCrypt.remaining() != 0) {
-            log.debug(new String( inCrypt.array(), inCrypt.position(), inCrypt.remaining()));
+            log.trace(new String( inCrypt.array(), inCrypt.position(), inCrypt.remaining()));
         }
         inCrypt.rewind();
         inCrypt.flip();

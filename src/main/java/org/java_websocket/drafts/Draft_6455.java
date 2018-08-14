@@ -159,7 +159,7 @@ public class Draft_6455 extends Draft {
 	public HandshakeState acceptHandshakeAsServer( ClientHandshake handshakedata ) throws InvalidHandshakeException {
 		int v = readVersion( handshakedata );
 		if( v != 13 ) {
-			log.debug("acceptHandshakeAsServer - Wrong websocket version.");
+			log.trace("acceptHandshakeAsServer - Wrong websocket version.");
 			return HandshakeState.NOT_MATCHED;
 		}
 		HandshakeState extensionState = HandshakeState.NOT_MATCHED;
@@ -168,7 +168,7 @@ public class Draft_6455 extends Draft {
 			if( knownExtension.acceptProvidedExtensionAsServer( requestedExtension ) ) {
 				extension = knownExtension;
 				extensionState = HandshakeState.MATCHED;
-				log.debug("acceptHandshakeAsServer - Matching extension found: " + extension.toString());
+				log.trace("acceptHandshakeAsServer - Matching extension found: " + extension.toString());
 				break;
 			}
 		}
@@ -178,25 +178,25 @@ public class Draft_6455 extends Draft {
 			if( knownProtocol.acceptProvidedProtocol( requestedProtocol ) ) {
 				protocol = knownProtocol;
 				protocolState = HandshakeState.MATCHED;
-				log.debug("acceptHandshakeAsServer - Matching protocol found: " + protocol.toString());
+				log.trace("acceptHandshakeAsServer - Matching protocol found: " + protocol.toString());
 				break;
 			}
 		}
 		if (protocolState == HandshakeState.MATCHED && extensionState == HandshakeState.MATCHED) {
 			return HandshakeState.MATCHED;
 		}
-		log.debug("acceptHandshakeAsServer - No matching extension or protocol found.");
+		log.trace("acceptHandshakeAsServer - No matching extension or protocol found.");
 		return HandshakeState.NOT_MATCHED;
 	}
 
 	@Override
 	public HandshakeState acceptHandshakeAsClient( ClientHandshake request, ServerHandshake response ) throws InvalidHandshakeException {
 		if (! basicAccept( response )) {
-			log.debug("acceptHandshakeAsClient - Missing/wrong upgrade or connection in handshake.");
+			log.trace("acceptHandshakeAsClient - Missing/wrong upgrade or connection in handshake.");
 			return HandshakeState.NOT_MATCHED;
 		}
 		if( !request.hasFieldValue( "Sec-WebSocket-Key" ) || !response.hasFieldValue( "Sec-WebSocket-Accept" ) ) {
-			log.debug("acceptHandshakeAsClient - Missing Sec-WebSocket-Key or Sec-WebSocket-Accept");
+			log.trace("acceptHandshakeAsClient - Missing Sec-WebSocket-Key or Sec-WebSocket-Accept");
 			return HandshakeState.NOT_MATCHED;
 		}
 
@@ -205,7 +205,7 @@ public class Draft_6455 extends Draft {
 		seckey_challenge = generateFinalKey( seckey_challenge );
 
 		if( !seckey_challenge.equals( seckey_answere ) ) {
-			log.debug("acceptHandshakeAsClient - Wrong key for Sec-WebSocket-Key.");
+			log.trace("acceptHandshakeAsClient - Wrong key for Sec-WebSocket-Key.");
 			return HandshakeState.NOT_MATCHED;
 		}
 
@@ -215,7 +215,7 @@ public class Draft_6455 extends Draft {
 			if( knownExtension.acceptProvidedExtensionAsClient( requestedExtension ) ) {
 				extension = knownExtension;
 				extensionState = HandshakeState.MATCHED;
-				log.debug("acceptHandshakeAsClient - Matching extension found: " + extension.toString());
+				log.trace("acceptHandshakeAsClient - Matching extension found: " + extension.toString());
 				break;
 			}
 		}
@@ -225,14 +225,14 @@ public class Draft_6455 extends Draft {
 			if( knownProtocol.acceptProvidedProtocol( requestedProtocol ) ) {
 				protocol = knownProtocol;
 				protocolState = HandshakeState.MATCHED;
-				log.debug("acceptHandshakeAsClient - Matching protocol found: " + protocol.toString());
+				log.trace("acceptHandshakeAsClient - Matching protocol found: " + protocol.toString());
 				break;
 			}
 		}
 		if (protocolState == HandshakeState.MATCHED && extensionState == HandshakeState.MATCHED) {
 			return HandshakeState.MATCHED;
 		}
-		log.debug("acceptHandshakeAsClient - No matching extension or protocol found.");
+		log.trace("acceptHandshakeAsClient - No matching extension or protocol found.");
 		return HandshakeState.NOT_MATCHED;
 	}
 
@@ -343,7 +343,7 @@ public class Draft_6455 extends Draft {
 	@Override
 	public ByteBuffer createBinaryFrame( Framedata framedata ) {
 		getExtension().encodeFrame( framedata );
-		log.debug( "afterEnconding(" + framedata.getPayloadData().remaining() + "): {" + ( framedata.getPayloadData().remaining() > 1000 ? "too big to display" : new String( framedata.getPayloadData().array() ) ) + '}' );
+		log.trace( "afterEnconding(" + framedata.getPayloadData().remaining() + "): {" + ( framedata.getPayloadData().remaining() > 1000 ? "too big to display" : new String( framedata.getPayloadData().array() ) ) + '}' );
 		return createByteBufferFromFramedata( framedata );
 	}
 
@@ -391,7 +391,7 @@ public class Draft_6455 extends Draft {
 		int maxpacketsize = buffer.remaining();
 		int realpacketsize = 2;
 		if( maxpacketsize < realpacketsize ) {
-			log.debug( "Incomplete frame" );
+			log.trace( "Incomplete frame" );
 			throw new IncompleteException( realpacketsize );
 		}
 		byte b1 = buffer.get( /*0*/ );
@@ -416,13 +416,13 @@ public class Draft_6455 extends Draft {
 		if( !( payloadlength >= 0 && payloadlength <= 125 ) ) {
 
 			if( optcode == Opcode.PING || optcode == Opcode.PONG || optcode == Opcode.CLOSING ) {
-				log.debug( "Invalid frame: more than 125 octets" );
+				log.trace( "Invalid frame: more than 125 octets" );
 				throw new InvalidFrameException( "more than 125 octets" );
 			}
 			if( payloadlength == 126 ) {
 				realpacketsize += 2; // additional length bytes
 				if( maxpacketsize < realpacketsize ) {
-					log.debug( "Incomplete frame" );
+					log.trace( "Incomplete frame" );
 					throw new IncompleteException( realpacketsize );
 				}
 				byte[] sizebytes = new byte[3];
@@ -432,7 +432,7 @@ public class Draft_6455 extends Draft {
 			} else {
 				realpacketsize += 8; // additional length bytes
 				if( maxpacketsize < realpacketsize ) {
-					log.debug( "Incomplete frame" );
+					log.trace( "Incomplete frame" );
 					throw new IncompleteException( realpacketsize );
 				}
 				byte[] bytes = new byte[8];
@@ -441,7 +441,7 @@ public class Draft_6455 extends Draft {
 				}
 				long length = new BigInteger( bytes ).longValue();
 				if( length > Integer.MAX_VALUE ) {
-					log.debug( "Limit exedeed: Payloadsize is to big..." );
+					log.trace( "Limit exedeed: Payloadsize is to big..." );
 					throw new LimitExedeedException( "Payloadsize is to big..." );
 				} else {
 					payloadlength = ( int ) length;
@@ -478,7 +478,7 @@ public class Draft_6455 extends Draft {
 		frame.setPayload( payload );
 		getExtension().isFrameValid(frame);
 		getExtension().decodeFrame(frame);
-		log.debug( "afterDecoding(" + frame.getPayloadData().remaining() + "): {" + ( frame.getPayloadData().remaining() > 1000 ? "too big to display" : new String( frame.getPayloadData().array() ) ) + '}' );
+		log.trace( "afterDecoding(" + frame.getPayloadData().remaining() + "): {" + ( frame.getPayloadData().remaining() > 1000 ? "too big to display" : new String( frame.getPayloadData().array() ) ) + '}' );
 		frame.isValid();
 		return frame;
 	}
@@ -678,14 +678,14 @@ public class Draft_6455 extends Draft {
 		} else if( !frame.isFin() || curop == Opcode.CONTINUOUS ) {
 			if( curop != Opcode.CONTINUOUS ) {
 				if( current_continuous_frame != null ) {
-					log.debug( "Protocol error: Previous continuous frame sequence not completed." );
+					log.trace( "Protocol error: Previous continuous frame sequence not completed." );
 					throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "Previous continuous frame sequence not completed." );
 				}
 				current_continuous_frame = frame;
 				byteBufferList.add( frame.getPayloadData() );
 			} else if( frame.isFin() ) {
 				if( current_continuous_frame == null ) {
-					log.debug( "Protocol error: Previous continuous frame sequence not completed." );
+					log.trace( "Protocol error: Previous continuous frame sequence not completed." );
 					throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "Continuous frame sequence was not started." );
 				}
 				byteBufferList.add( frame.getPayloadData() );
@@ -792,7 +792,7 @@ public class Draft_6455 extends Draft {
 			totalSize +=buffer.limit();
 		}
 		if (totalSize > Integer.MAX_VALUE) {
-			log.debug( "Payloadsize is to big...");
+			log.trace( "Payloadsize is to big...");
 			throw new LimitExedeedException( "Payloadsize is to big..." );
 		}
 		ByteBuffer resultingByteBuffer = ByteBuffer.allocate( (int) totalSize );

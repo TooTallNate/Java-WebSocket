@@ -102,12 +102,12 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
     public void setConnectionLostTimeout( int connectionLostTimeout ) {
         this.connectionLostTimeout = connectionLostTimeout;
         if (this.connectionLostTimeout <= 0) {
-			log.info( "Connection lost timer stopped" );
+			log.trace( "Connection lost timer stopped" );
 			cancelConnectionLostTimer();
             return;
         }
         if (this.websocketRunning) {
-        	log.info( "Connection lost timer restarted" );
+        	log.trace( "Connection lost timer restarted" );
 			//Reset all the pings
 			try {
 				ArrayList<WebSocket> connections = new ArrayList<WebSocket>( getConnections() );
@@ -132,7 +132,7 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
     protected void stopConnectionLostTimer() {
         if (connectionLostTimer != null ||connectionLostTimerTask != null) {
 			this.websocketRunning = false;
-			log.info( "Connection lost timer stopped" );
+			log.trace( "Connection lost timer stopped" );
             cancelConnectionLostTimer();
         }
     }
@@ -142,10 +142,10 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
      */
     protected void startConnectionLostTimer() {
         if (this.connectionLostTimeout <= 0) {
-          	log.info("Connection lost timer deactivated");
+          	log.trace("Connection lost timer deactivated");
             return;
         }
-		log.info("Connection lost timer started");
+		log.trace("Connection lost timer started");
         this.websocketRunning = true;
        	restartConnectionLostTimer();
     }
