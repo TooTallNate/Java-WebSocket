@@ -695,7 +695,7 @@ public class Draft_6455 extends Draft {
 					try {
 						webSocketImpl.getWebSocketListener().onWebsocketMessage( webSocketImpl, Charsetfunctions.stringUtf8( current_continuous_frame.getPayloadData() ) );
 					} catch ( RuntimeException e ) {
-						log.error( "Runtime exception during onWebsocketMessage: {}", e );
+						log.error( "Runtime exception during onWebsocketMessage", e );
 						webSocketImpl.getWebSocketListener().onWebsocketError( webSocketImpl, e );
 					}
 				} else if( current_continuous_frame.getOpcode() == Opcode.BINARY ) {
@@ -704,7 +704,7 @@ public class Draft_6455 extends Draft {
 					try {
 						webSocketImpl.getWebSocketListener().onWebsocketMessage( webSocketImpl, current_continuous_frame.getPayloadData() );
 					} catch ( RuntimeException e ) {
-						log.error( "Runtime exception during onWebsocketMessage: {}", e );
+						log.error( "Runtime exception during onWebsocketMessage", e );
 						webSocketImpl.getWebSocketListener().onWebsocketError( webSocketImpl, e );
 					}
 				}
