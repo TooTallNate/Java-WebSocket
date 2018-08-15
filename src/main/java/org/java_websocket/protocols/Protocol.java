@@ -34,8 +34,8 @@ import java.util.regex.Pattern;
  */
 public class Protocol implements IProtocol {
 
-	private static final Pattern COMPILE = Pattern.compile(" ");
-	private static final Pattern PATTERN = Pattern.compile(",");
+	private static final Pattern patternSpace = Pattern.compile(" ");
+	private static final Pattern patternComma = Pattern.compile(",");
 
 	/**
 	 * Attribute for the provided protocol
@@ -56,8 +56,8 @@ public class Protocol implements IProtocol {
 
 	@Override
 	public boolean acceptProvidedProtocol( String inputProtocolHeader ) {
-		String protocolHeader = COMPILE.matcher(inputProtocolHeader).replaceAll("");
-		String[] headers = PATTERN.split(protocolHeader);
+		String protocolHeader = patternSpace.matcher(inputProtocolHeader).replaceAll("");
+		String[] headers = patternComma.split(protocolHeader);
 		for( String header : headers ) {
 			if( providedProtocol.equals( header ) ) {
 				return true;
