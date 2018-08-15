@@ -168,7 +168,7 @@ public class Draft_6455 extends Draft {
 			if( knownExtension.acceptProvidedExtensionAsServer( requestedExtension ) ) {
 				extension = knownExtension;
 				extensionState = HandshakeState.MATCHED;
-				log.trace("acceptHandshakeAsServer - Matching extension found: " + extension.toString());
+				log.trace("acceptHandshakeAsServer - Matching extension found: {}", extension);
 				break;
 			}
 		}
@@ -178,7 +178,7 @@ public class Draft_6455 extends Draft {
 			if( knownProtocol.acceptProvidedProtocol( requestedProtocol ) ) {
 				protocol = knownProtocol;
 				protocolState = HandshakeState.MATCHED;
-				log.trace("acceptHandshakeAsServer - Matching protocol found: " + protocol.toString());
+				log.trace("acceptHandshakeAsServer - Matching protocol found: {}", protocol);
 				break;
 			}
 		}
@@ -215,7 +215,7 @@ public class Draft_6455 extends Draft {
 			if( knownExtension.acceptProvidedExtensionAsClient( requestedExtension ) ) {
 				extension = knownExtension;
 				extensionState = HandshakeState.MATCHED;
-				log.trace("acceptHandshakeAsClient - Matching extension found: " + extension.toString());
+				log.trace("acceptHandshakeAsClient - Matching extension found: {}",extension);
 				break;
 			}
 		}
@@ -225,7 +225,7 @@ public class Draft_6455 extends Draft {
 			if( knownProtocol.acceptProvidedProtocol( requestedProtocol ) ) {
 				protocol = knownProtocol;
 				protocolState = HandshakeState.MATCHED;
-				log.trace("acceptHandshakeAsClient - Matching protocol found: " + protocol.toString());
+				log.trace("acceptHandshakeAsClient - Matching protocol found: {}",protocol);
 				break;
 			}
 		}
@@ -343,7 +343,7 @@ public class Draft_6455 extends Draft {
 	@Override
 	public ByteBuffer createBinaryFrame( Framedata framedata ) {
 		getExtension().encodeFrame( framedata );
-		log.trace( "afterEnconding(" + framedata.getPayloadData().remaining() + "): {" + ( framedata.getPayloadData().remaining() > 1000 ? "too big to display" : new String( framedata.getPayloadData().array() ) ) + '}' );
+		log.trace( "afterEnconding({}): {}" , framedata.getPayloadData().remaining(), ( framedata.getPayloadData().remaining() > 1000 ? "too big to display" : new String( framedata.getPayloadData().array() ) ) );
 		return createByteBufferFromFramedata( framedata );
 	}
 
@@ -478,7 +478,7 @@ public class Draft_6455 extends Draft {
 		frame.setPayload( payload );
 		getExtension().isFrameValid(frame);
 		getExtension().decodeFrame(frame);
-		log.trace( "afterDecoding(" + frame.getPayloadData().remaining() + "): {" + ( frame.getPayloadData().remaining() > 1000 ? "too big to display" : new String( frame.getPayloadData().array() ) ) + '}' );
+		log.trace( "afterDecoding({}): {}", frame.getPayloadData().remaining(), ( frame.getPayloadData().remaining() > 1000 ? "too big to display" : new String( frame.getPayloadData().array() ) ) );
 		frame.isValid();
 		return frame;
 	}
@@ -695,7 +695,7 @@ public class Draft_6455 extends Draft {
 					try {
 						webSocketImpl.getWebSocketListener().onWebsocketMessage( webSocketImpl, Charsetfunctions.stringUtf8( current_continuous_frame.getPayloadData() ) );
 					} catch ( RuntimeException e ) {
-						log.error( "Runtime exception during onWebsocketMessage", e );
+						log.error( "Runtime exception during onWebsocketMessage: {}", e );
 						webSocketImpl.getWebSocketListener().onWebsocketError( webSocketImpl, e );
 					}
 				} else if( current_continuous_frame.getOpcode() == Opcode.BINARY ) {
@@ -704,7 +704,7 @@ public class Draft_6455 extends Draft {
 					try {
 						webSocketImpl.getWebSocketListener().onWebsocketMessage( webSocketImpl, current_continuous_frame.getPayloadData() );
 					} catch ( RuntimeException e ) {
-						log.error( "Runtime exception during onWebsocketMessage", e );
+						log.error( "Runtime exception during onWebsocketMessage: {}", e );
 						webSocketImpl.getWebSocketListener().onWebsocketError( webSocketImpl, e );
 					}
 				}

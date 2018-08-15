@@ -119,7 +119,7 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
 					}
 				}
 			} catch (Exception e) {
-					log.error("Exception during connection lost restart: " + e.getMessage());
+				log.error("Exception during connection lost restart: {}", e);
 			}
 			restartConnectionLostTimer();
 		}
@@ -174,13 +174,13 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
 						if( conn instanceof WebSocketImpl ) {
 							webSocketImpl = ( WebSocketImpl ) conn;
 							if( webSocketImpl.getLastPong() < current ) {
-								log.warn("Closing connection due to no pong received: " + conn.toString());
+								log.warn("Closing connection due to no pong received: {}", conn);
 								webSocketImpl.closeConnection( CloseFrame.ABNORMAL_CLOSE, "The connection was closed because the other endpoint did not respond with a pong in time. For more information check: https://github.com/TooTallNate/Java-WebSocket/wiki/Lost-connection-detection" );
 							} else {
 								if( webSocketImpl.isOpen() ) {
 									webSocketImpl.sendPing();
 								} else {
-									log.warn("Trying to ping a non open connection: " + conn.toString());
+									log.warn("Trying to ping a non open connection: {}", conn);
 								}
 							}
 						}

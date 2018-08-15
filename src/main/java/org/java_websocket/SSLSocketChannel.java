@@ -138,7 +138,7 @@ public class SSLSocketChannel implements WrappedByteChannel, ByteChannel {
 			try {
 				socketChannel.close();
 			} catch ( IOException e ) {
-				log.error("Exception during the closing of the channel", e);
+				log.error("Exception during the closing of the channel: {}", e);
 			}
 		}
 	}
@@ -166,7 +166,7 @@ public class SSLSocketChannel implements WrappedByteChannel, ByteChannel {
 				try {
 					result = engine.unwrap( peerNetData, peerAppData );
 				} catch ( SSLException e ) {
-					log.error("SSLExcpetion during unwrap", e);
+					log.error("SSLExcpetion during unwrap: {}", e);
 					throw e;
 				}
 				switch(result.getStatus()) {
