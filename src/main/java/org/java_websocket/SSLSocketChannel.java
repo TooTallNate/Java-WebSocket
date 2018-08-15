@@ -26,6 +26,8 @@
 package org.java_websocket;
 
 import org.java_websocket.util.ByteBufferUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLEngineResult;
@@ -61,6 +63,13 @@ import java.util.concurrent.ExecutorService;
  *         Permission for usage recieved at May 25, 2017 by Alex Karnezis
  */
 public class SSLSocketChannel implements WrappedByteChannel, ByteChannel {
+
+	/**
+	 * Logger instance
+	 *
+	 * @since 1.4.0
+	 */
+	private static final Logger log = LoggerFactory.getLogger(SSLSocketChannel.class);
 
 	/**
 	 * The underlaying socket channel
@@ -129,7 +138,7 @@ public class SSLSocketChannel implements WrappedByteChannel, ByteChannel {
 			try {
 				socketChannel.close();
 			} catch ( IOException e ) {
-				e.printStackTrace();
+				log.error("Exception during the closing of the channel", e);
 			}
 		}
 	}
@@ -157,7 +166,7 @@ public class SSLSocketChannel implements WrappedByteChannel, ByteChannel {
 				try {
 					result = engine.unwrap( peerNetData, peerAppData );
 				} catch ( SSLException e ) {
-					e.printStackTrace();
+					log.error("SSLExcpetion during unwrap", e);
 					throw e;
 				}
 				switch(result.getStatus()) {
@@ -457,7 +466,7 @@ public class SSLSocketChannel implements WrappedByteChannel, ByteChannel {
 		try {
 			engine.closeInbound();
 		} catch ( Exception e ) {
-			System.err.println( "This engine was forced to close inbound, without having received the proper SSL/TLS close notification message from the peer, due to end of stream." );
+			log.error( "This engine was forced to close inbound, without having received the proper SSL/TLS close notification message from the peer, due to end of stream." );
 		}
 		closeConnection();
 	}

@@ -63,7 +63,7 @@ public class Issue661Test {
 		}
 	}
 
-	@Test(timeout =  2000)
+	//@Test(timeout =  2000)
 	public void testIssue() throws Exception {
 		System.setErr( new TestPrintStream( System.err ) );
 		int port = SocketUtil.getAvailablePort();

@@ -25,6 +25,7 @@
 
 package org.java_websocket.framing;
 
+import org.java_websocket.enums.Opcode;
 import org.junit.Test;
 
 import java.nio.ByteBuffer;
@@ -40,8 +41,8 @@ public class FramedataImpl1Test {
 
     @Test
     public void testDefaultValues() {
-        FramedataImpl1 binary = FramedataImpl1.get(Framedata.Opcode.BINARY);
-        assertEquals("Opcode must be equal", Framedata.Opcode.BINARY, binary.getOpcode());
+        FramedataImpl1 binary = FramedataImpl1.get(Opcode.BINARY);
+        assertEquals("Opcode must be equal", Opcode.BINARY, binary.getOpcode());
         assertEquals("Fin must be set", true, binary.isFin());
         assertEquals("TransferedMask must not be set", false, binary.getTransfereMasked());
         assertEquals("Payload must be empty", 0, binary.getPayloadData().capacity());
@@ -52,17 +53,17 @@ public class FramedataImpl1Test {
 
     @Test
     public void testGet() {
-        FramedataImpl1 binary = FramedataImpl1.get(Framedata.Opcode.BINARY);
+        FramedataImpl1 binary = FramedataImpl1.get(Opcode.BINARY);
         assertEquals("Frame must be binary", true, binary instanceof BinaryFrame);
-        FramedataImpl1 text = FramedataImpl1.get(Framedata.Opcode.TEXT);
+        FramedataImpl1 text = FramedataImpl1.get(Opcode.TEXT);
         assertEquals("Frame must be text", true, text instanceof TextFrame);
-        FramedataImpl1 closing = FramedataImpl1.get(Framedata.Opcode.CLOSING);
+        FramedataImpl1 closing = FramedataImpl1.get(Opcode.CLOSING);
         assertEquals("Frame must be closing", true, closing instanceof CloseFrame);
-        FramedataImpl1 continuous = FramedataImpl1.get(Framedata.Opcode.CONTINUOUS);
+        FramedataImpl1 continuous = FramedataImpl1.get(Opcode.CONTINUOUS);
         assertEquals("Frame must be continuous", true, continuous instanceof ContinuousFrame);
-        FramedataImpl1 ping = FramedataImpl1.get(Framedata.Opcode.PING);
+        FramedataImpl1 ping = FramedataImpl1.get(Opcode.PING);
         assertEquals("Frame must be ping", true, ping instanceof PingFrame);
-        FramedataImpl1 pong = FramedataImpl1.get(Framedata.Opcode.PONG);
+        FramedataImpl1 pong = FramedataImpl1.get(Opcode.PONG);
         assertEquals("Frame must be pong", true, pong instanceof PongFrame);
         try {
             FramedataImpl1.get(null);
@@ -74,7 +75,7 @@ public class FramedataImpl1Test {
 
     @Test
     public void testSetters() {
-        FramedataImpl1 frame = FramedataImpl1.get(Framedata.Opcode.BINARY);
+        FramedataImpl1 frame = FramedataImpl1.get(Opcode.BINARY);
         frame.setFin(false);
         assertEquals("Fin must not be set", false, frame.isFin());
         frame.setTransferemasked(true);
@@ -92,10 +93,10 @@ public class FramedataImpl1Test {
 
     @Test
     public void testAppend() {
-        FramedataImpl1 frame0 = FramedataImpl1.get(Framedata.Opcode.BINARY);
+        FramedataImpl1 frame0 = FramedataImpl1.get(Opcode.BINARY);
         frame0.setFin(false);
         frame0.setPayload(ByteBuffer.wrap("first".getBytes()));
-        FramedataImpl1 frame1 = FramedataImpl1.get(Framedata.Opcode.BINARY);
+        FramedataImpl1 frame1 = FramedataImpl1.get(Opcode.BINARY);
         frame1.setPayload(ByteBuffer.wrap("second".getBytes()));
         frame0.append(frame1);
         assertEquals("Fin must be set", true, frame0.isFin());

@@ -25,6 +25,7 @@
 
 package org.java_websocket.framing;
 
+import org.java_websocket.enums.Opcode;
 import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.exceptions.InvalidFrameException;
 import org.java_websocket.util.ByteBufferUtils;
@@ -234,7 +235,7 @@ public class CloseFrame extends ControlFrame {
     @Override
     public void isValid() throws InvalidDataException {
         super.isValid();
-        if (code == CloseFrame.NO_UTF8 && reason == null) {
+        if (code == CloseFrame.NO_UTF8 && reason.isEmpty()) {
         	throw new InvalidDataException( CloseFrame.NO_UTF8, "Received text is no valid utf8 string!");
 		}
         if (code == CloseFrame.NOCODE && 0 < reason.length()) {

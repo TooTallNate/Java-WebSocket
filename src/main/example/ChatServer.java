@@ -75,7 +75,6 @@ public class ChatServer extends WebSocketServer {
 
 
 	public static void main( String[] args ) throws InterruptedException , IOException {
-		WebSocketImpl.DEBUG = true;
 		int port = 8887; // 843 flash policy port
 		try {
 			port = Integer.parseInt( args[ 0 ] );
@@ -106,6 +105,8 @@ public class ChatServer extends WebSocketServer {
 	@Override
 	public void onStart() {
 		System.out.println("Server started!");
+		setConnectionLostTimeout(0);
+		setConnectionLostTimeout(100);
 	}
 
 }

@@ -25,6 +25,7 @@
 
 package org.java_websocket.framing;
 
+import org.java_websocket.enums.Opcode;
 import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.util.ByteBufferUtils;
 

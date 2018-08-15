@@ -66,17 +66,6 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	}
 
 	/**
-	 * This default implementation does not do anything. Go ahead and overwrite it
-	 *
-	 * @see org.java_websocket.WebSocketListener#onWebsocketMessageFragment(WebSocket, Framedata)
-	 */
-	@Override
-	@Deprecated
-	public void onWebsocketMessageFragment( WebSocket conn, Framedata frame ) {
-		//To overwrite
-	}
-
-	/**
 	 * This default implementation will send a pong in response to the received ping.
 	 * The pong frame will have the same payload as the ping frame.
 	 *

@@ -90,15 +90,7 @@ public class AutobahnSSLServerTest extends WebSocketServer {
 		conn.send( blob );
 	}
 
-	@Override
-	public void onWebsocketMessageFragment( WebSocket conn, Framedata frame ) {
-		FramedataImpl1 builder = ( FramedataImpl1 ) frame;
-		builder.setTransferemasked( false );
-		conn.sendFrame( frame );
-	}
-
 	public static void main( String[] args ) throws UnknownHostException {
-		WebSocketImpl.DEBUG = false;
 		int port;
 		try {
 			port = new Integer( args[0] );

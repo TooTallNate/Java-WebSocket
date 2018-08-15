@@ -33,7 +33,6 @@ import java.net.URISyntaxException;
  */
 public class ReconnectClientExample {
 	public static void main( String[] args ) throws URISyntaxException, InterruptedException {
-		WebSocketImpl.DEBUG = true;
 		ExampleClient c = new ExampleClient( new URI( "ws://localhost:8887" ) );
 		//Connect to a server normally
 		c.connectBlocking();

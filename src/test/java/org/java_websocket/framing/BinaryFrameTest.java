@@ -25,6 +25,7 @@
 
 package org.java_websocket.framing;
 
+import org.java_websocket.enums.Opcode;
 import org.java_websocket.exceptions.InvalidDataException;
 import org.junit.Test;
 
@@ -39,7 +40,7 @@ public class BinaryFrameTest {
     @Test
     public void testConstructor() {
         BinaryFrame frame = new BinaryFrame();
-        assertEquals("Opcode must be equal", Framedata.Opcode.BINARY , frame.getOpcode());
+        assertEquals("Opcode must be equal", Opcode.BINARY , frame.getOpcode());
         assertEquals("Fin must be set", true , frame.isFin());
         assertEquals("TransferedMask must not be set", false , frame.getTransfereMasked());
         assertEquals("Payload must be empty", 0 , frame.getPayloadData().capacity());

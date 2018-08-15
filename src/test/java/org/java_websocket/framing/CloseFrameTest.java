@@ -25,6 +25,7 @@
 
 package org.java_websocket.framing;
 
+import org.java_websocket.enums.Opcode;
 import org.java_websocket.exceptions.InvalidDataException;
 import org.junit.Test;
 
@@ -39,7 +40,7 @@ public class CloseFrameTest {
     @Test
     public void testConstructor() {
         CloseFrame frame = new CloseFrame();
-        assertEquals("Opcode must be equal", Framedata.Opcode.CLOSING, frame.getOpcode());
+        assertEquals("Opcode must be equal", Opcode.CLOSING, frame.getOpcode());
         assertEquals("Fin must be set", true, frame.isFin());
         assertEquals("TransferedMask must not be set", false, frame.getTransfereMasked());
         assertEquals("Payload must be 2 (close code)", 2, frame.getPayloadData().capacity());
@@ -137,12 +138,6 @@ public class CloseFrameTest {
         } catch (InvalidDataException e) {
             //fine
         }
-        frame.setCode(CloseFrame.NO_UTF8);
-        try {
-            frame.isValid();
-        } catch (InvalidDataException e) {
-            fail("InvalidDataException should not be thrown");
-        }
         frame.setCode(CloseFrame.POLICY_VALIDATION);
         try {
             frame.isValid();
@@ -207,6 +202,29 @@ public class CloseFrameTest {
             //fine
         }
         frame.setCode(CloseFrame.FLASHPOLICY);
+        try {
+            frame.isValid();
+            fail("InvalidDataException should be thrown");
+        } catch (InvalidDataException e) {
+            //fine
+        }
+        frame.setCode(CloseFrame.NOCODE);
+        try {
+            frame.isValid();
+            fail("InvalidDataException should be thrown");
+        } catch (InvalidDataException e) {
+            //fine
+        }
+        frame.setCode(CloseFrame.NO_UTF8);
+        frame.setReason(null);
+        try {
+            frame.isValid();
+            fail("InvalidDataException should be thrown");
+        } catch (InvalidDataException e) {
+            //fine
+        }
+        frame.setCode(CloseFrame.NOCODE);
+        frame.setReason("Close");
         try {
             frame.isValid();
             fail("InvalidDataException should be thrown");

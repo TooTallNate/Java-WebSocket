@@ -26,28 +26,20 @@
 package org.java_websocket.example;
 
 import org.java_websocket.WebSocket;
-import org.java_websocket.WebSocketImpl;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft_6455;
-import org.java_websocket.framing.Framedata;
-import org.java_websocket.framing.FramedataImpl1;
 import org.java_websocket.handshake.ClientHandshake;
-import org.java_websocket.server.DefaultSSLWebSocketServerFactory;
 import org.java_websocket.server.WebSocketServer;
 
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
-import java.io.File;
-import java.io.FileInputStream;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
-import java.security.KeyStore;
 import java.util.Collections;
 
 public class AutobahnServerTest extends WebSocketServer {
+
 	private static int counter = 0;
+
 	public AutobahnServerTest( int port, Draft d ) throws UnknownHostException {
 		super( new InetSocketAddress( port ), Collections.singletonList( d ) );
 	}
@@ -82,10 +74,6 @@ public class AutobahnServerTest extends WebSocketServer {
 	public void onMessage( WebSocket conn, String message ) {
 		conn.send( message );
 	}
-	@Override
-	public void onFragment( WebSocket conn, Framedata fragment ) {
-		System.out.println( "received fragment: " + fragment );
-	}
 
 	@Override
 	public void onMessage( WebSocket conn, ByteBuffer blob ) {
@@ -93,7 +81,6 @@ public class AutobahnServerTest extends WebSocketServer {
 	}
 
 	public static void main( String[] args ) throws UnknownHostException {
-		WebSocketImpl.DEBUG = false;
 		int port;
 		try {
 			port = new Integer( args[0] );

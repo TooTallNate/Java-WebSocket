@@ -26,7 +26,7 @@
 package org.java_websocket.exceptions;
 
 /**
- * exception which indicates the websocket is not yet connected (READYSTATE.OPEN)
+ * exception which indicates the websocket is not yet connected (ReadyState.OPEN)
  */
 public class WebsocketNotConnectedException extends RuntimeException {
 

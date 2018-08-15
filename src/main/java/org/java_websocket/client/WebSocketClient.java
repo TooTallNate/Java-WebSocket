@@ -49,10 +49,11 @@ import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketImpl;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft_6455;
+import org.java_websocket.enums.Opcode;
+import org.java_websocket.enums.ReadyState;
 import org.java_websocket.exceptions.InvalidHandshakeException;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.Framedata;
-import org.java_websocket.framing.Framedata.Opcode;
 import org.java_websocket.handshake.HandshakeImpl1Client;
 import org.java_websocket.handshake.Handshakedata;
 import org.java_websocket.handshake.ServerHandshake;
@@ -480,7 +481,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	/**
 	 * This represents the state of the connection.
 	 */
-	public READYSTATE getReadyState() {
+	public ReadyState getReadyState() {
 		return engine.getReadyState();
 	}
 
@@ -495,11 +496,6 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	@Override
 	public final void onWebsocketMessage( WebSocket conn, ByteBuffer blob ) {
 		onMessage( blob );
-	}
-
-	@Override
-	public void onWebsocketMessageFragment( WebSocket conn, Framedata frame ) {
-		onFragment( frame );
 	}
 
 	/**
@@ -639,15 +635,6 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 		//To overwrite
 	}
 
-	/**
-	 * Callback for fragmented frames
-	 * @see WebSocket#sendFragmentedFrame(org.java_websocket.framing.Framedata.Opcode, ByteBuffer, boolean)
-	 * @param frame The fragmented frame
-	 */
-	@Deprecated
-	public void onFragment( Framedata frame ) {
-		//To overwrite
-	}
 
 	private class WebsocketWriteThread implements Runnable {
 		@Override
@@ -665,6 +652,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 						ostream.write( buffer.array(), 0, buffer.limit() );
 						ostream.flush();
 					}
+					Thread.currentThread().interrupt();
 				}
 			} catch ( IOException e ) {
 				handleIOException( e );
@@ -712,7 +700,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	}
 
 	@Override
-	public void sendFragmentedFrame( Opcode op, ByteBuffer buffer, boolean fin ) {
+	public void sendFragmentedFrame(Opcode op, ByteBuffer buffer, boolean fin ) {
 		engine.sendFragmentedFrame( op, buffer, fin );
 	}
 
@@ -734,12 +722,6 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	@Override
 	public boolean isClosing() {
 		return engine.isClosing();
-	}
-
-	@Override
-	@Deprecated
-	public boolean isConnecting() {
-		return engine.isConnecting();
 	}
 
 	@Override
