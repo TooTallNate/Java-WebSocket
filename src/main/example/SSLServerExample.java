@@ -50,7 +50,7 @@ public class SSLServerExample {
 
 		// load up the key store
 		String STORETYPE = "JKS";
-		String KEYSTORE = "D:\\GitHub\\Java-WebSocket\\src\\main\\example\\keystore.jks";
+		String KEYSTORE = "keystore.jks";
 		String STOREPASSWORD = "storepassword";
 		String KEYPASSWORD = "keypassword";
 
