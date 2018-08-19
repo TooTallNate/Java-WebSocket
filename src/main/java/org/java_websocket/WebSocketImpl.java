@@ -43,7 +43,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
-import java.nio.channels.NotYetConnectedException;
 import java.nio.channels.SelectionKey;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -61,6 +60,20 @@ import org.slf4j.LoggerFactory;
  * text frames, and receiving frames through an event-based model.
  */
 public class WebSocketImpl implements WebSocket {
+
+	/**
+	 * The default port of WebSockets, as defined in the spec. If the nullary
+	 * constructor is used, DEFAULT_PORT will be the port the WebSocketServer
+	 * is binded to. Note that ports under 1024 usually require root permissions.
+	 */
+	public static final int DEFAULT_PORT = 80;
+
+	/**
+	 * The default wss port of WebSockets, as defined in the spec. If the nullary
+	 * constructor is used, DEFAULT_WSS_PORT will be the port the WebSocketServer
+	 * is binded to. Note that ports under 1024 usually require root permissions.
+	 */
+	public static final int DEFAULT_WSS_PORT = 443;
 
 	/**
 	 * Initial buffer size
@@ -86,7 +99,8 @@ public class WebSocketImpl implements WebSocket {
 	 * The listener to notify of WebSocket events.
 	 */
 	private final WebSocketListener wsl;
-	public SelectionKey key;
+
+	private SelectionKey key;
 	/**
 	 * the possibly wrapped channel object whose selection is controlled by {@link #key}
 	 */
@@ -201,8 +215,8 @@ public class WebSocketImpl implements WebSocket {
 		assert ( socketBuffer.hasRemaining() );
 		log.trace( "process({}): ({})", socketBuffer.remaining(),  ( socketBuffer.remaining() > 1000 ? "too big to display" : new String( socketBuffer.array(), socketBuffer.position(), socketBuffer.remaining() ) ));
 
-		if( getReadyState() != ReadyState.NOT_YET_CONNECTED ) {
-			if( getReadyState() == ReadyState.OPEN ) {
+		if( readyState != ReadyState.NOT_YET_CONNECTED ) {
+			if( readyState == ReadyState.OPEN ) {
 				decodeFrames( socketBuffer );
 			}
 		} else {
@@ -215,7 +229,6 @@ public class WebSocketImpl implements WebSocket {
 				}
 			}
 		}
-		assert ( isClosing() || isFlushAndClose() || !socketBuffer.hasRemaining() );
 	}
 
 	/**
@@ -343,11 +356,11 @@ public class WebSocketImpl implements WebSocket {
 		} catch ( IncompleteHandshakeException e ) {
 			if( tmpHandshakeBytes.capacity() == 0 ) {
 				socketBuffer.reset();
-				int newsize = e.getPreferedSize();
+				int newsize = e.getPreferredSize();
 				if( newsize == 0 ) {
 					newsize = socketBuffer.capacity() + 16;
 				} else {
-					assert ( e.getPreferedSize() >= socketBuffer.remaining() );
+					assert ( e.getPreferredSize() >= socketBuffer.remaining() );
 				}
 				tmpHandshakeBytes = ByteBuffer.allocate( newsize );
 
@@ -416,11 +429,11 @@ public class WebSocketImpl implements WebSocket {
 	}
 
 	public synchronized void close( int code, String message, boolean remote ) {
-		if( getReadyState() != ReadyState.CLOSING && readyState != ReadyState.CLOSED ) {
-			if( getReadyState() == ReadyState.OPEN ) {
+		if( readyState != ReadyState.CLOSING && readyState != ReadyState.CLOSED ) {
+			if( readyState == ReadyState.OPEN ) {
 				if( code == CloseFrame.ABNORMAL_CLOSE ) {
 					assert ( !remote );
-					setReadyState( ReadyState.CLOSING );
+					readyState = ReadyState.CLOSING ;
 					flushAndClose( code, message, false );
 					return;
 				}
@@ -455,7 +468,7 @@ public class WebSocketImpl implements WebSocket {
 			} else {
 				flushAndClose( CloseFrame.NEVER_CONNECTED, message, false );
 			}
-			setReadyState( ReadyState.CLOSING );
+			readyState = ReadyState.CLOSING;
 			tmpHandshakeBytes = null;
 			return;
 		}
@@ -478,13 +491,13 @@ public class WebSocketImpl implements WebSocket {
 	 *                <code>remote</code> may also be true if this endpoint started the closing handshake since the other endpoint may not simply echo the <code>code</code> but close the connection the same time this endpoint does do but with an other <code>code</code>. <br>
 	 **/
 	public synchronized void closeConnection( int code, String message, boolean remote ) {
-		if( getReadyState() == ReadyState.CLOSED ) {
+		if( readyState == ReadyState.CLOSED ) {
 			return;
 		}
 		//Methods like eot() call this method without calling onClose(). Due to that reason we have to adjust the ReadyState manually
-		if( getReadyState() == ReadyState.OPEN ) {
+		if( readyState == ReadyState.OPEN ) {
 			if( code == CloseFrame.ABNORMAL_CLOSE ) {
-				setReadyState( ReadyState.CLOSING );
+				readyState = ReadyState.CLOSING;
 			}
 		}
 		if( key != null ) {
@@ -512,7 +525,7 @@ public class WebSocketImpl implements WebSocket {
 		if( draft != null )
 			draft.reset();
 		handshakerequest = null;
-		setReadyState( ReadyState.CLOSED );
+		readyState = ReadyState.CLOSED;
 	}
 
 	protected void closeConnection( int code, boolean remote ) {
@@ -553,7 +566,7 @@ public class WebSocketImpl implements WebSocket {
 	}
 
 	public void eot() {
-		if( getReadyState() == ReadyState.NOT_YET_CONNECTED ) {
+		if( readyState == ReadyState.NOT_YET_CONNECTED ) {
 			closeConnection( CloseFrame.NEVER_CONNECTED, true );
 		} else if( flushandclosestate ) {
 			closeConnection( closecode, closemessage, closedremotely );
@@ -581,10 +594,10 @@ public class WebSocketImpl implements WebSocket {
 	/**
 	 * Send Text data to the other end.
 	 *
-	 * @throws NotYetConnectedException websocket is not yet connected
+	 * @throws WebsocketNotConnectedException websocket is not yet connected
 	 */
 	@Override
-	public void send( String text ) throws WebsocketNotConnectedException {
+	public void send( String text ) {
 		if( text == null )
 			throw new IllegalArgumentException( "Cannot send 'null' data to a WebSocketImpl." );
 		send( draft.createFrames( text, role == Role.CLIENT ) );
@@ -594,17 +607,17 @@ public class WebSocketImpl implements WebSocket {
 	 * Send Binary data (plain bytes) to the other end.
 	 *
 	 * @throws IllegalArgumentException the data is null
-	 * @throws NotYetConnectedException websocket is not yet connected
+	 * @throws WebsocketNotConnectedException websocket is not yet connected
 	 */
 	@Override
-	public void send( ByteBuffer bytes ) throws IllegalArgumentException, WebsocketNotConnectedException {
+	public void send( ByteBuffer bytes ) {
 		if( bytes == null )
 			throw new IllegalArgumentException( "Cannot send 'null' data to a WebSocketImpl." );
 		send( draft.createFrames( bytes, role == Role.CLIENT ) );
 	}
 
 	@Override
-	public void send( byte[] bytes ) throws IllegalArgumentException, WebsocketNotConnectedException {
+	public void send( byte[] bytes ) {
 		send( ByteBuffer.wrap( bytes ) );
 	}
 
@@ -638,7 +651,7 @@ public class WebSocketImpl implements WebSocket {
 		send( Collections.singletonList( framedata ) );
 	}
 
-	public void sendPing() throws NotYetConnectedException {
+	public void sendPing() {
 		if( pingFrame == null ) {
 			pingFrame = new PingFrame();
 		}
@@ -695,7 +708,7 @@ public class WebSocketImpl implements WebSocket {
 
 	private void open( Handshakedata d ) {
 		log.trace( "open using draft: {}",draft );
-		setReadyState( ReadyState.OPEN );
+		readyState = ReadyState.OPEN;
 		try {
 			wsl.onWebsocketOpen( this, d );
 		} catch ( RuntimeException e ) {
@@ -705,12 +718,12 @@ public class WebSocketImpl implements WebSocket {
 
 	@Override
 	public boolean isOpen() {
-		return getReadyState() == ReadyState.OPEN;
+		return readyState == ReadyState.OPEN;
 	}
 
 	@Override
 	public boolean isClosing() {
-		return getReadyState() == ReadyState.CLOSING;
+		return readyState == ReadyState.CLOSING;
 	}
 
 	@Override
@@ -720,7 +733,7 @@ public class WebSocketImpl implements WebSocket {
 
 	@Override
 	public boolean isClosed() {
-		return getReadyState() == ReadyState.CLOSED;
+		return readyState == ReadyState.CLOSED;
 	}
 
 	@Override
@@ -728,8 +741,18 @@ public class WebSocketImpl implements WebSocket {
 		return readyState;
 	}
 
-	private void setReadyState( ReadyState ReadyState ) {
-		this.readyState = ReadyState;
+	/**
+	 * @param key the selection key of this implementation
+	 */
+	public void setSelectionKey(SelectionKey key) {
+		this.key = key;
+	}
+
+	/**
+	 * @return the selection key of this implementation
+	 */
+	public SelectionKey getSelectionKey() {
+		return key;
 	}
 
 	@Override

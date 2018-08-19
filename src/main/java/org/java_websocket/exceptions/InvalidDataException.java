@@ -38,7 +38,7 @@ public class InvalidDataException extends Exception {
     /**
      * attribut which closecode will be returned
      */
-    private int closecode;
+    private final int closecode;
 
     /**
      * constructor for a InvalidDataException

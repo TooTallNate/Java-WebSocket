@@ -31,9 +31,7 @@ import org.junit.Test;
 
 import java.nio.ByteBuffer;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 public class DefaultExtensionTest {
 	@Test
@@ -145,6 +143,8 @@ public class DefaultExtensionTest {
 		DefaultExtension defaultExtension0 = new DefaultExtension();
 		DefaultExtension defaultExtension1 = new DefaultExtension();
 		assertEquals( defaultExtension0, defaultExtension1 );
+		assertFalse( defaultExtension0.equals(null) );
+		assertFalse( defaultExtension0.equals(new Object()) );
 	}
 
 }

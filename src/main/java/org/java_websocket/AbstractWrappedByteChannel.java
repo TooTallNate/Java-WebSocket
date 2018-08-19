@@ -30,15 +30,26 @@ import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
 import java.nio.channels.SocketChannel;
 
+/*
+ * @deprecated
+ */
 @Deprecated
 public class AbstractWrappedByteChannel implements WrappedByteChannel {
 
 	private final ByteChannel channel;
 
+	/*
+	 * @deprecated
+	 */
+	@Deprecated
 	public AbstractWrappedByteChannel( ByteChannel towrap ) {
 		this.channel = towrap;
 	}
 
+	/*
+	 * @deprecated
+	 */
+	@Deprecated
 	public AbstractWrappedByteChannel( WrappedByteChannel towrap ) {
 		this.channel = towrap;
 	}

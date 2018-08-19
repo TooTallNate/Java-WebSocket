@@ -25,46 +25,25 @@
 
 package org.java_websocket.exceptions;
 
+import org.java_websocket.framing.CloseFrame;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+
 /**
- * exception which indicates that a incomplete handshake was recieved
+ * JUnit Test for the NotSendableException class
  */
-public class IncompleteHandshakeException extends RuntimeException {
+public class NotSendableExceptionTest {
 
-    /**
-     * Serializable
-     */
-    private static final long serialVersionUID = 7906596804233893092L;
-
-    /**
-     * attribut which size of handshake would have been prefered
-     */
-    private final int preferredSize;
-
-    /**
-     * constructor for a IncompleteHandshakeException
-     * <p>
-     * @param preferredSize the prefered size
-     */
-    public IncompleteHandshakeException(int preferredSize) {
-        this.preferredSize = preferredSize;
+    @Test
+    public void testConstructor() {
+        NotSendableException notSendableException = new NotSendableException("Message");
+        assertEquals("The message has to be the argument", "Message", notSendableException.getMessage());
+        Exception e = new Exception();
+        notSendableException = new NotSendableException(e);
+        assertEquals("The throwable has to be the argument", e, notSendableException.getCause());
+        notSendableException = new NotSendableException("Message", e);
+        assertEquals("The message has to be the argument", "Message", notSendableException.getMessage());
+        assertEquals("The throwable has to be the argument", e,notSendableException.getCause());
     }
-
-    /**
-     * constructor for a IncompleteHandshakeException
-     * <p>
-     * preferredSize will be 0
-     */
-    public IncompleteHandshakeException() {
-        this.preferredSize = 0;
-    }
-
-    /**
-     * Getter preferredSize
-     *
-     * @return the preferredSize
-     */
-    public int getPreferredSize() {
-        return preferredSize;
-    }
-
 }

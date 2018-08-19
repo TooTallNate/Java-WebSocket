@@ -35,6 +35,7 @@ import org.junit.runners.Suite;
         org.java_websocket.client.AllClientTests.class,
         org.java_websocket.drafts.AllDraftTests.class,
         org.java_websocket.issues.AllIssueTests.class,
+        org.java_websocket.exceptions.AllExceptionsTests.class,
 		org.java_websocket.misc.AllMiscTests.class,
 		org.java_websocket.protocols.AllProtocolTests.class,
         org.java_websocket.framing.AllFramingTests.class

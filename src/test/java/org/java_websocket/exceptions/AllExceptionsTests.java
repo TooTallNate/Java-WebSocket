@@ -25,46 +25,25 @@
 
 package org.java_websocket.exceptions;
 
+
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+
+
+@RunWith(Suite.class)
+@Suite.SuiteClasses({
+        org.java_websocket.exceptions.IncompleteExceptionTest.class,
+        org.java_websocket.exceptions.IncompleteHandshakeExceptionTest.class,
+        org.java_websocket.exceptions.InvalidDataExceptionTest.class,
+        org.java_websocket.exceptions.InvalidEncodingExceptionTest.class,
+        org.java_websocket.exceptions.InvalidFrameExceptionTest.class,
+        org.java_websocket.exceptions.InvalidHandshakeExceptionTest.class,
+        org.java_websocket.exceptions.LimitExceededExceptionTest.class,
+        org.java_websocket.exceptions.NotSendableExceptionTest.class,
+        org.java_websocket.exceptions.WebsocketNotConnectedExceptionTest.class
+})
 /**
- * exception which indicates that a incomplete handshake was recieved
+ * Start all tests for the exceptions
  */
-public class IncompleteHandshakeException extends RuntimeException {
-
-    /**
-     * Serializable
-     */
-    private static final long serialVersionUID = 7906596804233893092L;
-
-    /**
-     * attribut which size of handshake would have been prefered
-     */
-    private final int preferredSize;
-
-    /**
-     * constructor for a IncompleteHandshakeException
-     * <p>
-     * @param preferredSize the prefered size
-     */
-    public IncompleteHandshakeException(int preferredSize) {
-        this.preferredSize = preferredSize;
-    }
-
-    /**
-     * constructor for a IncompleteHandshakeException
-     * <p>
-     * preferredSize will be 0
-     */
-    public IncompleteHandshakeException() {
-        this.preferredSize = 0;
-    }
-
-    /**
-     * Getter preferredSize
-     *
-     * @return the preferredSize
-     */
-    public int getPreferredSize() {
-        return preferredSize;
-    }
-
+public class AllExceptionsTests {
 }

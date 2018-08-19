@@ -33,7 +33,6 @@ import java.net.Proxy;
 import java.net.Socket;
 import java.net.URI;
 import java.nio.ByteBuffer;
-import java.nio.channels.NotYetConnectedException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -334,7 +333,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	 * @param text
 	 *            The string which will be transmitted.
 	 */
-	public void send( String text ) throws NotYetConnectedException {
+	public void send( String text ) {
 		engine.send( text );
 	}
 
@@ -344,7 +343,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	 * @param data
 	 *            The byte-Array of data to send to the WebSocket server.
 	 */
-	public void send( byte[] data ) throws NotYetConnectedException {
+	public void send( byte[] data ) {
 		engine.send( data );
 	}
 
@@ -364,7 +363,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	}
 
 	@Override
-	public void sendPing() throws NotYetConnectedException {
+	public void sendPing() {
 		engine.sendPing( );
 	}
 
@@ -391,7 +390,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 			// if the socket is set by others we don't apply any TLS wrapper
 			if (isNewSocket && "wss".equals( uri.getScheme())) {
 
-				SSLContext sslContext = SSLContext.getInstance("TLS");
+				SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
 				sslContext.init(null, null, null);
 				SSLSocketFactory factory = sslContext.getSocketFactory();
 				socket = factory.createSocket(socket, uri.getHost(), getPort(), true);
@@ -407,7 +406,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 			return;
 		}
 
-		writeThread = new Thread( new WebsocketWriteThread() );
+		writeThread = new Thread( new WebsocketWriteThread(this) );
 		writeThread.start();
 
 		byte[] rawbuffer = new byte[ WebSocketImpl.RCVBUF ];
@@ -437,9 +436,9 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 		if( port == -1 ) {
 			String scheme = uri.getScheme();
 			if( "wss".equals( scheme ) ) {
-				return WebSocket.DEFAULT_WSS_PORT;
+				return WebSocketImpl.DEFAULT_WSS_PORT;
 			} else if(  "ws".equals( scheme ) ) {
-				return WebSocket.DEFAULT_PORT;
+				return WebSocketImpl.DEFAULT_PORT;
 			} else {
 				throw new IllegalArgumentException( "unknown scheme: " + scheme );
 			}
@@ -463,7 +462,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 			path += '?' + part2;
 		int port = getPort();
 		String host = uri.getHost() + ( 
-			(port != WebSocket.DEFAULT_PORT && port != WebSocket.DEFAULT_WSS_PORT)
+			(port != WebSocketImpl.DEFAULT_PORT && port != WebSocketImpl.DEFAULT_WSS_PORT)
 			? ":" + port 
 			: "" );
 
@@ -637,6 +636,13 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 
 
 	private class WebsocketWriteThread implements Runnable {
+
+		private final WebSocketClient webSocketClient;
+
+		WebsocketWriteThread(WebSocketClient webSocketClient) {
+			this.webSocketClient = webSocketClient;
+		}
+
 		@Override
 		public void run() {
 			Thread.currentThread().setName( "WebSocketWriteThread-" + Thread.currentThread().getId() );
@@ -661,20 +667,23 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 				writeThread = null;
 			}
 		}
-	}
 
-	/**
-	 * Closing the socket
-	 */
-	private void closeSocket() {
-		try {
-			if( socket != null ) {
-				socket.close();
+		/**
+		 * Closing the socket
+		 */
+		private void closeSocket() {
+			try {
+				if( socket != null ) {
+					socket.close();
+				}
+			} catch ( IOException ex ) {
+				onWebsocketError( webSocketClient, ex );
 			}
-		} catch ( IOException ex ) {
-			onWebsocketError( this, ex );
 		}
 	}
+
+
+
 
 	/**
 	 * Method to set a proxy for this connection
@@ -745,7 +754,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	}
 
 	@Override
-	public void send( ByteBuffer bytes ) throws IllegalArgumentException , NotYetConnectedException {
+	public void send( ByteBuffer bytes ) {
 		engine.send( bytes );
 	}
 

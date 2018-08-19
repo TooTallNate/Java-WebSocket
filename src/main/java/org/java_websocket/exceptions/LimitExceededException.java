@@ -25,46 +25,36 @@
 
 package org.java_websocket.exceptions;
 
+import org.java_websocket.framing.CloseFrame;
+
 /**
- * exception which indicates that a incomplete handshake was recieved
+ * exception which indicates that the message limited was exceeded (CloseFrame.TOOBIG)
  */
-public class IncompleteHandshakeException extends RuntimeException {
+public class LimitExceededException extends InvalidDataException {
 
     /**
      * Serializable
      */
-    private static final long serialVersionUID = 7906596804233893092L;
+    private static final long serialVersionUID = 6908339749836826785L;
 
     /**
-     * attribut which size of handshake would have been prefered
-     */
-    private final int preferredSize;
-
-    /**
-     * constructor for a IncompleteHandshakeException
+     * constructor for a LimitExceededException
      * <p>
-     * @param preferredSize the prefered size
+     * calling InvalidDataException with closecode TOOBIG
      */
-    public IncompleteHandshakeException(int preferredSize) {
-        this.preferredSize = preferredSize;
+    public LimitExceededException() {
+        super( CloseFrame.TOOBIG);
     }
 
     /**
-     * constructor for a IncompleteHandshakeException
+     * constructor for a LimitExceededException
      * <p>
-     * preferredSize will be 0
-     */
-    public IncompleteHandshakeException() {
-        this.preferredSize = 0;
-    }
-
-    /**
-     * Getter preferredSize
+     * calling InvalidDataException with closecode TOOBIG
      *
-     * @return the preferredSize
+     * @param s the detail message.
      */
-    public int getPreferredSize() {
-        return preferredSize;
+    public LimitExceededException(String s) {
+        super( CloseFrame.TOOBIG, s);
     }
 
 }

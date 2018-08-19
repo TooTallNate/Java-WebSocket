@@ -26,6 +26,7 @@
 package org.java_websocket.util;
 
 import org.java_websocket.exceptions.InvalidDataException;
+import org.java_websocket.exceptions.InvalidEncodingException;
 import org.java_websocket.framing.CloseFrame;
 
 import java.io.UnsupportedEncodingException;
@@ -51,7 +52,7 @@ public class Charsetfunctions {
 		try {
 			return s.getBytes( "UTF8" );
 		} catch ( UnsupportedEncodingException e ) {
-			throw new RuntimeException( e );
+			throw new InvalidEncodingException( e );
 		}
 	}
 
@@ -62,7 +63,7 @@ public class Charsetfunctions {
 		try {
 			return s.getBytes( "ASCII" );
 		} catch ( UnsupportedEncodingException e ) {
-			throw new RuntimeException( e );
+			throw new InvalidEncodingException( e );
 		}
 	}
 
@@ -74,7 +75,7 @@ public class Charsetfunctions {
 		try {
 			return new String( bytes, offset, length, "ASCII" );
 		} catch ( UnsupportedEncodingException e ) {
-			throw new RuntimeException( e );
+			throw new InvalidEncodingException( e );
 		}
 	}
 
@@ -86,7 +87,6 @@ public class Charsetfunctions {
 		CharsetDecoder decode = Charset.forName( "UTF8" ).newDecoder();
 		decode.onMalformedInput( codingErrorAction );
 		decode.onUnmappableCharacter( codingErrorAction );
-		// decode.replaceWith( "X" );
 		String s;
 		try {
 			bytes.mark();

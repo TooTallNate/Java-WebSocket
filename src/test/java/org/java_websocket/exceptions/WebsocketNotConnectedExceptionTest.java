@@ -25,36 +25,20 @@
 
 package org.java_websocket.exceptions;
 
-import org.java_websocket.framing.CloseFrame;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
- * exception which indicates that the message limited was exedeeded (CloseFrame.TOOBIG)
+ * JUnit Test for the WebsocketNotConnectedException class
  */
-public class LimitExedeedException extends InvalidDataException {
+public class WebsocketNotConnectedExceptionTest {
 
-    /**
-     * Serializable
-     */
-    private static final long serialVersionUID = 6908339749836826785L;
-
-    /**
-     * constructor for a LimitExedeedException
-     * <p>
-     * calling InvalidDataException with closecode TOOBIG
-     */
-    public LimitExedeedException() {
-        super( CloseFrame.TOOBIG);
+    @Test
+    public void testConstructor() {
+        WebsocketNotConnectedException websocketNotConnectedException = new WebsocketNotConnectedException();
+        assertNotNull(websocketNotConnectedException);
     }
-
-    /**
-     * constructor for a LimitExedeedException
-     * <p>
-     * calling InvalidDataException with closecode TOOBIG
-     *
-     * @param s the detail message.
-     */
-    public LimitExedeedException(String s) {
-        super( CloseFrame.TOOBIG, s);
-    }
-
 }

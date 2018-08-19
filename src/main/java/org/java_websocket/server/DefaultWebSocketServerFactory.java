@@ -49,5 +49,6 @@ public class DefaultWebSocketServerFactory implements WebSocketServerFactory {
 	}
 	@Override
 	public void close() {
+		//Nothing to do for a normal ws factory
 	}
 }
