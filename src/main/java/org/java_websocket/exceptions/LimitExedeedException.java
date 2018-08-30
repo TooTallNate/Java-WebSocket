@@ -38,12 +38,37 @@ public class LimitExedeedException extends InvalidDataException {
     private static final long serialVersionUID = 6908339749836826785L;
 
     /**
+     * A closer indication about the limit
+     */
+    private final int limit;
+
+    /**
      * constructor for a LimitExedeedException
      * <p>
      * calling InvalidDataException with closecode TOOBIG
      */
     public LimitExedeedException() {
+        this(Integer.MAX_VALUE);
+    }
+
+    /**
+     * constructor for a LimitExedeedException
+     * <p>
+     * calling InvalidDataException with closecode TOOBIG
+     */
+    public LimitExedeedException(int limit) {
         super( CloseFrame.TOOBIG);
+        this.limit = limit;
+    }
+
+    /**
+     * constructor for a LimitExedeedException
+     * <p>
+     * calling InvalidDataException with closecode TOOBIG
+     */
+    public LimitExedeedException(String s, int limit) {
+        super( CloseFrame.TOOBIG, s);
+        this.limit = limit;
     }
 
     /**
@@ -54,7 +79,14 @@ public class LimitExedeedException extends InvalidDataException {
      * @param s the detail message.
      */
     public LimitExedeedException(String s) {
-        super( CloseFrame.TOOBIG, s);
+        this(s, Integer.MAX_VALUE);
     }
 
+    /**
+     * Get the limit which was hit so this exception was caused
+     * @return the limit as int
+     */
+    public int getLimit() {
+        return limit;
+    }
 }

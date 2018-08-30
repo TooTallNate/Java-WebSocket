@@ -28,10 +28,7 @@ package org.java_websocket;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.enums.*;
-import org.java_websocket.exceptions.IncompleteHandshakeException;
-import org.java_websocket.exceptions.InvalidDataException;
-import org.java_websocket.exceptions.InvalidHandshakeException;
-import org.java_websocket.exceptions.WebsocketNotConnectedException;
+import org.java_websocket.exceptions.*;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.framing.PingFrame;
@@ -370,6 +367,14 @@ public class WebSocketImpl implements WebSocket {
 				draft.processFrame( this, f );
 			}
 		} catch ( InvalidDataException e ) {
+			if (e instanceof LimitExedeedException) {
+				//If it is a limit exceeded, we need to check weather it is relevant for logging (Integer.Max_Value) or caused by a custom limit (suppress)
+				LimitExedeedException limitExedeedException = (LimitExedeedException)e;
+				if (limitExedeedException.getLimit() != Integer.MAX_VALUE) {
+					close(e);
+					return;
+				}
+			}
 			log.error("Closing due to invalid data in frame", e);
 			wsl.onWebsocketError( this, e );
 			close(e);
