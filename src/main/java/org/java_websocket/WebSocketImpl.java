@@ -366,15 +366,13 @@ public class WebSocketImpl implements WebSocket {
 				log.trace( "matched frame: {}" , f );
 				draft.processFrame( this, f );
 			}
-		} catch ( InvalidDataException e ) {
-			if (e instanceof LimitExedeedException) {
-				//If it is a limit exceeded, we need to check weather it is relevant for logging (Integer.Max_Value) or caused by a custom limit (suppress)
-				LimitExedeedException limitExedeedException = (LimitExedeedException)e;
-				if (limitExedeedException.getLimit() != Integer.MAX_VALUE) {
-					close(e);
-					return;
-				}
+		} catch ( LimitExedeedException e ) {
+			if (e.getLimit() == Integer.MAX_VALUE) {
+				log.error("Closing due to invalid size of frame", e);
+				wsl.onWebsocketError(this, e);
 			}
+			close(e);
+		} catch ( InvalidDataException e ) {
 			log.error("Closing due to invalid data in frame", e);
 			wsl.onWebsocketError( this, e );
 			close(e);
