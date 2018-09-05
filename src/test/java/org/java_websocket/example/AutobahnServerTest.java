@@ -38,10 +38,13 @@ import java.util.Collections;
 
 public class AutobahnServerTest extends WebSocketServer {
 
-	private static int counter = 0;
+	private static int openCounter = 0;
+	private static int closeCounter = 0;
+	private int limit = Integer.MAX_VALUE;
 
-	public AutobahnServerTest( int port, Draft d ) throws UnknownHostException {
+	public AutobahnServerTest(int port, int limit, Draft d) throws UnknownHostException {
 		super( new InetSocketAddress( port ), Collections.singletonList( d ) );
+		this.limit = limit;
 	}
 
 	public AutobahnServerTest( InetSocketAddress address, Draft d ) {
@@ -50,13 +53,17 @@ public class AutobahnServerTest extends WebSocketServer {
 
 	@Override
 	public void onOpen( WebSocket conn, ClientHandshake handshake ) {
-		counter++;
-		System.out.println( "///////////Opened connection number" + counter );
+		openCounter++;
+		System.out.println( "///////////Opened connection number" + openCounter);
 	}
 
 	@Override
 	public void onClose( WebSocket conn, int code, String reason, boolean remote ) {
+		closeCounter++;
 		System.out.println( "closed" );
+		if (closeCounter >= limit) {
+			System.exit(0);
+		}
 	}
 
 	@Override
@@ -81,14 +88,20 @@ public class AutobahnServerTest extends WebSocketServer {
 	}
 
 	public static void main( String[] args ) throws UnknownHostException {
-		int port;
+		int port, limit;
 		try {
 			port = new Integer( args[0] );
 		} catch ( Exception e ) {
 			System.out.println( "No port specified. Defaulting to 9003" );
 			port = 9003;
 		}
-		AutobahnServerTest test = new AutobahnServerTest( port, new Draft_6455() );
+		try {
+			limit = new Integer( args[1] );
+		} catch ( Exception e ) {
+			System.out.println( "No limit specified. Defaulting to MaxInteger" );
+			limit = Integer.MAX_VALUE;
+		}
+		AutobahnServerTest test = new AutobahnServerTest( port, limit, new Draft_6455() );
 		test.setConnectionLostTimeout( 0 );
 		test.start();
 	}

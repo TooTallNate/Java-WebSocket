@@ -33,6 +33,7 @@ import org.junit.runners.Suite;
 		org.java_websocket.issues.Issue609Test.class,
 		org.java_websocket.issues.Issue621Test.class,
 		org.java_websocket.issues.Issue580Test.class,
+		org.java_websocket.issues.Issue598Test.class,
 		org.java_websocket.issues.Issue256Test.class,
 		org.java_websocket.issues.Issue661Test.class,
 		org.java_websocket.issues.Issue666Test.class,

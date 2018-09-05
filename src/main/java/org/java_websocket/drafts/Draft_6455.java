@@ -86,7 +86,7 @@ public class Draft_6455 extends Draft {
 	/**
 	 * Attribute for the payload of the current continuous frame
 	 */
-	private List<ByteBuffer> byteBufferList;
+	private final List<ByteBuffer> byteBufferList;
 
 	/**
 	 * Attribute for the current incomplete frame
@@ -97,6 +97,13 @@ public class Draft_6455 extends Draft {
 	 * Attribute for the reusable random instance
 	 */
 	private final Random reuseableRandom = new Random();
+
+	/**
+	 * Attribute for the maximum allowed size of a frame
+	 *
+	 * @since 1.4.0
+	 */
+	private int maxFrameSize;
 
 	/**
 	 * Constructor for the websocket protocol specified by RFC 6455 with default extensions
@@ -135,7 +142,32 @@ public class Draft_6455 extends Draft {
 	 * @since 1.3.7
 	 */
 	public Draft_6455( List<IExtension> inputExtensions , List<IProtocol> inputProtocols ) {
-		if (inputExtensions == null || inputProtocols == null) {
+		this(inputExtensions, inputProtocols, Integer.MAX_VALUE);
+	}
+
+	/**
+	 * Constructor for the websocket protocol specified by RFC 6455 with custom extensions and protocols
+	 *
+	 * @param inputExtensions the extensions which should be used for this draft
+	 * @param inputMaxFrameSize the maximum allowed size of a frame (the real payload size, decoded frames can be bigger)
+	 *
+	 * @since 1.4.0
+	 */
+	public Draft_6455( List<IExtension> inputExtensions , int inputMaxFrameSize) {
+		this(inputExtensions, Collections.<IProtocol>singletonList( new Protocol( "" )), inputMaxFrameSize);
+	}
+
+	/**
+	 * Constructor for the websocket protocol specified by RFC 6455 with custom extensions and protocols
+	 *
+	 * @param inputExtensions the extensions which should be used for this draft
+	 * @param inputProtocols the protocols which should be used for this draft
+	 * @param inputMaxFrameSize the maximum allowed size of a frame (the real payload size, decoded frames can be bigger)
+	 *
+	 * @since 1.4.0
+	 */
+	public Draft_6455( List<IExtension> inputExtensions , List<IProtocol> inputProtocols, int inputMaxFrameSize ) {
+		if (inputExtensions == null || inputProtocols == null || inputMaxFrameSize < 1) {
 			throw new IllegalArgumentException();
 		}
 		knownExtensions = new ArrayList<IExtension>( inputExtensions.size());
@@ -153,6 +185,7 @@ public class Draft_6455 extends Draft {
 			knownExtensions.add( this.knownExtensions.size(), extension );
 		}
 		knownProtocols.addAll( inputProtocols );
+		maxFrameSize = inputMaxFrameSize;
 	}
 
 	@Override
@@ -263,6 +296,17 @@ public class Draft_6455 extends Draft {
 		return protocol;
 	}
 
+
+	/**
+	 * Getter for the maximum allowed payload size which is used by this draft
+	 *
+	 * @return the size, which is allowed for the payload
+	 * @since 1.4.0
+	 */
+	public int getMaxFrameSize() {
+		return maxFrameSize;
+	}
+
 	/**
 	 * Getter for all available protocols for this draft
 	 * @return the protocols which are enabled for this draft
@@ -337,7 +381,7 @@ public class Draft_6455 extends Draft {
 		for( IProtocol protocol : getKnownProtocols() ) {
 			newProtocols.add( protocol.copyInstance() );
 		}
-		return new Draft_6455( newExtensions, newProtocols );
+		return new Draft_6455( newExtensions, newProtocols, maxFrameSize );
 	}
 
 	@Override
@@ -440,13 +484,17 @@ public class Draft_6455 extends Draft {
 					bytes[i] = buffer.get( /*1 + i*/ );
 				}
 				long length = new BigInteger( bytes ).longValue();
-				if( length > Integer.MAX_VALUE ) {
+				if( length > Integer.MAX_VALUE) {
 					log.trace( "Limit exedeed: Payloadsize is to big..." );
 					throw new LimitExedeedException( "Payloadsize is to big..." );
 				} else {
 					payloadlength = ( int ) length;
 				}
 			}
+		}
+		if( payloadlength > maxFrameSize) {
+			log.trace( "Payload limit reached. Allowed: {0} Current: {1}" , maxFrameSize, payloadlength);
+			throw new LimitExedeedException( "Payload limit reached.", maxFrameSize );
 		}
 
 		// int maskskeystart = foff + realpacketsize;
@@ -682,13 +730,15 @@ public class Draft_6455 extends Draft {
 					throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "Previous continuous frame sequence not completed." );
 				}
 				current_continuous_frame = frame;
-				byteBufferList.add( frame.getPayloadData() );
+				addToBufferList(frame.getPayloadData());
+				checkBufferLimit();
 			} else if( frame.isFin() ) {
 				if( current_continuous_frame == null ) {
 					log.trace( "Protocol error: Previous continuous frame sequence not completed." );
 					throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "Continuous frame sequence was not started." );
 				}
-				byteBufferList.add( frame.getPayloadData() );
+				addToBufferList(frame.getPayloadData());
+				checkBufferLimit();
 				if( current_continuous_frame.getOpcode() == Opcode.TEXT ) {
 					((FramedataImpl1) current_continuous_frame).setPayload( getPayloadFromByteBufferList() );
 					((FramedataImpl1) current_continuous_frame ).isValid();
@@ -709,7 +759,7 @@ public class Draft_6455 extends Draft {
 					}
 				}
 				current_continuous_frame = null;
-				byteBufferList.clear();
+				clearBufferList();
 			} else if( current_continuous_frame == null ) {
 				log.error( "Protocol error: Continuous frame sequence was not started." );
 				throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "Continuous frame sequence was not started." );
@@ -723,7 +773,7 @@ public class Draft_6455 extends Draft {
 			}
 			//Checking if the current continuous frame contains a correct payload with the other frames combined
 			if( curop == Opcode.CONTINUOUS && current_continuous_frame != null ) {
-				byteBufferList.add( frame.getPayloadData() );
+				addToBufferList(frame.getPayloadData());
 			}
 		} else if( current_continuous_frame != null ) {
 			log.error( "Protocol error: Continuous frame sequence not completed." );
@@ -748,6 +798,38 @@ public class Draft_6455 extends Draft {
 		}
 	}
 
+	/**
+	 * Clear the current bytebuffer list
+	 */
+	private void clearBufferList() {
+		synchronized (byteBufferList) {
+			byteBufferList.clear();
+		}
+	}
+
+	/**
+	 * Add a payload to the current bytebuffer list
+	 * @param payloadData the new payload
+	 */
+	private void addToBufferList(ByteBuffer payloadData) {
+		synchronized (byteBufferList) {
+			byteBufferList.add(payloadData);
+		}
+	}
+
+	/**
+	 * Check the current size of the buffer and throw an exception if the size is bigger than the max allowed frame size
+	 * @throws LimitExedeedException if the current size is bigger than the allowed size
+	 */
+	private void checkBufferLimit() throws LimitExedeedException {
+		long totalSize = getByteBufferListSize();
+		if( totalSize > maxFrameSize ) {
+			clearBufferList();
+			log.trace("Payload limit reached. Allowed: {0} Current: {1}", maxFrameSize, totalSize);
+			throw new LimitExedeedException(maxFrameSize);
+		}
+	}
+
 	@Override
 	public CloseHandshakeType getCloseHandshakeType() {
 		return CloseHandshakeType.TWOWAY;
@@ -760,24 +842,27 @@ public class Draft_6455 extends Draft {
 			result += " extension: " + getExtension().toString();
 		if ( getProtocol() != null )
 			result += " protocol: " + getProtocol().toString();
+		result += " max frame size: " + this.maxFrameSize;
 		return result;
 	}
 
 	@Override
-	public boolean equals( Object o ) {
-		if( this == o ) return true;
-		if( o == null || getClass() != o.getClass() ) return false;
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
 
-		Draft_6455 that = ( Draft_6455 ) o;
+		Draft_6455 that = (Draft_6455) o;
 
-		if( extension != null ? !extension.equals( that.extension ) : that.extension != null ) return false;
-		return protocol != null ? protocol.equals( that.protocol ) : that.protocol == null;
+		if (maxFrameSize != that.getMaxFrameSize()) return false;
+		if (extension != null ? !extension.equals(that.getExtension()) : that.getExtension() != null) return false;
+		return protocol != null ? protocol.equals(that.getProtocol()) : that.getProtocol() == null;
 	}
 
 	@Override
 	public int hashCode() {
 		int result = extension != null ? extension.hashCode() : 0;
-		result = 31 * result + ( protocol != null ? protocol.hashCode() : 0 );
+		result = 31 * result + (protocol != null ? protocol.hashCode() : 0);
+		result = 31 * result + (int) (maxFrameSize ^ (maxFrameSize >>> 32));
 		return result;
 	}
 
@@ -788,18 +873,32 @@ public class Draft_6455 extends Draft {
 	 */
 	private ByteBuffer getPayloadFromByteBufferList() throws LimitExedeedException {
 		long totalSize = 0;
-		for (ByteBuffer buffer : byteBufferList) {
-			totalSize +=buffer.limit();
-		}
-		if (totalSize > Integer.MAX_VALUE) {
-			log.trace( "Payloadsize is to big...");
-			throw new LimitExedeedException( "Payloadsize is to big..." );
-		}
-		ByteBuffer resultingByteBuffer = ByteBuffer.allocate( (int) totalSize );
-		for (ByteBuffer buffer : byteBufferList) {
-			resultingByteBuffer.put( buffer );
+		ByteBuffer resultingByteBuffer;
+		synchronized (byteBufferList) {
+			for (ByteBuffer buffer : byteBufferList) {
+				totalSize += buffer.limit();
+			}
+			checkBufferLimit();
+			resultingByteBuffer = ByteBuffer.allocate( (int) totalSize );
+			for (ByteBuffer buffer : byteBufferList) {
+				resultingByteBuffer.put( buffer );
+			}
 		}
 		resultingByteBuffer.flip();
 		return resultingByteBuffer;
+	}
+
+	/**
+	 * Get the current size of the resulting bytebuffer in the bytebuffer list
+	 * @return the size as long (to not get an integer overflow)
+	 */
+	private long getByteBufferListSize() {
+		long totalSize = 0;
+		synchronized (byteBufferList) {
+			for (ByteBuffer buffer : byteBufferList) {
+				totalSize += buffer.limit();
+			}
+		}
+		return totalSize;
 	}
 }

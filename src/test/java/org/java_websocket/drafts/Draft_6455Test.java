@@ -96,6 +96,18 @@ public class Draft_6455Test {
 		} catch ( IllegalArgumentException e ) {
 			//Fine
 		}
+		try {
+			Draft_6455 draft_6455 = new Draft_6455( Collections.<IExtension>emptyList(), Collections.<IProtocol>emptyList(), -1 );
+			fail( "IllegalArgumentException expected" );
+		} catch ( IllegalArgumentException e ) {
+			//Fine
+		}
+		try {
+			Draft_6455 draft_6455 = new Draft_6455( Collections.<IExtension>emptyList(), Collections.<IProtocol>emptyList(), 0 );
+			fail( "IllegalArgumentException expected" );
+		} catch ( IllegalArgumentException e ) {
+			//Fine
+		}
 		Draft_6455 draft_6455 = new Draft_6455( Collections.<IExtension>emptyList(), Collections.<IProtocol>emptyList() );
 		assertEquals( 1, draft_6455.getKnownExtensions().size() );
 		assertEquals( 0, draft_6455.getKnownProtocols().size() );
@@ -159,7 +171,7 @@ public class Draft_6455Test {
 
 	@Test
 	public void testReset() throws Exception {
-		Draft_6455 draft_6455 = new Draft_6455( Collections.<IExtension>singletonList( new TestExtension() ) );
+		Draft_6455 draft_6455 = new Draft_6455( Collections.<IExtension>singletonList( new TestExtension() ), 100 );
 		draft_6455.acceptHandshakeAsServer( handshakedataProtocolExtension );
 		List<IExtension> extensionList = new ArrayList<IExtension>( draft_6455.getKnownExtensions() );
 		List<IProtocol> protocolList = new ArrayList<IProtocol>( draft_6455.getKnownProtocols() );
@@ -180,17 +192,21 @@ public class Draft_6455Test {
 	@Test
 	public void testToString() throws Exception {
 		Draft_6455 draft_6455 = new Draft_6455();
-		assertEquals( "Draft_6455 extension: DefaultExtension", draft_6455.toString() );
+		assertEquals( "Draft_6455 extension: DefaultExtension max frame size: 2147483647", draft_6455.toString() );
 		draft_6455.acceptHandshakeAsServer( handshakedataProtocolExtension );
-		assertEquals( "Draft_6455 extension: DefaultExtension", draft_6455.toString() );
+		assertEquals( "Draft_6455 extension: DefaultExtension max frame size: 2147483647", draft_6455.toString() );
 		draft_6455 = new Draft_6455( Collections.<IExtension>emptyList(), Collections.<IProtocol>singletonList( new Protocol( "chat" ) ) );
-		assertEquals( "Draft_6455 extension: DefaultExtension", draft_6455.toString() );
+		assertEquals( "Draft_6455 extension: DefaultExtension max frame size: 2147483647", draft_6455.toString() );
 		draft_6455.acceptHandshakeAsServer( handshakedataProtocolExtension );
-		assertEquals( "Draft_6455 extension: DefaultExtension protocol: chat", draft_6455.toString() );
+		assertEquals( "Draft_6455 extension: DefaultExtension protocol: chat max frame size: 2147483647", draft_6455.toString() );
 		draft_6455 = new Draft_6455( Collections.<IExtension>singletonList( new TestExtension() ), Collections.<IProtocol>singletonList( new Protocol( "chat" ) ) );
-		assertEquals( "Draft_6455 extension: DefaultExtension", draft_6455.toString() );
+		assertEquals( "Draft_6455 extension: DefaultExtension max frame size: 2147483647", draft_6455.toString() );
 		draft_6455.acceptHandshakeAsServer( handshakedataProtocolExtension );
-		assertEquals( "Draft_6455 extension: TestExtension protocol: chat", draft_6455.toString() );
+		assertEquals( "Draft_6455 extension: TestExtension protocol: chat max frame size: 2147483647", draft_6455.toString() );
+		draft_6455 = new Draft_6455( Collections.<IExtension>emptyList(), Collections.<IProtocol>singletonList( new Protocol( "chat" ) ) ,10);
+		assertEquals( "Draft_6455 extension: DefaultExtension max frame size: 10", draft_6455.toString() );
+		draft_6455.acceptHandshakeAsServer( handshakedataProtocolExtension );
+		assertEquals( "Draft_6455 extension: DefaultExtension protocol: chat max frame size: 10", draft_6455.toString() );
 	}
 
 	@Test

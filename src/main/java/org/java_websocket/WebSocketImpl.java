@@ -28,10 +28,7 @@ package org.java_websocket;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.enums.*;
-import org.java_websocket.exceptions.IncompleteHandshakeException;
-import org.java_websocket.exceptions.InvalidDataException;
-import org.java_websocket.exceptions.InvalidHandshakeException;
-import org.java_websocket.exceptions.WebsocketNotConnectedException;
+import org.java_websocket.exceptions.*;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.framing.PingFrame;
@@ -369,6 +366,12 @@ public class WebSocketImpl implements WebSocket {
 				log.trace( "matched frame: {}" , f );
 				draft.processFrame( this, f );
 			}
+		} catch ( LimitExedeedException e ) {
+			if (e.getLimit() == Integer.MAX_VALUE) {
+				log.error("Closing due to invalid size of frame", e);
+				wsl.onWebsocketError(this, e);
+			}
+			close(e);
 		} catch ( InvalidDataException e ) {
 			log.error("Closing due to invalid data in frame", e);
 			wsl.onWebsocketError( this, e );

@@ -265,8 +265,15 @@ public class SSLSocketChannel implements WrappedByteChannel, ByteChannel {
 		peerNetData.clear();
 
 		handshakeStatus = engine.getHandshakeStatus();
-		while( handshakeStatus != SSLEngineResult.HandshakeStatus.FINISHED && handshakeStatus != SSLEngineResult.HandshakeStatus.NOT_HANDSHAKING ) {
+		boolean handshakeComplete = false;
+		while( !handshakeComplete) {
 			switch(handshakeStatus) {
+				case FINISHED:
+					handshakeComplete = !this.peerNetData.hasRemaining();
+					if (handshakeComplete)
+						return true;
+					socketChannel.write(this.peerNetData);
+					break;
 				case NEED_UNWRAP:
 					if( socketChannel.read( peerNetData ) < 0 ) {
 						if( engine.isInboundDone() && engine.isOutboundDone() ) {
@@ -316,6 +323,8 @@ public class SSLSocketChannel implements WrappedByteChannel, ByteChannel {
 					}
 					break;
 				case NEED_WRAP:
+
+
 					myNetData.clear();
 					try {
 						result = engine.wrap( myAppData, myNetData );
@@ -363,8 +372,7 @@ public class SSLSocketChannel implements WrappedByteChannel, ByteChannel {
 					}
 					handshakeStatus = engine.getHandshakeStatus();
 					break;
-				case FINISHED:
-					break;
+
 				case NOT_HANDSHAKING:
 					break;
 				default:
