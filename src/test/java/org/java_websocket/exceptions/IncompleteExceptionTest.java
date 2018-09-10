@@ -25,46 +25,21 @@
 
 package org.java_websocket.exceptions;
 
+import org.junit.Test;
+
+import java.io.UnsupportedEncodingException;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 /**
- * exception which indicates that a incomplete handshake was recieved
+ * JUnit Test for the IncompleteException class
  */
-public class IncompleteHandshakeException extends RuntimeException {
+public class IncompleteExceptionTest {
 
-    /**
-     * Serializable
-     */
-    private static final long serialVersionUID = 7906596804233893092L;
-
-    /**
-     * attribut which size of handshake would have been prefered
-     */
-    private final int preferredSize;
-
-    /**
-     * constructor for a IncompleteHandshakeException
-     * <p>
-     * @param preferredSize the prefered size
-     */
-    public IncompleteHandshakeException(int preferredSize) {
-        this.preferredSize = preferredSize;
+    @Test
+    public void testConstructor() {
+        IncompleteException incompleteException = new IncompleteException(42);
+        assertEquals("The argument should be set", 42, incompleteException.getPreferredSize());
     }
-
-    /**
-     * constructor for a IncompleteHandshakeException
-     * <p>
-     * preferredSize will be 0
-     */
-    public IncompleteHandshakeException() {
-        this.preferredSize = 0;
-    }
-
-    /**
-     * Getter preferredSize
-     *
-     * @return the preferredSize
-     */
-    public int getPreferredSize() {
-        return preferredSize;
-    }
-
 }

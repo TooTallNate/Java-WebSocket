@@ -25,46 +25,20 @@
 
 package org.java_websocket.exceptions;
 
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 /**
- * exception which indicates that a incomplete handshake was recieved
+ * JUnit Test for the WebsocketNotConnectedException class
  */
-public class IncompleteHandshakeException extends RuntimeException {
+public class WebsocketNotConnectedExceptionTest {
 
-    /**
-     * Serializable
-     */
-    private static final long serialVersionUID = 7906596804233893092L;
-
-    /**
-     * attribut which size of handshake would have been prefered
-     */
-    private final int preferredSize;
-
-    /**
-     * constructor for a IncompleteHandshakeException
-     * <p>
-     * @param preferredSize the prefered size
-     */
-    public IncompleteHandshakeException(int preferredSize) {
-        this.preferredSize = preferredSize;
+    @Test
+    public void testConstructor() {
+        WebsocketNotConnectedException websocketNotConnectedException = new WebsocketNotConnectedException();
+        assertNotNull(websocketNotConnectedException);
     }
-
-    /**
-     * constructor for a IncompleteHandshakeException
-     * <p>
-     * preferredSize will be 0
-     */
-    public IncompleteHandshakeException() {
-        this.preferredSize = 0;
-    }
-
-    /**
-     * Getter preferredSize
-     *
-     * @return the preferredSize
-     */
-    public int getPreferredSize() {
-        return preferredSize;
-    }
-
 }

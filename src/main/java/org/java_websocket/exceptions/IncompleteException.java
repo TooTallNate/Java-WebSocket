@@ -28,7 +28,7 @@ package org.java_websocket.exceptions;
 /**
  * Exception which indicates that the frame is not yet complete
  */
-public class IncompleteException extends Throwable {
+public class IncompleteException extends Exception {
 
 	/**
 	 * It's Serializable.
@@ -38,7 +38,7 @@ public class IncompleteException extends Throwable {
 	/**
 	 * The preferred size
 	 */
-	private int preferredSize;
+	private final int preferredSize;
 
 	/**
 	 * Constructor for the preferred size of a frame

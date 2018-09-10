@@ -115,17 +115,14 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
 
     private void consumeFutureUninterruptible( Future<?> f ) {
         try {
-            boolean interrupted = false;
             while ( true ) {
                 try {
                     f.get();
                     break;
                 } catch ( InterruptedException e ) {
-                    interrupted = true;
+                    Thread.currentThread().interrupt();
                 }
             }
-            if( interrupted )
-                Thread.currentThread().interrupt();
         } catch ( ExecutionException e ) {
             throw new RuntimeException( e );
         }

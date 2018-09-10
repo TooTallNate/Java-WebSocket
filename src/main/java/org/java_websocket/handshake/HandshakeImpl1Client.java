@@ -36,7 +36,7 @@ public class HandshakeImpl1Client extends HandshakedataImpl1 implements ClientHa
 	private String resourceDescriptor = "*";
 
 	@Override
-	public void setResourceDescriptor( String resourceDescriptor ) throws IllegalArgumentException {
+	public void setResourceDescriptor( String resourceDescriptor ) {
 		if(resourceDescriptor==null)
 			throw new IllegalArgumentException( "http resource descriptor must not be null" );
 		this.resourceDescriptor = resourceDescriptor;

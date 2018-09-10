@@ -29,7 +29,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.channels.NotYetConnectedException;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -47,6 +46,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.java_websocket.client.WebSocketClient;
+import org.java_websocket.exceptions.WebsocketNotConnectedException;
 
 public class ServerStressTest extends JFrame {
 	private JSlider clients;
@@ -225,7 +225,7 @@ public class ServerStressTest extends JFrame {
 			for( WebSocketClient cl : websockets ) {
 				try {
 					cl.send( payload );
-				} catch ( NotYetConnectedException e ) {
+				} catch ( WebsocketNotConnectedException e ) {
 					notyetconnected++;
 				}
 			}

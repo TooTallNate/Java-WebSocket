@@ -54,11 +54,18 @@ public class CloseFrameTest {
         }
     }
 
-    @Test
+   @Test
     public void testExtends() {
         CloseFrame frame = new CloseFrame();
         assertEquals("Frame must extend dataframe", true, frame instanceof ControlFrame);
     }
+
+    @Test
+    public void testToString() {
+        CloseFrame frame = new CloseFrame();
+        assertEquals("Frame toString must include a close code", "Framedata{ optcode:CLOSING, fin:true, rsv1:false, rsv2:false, rsv3:false, payloadlength:[pos:0, len:2], payload:\u0003è}code: 1000",frame.toString());
+    }
+
 
     @Test
     public void testIsValid() {
@@ -125,6 +132,7 @@ public class CloseFrameTest {
             fail("InvalidDataException should not be thrown");
         }
         frame.setCode(CloseFrame.NOCODE);
+        assertEquals(0,frame.getPayloadData().capacity());
         try {
             frame.isValid();
             fail("InvalidDataException should be thrown");

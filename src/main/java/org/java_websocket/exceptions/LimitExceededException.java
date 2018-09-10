@@ -28,9 +28,9 @@ package org.java_websocket.exceptions;
 import org.java_websocket.framing.CloseFrame;
 
 /**
- * exception which indicates that the message limited was exedeeded (CloseFrame.TOOBIG)
+ * exception which indicates that the message limited was exceeded (CloseFrame.TOOBIG)
  */
-public class LimitExedeedException extends InvalidDataException {
+public class LimitExceededException extends InvalidDataException {
 
     /**
      * Serializable
@@ -43,42 +43,42 @@ public class LimitExedeedException extends InvalidDataException {
     private final int limit;
 
     /**
-     * constructor for a LimitExedeedException
+     * constructor for a LimitExceededException
      * <p>
-     * calling InvalidDataException with closecode TOOBIG
+     * calling LimitExceededException with closecode TOOBIG
      */
-    public LimitExedeedException() {
+    public LimitExceededException() {
         this(Integer.MAX_VALUE);
     }
 
     /**
-     * constructor for a LimitExedeedException
+     * constructor for a LimitExceededException
      * <p>
      * calling InvalidDataException with closecode TOOBIG
      */
-    public LimitExedeedException(int limit) {
+    public LimitExceededException(int limit) {
         super( CloseFrame.TOOBIG);
         this.limit = limit;
     }
 
     /**
-     * constructor for a LimitExedeedException
+     * constructor for a LimitExceededException
      * <p>
      * calling InvalidDataException with closecode TOOBIG
      */
-    public LimitExedeedException(String s, int limit) {
+    public LimitExceededException(String s, int limit) {
         super( CloseFrame.TOOBIG, s);
         this.limit = limit;
     }
 
     /**
-     * constructor for a LimitExedeedException
+     * constructor for a LimitExceededException
      * <p>
      * calling InvalidDataException with closecode TOOBIG
      *
      * @param s the detail message.
      */
-    public LimitExedeedException(String s) {
+    public LimitExceededException(String s) {
         this(s, Integer.MAX_VALUE);
     }
 

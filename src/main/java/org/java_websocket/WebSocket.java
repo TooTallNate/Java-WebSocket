@@ -27,29 +27,15 @@ package org.java_websocket;
 
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.NotYetConnectedException;
 import java.util.Collection;
 
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.enums.Opcode;
 import org.java_websocket.enums.ReadyState;
+import org.java_websocket.exceptions.WebsocketNotConnectedException;
 import org.java_websocket.framing.Framedata;
 
 public interface WebSocket {
-
-	/**
-	 * The default port of WebSockets, as defined in the spec. If the nullary
-	 * constructor is used, DEFAULT_PORT will be the port the WebSocketServer
-	 * is binded to. Note that ports under 1024 usually require root permissions.
-	 */
-	int DEFAULT_PORT = 80;
-
-	/**
-	 * The default wss port of WebSockets, as defined in the spec. If the nullary
-	 * constructor is used, DEFAULT_WSS_PORT will be the port the WebSocketServer
-	 * is binded to. Note that ports under 1024 usually require root permissions.
-	 */
-	int DEFAULT_WSS_PORT = 443;
 
 	/**
 	 * sends the closing handshake.
@@ -81,7 +67,7 @@ public interface WebSocket {
 	 * Send Text data to the other end.
 	 *
 	 * @param text the text data to send
-	 * @throws NotYetConnectedException websocket is not yet connected
+	 * @throws WebsocketNotConnectedException websocket is not yet connected
 	 */
 	void send( String text );
 
@@ -90,7 +76,7 @@ public interface WebSocket {
 	 *
 	 * @param bytes the binary data to send
 	 * @throws IllegalArgumentException the data is null
-	 * @throws NotYetConnectedException websocket is not yet connected
+	 * @throws WebsocketNotConnectedException websocket is not yet connected
 	 */
 	void send( ByteBuffer bytes );
 
@@ -99,7 +85,7 @@ public interface WebSocket {
 	 *
 	 * @param bytes the byte array to send
 	 * @throws IllegalArgumentException the data is null
-	 * @throws NotYetConnectedException websocket is not yet connected
+	 * @throws WebsocketNotConnectedException websocket is not yet connected
 	 */
 	void send( byte[] bytes );
 
@@ -117,9 +103,9 @@ public interface WebSocket {
 
 	/**
 	 * Send a ping to the other end
-	 * @throws NotYetConnectedException websocket is not yet connected
+	 * @throws WebsocketNotConnectedException websocket is not yet connected
 	 */
-	void sendPing() throws NotYetConnectedException;
+	void sendPing();
 
 	/**
 	 * Allows to send continuous/fragmented frames conveniently. <br>

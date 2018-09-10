@@ -39,7 +39,6 @@ import org.java_websocket.enums.Role;
 import org.java_websocket.exceptions.IncompleteHandshakeException;
 import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.exceptions.InvalidHandshakeException;
-import org.java_websocket.exceptions.LimitExedeedException;
 import org.java_websocket.framing.*;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.handshake.ClientHandshakeBuilder;
@@ -86,7 +85,7 @@ public abstract class Draft {
 		return b == null ? null : Charsetfunctions.stringAscii( b.array(), 0, b.limit() );
 	}
 
-	public static HandshakeBuilder translateHandshakeHttp( ByteBuffer buf, Role role ) throws InvalidHandshakeException , IncompleteHandshakeException {
+	public static HandshakeBuilder translateHandshakeHttp( ByteBuffer buf, Role role ) throws InvalidHandshakeException {
 		HandshakeBuilder handshake;
 
 		String line = readStringLine( buf );
@@ -97,33 +96,11 @@ public abstract class Draft {
 		if( firstLineTokens.length != 3 ) {
 			throw new InvalidHandshakeException();
 		}
-
 		if( role == Role.CLIENT ) {
-			// translating/parsing the response from the SERVER
-			if (!"101".equals(firstLineTokens[1])) {
-				throw new InvalidHandshakeException( "Invalid status code received: " + firstLineTokens[1] + " Status line: " + line);
-			}
-			if (!"HTTP/1.1".equalsIgnoreCase(firstLineTokens[0])) {
-				throw new InvalidHandshakeException( "Invalid status line received: " + firstLineTokens[0] + " Status line: " + line);
-			}
-
-			handshake = new HandshakeImpl1Server();
-			ServerHandshakeBuilder serverhandshake = (ServerHandshakeBuilder) handshake;
-			serverhandshake.setHttpStatus( Short.parseShort( firstLineTokens[ 1 ] ) );
-			serverhandshake.setHttpStatusMessage( firstLineTokens[ 2 ] );
+			handshake = prvTranslateHandshakeHttpClient(firstLineTokens, line);
 		} else {
-			// translating/parsing the request from the CLIENT
-			if (!"GET".equalsIgnoreCase(firstLineTokens[0])) {
-				throw new InvalidHandshakeException( "Invalid request method received: " + firstLineTokens[0] + " Status line: " + line);
-			}
-			if (!"HTTP/1.1".equalsIgnoreCase(firstLineTokens[2])) {
-				throw new InvalidHandshakeException( "Invalid status line received: " + firstLineTokens[2] + " Status line: " + line);
-			}
-			ClientHandshakeBuilder clienthandshake = new HandshakeImpl1Client();
-			clienthandshake.setResourceDescriptor( firstLineTokens[ 1 ] );
-			handshake = clienthandshake;
+			handshake = prvTranslateHandshakeHttpServer(firstLineTokens, line);
 		}
-
 		line = readStringLine( buf );
 		while ( line != null && line.length() > 0 ) {
 			String[] pair = line.split( ":", 2 );
@@ -142,6 +119,46 @@ public abstract class Draft {
 		return handshake;
 	}
 
+	/**
+	 * Checking the handshake for the role as server
+	 * @return a handshake
+	 * @param firstLineTokens the token of the first line split as as an string array
+	 * @param line the whole line
+	 */
+	private static HandshakeBuilder prvTranslateHandshakeHttpServer(String[] firstLineTokens, String line) throws InvalidHandshakeException {
+		// translating/parsing the request from the CLIENT
+		if (!"GET".equalsIgnoreCase(firstLineTokens[0])) {
+			throw new InvalidHandshakeException( String.format("Invalid request method received: %s Status line: %s", firstLineTokens[0],line));
+		}
+		if (!"HTTP/1.1".equalsIgnoreCase(firstLineTokens[2])) {
+			throw new InvalidHandshakeException( String.format("Invalid status line received: %s Status line: %s", firstLineTokens[2], line));
+		}
+		ClientHandshakeBuilder clienthandshake = new HandshakeImpl1Client();
+		clienthandshake.setResourceDescriptor( firstLineTokens[ 1 ] );
+		return clienthandshake;
+	}
+
+	/**
+	 * Checking the handshake for the role as client
+	 * @return a handshake
+	 * @param firstLineTokens the token of the first line split as as an string array
+	 * @param line the whole line
+	 */
+	private static HandshakeBuilder prvTranslateHandshakeHttpClient(String[] firstLineTokens, String line) throws InvalidHandshakeException {
+		// translating/parsing the response from the SERVER
+		if (!"101".equals(firstLineTokens[1])) {
+			throw new InvalidHandshakeException( String.format("Invalid status code received: %s Status line: %s", firstLineTokens[1], line));
+		}
+		if (!"HTTP/1.1".equalsIgnoreCase(firstLineTokens[0])) {
+			throw new InvalidHandshakeException( String.format("Invalid status line received: %s Status line: %s", firstLineTokens[0], line));
+		}
+		HandshakeBuilder handshake = new HandshakeImpl1Server();
+		ServerHandshakeBuilder serverhandshake = (ServerHandshakeBuilder) handshake;
+		serverhandshake.setHttpStatus( Short.parseShort( firstLineTokens[ 1 ] ) );
+		serverhandshake.setHttpStatusMessage( firstLineTokens[ 2 ] );
+		return handshake;
+	}
+
 	public abstract HandshakeState acceptHandshakeAsClient( ClientHandshake request, ServerHandshake response ) throws InvalidHandshakeException;
 
 	public abstract HandshakeState acceptHandshakeAsServer(ClientHandshake handshakedata ) throws InvalidHandshakeException;
@@ -150,7 +167,7 @@ public abstract class Draft {
 		return handshakedata.getFieldValue( "Upgrade" ).equalsIgnoreCase( "websocket" ) && handshakedata.getFieldValue( "Connection" ).toLowerCase( Locale.ENGLISH ).contains( "upgrade" );
 	}
 
-	public abstract ByteBuffer createBinaryFrame( Framedata framedata ); // TODO Allow to send data on the base of an Iterator or InputStream
+	public abstract ByteBuffer createBinaryFrame( Framedata framedata );
 
 	public abstract List<Framedata> createFrames( ByteBuffer binary, boolean mask );
 
@@ -253,7 +270,7 @@ public abstract class Draft {
 		return translateHandshakeHttp( buf, role );
 	}
 
-	public int checkAlloc( int bytecount ) throws LimitExedeedException , InvalidDataException {
+	public int checkAlloc( int bytecount ) throws InvalidDataException {
 		if( bytecount < 0 )
 			throw new InvalidDataException( CloseFrame.PROTOCOL_ERROR, "Negative count" );
 		return bytecount;

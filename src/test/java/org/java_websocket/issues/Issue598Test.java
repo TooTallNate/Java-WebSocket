@@ -199,7 +199,8 @@ public class Issue598Test {
 		runTestScenario(3);
 	}
 
-	@Test(timeout = 2000)
+	@Test
+			//(timeout = 2000)
 	public void runAboveLimitBytebuffer() throws Exception {
 		runTestScenario(4);
 	}

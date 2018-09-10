@@ -93,6 +93,8 @@ public class ProtocolTest {
 		assertTrue( !protocol0.equals( protocol1 ) );
 		assertTrue( !protocol0.equals( protocol2 ) );
 		assertTrue( protocol1.equals( protocol2 ) );
+		assertTrue( !protocol1.equals( null ) );
+		assertTrue( !protocol1.equals( new Object() ) );
 	}
 
 	@Test

@@ -169,21 +169,8 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
 				try {
 					connections.addAll( getConnections() );
 					long current = ( System.currentTimeMillis() - ( connectionLostTimeout * 1500 ) );
-					WebSocketImpl webSocketImpl;
 					for( WebSocket conn : connections ) {
-						if( conn instanceof WebSocketImpl ) {
-							webSocketImpl = ( WebSocketImpl ) conn;
-							if( webSocketImpl.getLastPong() < current ) {
-								log.trace("Closing connection due to no pong received: {}", conn);
-								webSocketImpl.closeConnection( CloseFrame.ABNORMAL_CLOSE, "The connection was closed because the other endpoint did not respond with a pong in time. For more information check: https://github.com/TooTallNate/Java-WebSocket/wiki/Lost-connection-detection" );
-							} else {
-								if( webSocketImpl.isOpen() ) {
-									webSocketImpl.sendPing();
-								} else {
-									log.trace("Trying to ping a non open connection: {}", conn);
-								}
-							}
-						}
+						executeConnectionLostDetection(conn, current);
 					}
 				} catch ( Exception e ) {
 					//Ignore this exception
@@ -193,6 +180,28 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
 		};
 		connectionLostTimer.scheduleAtFixedRate( connectionLostTimerTask,1000L*connectionLostTimeout , 1000L*connectionLostTimeout );
 
+	}
+
+	/**
+	 * Send a ping to the endpoint or close the connection since the other endpoint did not respond with a ping
+	 * @param webSocket the websocket instance
+	 * @param current the current time in milliseconds
+	 */
+	private void executeConnectionLostDetection(WebSocket webSocket, long current) {
+		if (!(webSocket instanceof WebSocketImpl)) {
+			return;
+		}
+		WebSocketImpl webSocketImpl = (WebSocketImpl) webSocket;
+		if( webSocketImpl.getLastPong() < current ) {
+			log.trace("Closing connection due to no pong received: {}", webSocketImpl);
+			webSocketImpl.closeConnection( CloseFrame.ABNORMAL_CLOSE, "The connection was closed because the other endpoint did not respond with a pong in time. For more information check: https://github.com/TooTallNate/Java-WebSocket/wiki/Lost-connection-detection" );
+		} else {
+			if( webSocketImpl.isOpen() ) {
+				webSocketImpl.sendPing();
+			} else {
+				log.trace("Trying to ping a non open connection: {}", webSocketImpl);
+			}
+		}
 	}
 
 	/**

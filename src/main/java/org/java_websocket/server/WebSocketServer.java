@@ -71,7 +71,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 	 */
 	private static final Logger log = LoggerFactory.getLogger(WebSocketServer.class);
 
-	public static int DECODERS = Runtime.getRuntime().availableProcessors();
+	private static final int AVAILABLE_PROCESSORS = Runtime.getRuntime().availableProcessors();
 
 	/**
 	 * Holds the list of active WebSocket connections. "Active" means WebSocket
@@ -80,7 +80,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 	private final Collection<WebSocket> connections;
 	/**
 	 * The port number that this WebSocket server should listen on. Default is
-	 * WebSocket.DEFAULT_PORT.
+	 * WebSocketImpl.DEFAULT_PORT.
 	 */
 	private final InetSocketAddress address;
 	/**
@@ -111,12 +111,12 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 
 	/**
 	 * Creates a WebSocketServer that will attempt to
-	 * listen on port <var>WebSocket.DEFAULT_PORT</var>.
+	 * listen on port <var>WebSocketImpl.DEFAULT_PORT</var>.
 	 * 
 	 * @see #WebSocketServer(InetSocketAddress, int, List, Collection) more details here
 	 */
 	public WebSocketServer()  {
-		this( new InetSocketAddress( WebSocket.DEFAULT_PORT ), DECODERS, null );
+		this( new InetSocketAddress( WebSocketImpl.DEFAULT_PORT ), AVAILABLE_PROCESSORS, null );
 	}
 
 	/**
@@ -126,7 +126,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 	 * @param address The address to listen to
 	 */
 	public WebSocketServer( InetSocketAddress address ) {
-		this( address, DECODERS, null );
+		this( address, AVAILABLE_PROCESSORS, null );
 	}
 
 	/**
@@ -151,7 +151,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 	 *
 	 */
 	public WebSocketServer( InetSocketAddress address , List<Draft> drafts ) {
-		this( address, DECODERS, drafts );
+		this( address, AVAILABLE_PROCESSORS, drafts );
 	}
 
 	/**
@@ -218,7 +218,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 
 	/**
 	 * Starts the server selectorthread that binds to the currently set port number and
-	 * listeners for WebSocket connection requests. Creates a fixed thread pool with the size {@link WebSocketServer#DECODERS}<br>
+	 * listeners for WebSocket connection requests. Creates a fixed thread pool with the size {@link WebSocketServer#AVAILABLE_PROCESSORS}<br>
 	 * May only be called once.
 	 * 
 	 * Alternatively you can call {@link WebSocketServer#run()} directly.
@@ -371,17 +371,17 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 							socket.setTcpNoDelay( isTcpNoDelay() );
 							socket.setKeepAlive( true );
 							WebSocketImpl w = wsf.createWebSocket( this, drafts );
-							w.key = channel.register( selector, SelectionKey.OP_READ, w );
+							w.setSelectionKey(channel.register( selector, SelectionKey.OP_READ, w ));
 							try {
-								w.channel = wsf.wrapChannel( channel, w.key );
+								w.channel = wsf.wrapChannel( channel, w.getSelectionKey() );
 								i.remove();
 								allocateBuffers( w );
 								continue;
 							} catch (IOException ex) {
-								if( w.key != null )
-									w.key.cancel();
+								if( w.getSelectionKey() != null )
+									w.getSelectionKey().cancel();
 
-								handleIOException( w.key, null, ex );
+								handleIOException( w.getSelectionKey(), null, ex );
 							}
 							continue;
 						}
@@ -652,7 +652,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 	public final void onWriteDemand( WebSocket w ) {
 		WebSocketImpl conn = (WebSocketImpl) w;
 		try {
-			conn.key.interestOps( SelectionKey.OP_READ | SelectionKey.OP_WRITE );
+			conn.getSelectionKey().interestOps( SelectionKey.OP_READ | SelectionKey.OP_WRITE );
 		} catch ( CancelledKeyException e ) {
 			// the thread which cancels key is responsible for possible cleanup
 			conn.outQueue.clear();
@@ -707,7 +707,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 	 */
 	private Socket getSocket( WebSocket conn ) {
 		WebSocketImpl impl = (WebSocketImpl) conn;
-		return ( (SocketChannel) impl.key.channel() ).socket();
+		return ( (SocketChannel) impl.getSelectionKey().channel() ).socket();
 	}
 
 	@Override

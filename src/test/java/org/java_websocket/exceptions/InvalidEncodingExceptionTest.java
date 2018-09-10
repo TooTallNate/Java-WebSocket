@@ -25,46 +25,32 @@
 
 package org.java_websocket.exceptions;
 
+import org.java_websocket.enums.Opcode;
+import org.java_websocket.framing.BinaryFrame;
+import org.java_websocket.framing.DataFrame;
+import org.junit.Test;
+import org.omg.CORBA.DynAnyPackage.Invalid;
+
+import java.io.UnsupportedEncodingException;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 /**
- * exception which indicates that a incomplete handshake was recieved
+ * JUnit Test for the InvalidEncodingException class
  */
-public class IncompleteHandshakeException extends RuntimeException {
+public class InvalidEncodingExceptionTest {
 
-    /**
-     * Serializable
-     */
-    private static final long serialVersionUID = 7906596804233893092L;
-
-    /**
-     * attribut which size of handshake would have been prefered
-     */
-    private final int preferredSize;
-
-    /**
-     * constructor for a IncompleteHandshakeException
-     * <p>
-     * @param preferredSize the prefered size
-     */
-    public IncompleteHandshakeException(int preferredSize) {
-        this.preferredSize = preferredSize;
+    @Test
+    public void testConstructor() {
+        UnsupportedEncodingException unsupportedEncodingException = new UnsupportedEncodingException();
+        InvalidEncodingException invalidEncodingException = new InvalidEncodingException(unsupportedEncodingException);
+        assertEquals("The argument has to be the provided exception", unsupportedEncodingException, invalidEncodingException.getEncodingException());
+        try {
+            invalidEncodingException = new InvalidEncodingException(null);
+            fail("IllegalArgumentException should be thrown");
+        } catch (IllegalArgumentException e) {
+            //Null is not allowed
+        }
     }
-
-    /**
-     * constructor for a IncompleteHandshakeException
-     * <p>
-     * preferredSize will be 0
-     */
-    public IncompleteHandshakeException() {
-        this.preferredSize = 0;
-    }
-
-    /**
-     * Getter preferredSize
-     *
-     * @return the preferredSize
-     */
-    public int getPreferredSize() {
-        return preferredSize;
-    }
-
 }
