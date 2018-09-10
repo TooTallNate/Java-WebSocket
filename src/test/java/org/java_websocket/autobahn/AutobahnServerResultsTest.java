@@ -36,7 +36,7 @@ import java.util.Scanner;
 
 import static org.junit.Assert.assertEquals;
 
-public class AutobahnServerResults {
+public class AutobahnServerResultsTest {
 
 	static JSONObject jsonObject = null;
 
