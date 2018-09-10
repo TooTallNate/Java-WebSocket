@@ -679,6 +679,8 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 	}
 
 	public final void setWebSocketFactory( WebSocketServerFactory wsf ) {
+		if (this.wsf != null)
+			this.wsf.close();
 		this.wsf = wsf;
 	}
 
