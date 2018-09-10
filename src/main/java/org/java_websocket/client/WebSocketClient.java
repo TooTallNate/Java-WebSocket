@@ -40,6 +40,7 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import javax.net.SocketFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSocketFactory;
@@ -78,6 +79,12 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	 * The socket for this WebSocketClient
 	 */
 	private Socket socket = null;
+
+	/**
+	 * The SocketFactory for this WebSocketClient
+	 * @since 1.4.0
+	 */
+	private SocketFactory socketFactory = null;
 
 	/**
 	 * The used OutputStream
@@ -372,8 +379,9 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 		InputStream istream;
 		try {
 			boolean isNewSocket = false;
-
-			if( socket == null ) {
+			if (socketFactory != null) {
+				socket = socketFactory.createSocket();
+			} else if( socket == null ) {
 				socket = new Socket( proxy );
 				isNewSocket = true;
 
@@ -691,12 +699,24 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	 * This method must be called before <code>connect</code>.
 	 * If the given socket is not yet bound it will be bound to the uri specified in the constructor.
 	 * @param socket The socket which should be used for the connection
+	 * @deprecated use setSocketFactory
 	 */
+	@Deprecated
 	public void setSocket( Socket socket ) {
 		if( this.socket != null ) {
 			throw new IllegalStateException( "socket has already been set" );
 		}
 		this.socket = socket;
+	}
+
+	/**
+	 * Accepts a SocketFactory.<br>
+	 * This method must be called before <code>connect</code>.
+	 * The socket will be bound to the uri specified in the constructor.
+	 * @param socketFactory The socket factory which should be used for the connection.
+	 */
+	public void setSocketFactory(SocketFactory socketFactory) {
+		this.socketFactory = socketFactory;
 	}
 
 	@Override
