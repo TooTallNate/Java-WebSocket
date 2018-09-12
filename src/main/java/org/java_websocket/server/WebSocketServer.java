@@ -915,8 +915,8 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 					} catch(Exception e){
 						log.error("Error while reading from remote connection", e);
 					}
-					
 					finally {
+						ws = null;
 						pushBuffer( buf );
 					}
 				}
