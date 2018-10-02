@@ -109,33 +109,6 @@ Minimum Required JDK
 Other JRE implementations may work as well, but haven't been tested.
 
 
-Testing in Android Emulator
----------------------------
-
-Please note Android Emulator has issues using `IPv6 addresses`. Executing any
-socket related code (like this library) inside it will address an error
-
-``` bash
-java.net.SocketException: Bad address family
-```
-
-You have to manually disable `IPv6` by calling
-
-``` java
-java.lang.System.setProperty("java.net.preferIPv6Addresses", "false");
-java.lang.System.setProperty("java.net.preferIPv4Stack", "true");
-```
-
-somewhere in your project, before instantiating the `WebSocketClient` class. 
-You can check if you are currently testing in the Android Emulator like this
-
-``` java
-if ("google_sdk".equals( Build.PRODUCT )) {
-  // ... disable IPv6
-}
-```
-
-
 License
 -------
 
