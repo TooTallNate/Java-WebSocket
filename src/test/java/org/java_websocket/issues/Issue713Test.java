@@ -35,6 +35,7 @@ import org.java_websocket.util.SocketUtil;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -43,12 +44,56 @@ import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class Issue713Test {
 
 	CountDownLatch countDownLatchString = new CountDownLatch( 10 );
 	CountDownLatch countDownLatchConnect = new CountDownLatch( 10 );
 	CountDownLatch countDownLatchBytebuffer = new CountDownLatch( 10 );
+
+	@Test
+	public void testIllegalArgument() throws IOException {
+		WebSocketServer server = new WebSocketServer( new InetSocketAddress( SocketUtil.getAvailablePort() ) ) {
+			@Override
+			public void onOpen(WebSocket conn, ClientHandshake handshake) {
+
+			}
+
+			@Override
+			public void onClose(WebSocket conn, int code, String reason, boolean remote) {
+
+			}
+
+			@Override
+			public void onMessage(WebSocket conn, String message) {
+
+			}
+
+			@Override
+			public void onError(WebSocket conn, Exception ex) {
+
+			}
+
+			@Override
+			public void onStart() {
+
+			}
+		};
+		try {
+			server.broadcast((byte[]) null, null);
+			fail("IllegalArgumentException should be thrown");
+		} catch (Exception e) {
+			// OK
+		}
+		try {
+			server.broadcast((String) null, null);
+			fail("IllegalArgumentException should be thrown");
+		} catch (Exception e) {
+			// OK
+		}
+	}
+
 	@Test(timeout=2000)
 	public void testIssue() throws Exception {
 		final int port = SocketUtil.getAvailablePort();
@@ -79,12 +124,11 @@ public class Issue713Test {
 						tw.connect();
 					}
 				} catch (Exception e) {
-					Assert.fail("Exception during connect!");
+					fail("Exception during connect!");
 				}
 			}
 		};
 		server.start();
-
 		countDownLatchConnect.await();
 		server.broadcast("Hello world!");
 		countDownLatchString.await();
