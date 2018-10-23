@@ -178,7 +178,7 @@ public class SSLSocketChannel implements WrappedByteChannel, ByteChannel {
 						return ByteBufferUtils.transferByteBuffer( peerAppData, dst );
 					case BUFFER_OVERFLOW:
 						peerAppData = enlargeApplicationBuffer( peerAppData );
-						break;
+						return read(dst);
 					case CLOSED:
 						closeConnection();
 						dst.clear();
@@ -323,8 +323,6 @@ public class SSLSocketChannel implements WrappedByteChannel, ByteChannel {
 					}
 					break;
 				case NEED_WRAP:
-
-
 					myNetData.clear();
 					try {
 						result = engine.wrap( myAppData, myNetData );

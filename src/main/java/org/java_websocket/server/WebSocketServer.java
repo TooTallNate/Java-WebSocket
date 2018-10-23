@@ -346,10 +346,8 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 							continue;
 						}
 
-						if( key.isReadable() ) {
-							if (!doRead(key, i)) {
-								continue;
-							}
+						if( key.isReadable() && !doRead(key, i)) {
+							continue;
 						}
 
 						if( key.isWritable() ) {
