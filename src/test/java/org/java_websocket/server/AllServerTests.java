@@ -23,18 +23,19 @@
  *  OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package org.java_websocket.extensions;
+package org.java_websocket.server;
+
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-		org.java_websocket.extensions.DefaultExtensionTest.class,
-		org.java_websocket.extensions.CompressionExtensionTest.class
+		org.java_websocket.server.DefaultWebSocketServerFactoryTest.class,
+		org.java_websocket.protocols.ProtoclHandshakeRejectionTest.class
 })
 /**
- * Start all tests for extensuins
+ * Start all tests for the server
  */
-public class AllExtensionTests {
+public class AllServerTests {
 }

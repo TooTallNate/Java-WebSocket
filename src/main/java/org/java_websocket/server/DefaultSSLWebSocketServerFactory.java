@@ -37,10 +37,7 @@ import java.util.concurrent.Executors;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 
-import org.java_websocket.SSLSocketChannel2;
-import org.java_websocket.WebSocketAdapter;
-import org.java_websocket.WebSocketImpl;
-import org.java_websocket.WebSocketServerFactory;
+import org.java_websocket.*;
 import org.java_websocket.drafts.Draft;
 
 public class DefaultSSLWebSocketServerFactory implements WebSocketServerFactory {
@@ -71,7 +68,7 @@ public class DefaultSSLWebSocketServerFactory implements WebSocketServerFactory 
 		ciphers.remove("TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256");
 		e.setEnabledCipherSuites( ciphers.toArray( new String[ciphers.size()] ) );
 		e.setUseClientMode( false );
-		return new SSLSocketChannel2( channel, e, exec, key );
+		return new SSLSocketChannel3( channel, e, exec, key );
 	}
 
 	@Override
