@@ -129,6 +129,11 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	 * The socket timeout value to be used in milliseconds.
 	 */
 	private int connectTimeout = 0;
+	
+	/**
+	 * The security context of Two-way authentication
+	 */
+	private SSLContext sslContext;
 
 	/**
 	 * Constructs a WebSocketClient instance and sets it to the connect to the
@@ -162,6 +167,12 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	 */
 	public WebSocketClient( URI serverUri, Map<String,String> httpHeaders) {
 		this(serverUri, new Draft_6455(), httpHeaders);
+	}
+	
+	public WebSocketClient(URI serverUri, Map<String,String> httpHeaders, SSLContext sslContext)
+	{
+		this(serverUri, new Draft_6455(), httpHeaders);
+		this.sslContext = sslContext;
 	}
 
 	/**
@@ -397,10 +408,15 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 
 			// if the socket is set by others we don't apply any TLS wrapper
 			if (isNewSocket && "wss".equals( uri.getScheme())) {
+				SSLSocketFactory factory = null;
+				if (this.sslContext == null){
+					SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
+					sslContext.init(null, null, null);
+					factory = sslContext.getSocketFactory();
+				}  else {
+					factory = this.sslContext.getSocketFactory();
 
-				SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
-				sslContext.init(null, null, null);
-				SSLSocketFactory factory = sslContext.getSocketFactory();
+				}
 				socket = factory.createSocket(socket, uri.getHost(), getPort(), true);
 			}
 
