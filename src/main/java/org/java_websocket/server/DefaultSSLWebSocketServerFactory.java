@@ -68,7 +68,7 @@ public class DefaultSSLWebSocketServerFactory implements WebSocketServerFactory 
 		ciphers.remove("TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256");
 		e.setEnabledCipherSuites( ciphers.toArray( new String[ciphers.size()] ) );
 		e.setUseClientMode( false );
-		return new SSLSocketChannel3( channel, e, exec, key );
+		return new SSLSocketChannel2( channel, e, exec, key );
 	}
 
 	@Override
