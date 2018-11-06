@@ -655,24 +655,32 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 		public void run() {
 			Thread.currentThread().setName( "WebSocketWriteThread-" + Thread.currentThread().getId() );
 			try {
-				try {
-					while( !Thread.interrupted() ) {
-						ByteBuffer buffer = engine.outQueue.take();
-						ostream.write( buffer.array(), 0, buffer.limit() );
-						ostream.flush();
-					}
-				} catch ( InterruptedException e ) {
-					for (ByteBuffer buffer : engine.outQueue) {
-						ostream.write( buffer.array(), 0, buffer.limit() );
-						ostream.flush();
-					}
-					Thread.currentThread().interrupt();
-				}
+				runWriteData();
 			} catch ( IOException e ) {
 				handleIOException( e );
 			} finally {
 				closeSocket();
 				writeThread = null;
+			}
+		}
+
+		/**
+		 * Write the data into the outstream
+		 * @throws IOException if write or flush did not work
+		 */
+		private void runWriteData() throws IOException {
+			try {
+				while( !Thread.interrupted() ) {
+					ByteBuffer buffer = engine.outQueue.take();
+					ostream.write( buffer.array(), 0, buffer.limit() );
+					ostream.flush();
+				}
+			} catch ( InterruptedException e ) {
+				for (ByteBuffer buffer : engine.outQueue) {
+					ostream.write( buffer.array(), 0, buffer.limit() );
+					ostream.flush();
+				}
+				Thread.currentThread().interrupt();
 			}
 		}
 

@@ -365,7 +365,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 					handleIOException( key, conn, ex );
 				} catch ( InterruptedException e ) {
 					// FIXME controlled shutdown (e.g. take care of buffermanagement)
-					return;
+					Thread.currentThread().interrupt();
 				}
 			}
 		} catch ( RuntimeException e ) {
@@ -385,7 +385,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 		WebSocketImpl conn;
 		while ( !iqueue.isEmpty() ) {
 			conn = iqueue.remove( 0 );
-			WrappedByteChannel c = ( (WrappedByteChannel) conn.channel );
+			WrappedByteChannel c = ( (WrappedByteChannel) conn.getChannel() );
 			ByteBuffer buf = takeBuffer();
 			try {
 				if( SocketChannelIOHelper.readMore( buf, conn, c ) )
@@ -427,7 +427,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 		WebSocketImpl w = wsf.createWebSocket( this, drafts );
 		w.setSelectionKey(channel.register( selector, SelectionKey.OP_READ, w ));
 		try {
-			w.channel = wsf.wrapChannel( channel, w.getSelectionKey() );
+			w.setChannel( wsf.wrapChannel( channel, w.getSelectionKey() ));
 			i.remove();
 			allocateBuffers( w );
 		} catch (IOException ex) {
@@ -449,7 +449,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 	private boolean doRead(SelectionKey key, Iterator<SelectionKey> i) throws InterruptedException, IOException {
 		WebSocketImpl conn = (WebSocketImpl) key.attachment();
 		ByteBuffer buf = takeBuffer();
-		if(conn.channel == null){
+		if(conn.getChannel() == null){
 			if( key != null )
 				key.cancel();
 
@@ -457,18 +457,19 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 			return false;
 		}
 		try {
-			if( SocketChannelIOHelper.read( buf, conn, conn.channel ) ) {
+			if( SocketChannelIOHelper.read( buf, conn, conn.getChannel() ) ) {
 				if( buf.hasRemaining() ) {
 					conn.inQueue.put( buf );
 					queue( conn );
 					i.remove();
-					if( conn.channel instanceof WrappedByteChannel ) {
-						if( ( (WrappedByteChannel) conn.channel ).isNeedRead() ) {
+					if( conn.getChannel() instanceof WrappedByteChannel ) {
+						if( ( (WrappedByteChannel) conn.getChannel() ).isNeedRead() ) {
 							iqueue.add( conn );
 						}
 					}
-				} else
-					pushBuffer( buf );
+				} else {
+					pushBuffer(buf);
+				}
 			} else {
 				pushBuffer( buf );
 			}
@@ -486,7 +487,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 	 */
 	private void doWrite(SelectionKey key) throws IOException {
 		WebSocketImpl conn = (WebSocketImpl) key.attachment();
-		if( SocketChannelIOHelper.batch( conn, conn.channel ) ) {
+		if( SocketChannelIOHelper.batch( conn, conn.getChannel() ) ) {
 			if( key.isValid() )
 				key.interestOps( SelectionKey.OP_READ );
 		}
@@ -578,11 +579,11 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 	}
 
 	protected void queue( WebSocketImpl ws ) throws InterruptedException {
-		if( ws.workerThread == null ) {
-			ws.workerThread = decoders.get( queueinvokes % decoders.size() );
+		if( ws.getWorkerThread() == null ) {
+			ws.setWorkerThread(decoders.get( queueinvokes % decoders.size() ));
 			queueinvokes++;
 		}
-		ws.workerThread.put( ws );
+		ws.getWorkerThread().put( ws );
 	}
 
 	private ByteBuffer takeBuffer() throws InterruptedException {

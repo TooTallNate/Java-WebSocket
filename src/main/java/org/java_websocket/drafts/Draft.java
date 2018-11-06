@@ -97,9 +97,9 @@ public abstract class Draft {
 			throw new InvalidHandshakeException();
 		}
 		if( role == Role.CLIENT ) {
-			handshake = prvTranslateHandshakeHttpClient(firstLineTokens, line);
+			handshake = translateHandshakeHttpClient(firstLineTokens, line);
 		} else {
-			handshake = prvTranslateHandshakeHttpServer(firstLineTokens, line);
+			handshake = translateHandshakeHttpServer(firstLineTokens, line);
 		}
 		line = readStringLine( buf );
 		while ( line != null && line.length() > 0 ) {
@@ -125,7 +125,7 @@ public abstract class Draft {
 	 * @param firstLineTokens the token of the first line split as as an string array
 	 * @param line the whole line
 	 */
-	private static HandshakeBuilder prvTranslateHandshakeHttpServer(String[] firstLineTokens, String line) throws InvalidHandshakeException {
+	private static HandshakeBuilder translateHandshakeHttpServer(String[] firstLineTokens, String line) throws InvalidHandshakeException {
 		// translating/parsing the request from the CLIENT
 		if (!"GET".equalsIgnoreCase(firstLineTokens[0])) {
 			throw new InvalidHandshakeException( String.format("Invalid request method received: %s Status line: %s", firstLineTokens[0],line));
@@ -144,7 +144,7 @@ public abstract class Draft {
 	 * @param firstLineTokens the token of the first line split as as an string array
 	 * @param line the whole line
 	 */
-	private static HandshakeBuilder prvTranslateHandshakeHttpClient(String[] firstLineTokens, String line) throws InvalidHandshakeException {
+	private static HandshakeBuilder translateHandshakeHttpClient(String[] firstLineTokens, String line) throws InvalidHandshakeException {
 		// translating/parsing the response from the SERVER
 		if (!"101".equals(firstLineTokens[1])) {
 			throw new InvalidHandshakeException( String.format("Invalid status code received: %s Status line: %s", firstLineTokens[1], line));
@@ -214,11 +214,27 @@ public abstract class Draft {
 
 	public abstract void reset();
 
+	/**
+	 * @deprecated use createHandshake without the role
+	 */
+	@Deprecated
 	public List<ByteBuffer> createHandshake( Handshakedata handshakedata, Role ownrole ) {
-		return createHandshake( handshakedata, ownrole, true );
+		return createHandshake(handshakedata);
 	}
 
+	public List<ByteBuffer> createHandshake( Handshakedata handshakedata) {
+		return createHandshake( handshakedata, true );
+	}
+
+	/**
+	 * @deprecated use createHandshake without the role since it does not have any effect
+	 */
+	@Deprecated
 	public List<ByteBuffer> createHandshake( Handshakedata handshakedata, Role ownrole, boolean withcontent ) {
+		return createHandshake(handshakedata, withcontent);
+	}
+
+	public List<ByteBuffer> createHandshake( Handshakedata handshakedata, boolean withcontent ) {
 		StringBuilder bui = new StringBuilder( 100 );
 		if( handshakedata instanceof ClientHandshake ) {
 			bui.append( "GET " );
