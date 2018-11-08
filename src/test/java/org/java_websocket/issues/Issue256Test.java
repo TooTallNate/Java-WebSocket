@@ -34,23 +34,33 @@ import org.java_websocket.server.WebSocketServer;
 import org.java_websocket.util.SocketUtil;
 import org.java_websocket.util.ThreadCheck;
 import org.junit.*;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assume.assumeThat;
 
+@RunWith(Parameterized.class)
 public class Issue256Test {
 
+	private static final int NUMBER_OF_TESTS = 10;
 	private static WebSocketServer ws;
 
 	private static int port;
 	static CountDownLatch countServerDownLatch = new CountDownLatch( 1 );
 	@Rule
 	public ThreadCheck zombies = new ThreadCheck();
+
+	@Parameterized.Parameter
+	public int count;
 
 	@BeforeClass
 	public static void startServer() throws Exception {
@@ -130,104 +140,21 @@ public class Issue256Test {
 		ws.stop();
 	}
 
-	@Test(timeout = 5000)
-	public void runReconnectBlockingScenario0() throws Exception {
-		runTestScenarioReconnect( true );
+	@Parameterized.Parameters
+	public static Collection<Integer[]> data() {
+		List<Integer[]> ret = new ArrayList<Integer[]>(NUMBER_OF_TESTS);
+		for (int i = 0; i < NUMBER_OF_TESTS; i++) ret.add(new Integer[]{i});
+		return ret;
 	}
 
 	@Test(timeout = 5000)
-	public void runReconnectBlockingScenario1() throws Exception {
-		runTestScenarioReconnect( true );
-	}
-
-	@Test(timeout = 5000)
-	public void runReconnectBlockingScenario2() throws Exception {
-		runTestScenarioReconnect( true );
-	}
-
-	@Test(timeout = 5000)
-	public void runReconnectBlockingScenario3() throws Exception {
-		runTestScenarioReconnect( true );
-	}
-
-	@Test(timeout = 5000)
-	public void runReconnectBlockingScenario4() throws Exception {
-		runTestScenarioReconnect( true );
-	}
-
-	@Test(timeout = 5000)
-	public void runReconnectBlockingScenario5() throws Exception {
-		runTestScenarioReconnect( true );
-	}
-
-	@Test(timeout = 5000)
-	public void runReconnectBlockingScenario6() throws Exception {
-		runTestScenarioReconnect( true );
-	}
-
-	@Test(timeout = 5000)
-	public void runReconnectBlockingScenario7() throws Exception {
-		runTestScenarioReconnect( true );
-	}
-
-	@Test(timeout = 5000)
-	public void runReconnectBlockingScenario8() throws Exception {
-		runTestScenarioReconnect( true );
-	}
-
-	@Test(timeout = 5000)
-	public void runReconnectBlockingScenario9() throws Exception {
-		runTestScenarioReconnect( true );
-	}
-
-	@Test(timeout = 5000)
-	public void runReconnectScenario0() throws Exception {
+	public void runReconnectSocketClose() throws Exception {
 		runTestScenarioReconnect( false );
 	}
 
 	@Test(timeout = 5000)
-	public void runReconnectScenario1() throws Exception {
-		runTestScenarioReconnect( false );
-	}
-
-	@Test(timeout = 5000)
-	public void runReconnectScenario2() throws Exception {
-		runTestScenarioReconnect( false );
-	}
-
-	@Test(timeout = 5000)
-	public void runReconnectScenario3() throws Exception {
-		runTestScenarioReconnect( false );
-	}
-
-	@Test(timeout = 5000)
-	public void runReconnectScenario4() throws Exception {
-		runTestScenarioReconnect( false );
-	}
-
-	@Test(timeout = 5000)
-	public void runReconnectScenario5() throws Exception {
-		runTestScenarioReconnect( false );
-	}
-
-	@Test(timeout = 5000)
-	public void runReconnectScenario6() throws Exception {
-		runTestScenarioReconnect( false );
-	}
-
-	@Test(timeout = 5000)
-	public void runReconnectScenario7() throws Exception {
-		runTestScenarioReconnect( false );
-	}
-
-	@Test(timeout = 5000)
-	public void runReconnectScenario8() throws Exception {
-		runTestScenarioReconnect( false );
-	}
-
-	@Test(timeout = 5000)
-	public void runReconnectScenario9() throws Exception {
-		runTestScenarioReconnect( false );
+	public void runReconnectCloseBlocking() throws Exception {
+		runTestScenarioReconnect( true );
 	}
 
 }
