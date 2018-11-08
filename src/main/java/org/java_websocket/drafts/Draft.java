@@ -237,9 +237,7 @@ public abstract class Draft {
 	public List<ByteBuffer> createHandshake( Handshakedata handshakedata, boolean withcontent ) {
 		StringBuilder bui = new StringBuilder( 100 );
 		if( handshakedata instanceof ClientHandshake ) {
-			bui.append( "GET " );
-			bui.append( ( (ClientHandshake) handshakedata ).getResourceDescriptor() );
-			bui.append( " HTTP/1.1" );
+			bui.append( "GET " ).append( ( (ClientHandshake) handshakedata ).getResourceDescriptor() ).append( " HTTP/1.1" );
 		} else if( handshakedata instanceof ServerHandshake ) {
 			bui.append("HTTP/1.1 101 ").append(((ServerHandshake) handshakedata).getHttpStatusMessage());
 		} else {
@@ -261,8 +259,9 @@ public abstract class Draft {
 		byte[] content = withcontent ? handshakedata.getContent() : null;
 		ByteBuffer bytebuffer = ByteBuffer.allocate( ( content == null ? 0 : content.length ) + httpheader.length );
 		bytebuffer.put( httpheader );
-		if( content != null )
-			bytebuffer.put( content );
+		if( content != null ) {
+			bytebuffer.put(content);
+		}
 		bytebuffer.flip();
 		return Collections.singletonList( bytebuffer );
 	}
