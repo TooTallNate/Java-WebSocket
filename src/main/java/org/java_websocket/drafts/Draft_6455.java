@@ -514,7 +514,7 @@ public class Draft_6455 extends Draft {
      * Translate the buffer depending when it has an extended payload length (126 or 127)
      * @param buffer the buffer to read from
      * @param optcode the decoded optcode
-     * @param oldPayloadlength the current payload length
+     * @param oldPayloadlength the old payload length
      * @param maxpacketsize the max packet size allowed
      * @param realpacketsize the real packet size
      * @return the new payload length
