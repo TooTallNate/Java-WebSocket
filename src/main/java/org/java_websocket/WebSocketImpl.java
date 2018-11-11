@@ -114,7 +114,7 @@ public class WebSocketImpl implements WebSocket {
 	/**
 	 * The current state of the connection
 	 */
-	private ReadyState readyState = ReadyState.NOT_YET_CONNECTED;
+	private volatile ReadyState readyState = ReadyState.NOT_YET_CONNECTED;
 
 	/**
 	 * A list of drafts available for this websocket
