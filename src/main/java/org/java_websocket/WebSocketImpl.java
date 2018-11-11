@@ -98,14 +98,15 @@ public class WebSocketImpl implements WebSocket {
 	private final WebSocketListener wsl;
 
 	private SelectionKey key;
+
 	/**
 	 * the possibly wrapped channel object whose selection is controlled by {@link #key}
 	 */
-	public ByteChannel channel;
+	private ByteChannel channel;
 	/**
 	 * Helper variable meant to store the thread which ( exclusively ) triggers this objects decode method.
 	 **/
-	public volatile WebSocketWorker workerThread; // TODO reset worker?
+	private volatile WebSocketWorker workerThread;
 	/**
 	 * When true no further frames may be submitted to be sent
 	 */
@@ -282,7 +283,7 @@ public class WebSocketImpl implements WebSocket {
 										closeConnectionDueToInternalServerError( e );
 										return false;
 									}
-									write( d.createHandshake( d.postProcessHandshakeResponseAsServer( handshake, response ), role ) );
+									write( d.createHandshake( d.postProcessHandshakeResponseAsServer( handshake, response ) ) );
 									draft = d;
 									open( handshake );
 									return true;
@@ -686,7 +687,7 @@ public class WebSocketImpl implements WebSocket {
 		}
 
 		// Send
-		write( draft.createHandshake( this.handshakerequest, role ) );
+		write( draft.createHandshake( this.handshakerequest ) );
 	}
 
 	private void write( ByteBuffer buf ) {
@@ -823,5 +824,22 @@ public class WebSocketImpl implements WebSocket {
 	public <T> void setAttachment(T attachment) {
 		this.attachment = attachment;
 	}
+
+	public ByteChannel getChannel() {
+		return channel;
+	}
+
+	public void setChannel(ByteChannel channel) {
+		this.channel = channel;
+	}
+
+	public WebSocketWorker getWorkerThread() {
+		return workerThread;
+	}
+
+	public void setWorkerThread(WebSocketWorker workerThread) {
+		this.workerThread = workerThread;
+	}
+
 
 }

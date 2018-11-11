@@ -270,20 +270,30 @@ public class CloseFrame extends ControlFrame {
 			payload.reset();
 			try {
 				int mark = payload.position();// because stringUtf8 also creates a mark
-				try {
-					payload.position( payload.position() + 2 );
-					reason = Charsetfunctions.stringUtf8( payload );
-				} catch ( IllegalArgumentException e ) {
-					throw new InvalidDataException( CloseFrame.NO_UTF8 );
-				} finally {
-					payload.position( mark );
-				}
+				validateUtf8(payload, mark);
 			} catch ( InvalidDataException e ) {
 				code = CloseFrame.NO_UTF8;
 				reason = null;
 			}
 		}
 	}
+
+    /**
+     * Validate the payload to valid utf8
+     * @param mark the current mark
+     * @param payload the current payload
+     * @throws InvalidDataException the current payload is not a valid utf8
+     */
+    private void validateUtf8(ByteBuffer payload, int mark) throws InvalidDataException {
+        try {
+            payload.position( payload.position() + 2 );
+            reason = Charsetfunctions.stringUtf8( payload );
+        } catch ( IllegalArgumentException e ) {
+            throw new InvalidDataException( CloseFrame.NO_UTF8 );
+        } finally {
+            payload.position( mark );
+        }
+    }
 
     /**
      * Update the payload to represent the close code and the reason
@@ -307,4 +317,23 @@ public class CloseFrame extends ControlFrame {
         return super.getPayloadData();
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+
+        CloseFrame that = (CloseFrame) o;
+
+        if (code != that.code) return false;
+        return reason != null ? reason.equals(that.reason) : that.reason == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + code;
+        result = 31 * result + (reason != null ? reason.hashCode() : 0);
+        return result;
+    }
 }

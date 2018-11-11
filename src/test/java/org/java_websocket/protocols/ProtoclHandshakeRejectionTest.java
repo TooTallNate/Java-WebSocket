@@ -167,6 +167,14 @@ public class ProtoclHandshakeRejectionTest {
 										os.write( Charsetfunctions.asciiBytes( additionalHandshake + getSecKey( seckey ) + "\r\n" ) );
 										os.flush();
 									}
+									if( "/18".equals( testCase ) ) {
+										os.write( Charsetfunctions.asciiBytes( additionalHandshake + "Sec-WebSocket-Accept: abc\r\n" + "\r\n" ) );
+										os.flush();
+									}
+									if( "/19".equals( testCase ) ) {
+										os.write( Charsetfunctions.asciiBytes( additionalHandshake + "\r\n" ) );
+										os.flush();
+									}
 								} catch ( IOException e ) {
 									//
 								}
@@ -294,6 +302,15 @@ public class ProtoclHandshakeRejectionTest {
 		testProtocolRejection( 17, new Draft_6455( Collections.<IExtension>emptyList(), protocols ) );
 	}
 
+	@Test(timeout = 5000)
+	public void testHandshakeRejectionTestCase18() throws Exception {
+		testProtocolRejection( 18, new Draft_6455() );
+	}
+
+	@Test(timeout = 5000)
+	public void testHandshakeRejectionTestCase19() throws Exception {
+		testProtocolRejection( 19, new Draft_6455() );
+	}
 
 	private void testProtocolRejection( int i, Draft_6455 draft ) throws Exception {
 		final int finalI = i;
