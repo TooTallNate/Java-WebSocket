@@ -82,6 +82,10 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
 	 */
 	private boolean websocketRunning = false;
 
+	/**
+	 * Attribute to sync on
+	 */
+	private final Object syncConnectionLost = new Object();
     /**
      * Get the interval checking for lost connections
      * Default is 60 seconds
@@ -89,7 +93,9 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
 	 * @since 1.3.4
      */
     public int getConnectionLostTimeout() {
-        return connectionLostTimeout;
+		synchronized (syncConnectionLost) {
+			return connectionLostTimeout;
+		}
     }
 
     /**
@@ -99,15 +105,8 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
      * @param connectionLostTimeout the interval in seconds
 	 * @since 1.3.4
      */
-
-    /**
-     * Attribute to sync on
-     */
-    private final Object syncObject = new Object();
-
-
     public void setConnectionLostTimeout( int connectionLostTimeout ) {
-        synchronized (syncObject) {
+        synchronized (syncConnectionLost) {
             this.connectionLostTimeout = connectionLostTimeout;
             if (this.connectionLostTimeout <= 0) {
                 log.trace("Connection lost timer stopped");
@@ -139,7 +138,7 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
 	 * @since 1.3.4
      */
     protected void stopConnectionLostTimer() {
-        synchronized (syncObject) {
+        synchronized (syncConnectionLost) {
             if (connectionLostTimer != null || connectionLostTimerTask != null) {
                 this.websocketRunning = false;
                 log.trace("Connection lost timer stopped");
@@ -152,7 +151,7 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
 	 * @since 1.3.4
      */
     protected void startConnectionLostTimer() {
-        synchronized (syncObject) {
+        synchronized (syncConnectionLost) {
             if (this.connectionLostTimeout <= 0) {
                 log.trace("Connection lost timer deactivated");
                 return;
