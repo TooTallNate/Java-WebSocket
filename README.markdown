@@ -18,17 +18,7 @@ Implemented WebSocket protocol versions are:
 
 
 ## Build
-You can build using Ant, Maven, Gradle or Leiningen but there is nothing against just putting the source path ```src/main/java ``` on your applications buildpath.
-
-### Ant
-
-``` bash
-ant 
-```
-
-will create the javadoc of this library at ```doc/``` and build the library itself: ```dist/java_websocket.jar```
-
-The ant targets are: ```compile```, ```jar```, ```doc``` and ```clean```
+You can build using Maven, Gradle or Leiningen but there is nothing against just putting the source path ```src/main/java ``` on your applications buildpath.
 
 ### Maven
 To use maven add this dependency to your pom.xml:
