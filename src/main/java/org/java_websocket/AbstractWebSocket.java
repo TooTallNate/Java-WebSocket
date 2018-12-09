@@ -82,6 +82,10 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
 	 */
 	private boolean websocketRunning = false;
 
+	/**
+	 * Attribute to sync on
+	 */
+	private final Object syncConnectionLost = new Object();
     /**
      * Get the interval checking for lost connections
      * Default is 60 seconds
@@ -89,7 +93,9 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
 	 * @since 1.3.4
      */
     public int getConnectionLostTimeout() {
-        return connectionLostTimeout;
+		synchronized (syncConnectionLost) {
+			return connectionLostTimeout;
+		}
     }
 
     /**
@@ -100,29 +106,31 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
 	 * @since 1.3.4
      */
     public void setConnectionLostTimeout( int connectionLostTimeout ) {
-        this.connectionLostTimeout = connectionLostTimeout;
-        if (this.connectionLostTimeout <= 0) {
-			log.trace( "Connection lost timer stopped" );
-			cancelConnectionLostTimer();
-            return;
+        synchronized (syncConnectionLost) {
+            this.connectionLostTimeout = connectionLostTimeout;
+            if (this.connectionLostTimeout <= 0) {
+                log.trace("Connection lost timer stopped");
+                cancelConnectionLostTimer();
+                return;
+            }
+            if (this.websocketRunning) {
+                log.trace("Connection lost timer restarted");
+                //Reset all the pings
+                try {
+                    ArrayList<WebSocket> connections = new ArrayList<WebSocket>(getConnections());
+                    WebSocketImpl webSocketImpl;
+                    for (WebSocket conn : connections) {
+                        if (conn instanceof WebSocketImpl) {
+                            webSocketImpl = (WebSocketImpl) conn;
+                            webSocketImpl.updateLastPong();
+                        }
+                    }
+                } catch (Exception e) {
+                    log.error("Exception during connection lost restart", e);
+                }
+                restartConnectionLostTimer();
+            }
         }
-        if (this.websocketRunning) {
-        	log.trace( "Connection lost timer restarted" );
-			//Reset all the pings
-			try {
-				ArrayList<WebSocket> connections = new ArrayList<WebSocket>( getConnections() );
-				WebSocketImpl webSocketImpl;
-				for( WebSocket conn : connections ) {
-					if( conn instanceof WebSocketImpl ) {
-						webSocketImpl = ( WebSocketImpl ) conn;
-						webSocketImpl.updateLastPong();
-					}
-				}
-			} catch (Exception e) {
-				log.error("Exception during connection lost restart", e);
-			}
-			restartConnectionLostTimer();
-		}
     }
 
     /**
@@ -130,10 +138,12 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
 	 * @since 1.3.4
      */
     protected void stopConnectionLostTimer() {
-        if (connectionLostTimer != null ||connectionLostTimerTask != null) {
-			this.websocketRunning = false;
-			log.trace( "Connection lost timer stopped" );
-            cancelConnectionLostTimer();
+        synchronized (syncConnectionLost) {
+            if (connectionLostTimer != null || connectionLostTimerTask != null) {
+                this.websocketRunning = false;
+                log.trace("Connection lost timer stopped");
+                cancelConnectionLostTimer();
+            }
         }
     }
     /**
@@ -141,13 +151,15 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
 	 * @since 1.3.4
      */
     protected void startConnectionLostTimer() {
-        if (this.connectionLostTimeout <= 0) {
-          	log.trace("Connection lost timer deactivated");
-            return;
+        synchronized (syncConnectionLost) {
+            if (this.connectionLostTimeout <= 0) {
+                log.trace("Connection lost timer deactivated");
+                return;
+            }
+            log.trace("Connection lost timer started");
+            this.websocketRunning = true;
+            restartConnectionLostTimer();
         }
-		log.trace("Connection lost timer started");
-        this.websocketRunning = true;
-       	restartConnectionLostTimer();
     }
 
 	/**
