@@ -33,6 +33,10 @@ import org.java_websocket.enums.Role;
 
 public class SocketChannelIOHelper {
 
+	private SocketChannelIOHelper() {
+		throw new IllegalStateException("Utility class");
+	}
+
 	public static boolean read( final ByteBuffer buf, WebSocketImpl ws, ByteChannel channel ) throws IOException {
 		buf.clear();
 		int read = channel.read( buf );

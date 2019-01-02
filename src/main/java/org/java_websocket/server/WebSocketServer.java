@@ -450,8 +450,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 		WebSocketImpl conn = (WebSocketImpl) key.attachment();
 		ByteBuffer buf = takeBuffer();
 		if(conn.getChannel() == null){
-			if( key != null )
-				key.cancel();
+			key.cancel();
 
 			handleIOException( key, conn, new IOException() );
 			return false;
@@ -462,10 +461,8 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 					conn.inQueue.put( buf );
 					queue( conn );
 					i.remove();
-					if( conn.getChannel() instanceof WrappedByteChannel ) {
-						if( ( (WrappedByteChannel) conn.getChannel() ).isNeedRead() ) {
-							iqueue.add( conn );
-						}
+					if( conn.getChannel() instanceof WrappedByteChannel && ( (WrappedByteChannel) conn.getChannel() ).isNeedRead() ) {
+						iqueue.add( conn );
 					}
 				} else {
 					pushBuffer(buf);
@@ -488,8 +485,9 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 	private void doWrite(SelectionKey key) throws IOException {
 		WebSocketImpl conn = (WebSocketImpl) key.attachment();
 		if( SocketChannelIOHelper.batch( conn, conn.getChannel() ) ) {
-			if( key.isValid() )
-				key.interestOps( SelectionKey.OP_READ );
+			if( key.isValid() ) {
+				key.interestOps(SelectionKey.OP_READ);
+			}
 		}
 	}
 
@@ -690,14 +688,10 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 				log.trace("Removing connection which is not in the connections collection! Possible no handshake recieved! {}", ws);
 			}
 		}
-		if( isclosed.get() && connections.size() == 0 ) {
+		if( isclosed.get() && connections.isEmpty() ) {
 			selectorthread.interrupt();
 		}
 		return removed;
-	}
-	@Override
-	public ServerHandshakeBuilder onWebsocketHandshakeReceivedAsServer( WebSocket conn, Draft draft, ClientHandshake request ) throws InvalidDataException {
-		return super.onWebsocketHandshakeReceivedAsServer( conn, draft, request );
 	}
 
 	/**
