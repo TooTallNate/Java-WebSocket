@@ -106,11 +106,11 @@ public class WebSocketImpl implements WebSocket {
 	/**
 	 * Helper variable meant to store the thread which ( exclusively ) triggers this objects decode method.
 	 **/
-	private volatile WebSocketWorker workerThread;
+	private WebSocketWorker workerThread;
 	/**
 	 * When true no further frames may be submitted to be sent
 	 */
-	private volatile boolean flushandclosestate = false;
+	private boolean flushandclosestate = false;
 
 	/**
 	 * The current state of the connection
