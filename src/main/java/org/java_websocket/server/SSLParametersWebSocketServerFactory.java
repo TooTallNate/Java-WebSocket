@@ -26,55 +26,56 @@
 package org.java_websocket.server;
 
 import org.java_websocket.SSLSocketChannel2;
-import org.java_websocket.WebSocketAdapter;
-import org.java_websocket.WebSocketImpl;
-import org.java_websocket.WebSocketServerFactory;
-import org.java_websocket.drafts.Draft;
 
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
+import javax.net.ssl.SSLParameters;
 import java.io.IOException;
 import java.nio.channels.ByteChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * WebSocketFactory that take a SSLEngine as a parameter allow for customization of SSLParameters, Cipher Suites, Supported Protocols, ClientMode, ClientAuth ...
- * @link https://docs.oracle.com/javase/7/docs/api/javax/net/ssl/SSLEngine.html
+ * WebSocketFactory that can be configured to only support specific protocols and cipher suites.
  */
-public class SSLEngineWebSocketServerFactory implements WebSocketServerFactory {
+public class SSLParametersWebSocketServerFactory extends DefaultSSLWebSocketServerFactory {
 
-  private final SSLEngine sslEngine;
-  protected ExecutorService exec;
+  private final SSLParameters sslParameters;
 
-  public SSLEngineWebSocketServerFactory(SSLEngine sslEngine) {
-    this(sslEngine, Executors.newSingleThreadScheduledExecutor());
+  /**
+   * New CustomSSLWebSocketServerFactory configured to only support given protocols and given cipher suites.
+   *
+   * @param sslContext          - can not be <code>null</code>
+   * @param sslParameters    - sslParameters
+   */
+  public SSLParametersWebSocketServerFactory(SSLContext sslContext, SSLParameters sslParameters) {
+    this(sslContext, Executors.newSingleThreadScheduledExecutor(), sslParameters);
   }
 
-  private SSLEngineWebSocketServerFactory(SSLEngine sslEngine, ExecutorService exec) {
-    this.sslEngine = sslEngine;
-    this.exec = exec;
-  }
-
-  @Override
-  public WebSocketImpl createWebSocket( WebSocketAdapter a, Draft d) {
-    return new WebSocketImpl( a, d );
-  }
-
-  @Override
-  public WebSocketImpl createWebSocket( WebSocketAdapter a, List<Draft> d) {
-    return new WebSocketImpl( a, d );
+  /**
+   * New CustomSSLWebSocketServerFactory configured to only support given protocols and given cipher suites.
+   *
+   * @param sslContext          - can not be <code>null</code>
+   * @param executerService     - can not be <code>null</code>
+   * @param sslParameters    - sslParameters
+   */
+  public SSLParametersWebSocketServerFactory(SSLContext sslContext, ExecutorService executerService, SSLParameters sslParameters) {
+    super(sslContext, executerService);
+    if (sslParameters == null) {
+      throw new IllegalArgumentException();
+    }
+    this.sslParameters = sslParameters;
   }
 
   @Override
   public ByteChannel wrapChannel(SocketChannel channel, SelectionKey key) throws IOException {
-    return new SSLSocketChannel2(channel, sslEngine, exec, key);
-  }
-
-  @Override
-  public void close() {
-
+    SSLEngine e = sslcontext.createSSLEngine();
+    e.setUseClientMode(false);
+    if (sslParameters != null) {
+      e.setSSLParameters(sslParameters);
+    }
+    return new SSLSocketChannel2(channel, e, exec, key);
   }
 }

@@ -111,7 +111,9 @@ public class SSLClientExample {
 		while ( true ) {
 			String line = reader.readLine();
 			if( line.equals( "close" ) ) {
-				chatclient.close();
+				chatclient.closeBlocking();
+			} else if ( line.equals( "open" ) ) {
+				chatclient.reconnect();
 			} else {
 				chatclient.send( line );
 			}

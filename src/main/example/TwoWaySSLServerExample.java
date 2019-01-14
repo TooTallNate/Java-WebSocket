@@ -25,18 +25,15 @@
  *  OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import org.java_websocket.server.SSLEngineWebSocketServerFactory;
+import org.java_websocket.server.SSLParametersWebSocketServerFactory;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLEngine;
+import javax.net.ssl.SSLParameters;
 import javax.net.ssl.TrustManagerFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.security.KeyStore;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Copy of SSLServerExample except we use @link SSLEngineWebSocketServerFactory to customize clientMode/ClientAuth to force client to present a cert.
@@ -70,13 +67,10 @@ public class TwoWaySSLServerExample {
 		SSLContext sslContext = SSLContext.getInstance( "TLS" );
 		sslContext.init( kmf.getKeyManagers(), tmf.getTrustManagers(), null );
 
-		SSLEngine engine = sslContext.createSSLEngine();
-
-		// Here we force the client to present a certificate
-		engine.setUseClientMode(false);
-		engine.setNeedClientAuth(true);
-
-		chatserver.setWebSocketFactory( new SSLEngineWebSocketServerFactory( engine ) );
+		SSLParameters sslParameters = new SSLParameters();
+		// This is all we need
+		sslParameters.setNeedClientAuth(true);
+		chatserver.setWebSocketFactory( new SSLParametersWebSocketServerFactory(sslContext, sslParameters));
 
 		chatserver.start();
 
