@@ -675,7 +675,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 	 * <p>
 	 * {@link #WebSocketServer(InetSocketAddress, int, List, Collection)} allows to specify a collection which will be used to store current connections in.<br>
 	 * Depending on the type on the connection, modifications of that collection may have to be synchronized.
-	 * @param ws The Webscoket connection which should be removed
+	 * @param ws The Websocket connection which should be removed
 	 * @return Removing connection successful
 	 */
 	protected boolean removeConnection( WebSocket ws ) {
@@ -696,7 +696,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 
 	/**
 	 * @see #removeConnection(WebSocket)
-	 * @param ws the Webscoket connection which should be added
+	 * @param ws the Websocket connection which should be added
 	 * @return Adding connection successful
 	 */
 	protected boolean addConnection( WebSocket ws ) {
