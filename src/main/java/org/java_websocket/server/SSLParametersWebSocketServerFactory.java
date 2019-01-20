@@ -48,7 +48,7 @@ public class SSLParametersWebSocketServerFactory extends DefaultSSLWebSocketServ
    * New CustomSSLWebSocketServerFactory configured to only support given protocols and given cipher suites.
    *
    * @param sslContext          - can not be <code>null</code>
-   * @param sslParameters    - sslParameters
+   * @param sslParameters       - can not be <code>null</code>
    */
   public SSLParametersWebSocketServerFactory(SSLContext sslContext, SSLParameters sslParameters) {
     this(sslContext, Executors.newSingleThreadScheduledExecutor(), sslParameters);
@@ -59,7 +59,7 @@ public class SSLParametersWebSocketServerFactory extends DefaultSSLWebSocketServ
    *
    * @param sslContext          - can not be <code>null</code>
    * @param executerService     - can not be <code>null</code>
-   * @param sslParameters    - sslParameters
+   * @param sslParameters       - can not be <code>null</code>
    */
   public SSLParametersWebSocketServerFactory(SSLContext sslContext, ExecutorService executerService, SSLParameters sslParameters) {
     super(sslContext, executerService);
@@ -73,9 +73,7 @@ public class SSLParametersWebSocketServerFactory extends DefaultSSLWebSocketServ
   public ByteChannel wrapChannel(SocketChannel channel, SelectionKey key) throws IOException {
     SSLEngine e = sslcontext.createSSLEngine();
     e.setUseClientMode(false);
-    if (sslParameters != null) {
-      e.setSSLParameters(sslParameters);
-    }
+    e.setSSLParameters(sslParameters);
     return new SSLSocketChannel2(channel, e, exec, key);
   }
 }
