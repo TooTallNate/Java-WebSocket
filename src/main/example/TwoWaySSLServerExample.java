@@ -1,3 +1,5 @@
+
+
 /*
  * Copyright (c) 2010-2019 Nathan Rajlich
  *
@@ -23,55 +25,21 @@
  *  OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
-import java.net.URI;
-import java.security.KeyStore;
+import org.java_websocket.server.SSLParametersWebSocketServerFactory;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.SSLParameters;
 import javax.net.ssl.TrustManagerFactory;
+import java.io.File;
+import java.io.FileInputStream;
+import java.security.KeyStore;
 
-import org.java_websocket.WebSocketImpl;
-import org.java_websocket.client.WebSocketClient;
-import org.java_websocket.handshake.ServerHandshake;
-
-class WebSocketChatClient extends WebSocketClient {
-
-	public WebSocketChatClient( URI serverUri ) {
-		super( serverUri );
-	}
-
-	@Override
-	public void onOpen( ServerHandshake handshakedata ) {
-		System.out.println( "Connected" );
-
-	}
-
-	@Override
-	public void onMessage( String message ) {
-		System.out.println( "got: " + message );
-
-	}
-
-	@Override
-	public void onClose( int code, String reason, boolean remote ) {
-		System.out.println( "Disconnected" );
-
-	}
-
-	@Override
-	public void onError( Exception ex ) {
-		ex.printStackTrace();
-
-	}
-
-}
-
-public class SSLClientExample {
+/**
+ * Copy of SSLServerExample except we use @link SSLEngineWebSocketServerFactory to customize clientMode/ClientAuth to force client to present a cert.
+ * Example of Two-way ssl/MutualAuthentication/ClientAuthentication
+ */
+public class TwoWaySSLServerExample {
 
 	/*
 	 * Keystore with certificate created like so (in JKS format):
@@ -79,7 +47,7 @@ public class SSLClientExample {
 	 *keytool -genkey -keyalg RSA -validity 3650 -keystore "keystore.jks" -storepass "storepassword" -keypass "keypassword" -alias "default" -dname "CN=127.0.0.1, OU=MyOrgUnit, O=MyOrg, L=MyCity, S=MyRegion, C=MyCountry"
 	 */
 	public static void main( String[] args ) throws Exception {
-		WebSocketChatClient chatclient = new WebSocketChatClient( new URI( "wss://localhost:8887" ) );
+		ChatServer chatserver = new ChatServer( 8887 ); // Firefox does allow multible ssl connection only via port 443 //tested on FF16
 
 		// load up the key store
 		String STORETYPE = "JKS";
@@ -96,28 +64,15 @@ public class SSLClientExample {
 		TrustManagerFactory tmf = TrustManagerFactory.getInstance( "SunX509" );
 		tmf.init( ks );
 
-		SSLContext sslContext = null;
-		sslContext = SSLContext.getInstance( "TLS" );
+		SSLContext sslContext = SSLContext.getInstance( "TLS" );
 		sslContext.init( kmf.getKeyManagers(), tmf.getTrustManagers(), null );
-		// sslContext.init( null, null, null ); // will use java's default key and trust store which is sufficient unless you deal with self-signed certificates
 
-		SSLSocketFactory factory = sslContext.getSocketFactory();// (SSLSocketFactory) SSLSocketFactory.getDefault();
+		SSLParameters sslParameters = new SSLParameters();
+		// This is all we need
+		sslParameters.setNeedClientAuth(true);
+		chatserver.setWebSocketFactory( new SSLParametersWebSocketServerFactory(sslContext, sslParameters));
 
-		chatclient.setSocketFactory( factory );
-
-		chatclient.connectBlocking();
-
-		BufferedReader reader = new BufferedReader( new InputStreamReader( System.in ) );
-		while ( true ) {
-			String line = reader.readLine();
-			if( line.equals( "close" ) ) {
-				chatclient.closeBlocking();
-			} else if ( line.equals( "open" ) ) {
-				chatclient.reconnect();
-			} else {
-				chatclient.send( line );
-			}
-		}
+		chatserver.start();
 
 	}
 }
