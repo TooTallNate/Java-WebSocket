@@ -768,7 +768,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 
 	@Override
 	public void close( int code ) {
-		engine.close();
+		engine.close( code );
 	}
 
 	@Override
