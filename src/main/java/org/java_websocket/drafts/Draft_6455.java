@@ -476,7 +476,9 @@ public class Draft_6455 extends Draft {
 		Opcode optcode = toOpcode( ( byte ) ( b1 & 15 ) );
 
 		if( !( payloadlength >= 0 && payloadlength <= 125 ) ) {
-            payloadlength = translateSingleFramePayloadLength(buffer, optcode, payloadlength ,maxpacketsize, realpacketsize);
+			TranslatedPayloadMetaData payloadData = translateSingleFramePayloadLength(buffer, optcode, payloadlength ,maxpacketsize, realpacketsize);
+			payloadlength = payloadData.getPayloadLength();
+			realpacketsize = payloadData.getRealPackageSize();
 		}
 		translateSingleFrameCheckLengthLimit(payloadlength);
 		realpacketsize += ( mask ? 4 : 0 );
@@ -517,12 +519,12 @@ public class Draft_6455 extends Draft {
      * @param oldPayloadlength the old payload length
      * @param maxpacketsize the max packet size allowed
      * @param realpacketsize the real packet size
-     * @return the new payload length
+     * @return the new payload data containing new payload length and new packet size
      * @throws InvalidFrameException thrown if a control frame has an invalid length
      * @throws IncompleteException if the maxpacketsize is smaller than the realpackagesize
      * @throws LimitExceededException if the payload length is to big
      */
-    private int translateSingleFramePayloadLength(ByteBuffer buffer, Opcode optcode, int oldPayloadlength, int maxpacketsize, int realpacketsize) throws InvalidFrameException, IncompleteException, LimitExceededException {
+    private TranslatedPayloadMetaData translateSingleFramePayloadLength(ByteBuffer buffer, Opcode optcode, int oldPayloadlength, int maxpacketsize, int realpacketsize) throws InvalidFrameException, IncompleteException, LimitExceededException {
         int payloadlength = oldPayloadlength;
     	if( optcode == Opcode.PING || optcode == Opcode.PONG || optcode == Opcode.CLOSING ) {
             log.trace( "Invalid frame: more than 125 octets" );
@@ -546,7 +548,7 @@ public class Draft_6455 extends Draft {
             translateSingleFrameCheckLengthLimit(length);
             payloadlength = ( int ) length;
         }
-        return payloadlength;
+        return new TranslatedPayloadMetaData(payloadlength, realpacketsize);
     }
 
     /**
@@ -1034,5 +1036,23 @@ public class Draft_6455 extends Draft {
 			}
 		}
 		return totalSize;
+	}
+
+	private class TranslatedPayloadMetaData {
+		private int payloadLength;
+		private int realPackageSize;
+
+		int getPayloadLength() {
+			return payloadLength;
+		}
+
+		int getRealPackageSize() {
+			return realPackageSize;
+		}
+
+		TranslatedPayloadMetaData(int newPayloadLength, int newRealPackageSize) {
+			this.payloadLength = newPayloadLength;
+			this.realPackageSize = newRealPackageSize;
+		}
 	}
 }
