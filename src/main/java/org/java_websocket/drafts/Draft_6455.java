@@ -518,14 +518,14 @@ public class Draft_6455 extends Draft {
      * @param optcode the decoded optcode
      * @param oldPayloadlength the old payload length
      * @param maxpacketsize the max packet size allowed
-     * @param realpacketsize the real packet size
+     * @param oldRealpacketsize the real packet size
      * @return the new payload data containing new payload length and new packet size
      * @throws InvalidFrameException thrown if a control frame has an invalid length
      * @throws IncompleteException if the maxpacketsize is smaller than the realpackagesize
      * @throws LimitExceededException if the payload length is to big
      */
-    private TranslatedPayloadMetaData translateSingleFramePayloadLength(ByteBuffer buffer, Opcode optcode, int oldPayloadlength, int maxpacketsize, int realpacketsize) throws InvalidFrameException, IncompleteException, LimitExceededException {
-        int payloadlength = oldPayloadlength;
+    private TranslatedPayloadMetaData translateSingleFramePayloadLength(ByteBuffer buffer, Opcode optcode, int oldPayloadlength, int maxpacketsize, int oldRealpacketsize) throws InvalidFrameException, IncompleteException, LimitExceededException {
+        int payloadlength = oldPayloadlength, realpacketsize = oldRealpacketsize;
     	if( optcode == Opcode.PING || optcode == Opcode.PONG || optcode == Opcode.CLOSING ) {
             log.trace( "Invalid frame: more than 125 octets" );
             throw new InvalidFrameException( "more than 125 octets" );
@@ -1042,11 +1042,11 @@ public class Draft_6455 extends Draft {
 		private int payloadLength;
 		private int realPackageSize;
 
-		int getPayloadLength() {
+		private int getPayloadLength() {
 			return payloadLength;
 		}
 
-		int getRealPackageSize() {
+		private int getRealPackageSize() {
 			return realPackageSize;
 		}
 
