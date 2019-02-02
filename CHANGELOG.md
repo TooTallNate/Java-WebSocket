@@ -1,0 +1,188 @@
+# Change log
+
+## Version Release 1.3.9 (2018-08-05)
+
+#### Bugs Fixed
+
+* [Issue 694](https://github.com/TooTallNate/Java-WebSocket/issues/694) - AssertionError at WebSocketImpl.isOpen
+* [Issue 685](https://github.com/TooTallNate/Java-WebSocket/issues/685) - Exclude default port from wss host ([PR 683](https://github.com/TooTallNate/Java-WebSocket/pull/683))
+* [PR 746](https://github.com/TooTallNate/Java-WebSocket/pull/746) - Fixed typo in Draft_6455
+* [PR 722](https://github.com/TooTallNate/Java-WebSocket/pull/722) - Catch exceptions in AbstractWebSocket
+* [PR 708](https://github.com/TooTallNate/Java-WebSocket/pull/708) - Enable and Disable ping/pong
+
+#### New Features
+
+* [Issue 711](https://github.com/TooTallNate/Java-WebSocket/issues/711) - broadcasting a ByteBuffer
+* [Issue 699](https://github.com/TooTallNate/Java-WebSocket/issues/699) - Enable and Disable ping/pong
+* [PR 738](https://github.com/TooTallNate/Java-WebSocket/pull/738) - Adjust readme
+* [PR 737](https://github.com/TooTallNate/Java-WebSocket/pull/737) - Prepare for automatic snapshot deploy
+* [PR 724](https://github.com/TooTallNate/Java-WebSocket/pull/724) - added a timeout option for connectBlocking
+* [PR 712](https://github.com/TooTallNate/Java-WebSocket/pull/712) - Added a broadcast method for ByteBuffers
+* [PR 708](https://github.com/TooTallNate/Java-WebSocket/pull/708) - Enable and Disable ping/pong
+
+#### Refactoring
+
+* [PR 739](https://github.com/TooTallNate/Java-WebSocket/pull/739) - Exception when using reconnect in websocket thread
+* [PR 736](https://github.com/TooTallNate/Java-WebSocket/pull/736) - Change example section
+* [PR 733](https://github.com/TooTallNate/Java-WebSocket/pull/733) - Remove static from synchronize object
+* [PR 702](https://github.com/TooTallNate/Java-WebSocket/pull/702) - Removed assertion from WebSocketImpl.isOpen (see #694)
+* [PR 682](https://github.com/TooTallNate/Java-WebSocket/pull/682) - Deprecate Connecting and additional tests
+
+In this release 4 issues and 13 pull requests were closed.
+
+## Version Release 1.3.8 (2018-03-05)
+
+#### Bugs Fixed
+
+* [Issue 668](https://github.com/TooTallNate/Java-WebSocket/issues/668) - When a server fails to start it does not cleanup its WebSocketWorker threads
+* [PR 662](https://github.com/TooTallNate/Java-WebSocket/pull/662) - NPE on already bound port
+
+#### New Features
+
+* [Issue 256](https://github.com/TooTallNate/Java-WebSocket/issues/256) - how to reconnect websocket ([PR 654](https://github.com/TooTallNate/Java-WebSocket/pull/654))
+* [PR 654](https://github.com/TooTallNate/Java-WebSocket/pull/654) - WebSocketClient supports reconnecting
+* [PR 651](https://github.com/TooTallNate/Java-WebSocket/pull/651) - Support for close code 1012-1014
+
+#### Refactoring
+
+* [Issue 669](https://github.com/TooTallNate/Java-WebSocket/issues/669) - Include information in the onClose call for the connection lost detection ([PR 671](https://github.com/TooTallNate/Java-WebSocket/pull/671))
+* [Issue 666](https://github.com/TooTallNate/Java-WebSocket/issues/666) - Give the main WebSocketClient thread and AbstractWebSocket Timer a name ([PR 667](https://github.com/TooTallNate/Java-WebSocket/pull/667))
+* [PR 675](https://github.com/TooTallNate/Java-WebSocket/pull/675) - Change thread name
+* [PR 671](https://github.com/TooTallNate/Java-WebSocket/pull/671) - Include reason for dc due to lost connection detection
+* [PR 667](https://github.com/TooTallNate/Java-WebSocket/pull/667) -  Give all threads a custom name
+
+In this release 4 issues and 6 pull requests were closed.
+
+## Version Release 1.3.7 (2017-12-11)
+
+#### Bugs Fixed
+
+* [Issue 621](https://github.com/TooTallNate/Java-WebSocket/issues/621) - conn.close() in server's onOpen method causes null pointer exception ([PR 622](https://github.com/TooTallNate/Java-WebSocket/pull/622))
+* [Issue 620](https://github.com/TooTallNate/Java-WebSocket/issues/620) - Investigate cause for #580 ([PR 628](https://github.com/TooTallNate/Java-WebSocket/pull/628))
+* [Issue 609](https://github.com/TooTallNate/Java-WebSocket/issues/609) - A connection will be in readystate Open when onWebSocketClose is called ([PR 610](https://github.com/TooTallNate/Java-WebSocket/pull/610))
+* [Issue 606](https://github.com/TooTallNate/Java-WebSocket/issues/606) - WebsocketNotConnectedException in Timer-0 ping
+* [PR 628](https://github.com/TooTallNate/Java-WebSocket/pull/628) - Graceful shutdown on stop()
+* [PR 622](https://github.com/TooTallNate/Java-WebSocket/pull/622) - Fix for #621
+* [PR 610](https://github.com/TooTallNate/Java-WebSocket/pull/610) -  Check if connection is open on sendPing &  change readystate on closeConnection
+
+#### New Features
+
+* [Issue 608](https://github.com/TooTallNate/Java-WebSocket/issues/608) - Sec-WebSocket-Protocol header not supported ([PR 614](https://github.com/TooTallNate/Java-WebSocket/pull/614))
+* [PR 627](https://github.com/TooTallNate/Java-WebSocket/pull/627) - Added setAttachment and getAttachment to WebSocket interface
+* [PR 614](https://github.com/TooTallNate/Java-WebSocket/pull/614) - Protocol
+
+#### Refactoring
+
+* [PR 635](https://github.com/TooTallNate/Java-WebSocket/pull/635) - Mark AbstractClientProxyChannel as deprecated
+* [PR 614](https://github.com/TooTallNate/Java-WebSocket/pull/614) - Protocol
+* [PR 610](https://github.com/TooTallNate/Java-WebSocket/pull/610) -  Check if connection is open on sendPing &  change readystate on closeConnection
+
+In this release 5 issues and 8 pull requests were closed.
+
+## Version Release 1.3.6 (2017-11-09)
+
+#### Bugs Fixed
+
+* [Issue 579](https://github.com/TooTallNate/Java-WebSocket/issues/579) - Exception with sending ping without server access
+* [PR 603](https://github.com/TooTallNate/Java-WebSocket/pull/603) - Check for sending a close frame
+
+#### Refactoring
+
+* [Issue 577](https://github.com/TooTallNate/Java-WebSocket/issues/577) - Improve onClose behaviour on client side
+* [PR 597](https://github.com/TooTallNate/Java-WebSocket/pull/597) - Code cleanups
+* [PR 596](https://github.com/TooTallNate/Java-WebSocket/pull/596) - Improved OpeningHandshakeRejection test
+* [PR 591](https://github.com/TooTallNate/Java-WebSocket/pull/591) - Adjusted examples
+* [PR 589](https://github.com/TooTallNate/Java-WebSocket/pull/589) - Include whole invalid status line
+* [PR 578](https://github.com/TooTallNate/Java-WebSocket/pull/578) - Refactoring and improved onClose behaviour
+
+In this release 2 issues and 6 pull requests were closed.
+
+## Version Release 1.3.5 (2017-10-13)
+
+#### Bugs Fixed
+
+* [Issue 564](https://github.com/TooTallNate/Java-WebSocket/issues/564) - Continuous binary getting swallowed? ([PR 570](https://github.com/TooTallNate/Java-WebSocket/pull/570))
+* [Issue 530](https://github.com/TooTallNate/Java-WebSocket/issues/530) - onWebsocketHandshakeReceivedAsServer throwing InvalidDataException has no effect
+* [Issue 512](https://github.com/TooTallNate/Java-WebSocket/issues/512) - AssertionError in WebSocketServer.removeConnection
+* [Issue 508](https://github.com/TooTallNate/Java-WebSocket/issues/508) - Ant fails due to missing `dist/` directory
+* [Issue 504](https://github.com/TooTallNate/Java-WebSocket/issues/504) - Clean up connections after connection closed
+* [Issue 390](https://github.com/TooTallNate/Java-WebSocket/issues/390) - Websocket server returning 401; can't handle on client side
+* [PR 506](https://github.com/TooTallNate/Java-WebSocket/pull/506) - Connections dont always get cleaned up after lost connection
+
+#### New Features
+
+* [Issue 528](https://github.com/TooTallNate/Java-WebSocket/issues/528) - so_reuseaddr
+* [Issue 463](https://github.com/TooTallNate/Java-WebSocket/issues/463) - Support for  Compression Extensions for WebSocket
+* [PR 529](https://github.com/TooTallNate/Java-WebSocket/pull/529) - Added setter for SO_REUSEADDR
+* [PR 510](https://github.com/TooTallNate/Java-WebSocket/pull/510) - Add true WSS support to WebSocketClient
+
+#### Refactoring
+
+* [Issue 545](https://github.com/TooTallNate/Java-WebSocket/issues/545) - java.io.IOException: Broken pipe
+* [Issue 539](https://github.com/TooTallNate/Java-WebSocket/issues/539) - Improve memory usage
+* [Issue 516](https://github.com/TooTallNate/Java-WebSocket/issues/516) - Improve handling of IOExceptions causing eot()
+* [PR 558](https://github.com/TooTallNate/Java-WebSocket/pull/558) - Code cleanups
+* [PR 553](https://github.com/TooTallNate/Java-WebSocket/pull/553) - Removal of deprecated drafts
+* [PR 510](https://github.com/TooTallNate/Java-WebSocket/pull/510) - Add true WSS support to WebSocketClient
+* [PR 500](https://github.com/TooTallNate/Java-WebSocket/pull/500) - Making WebSocket.send() thread-safe
+
+In this release 11 issues and 7 pull requests were closed.
+
+## Version Release 1.3.4 (2017-06-02)
+
+#### Breaking Changes
+
+* [Issue 478](https://github.com/TooTallNate/Java-WebSocket/issues/478) - Draft_10, Draft_17, Draft_75 and Draft_76 are now deprecated
+
+#### Bugs Fixed
+
+* [Issue 484](https://github.com/TooTallNate/Java-WebSocket/issues/484) - Problems with WSS running on linux and Edge(or ie) browser
+* [Issue 481](https://github.com/TooTallNate/Java-WebSocket/issues/481) - No Javadoc attached when using from Gradle
+* [Issue 473](https://github.com/TooTallNate/Java-WebSocket/issues/473) - Improve lost connection detection
+* [Issue 466](https://github.com/TooTallNate/Java-WebSocket/issues/466) - Instability on WSS Connections, only works when one client abandon connection
+* [Issue 465](https://github.com/TooTallNate/Java-WebSocket/issues/465) - Bad rsv 4 on android
+* [Issue 294](https://github.com/TooTallNate/Java-WebSocket/issues/294) - Issue in SSL implementation : protocole ws:// is always use in Draft_76.java
+* [Issue 222](https://github.com/TooTallNate/Java-WebSocket/issues/222) - Worker threads do not close if bind() fails
+* [Issue 120](https://github.com/TooTallNate/Java-WebSocket/issues/120) - Closing wss connections might not work as expected
+* [PR 477](https://github.com/TooTallNate/Java-WebSocket/pull/477) - Fix for #222
+* [PR 472](https://github.com/TooTallNate/Java-WebSocket/pull/472) - Fix for #466
+* [PR 470](https://github.com/TooTallNate/Java-WebSocket/pull/470) - Fix #465
+
+#### New Features
+
+* [PR 497](https://github.com/TooTallNate/Java-WebSocket/pull/497) - Added new AutobahnServerTest for SSL and fixed errors in closeframe
+* [PR 493](https://github.com/TooTallNate/Java-WebSocket/pull/493) - Clear implementations for frames and SSLWebsocketServerFactory
+* [PR 489](https://github.com/TooTallNate/Java-WebSocket/pull/489) - Possibility to override worker thread allocation logic in WebSocketSe…
+* [PR 487](https://github.com/TooTallNate/Java-WebSocket/pull/487) - Example for LetsEncrypt
+* [PR 483](https://github.com/TooTallNate/Java-WebSocket/pull/483) - Introduction of Draft_6455
+* [PR 480](https://github.com/TooTallNate/Java-WebSocket/pull/480) - Lostconnection
+
+#### Refactoring
+
+* [Issue 473](https://github.com/TooTallNate/Java-WebSocket/issues/473) - Improve lost connection detection
+* [Issue 222](https://github.com/TooTallNate/Java-WebSocket/issues/222) - Worker threads do not close if bind() fails
+* [PR 493](https://github.com/TooTallNate/Java-WebSocket/pull/493) - Clear implementations for frames and SSLWebsocketServerFactory
+* [PR 488](https://github.com/TooTallNate/Java-WebSocket/pull/488) - New SSLSocketChannel
+* [PR 486](https://github.com/TooTallNate/Java-WebSocket/pull/486) - ByteBuffer and JUnitTests
+* [PR 483](https://github.com/TooTallNate/Java-WebSocket/pull/483) - Introduction of Draft_6455
+* [PR 480](https://github.com/TooTallNate/Java-WebSocket/pull/480) - Lostconnection
+* [PR 469](https://github.com/TooTallNate/Java-WebSocket/pull/469) - Cleanups & JavaDocs
+
+In this release 11 issues and 15 pull requests were closed.
+
+## Version Release 1.3.3 (2017-04-26)
+
+#### Bugs Fixed
+
+* [Issue 458](https://github.com/TooTallNate/Java-WebSocket/issues/458) - 100% cpu when using SSL
+* [Issue 362](https://github.com/TooTallNate/Java-WebSocket/issues/362) - race problem when starting server with port 0
+* [Issue 302](https://github.com/TooTallNate/Java-WebSocket/issues/302) - Client blocking connect and close methods return too soon
+
+#### New Features
+
+* [Issue 452](https://github.com/TooTallNate/Java-WebSocket/issues/452) - Unable to verify hostname after handshake
+* [Issue 339](https://github.com/TooTallNate/Java-WebSocket/issues/339) - setTCPNoDelay inaccessible
+* [Issue 271](https://github.com/TooTallNate/Java-WebSocket/issues/271) - There is no notification for websocket server success start
+* [PR 462](https://github.com/TooTallNate/Java-WebSocket/pull/462) - Make TCP_NODELAY accessible
+
+In this release 6 issues and 1 pull request were closed.
