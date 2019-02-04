@@ -25,11 +25,7 @@
 
 package org.java_websocket.exceptions;
 
-import org.java_websocket.enums.Opcode;
-import org.java_websocket.framing.BinaryFrame;
-import org.java_websocket.framing.DataFrame;
 import org.junit.Test;
-import org.omg.CORBA.DynAnyPackage.Invalid;
 
 import java.io.UnsupportedEncodingException;
 
