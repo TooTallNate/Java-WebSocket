@@ -211,7 +211,6 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 		for( int i = 0 ; i < decodercount ; i++ ) {
 			WebSocketWorker ex = new WebSocketWorker();
 			decoders.add( ex );
-			ex.start();
 		}
 	}
 
@@ -229,6 +228,10 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 		if( selectorthread != null )
 			throw new IllegalStateException( getClass().getName() + " can only be started once." );
 		new Thread( this ).start();
+
+		for( WebSocketWorker ex : decoders ){
+			ex.start();
+		}
 	}
 
 	/**
