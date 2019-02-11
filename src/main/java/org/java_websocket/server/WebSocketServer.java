@@ -228,10 +228,6 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 		if( selectorthread != null )
 			throw new IllegalStateException( getClass().getName() + " can only be started once." );
 		new Thread( this ).start();
-
-		for( WebSocketWorker ex : decoders ){
-			ex.start();
-		}
 	}
 
 	/**
@@ -510,6 +506,9 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 			selector = Selector.open();
 			server.register( selector, server.validOps() );
 			startConnectionLostTimer();
+			for( WebSocketWorker ex : decoders ){
+				ex.start();
+			}
 			onStart();
 		} catch ( IOException ex ) {
 			handleFatal( null, ex );
