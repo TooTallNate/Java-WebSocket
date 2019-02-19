@@ -29,7 +29,7 @@ To use maven add this dependency to your pom.xml:
 <dependency>
   <groupId>org.java-websocket</groupId>
   <artifactId>Java-WebSocket</artifactId>
-  <version>1.3.9</version>
+  <version>1.4.0</version>
 </dependency>
 ```
 
@@ -40,7 +40,7 @@ mavenCentral()
 ```
 Then you can just add the latest version to your build.
 ```xml
-compile "org.java-websocket:Java-WebSocket:1.3.9"
+compile "org.java-websocket:Java-WebSocket:1.4.0"
 ```
 
 #### Logging

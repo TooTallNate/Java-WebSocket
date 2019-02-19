@@ -1,5 +1,60 @@
 # Change log
 
+## Version Release 1.4.0 (2019/02/19)
+
+#### Breaking Changes
+
+* [Issue 753](https://github.com/TooTallNate/Java-WebSocket/issues/753) - Breaking changes in 1.4
+* [Issue 670](https://github.com/TooTallNate/Java-WebSocket/issues/670) - Use a logging framework such as as SLF4J instead of System.out.println ([PR 754](https://github.com/TooTallNate/Java-WebSocket/pull/754))
+
+#### Bugs Fixed
+
+* [Issue 855](https://github.com/TooTallNate/Java-WebSocket/issues/855) - WebSocketServer cannot be started without .start() ([PR 856](https://github.com/TooTallNate/Java-WebSocket/pull/856))
+* [Issue 847](https://github.com/TooTallNate/Java-WebSocket/issues/847) - java.nio.BufferUnderflowException ([PR 849](https://github.com/TooTallNate/Java-WebSocket/pull/849))
+* [Issue 834](https://github.com/TooTallNate/Java-WebSocket/issues/834) - Workers should not be started before the server
+* [Issue 827](https://github.com/TooTallNate/Java-WebSocket/issues/827) - WebSocketClient close()
+* [Issue 784](https://github.com/TooTallNate/Java-WebSocket/issues/784) - Building with gradle fails
+* [Issue 773](https://github.com/TooTallNate/Java-WebSocket/issues/773) - Memory leak in WebSocketImpl.outQueue ([PR 781](https://github.com/TooTallNate/Java-WebSocket/pull/781))
+* [PR 856](https://github.com/TooTallNate/Java-WebSocket/pull/856) - Move the startup of the WebSocketWorker inside of run()
+* [PR 850](https://github.com/TooTallNate/Java-WebSocket/pull/850) - Fix issue #834 by starting WebSocketWorker of the WebSocketServer in the start function
+* [PR 849](https://github.com/TooTallNate/Java-WebSocket/pull/849) - Fix issue #847
+* [PR 846](https://github.com/TooTallNate/Java-WebSocket/pull/846) - Pass on exit code in WebSocketClient close function - fixes bug #827
+* [PR 824](https://github.com/TooTallNate/Java-WebSocket/pull/824) - Synchronize AbstractWebSocket
+* [PR 785](https://github.com/TooTallNate/Java-WebSocket/pull/785) - Update build.gradle
+* [PR 781](https://github.com/TooTallNate/Java-WebSocket/pull/781) - Null the reference of the WebSocketImpl
+* [PR 771](https://github.com/TooTallNate/Java-WebSocket/pull/771) - Test for 765
+* [PR 770](https://github.com/TooTallNate/Java-WebSocket/pull/770) - Use a SocketFactory to support reconnecting
+* [PR 769](https://github.com/TooTallNate/Java-WebSocket/pull/769) - Close WebSocketFactory when updated
+* [PR 757](https://github.com/TooTallNate/Java-WebSocket/pull/757) - -keyalg RSA is needed or you'll get SSLHandshakeException: no cipher …
+
+#### New Features
+
+* [Issue 845](https://github.com/TooTallNate/Java-WebSocket/issues/845) - Generate changelog.md ([PR 851](https://github.com/TooTallNate/Java-WebSocket/pull/851))
+* [Issue 838](https://github.com/TooTallNate/Java-WebSocket/issues/838) - Allow for two-way ssl(SSLEngine.setNeedClientAuth())
+* [Issue 670](https://github.com/TooTallNate/Java-WebSocket/issues/670) - Use a logging framework such as as SLF4J instead of System.out.println ([PR 754](https://github.com/TooTallNate/Java-WebSocket/pull/754))
+* [Issue 598](https://github.com/TooTallNate/Java-WebSocket/issues/598) - Memory Management ([PR 761](https://github.com/TooTallNate/Java-WebSocket/pull/761))
+* [PR 839](https://github.com/TooTallNate/Java-WebSocket/pull/839) - SSLEngineWebSocketServerFactory allows more customization
+* [PR 761](https://github.com/TooTallNate/Java-WebSocket/pull/761) - Implements Memory Management
+
+#### Refactoring
+
+* [Issue 845](https://github.com/TooTallNate/Java-WebSocket/issues/845) - Generate changelog.md ([PR 851](https://github.com/TooTallNate/Java-WebSocket/pull/851))
+* [Issue 819](https://github.com/TooTallNate/Java-WebSocket/issues/819) - Ant build removed on master ?
+* [Issue 784](https://github.com/TooTallNate/Java-WebSocket/issues/784) - Building with gradle fails
+* [Issue 753](https://github.com/TooTallNate/Java-WebSocket/issues/753) - Breaking changes in 1.4
+* [Issue 749](https://github.com/TooTallNate/Java-WebSocket/issues/749) - Improve code quality for 1.4.0
+* [PR 848](https://github.com/TooTallNate/Java-WebSocket/pull/848) - Removed unused/unrelated imports (including deprecated CORBA)
+* [PR 833](https://github.com/TooTallNate/Java-WebSocket/pull/833) - Fix some sonarqube errors
+* [PR 824](https://github.com/TooTallNate/Java-WebSocket/pull/824) - Synchronize AbstractWebSocket
+* [PR 821](https://github.com/TooTallNate/Java-WebSocket/pull/821) - Remove outdated build instructions from README
+* [PR 805](https://github.com/TooTallNate/Java-WebSocket/pull/805) - More improvement
+* [PR 789](https://github.com/TooTallNate/Java-WebSocket/pull/789) - WebSocketServer code quality
+* [PR 785](https://github.com/TooTallNate/Java-WebSocket/pull/785) - Update build.gradle
+* [PR 768](https://github.com/TooTallNate/Java-WebSocket/pull/768) - Fixed several issues related to the code quality
+* [PR 754](https://github.com/TooTallNate/Java-WebSocket/pull/754) - Using SLF4J and refactored code
+
+In this release 16 issues and 22 pull requests were closed.
+
 ## Version Release 1.3.9 (2018-08-05)
 
 #### Bugs Fixed
