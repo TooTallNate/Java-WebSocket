@@ -36,6 +36,7 @@ import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -224,6 +225,36 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	 */
 	public Socket getSocket() {
 		return socket;
+	}
+
+	/**
+	 * Adds an additional header to be sent in the handshake.<br>
+	 * If the connection is already made, adding headers has no effect,
+	 * unless reconnect is called, which then a new handshake is sent.<br>
+	 * If a header with the same key already exists, it is overridden.
+	 */
+	public void addHeader(String key, String value){
+		if(headers == null)
+			headers = new TreeMap<String, String>(String.CASE_INSENSITIVE_ORDER);
+		headers.put(key, value);
+	}
+
+	/**
+	 * Removes a header from the handshake to be sent, if header key exists.<br>
+	 * @return the previous value associated with key, or
+	 * null if there was no mapping for key.
+	 */
+	public String removeHeader(String key) {
+		if(headers == null)
+			return null;
+		return headers.remove(key);
+	}
+
+	/**
+	 * Clears all previously put headers.
+	 */
+	public void clearHeaders() {
+		headers = null;
 	}
 
 	/**
