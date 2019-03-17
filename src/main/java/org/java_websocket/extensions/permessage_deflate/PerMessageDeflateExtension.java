@@ -63,6 +63,10 @@ public class PerMessageDeflateExtension extends CompressionExtension {
             inflater.end();
         }
 
+        // RSV1 bit must be cleared after decoding, so that other extensions don't throw an exception.
+        if(inputFrame.isRSV1())
+            ((DataFrame) inputFrame).setRSV1(false);
+
         // Set frames payload to the new decompressed data.
         ((FramedataImpl1) inputFrame).setPayload(ByteBuffer.wrap(output.toByteArray()));
     }
