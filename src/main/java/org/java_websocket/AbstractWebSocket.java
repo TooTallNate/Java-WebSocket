@@ -31,8 +31,10 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -60,15 +62,15 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
 	private boolean reuseAddr;
 
 	/**
-     * Attribute for a timer allowing to check for lost connections
-	 * @since 1.3.4
+     * Attribute for a service that triggers lost connection checking
+	 * @since 1.4.1
      */
-    private Timer connectionLostTimer;
+    private ScheduledExecutorService connectionLostCheckerService;
     /**
-     * Attribute for a timertask allowing to check for lost connections
-	 * @since 1.3.4
+     * Attribute for a task that checks for lost connections
+	 * @since 1.4.1
      */
-    private TimerTask connectionLostTimerTask;
+    private ScheduledFuture connectionLostCheckerFuture;
 
     /**
      * Attribute for the lost connection check interval
@@ -139,7 +141,7 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
      */
     protected void stopConnectionLostTimer() {
         synchronized (syncConnectionLost) {
-            if (connectionLostTimer != null || connectionLostTimerTask != null) {
+            if (connectionLostCheckerService != null || connectionLostCheckerFuture != null) {
                 this.websocketRunning = false;
                 log.trace("Connection lost timer stopped");
                 cancelConnectionLostTimer();
@@ -168,8 +170,8 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
 	 */
 	private void restartConnectionLostTimer() {
 		cancelConnectionLostTimer();
-		connectionLostTimer = new Timer("WebSocketTimer");
-		connectionLostTimerTask = new TimerTask() {
+		connectionLostCheckerService = Executors.newSingleThreadScheduledExecutor();
+		Runnable connectionLostChecker = new Runnable() {
 
 			/**
 			 * Keep the connections in a separate list to not cause deadlocks
@@ -190,8 +192,8 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
 				connections.clear();
 			}
 		};
-		connectionLostTimer.scheduleAtFixedRate( connectionLostTimerTask,1000L*connectionLostTimeout , 1000L*connectionLostTimeout );
 
+		connectionLostCheckerFuture = connectionLostCheckerService.scheduleAtFixedRate(connectionLostChecker, connectionLostTimeout, connectionLostTimeout, TimeUnit.SECONDS);
 	}
 
 	/**
@@ -228,13 +230,13 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
 	 * @since 1.3.4
      */
     private void cancelConnectionLostTimer() {
-        if( connectionLostTimer != null ) {
-            connectionLostTimer.cancel();
-            connectionLostTimer = null;
+       if( connectionLostCheckerService != null ) {
+            connectionLostCheckerService.shutdownNow();
+            connectionLostCheckerService = null;
         }
-        if( connectionLostTimerTask != null ) {
-            connectionLostTimerTask.cancel();
-            connectionLostTimerTask = null;
+        if( connectionLostCheckerFuture != null ) {
+        	connectionLostCheckerFuture.cancel(false);
+            connectionLostCheckerFuture = null;
         }
     }
 
