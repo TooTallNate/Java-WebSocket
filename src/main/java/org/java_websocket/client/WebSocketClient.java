@@ -195,7 +195,10 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 		}
 		this.uri = serverUri;
 		this.draft = protocolDraft;
-		this.headers = httpHeaders;
+		if(httpHeaders != null) {
+			headers = new TreeMap<String, String>(String.CASE_INSENSITIVE_ORDER);
+			headers.putAll(httpHeaders);
+		}
 		this.connectTimeout = connectTimeout;
 		setTcpNoDelay( false );
 		setReuseAddr( false );
@@ -228,10 +231,13 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	}
 
 	/**
+	 * @since 1.4.1
 	 * Adds an additional header to be sent in the handshake.<br>
 	 * If the connection is already made, adding headers has no effect,
 	 * unless reconnect is called, which then a new handshake is sent.<br>
 	 * If a header with the same key already exists, it is overridden.
+	 * @param key Name of the header to add.
+	 * @param value Value of the header to add.
 	 */
 	public void addHeader(String key, String value){
 		if(headers == null)
@@ -240,7 +246,9 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	}
 
 	/**
+	 * @since 1.4.1
 	 * Removes a header from the handshake to be sent, if header key exists.<br>
+	 * @param key Name of the header to remove.
 	 * @return the previous value associated with key, or
 	 * null if there was no mapping for key.
 	 */
@@ -251,6 +259,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	}
 
 	/**
+	 * @since 1.4.1
 	 * Clears all previously put headers.
 	 */
 	public void clearHeaders() {
