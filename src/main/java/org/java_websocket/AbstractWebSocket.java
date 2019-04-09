@@ -26,6 +26,7 @@
 package org.java_websocket;
 
 import org.java_websocket.framing.CloseFrame;
+import org.java_websocket.util.NamedThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -170,7 +171,7 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
 	 */
 	private void restartConnectionLostTimer() {
 		cancelConnectionLostTimer();
-		connectionLostCheckerService = Executors.newSingleThreadScheduledExecutor();
+		connectionLostCheckerService = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("connectionLostChecker"));
 		Runnable connectionLostChecker = new Runnable() {
 
 			/**
