@@ -151,7 +151,7 @@ public class WebSocketImpl implements WebSocket {
 	/**
 	 * Attribute, when the last pong was recieved
 	 */
-	private long lastPong = System.currentTimeMillis();
+	private long lastPong = System.nanoTime();
 
 	/**
 	 * Attribut to synchronize the write
@@ -802,7 +802,7 @@ public class WebSocketImpl implements WebSocket {
 	 * Update the timestamp when the last pong was received
 	 */
 	public void updateLastPong() {
-		this.lastPong = System.currentTimeMillis();
+		this.lastPong = System.nanoTime();
 	}
 
 	/**

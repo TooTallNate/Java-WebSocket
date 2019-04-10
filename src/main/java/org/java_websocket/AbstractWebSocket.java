@@ -74,10 +74,10 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
     private ScheduledFuture connectionLostCheckerFuture;
 
     /**
-     * Attribute for the lost connection check interval
+     * Attribute for the lost connection check interval in nanoseconds
 	 * @since 1.3.4
      */
-    private int connectionLostTimeout = 60;
+    private long connectionLostTimeout = TimeUnit.SECONDS.toNanos(60);
 
 	/**
 	 * Attribute to keep track if the WebSocket Server/Client is running/connected
@@ -92,12 +92,12 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
     /**
      * Get the interval checking for lost connections
      * Default is 60 seconds
-     * @return the interval
+     * @return the interval in seconds
 	 * @since 1.3.4
      */
     public int getConnectionLostTimeout() {
 		synchronized (syncConnectionLost) {
-			return connectionLostTimeout;
+			return (int) TimeUnit.NANOSECONDS.toSeconds(connectionLostTimeout);
 		}
     }
 
@@ -110,7 +110,7 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
      */
     public void setConnectionLostTimeout( int connectionLostTimeout ) {
         synchronized (syncConnectionLost) {
-            this.connectionLostTimeout = connectionLostTimeout;
+            this.connectionLostTimeout = TimeUnit.SECONDS.toNanos(connectionLostTimeout);
             if (this.connectionLostTimeout <= 0) {
                 log.trace("Connection lost timer stopped");
                 cancelConnectionLostTimer();
@@ -183,9 +183,9 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
 				connections.clear();
 				try {
 					connections.addAll( getConnections() );
-					long current = ( System.currentTimeMillis() - ( connectionLostTimeout * 1500 ) );
+					long minimumPongTime = (long) (System.nanoTime() - ( connectionLostTimeout * 1.5 ));
 					for( WebSocket conn : connections ) {
-						executeConnectionLostDetection(conn, current);
+						executeConnectionLostDetection(conn, minimumPongTime);
 					}
 				} catch ( Exception e ) {
 					//Ignore this exception
@@ -194,20 +194,20 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
 			}
 		};
 
-		connectionLostCheckerFuture = connectionLostCheckerService.scheduleAtFixedRate(connectionLostChecker, connectionLostTimeout, connectionLostTimeout, TimeUnit.SECONDS);
+		connectionLostCheckerFuture = connectionLostCheckerService.scheduleAtFixedRate(connectionLostChecker, connectionLostTimeout, connectionLostTimeout, TimeUnit.NANOSECONDS);
 	}
 
 	/**
 	 * Send a ping to the endpoint or close the connection since the other endpoint did not respond with a ping
 	 * @param webSocket the websocket instance
-	 * @param current the current time in milliseconds
+	 * @param minimumPongTime the lowest/oldest allowable last pong time (in nanoTime) before we consider the connection to be lost
 	 */
-	private void executeConnectionLostDetection(WebSocket webSocket, long current) {
+	private void executeConnectionLostDetection(WebSocket webSocket, long minimumPongTime) {
 		if (!(webSocket instanceof WebSocketImpl)) {
 			return;
 		}
 		WebSocketImpl webSocketImpl = (WebSocketImpl) webSocket;
-		if( webSocketImpl.getLastPong() < current ) {
+		if( webSocketImpl.getLastPong() < minimumPongTime ) {
 			log.trace("Closing connection due to no pong received: {}", webSocketImpl);
 			webSocketImpl.closeConnection( CloseFrame.ABNORMAL_CLOSE, "The connection was closed because the other endpoint did not respond with a pong in time. For more information check: https://github.com/TooTallNate/Java-WebSocket/wiki/Lost-connection-detection" );
 		} else {
