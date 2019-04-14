@@ -604,11 +604,11 @@ public class Draft_6455 extends Draft {
 	 */
 	private byte getRSVByte(int rsv){
 		if(rsv == 1) // 0100 0000
-			return 64;
+			return 0x40;
 		if(rsv == 2) // 0010 0000
-			return 32;
+			return 0x20;
 		if(rsv == 3) // 0001 0000
-			return 16;
+			return 0x10;
 		return 0;
 	}
 
