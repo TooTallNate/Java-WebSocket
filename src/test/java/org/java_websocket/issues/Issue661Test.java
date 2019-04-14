@@ -39,8 +39,7 @@ import java.net.BindException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.CountDownLatch;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 public class Issue661Test {
 
@@ -50,42 +49,30 @@ public class Issue661Test {
 	private CountDownLatch countServerDownLatch = new CountDownLatch( 1 );
 
 	private boolean wasError = false;
+	private boolean wasBindException = false;
 
-	class TestPrintStream extends PrintStream {
-		public TestPrintStream( OutputStream out ) {
-			super( out );
-		}
-
-		@Override
-		public void println( Object o ) {
-			wasError = true;
-			super.println( o );
-		}
-	}
-
-	//@Test(timeout =  2000)
+	@Test(timeout =  2000)
 	public void testIssue() throws Exception {
-		System.setErr( new TestPrintStream( System.err ) );
 		int port = SocketUtil.getAvailablePort();
-		WebSocketServer server0 = new WebSocketServer( new InetSocketAddress( port ) ) {
+		WebSocketServer server0 = new WebSocketServer(new InetSocketAddress(port)) {
 			@Override
-			public void onOpen( WebSocket conn, ClientHandshake handshake ) {
-				fail( "There should be no onOpen" );
+			public void onOpen(WebSocket conn, ClientHandshake handshake) {
+				fail("There should be no onOpen");
 			}
 
 			@Override
-			public void onClose( WebSocket conn, int code, String reason, boolean remote ) {
-				fail( "There should be no onClose" );
+			public void onClose(WebSocket conn, int code, String reason, boolean remote) {
+				fail("There should be no onClose");
 			}
 
 			@Override
-			public void onMessage( WebSocket conn, String message ) {
-				fail( "There should be no onMessage" );
+			public void onMessage(WebSocket conn, String message) {
+				fail("There should be no onMessage");
 			}
 
 			@Override
-			public void onError( WebSocket conn, Exception ex ) {
-				fail( "There should be no onError!" );
+			public void onError(WebSocket conn, Exception ex) {
+				fail("There should be no onError!");
 			}
 
 			@Override
@@ -96,42 +83,45 @@ public class Issue661Test {
 		server0.start();
 		try {
 			countServerDownLatch.await();
-		} catch ( InterruptedException e ) {
+		} catch (InterruptedException e) {
 			//
 		}
-		WebSocketServer server1 = new WebSocketServer( new InetSocketAddress( port ) ) {
+		WebSocketServer server1 = new WebSocketServer(new InetSocketAddress(port)) {
 			@Override
-			public void onOpen( WebSocket conn, ClientHandshake handshake ) {
-				fail( "There should be no onOpen" );
+			public void onOpen(WebSocket conn, ClientHandshake handshake) {
+				fail("There should be no onOpen");
 			}
 
 			@Override
-			public void onClose( WebSocket conn, int code, String reason, boolean remote ) {
-				fail( "There should be no onClose" );
+			public void onClose(WebSocket conn, int code, String reason, boolean remote) {
+				fail("There should be no onClose");
 			}
 
 			@Override
-			public void onMessage( WebSocket conn, String message ) {
-				fail( "There should be no onMessage" );
+			public void onMessage(WebSocket conn, String message) {
+				fail("There should be no onMessage");
 			}
 
 			@Override
-			public void onError( WebSocket conn, Exception ex ) {
-				if( !( ex instanceof BindException ) ) {
-					fail( "There should be no onError" );
+			public void onError(WebSocket conn, Exception ex) {
+				if (ex instanceof BindException){
+					wasBindException = true;
+				} else {
+					wasError = true;
 				}
 			}
 
 			@Override
 			public void onStart() {
-				fail( "There should be no onStart!" );
+				fail("There should be no onStart!");
 			}
 		};
 		server1.start();
-		Thread.sleep( 1000 );
+		Thread.sleep(1000);
 		server1.stop();
 		server0.stop();
-		Thread.sleep( 100 );
-		assertTrue( "There was an error using System.err", !wasError );
+		Thread.sleep(100);
+		assertFalse("There was an unexpected exception!", wasError);
+		assertTrue("There was no bind exception!", wasBindException);
 	}
 }
