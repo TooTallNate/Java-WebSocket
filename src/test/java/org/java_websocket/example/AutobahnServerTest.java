@@ -28,6 +28,7 @@ package org.java_websocket.example;
 import org.java_websocket.WebSocket;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft_6455;
+import org.java_websocket.extensions.permessage_deflate.PerMessageDeflateExtension;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 
@@ -101,7 +102,7 @@ public class AutobahnServerTest extends WebSocketServer {
 			System.out.println( "No limit specified. Defaulting to MaxInteger" );
 			limit = Integer.MAX_VALUE;
 		}
-		AutobahnServerTest test = new AutobahnServerTest( port, limit, new Draft_6455() );
+		AutobahnServerTest test = new AutobahnServerTest( port, limit, new Draft_6455( new PerMessageDeflateExtension()) );
 		test.setConnectionLostTimeout( 0 );
 		test.start();
 	}
