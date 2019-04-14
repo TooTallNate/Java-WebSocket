@@ -101,13 +101,15 @@ public class PerMessageDeflateExtensionTest {
     @Test
     public void testGetProvidedExtensionAsClient() {
         PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
-        assertEquals( "permessage-deflate", deflateExtension.getProvidedExtensionAsClient() );
+        assertEquals( "permessage-deflate; server_no_context_takeover; client_no_context_takeover",
+                deflateExtension.getProvidedExtensionAsClient() );
     }
 
     @Test
     public void testGetProvidedExtensionAsServer() {
         PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
-        assertEquals( "permessage-deflate", deflateExtension.getProvidedExtensionAsServer() );
+        assertEquals( "permessage-deflate; server_no_context_takeover; client_no_context_takeover",
+                deflateExtension.getProvidedExtensionAsServer() );
     }
 
     @Test

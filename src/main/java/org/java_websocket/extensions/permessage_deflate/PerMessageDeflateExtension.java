@@ -204,7 +204,7 @@ public class PerMessageDeflateExtension extends CompressionExtension {
         requestedParameters.put(CLIENT_NO_CONTEXT_TAKEOVER, ExtensionRequestData.EMPTY_VALUE);
         requestedParameters.put(SERVER_NO_CONTEXT_TAKEOVER, ExtensionRequestData.EMPTY_VALUE);
 
-        return EXTENSION_REGISTERED_NAME + "; " + CLIENT_NO_CONTEXT_TAKEOVER + "; " + SERVER_NO_CONTEXT_TAKEOVER;
+        return EXTENSION_REGISTERED_NAME + "; " + SERVER_NO_CONTEXT_TAKEOVER + "; " + CLIENT_NO_CONTEXT_TAKEOVER;
     }
 
     @Override
