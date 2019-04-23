@@ -80,7 +80,7 @@ public class Issue666Test {
 		}
 		for( Thread thread : mapAfter.values() ) {
 			String name = thread.getName();
-			if( !name.startsWith( "WebSocketSelector-" ) && !name.startsWith( "WebSocketWorker-" ) && !name.equals( "WebSocketTimer" ) ) {
+			if( !name.startsWith( "WebSocketSelector-" ) && !name.startsWith( "WebSocketWorker-" ) && !name.startsWith( "connectionLostChecker-" ) ) {
 				Assert.fail( "Thread not correctly named! Is: " + name );
 			}
 		}
@@ -145,7 +145,7 @@ public class Issue666Test {
 		}
 		for( Thread thread : mapAfter.values() ) {
 			String name = thread.getName();
-			if( !name.equals( "WebSocketTimer" ) && !name.startsWith( "WebSocketWriteThread-" ) && !name.startsWith( "WebSocketConnectReadThread-" )) {
+			if( !name.startsWith( "connectionLostChecker-" ) && !name.startsWith( "WebSocketWriteThread-" ) && !name.startsWith( "WebSocketConnectReadThread-" )) {
 				Assert.fail( "Thread not correctly named! Is: " + name );
 			}
 		}
