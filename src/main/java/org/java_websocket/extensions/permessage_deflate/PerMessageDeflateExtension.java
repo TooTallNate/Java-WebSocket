@@ -26,28 +26,19 @@ public class PerMessageDeflateExtension extends CompressionExtension {
     private static final String CLIENT_NO_CONTEXT_TAKEOVER = "client_no_context_takeover";
     private static final String SERVER_MAX_WINDOW_BITS = "server_max_window_bits";
     private static final String CLIENT_MAX_WINDOW_BITS = "client_max_window_bits";
-    private static final boolean serverNoContextTakeover = true;
-    private static final boolean clientNoContextTakeover = true;
     private static final int serverMaxWindowBits = 1 << 15;
     private static final int clientMaxWindowBits = 1 << 15;
     private static final byte[] TAIL_BYTES = {0x00, 0x00, (byte)0xFF, (byte)0xFF};
     private static final int BUFFER_SIZE = 1 << 10;
 
+    private boolean serverNoContextTakeover = true;
+    private boolean clientNoContextTakeover = false;
+
     // For WebSocketServers, this variable holds the extension parameters that the peer client has requested.
     // For WebSocketClients, this variable holds the extension parameters that client himself has requested.
     private Map<String, String> requestedParameters = new LinkedHashMap<String, String>();
-
-    /**
-     * A message to send can be fragmented and if the message is <u>first compressed in it's entirety and then fragmented,</u>
-     *      those fragments can refer to backref-lengths from previous fragments. (up-to 32,768 bytes)
-     * In order to support this behavior, and Inflater must hold on to the previously uncompressed data
-     *      until all the fragments of a message has been sent.
-     * Therefore, the
-     * @see #inflater must be an instance variable rather than a local variables in
-     * @see PerMessageDeflateExtension#decodeFrame(Framedata) so that it can retain the uncompressed data between multiple calls to
-     * @see PerMessageDeflateExtension#decodeFrame(Framedata).
-     */
     private Inflater inflater = new Inflater(true);
+    private Deflater deflater = new Deflater(Deflater.DEFAULT_COMPRESSION, true);
 
     /*
         An endpoint uses the following algorithm to decompress a message.
@@ -86,7 +77,9 @@ public class PerMessageDeflateExtension extends CompressionExtension {
 
             if(inputFrame.isFin()) {
                 decompress(TAIL_BYTES, output);
-                inflater = new Inflater(true);
+                // If context takeover is disabled, inflater can be reset.
+                if(clientNoContextTakeover)
+                    inflater = new Inflater(true);
             }
         } catch (DataFormatException e) {
             throw new InvalidDataException(CloseFrame.POLICY_VALIDATION, e.getMessage());
@@ -120,19 +113,15 @@ public class PerMessageDeflateExtension extends CompressionExtension {
         if(!(inputFrame instanceof ContinuousFrame))
             ((DataFrame) inputFrame).setRSV1(true);
 
-        Deflater deflater = new Deflater(Deflater.DEFAULT_COMPRESSION, true);
         deflater.setInput(inputFrame.getPayloadData().array());
-        deflater.finish();
-
         // Compressed output buffer.
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         // Temporary buffer to hold compressed output.
         byte[] buffer = new byte[1024];
         int bytesCompressed;
-        while((bytesCompressed = deflater.deflate(buffer)) > 0) {
+        while((bytesCompressed = deflater.deflate(buffer, 0, buffer.length, Deflater.SYNC_FLUSH)) > 0) {
             output.write(buffer, 0, bytesCompressed);
         }
-        deflater.end();
 
         byte outputBytes[] = output.toByteArray();
         int outputLength = outputBytes.length;
@@ -143,8 +132,15 @@ public class PerMessageDeflateExtension extends CompressionExtension {
             To simulate removal, we just pass 4 bytes less to the new payload
                 if the frame is final and outputBytes ends with 0x00 0x00 0xff 0xff.
         */
-        if(inputFrame.isFin() && endsWithTail(outputBytes))
-            outputLength -= TAIL_BYTES.length;
+        if(inputFrame.isFin()) {
+            if(endsWithTail(outputBytes))
+                outputLength -= TAIL_BYTES.length;
+
+            if(serverNoContextTakeover) {
+                deflater.end();
+                deflater = new Deflater(Deflater.DEFAULT_COMPRESSION, true);
+            }
+        }
 
         // Set frames payload to the new compressed data.
         ((FramedataImpl1) inputFrame).setPayload(ByteBuffer.wrap(outputBytes, 0, outputLength));
@@ -174,7 +170,8 @@ public class PerMessageDeflateExtension extends CompressionExtension {
             // Holds parameters that peer client has sent.
             Map<String, String> headers = extensionData.getExtensionParameters();
             requestedParameters.putAll(headers);
-            // After this point, parameters can be used if necessary, but for now they are not used.
+            if(requestedParameters.containsKey(CLIENT_NO_CONTEXT_TAKEOVER))
+                clientNoContextTakeover = true;
 
             return true;
         }
@@ -209,7 +206,9 @@ public class PerMessageDeflateExtension extends CompressionExtension {
 
     @Override
     public String getProvidedExtensionAsServer() {
-        return EXTENSION_REGISTERED_NAME + "; " + SERVER_NO_CONTEXT_TAKEOVER + "; " + CLIENT_NO_CONTEXT_TAKEOVER;
+        return EXTENSION_REGISTERED_NAME
+                + "; " + SERVER_NO_CONTEXT_TAKEOVER
+                + (clientNoContextTakeover ? "; " + CLIENT_NO_CONTEXT_TAKEOVER : "");
     }
 
     @Override
