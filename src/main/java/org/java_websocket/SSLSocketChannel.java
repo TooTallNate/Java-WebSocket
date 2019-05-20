@@ -25,6 +25,7 @@
 
 package org.java_websocket;
 
+import org.java_websocket.interfaces.ISSLChannel;
 import org.java_websocket.util.ByteBufferUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,7 +63,7 @@ import java.util.concurrent.ExecutorService;
  *         <p>
  *         Permission for usage recieved at May 25, 2017 by Alex Karnezis
  */
-public class SSLSocketChannel implements WrappedByteChannel, ByteChannel {
+public class SSLSocketChannel implements WrappedByteChannel, ByteChannel, ISSLChannel {
 
 	/**
 	 * Logger instance
@@ -511,5 +512,10 @@ public class SSLSocketChannel implements WrappedByteChannel, ByteChannel {
 	@Override
 	public void close() throws IOException {
 		closeConnection();
+	}
+
+	@Override
+	public SSLEngine getSSLEngine() {
+		return engine;
 	}
 }

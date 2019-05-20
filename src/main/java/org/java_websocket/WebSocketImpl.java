@@ -25,6 +25,7 @@
 
 package org.java_websocket;
 
+import org.java_websocket.interfaces.ISSLChannel;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.enums.*;
@@ -50,6 +51,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.net.ssl.SSLEngine;
 
 /**
  * Represents one end (client or server) of a single WebSocketImpl connection.
@@ -818,6 +821,19 @@ public class WebSocketImpl implements WebSocket {
 	@SuppressWarnings("unchecked")
 	public <T> T getAttachment() {
 		return (T) attachment;
+	}
+
+	@Override
+	public boolean hasSSLEngine() {
+		return channel instanceof ISSLChannel;
+	}
+
+	@Override
+	public SSLEngine getSSLEngine() {
+		if (!hasSSLEngine()) {
+			throw new IllegalArgumentException("This websocket does use ws instead of wss. No SSLEngine available.");
+		}
+		return ((ISSLChannel) channel).getSSLEngine();
 	}
 
 	@Override

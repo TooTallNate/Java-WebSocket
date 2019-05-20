@@ -42,6 +42,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.net.SocketFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSocketFactory;
 
@@ -850,6 +851,15 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 		return uri.getPath();
 	}
 
+	@Override
+	public boolean hasSSLEngine() {
+		return engine.hasSSLEngine();
+	}
+
+	@Override
+	public SSLEngine getSSLEngine() {
+		return engine.getSSLEngine();
+	}
 
 	/**
 	 * Method to give some additional info for specific IOExceptions
