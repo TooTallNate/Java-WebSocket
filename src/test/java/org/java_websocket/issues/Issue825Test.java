@@ -32,6 +32,7 @@ import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.handshake.ServerHandshake;
 import org.java_websocket.server.DefaultSSLWebSocketServerFactory;
 import org.java_websocket.server.WebSocketServer;
+import org.java_websocket.util.SSLContextUtil;
 import org.java_websocket.util.SocketUtil;
 import org.junit.Test;
 
@@ -75,23 +76,7 @@ public class Issue825Test {
         WebSocketServer server = new MyWebSocketServer(port, countServerDownLatch, countClientDownLatch);
 
         // load up the key store
-        String STORETYPE = "JKS";
-        String KEYSTORE = String.format("src%1$stest%1$1sjava%1$1sorg%1$1sjava_websocket%1$1skeystore.jks", File.separator);
-        String STOREPASSWORD = "storepassword";
-        String KEYPASSWORD = "keypassword";
-
-        KeyStore ks = KeyStore.getInstance(STORETYPE);
-        File kf = new File(KEYSTORE);
-        ks.load(new FileInputStream(kf), STOREPASSWORD.toCharArray());
-
-        KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
-        kmf.init(ks, KEYPASSWORD.toCharArray());
-        TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
-        tmf.init(ks);
-
-        SSLContext sslContext = null;
-        sslContext = SSLContext.getInstance("TLS");
-        sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+        SSLContext sslContext = SSLContextUtil.getContext();
 
         server.setWebSocketFactory(new DefaultSSLWebSocketServerFactory(sslContext));
         webSocket.setSocketFactory(sslContext.getSocketFactory());

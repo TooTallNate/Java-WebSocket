@@ -38,6 +38,7 @@ import org.junit.Test;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManagerFactory;
 import java.io.File;
 import java.io.FileInputStream;
@@ -49,17 +50,18 @@ import java.security.*;
 import java.security.cert.CertificateException;
 import java.util.concurrent.CountDownLatch;
 
-public class Issue764Test {
-    private CountDownLatch countClientDownLatch = new CountDownLatch(2);
-    private CountDownLatch countServerDownLatch = new CountDownLatch(1);
+import static org.junit.Assert.*;
 
-    @Test(timeout = 2000)
-    public void testIssue() throws IOException, URISyntaxException, KeyStoreException, NoSuchAlgorithmException, KeyManagementException, UnrecoverableKeyException, CertificateException, InterruptedException {
+public class Issue890Test {
+
+
+    @Test(timeout = 4000)
+    public void testWithSSLSession() throws IOException, URISyntaxException, KeyStoreException, NoSuchAlgorithmException, KeyManagementException, UnrecoverableKeyException, CertificateException, InterruptedException {
         int port = SocketUtil.getAvailablePort();
+        final CountDownLatch countServerDownLatch = new CountDownLatch(1);
         final WebSocketClient webSocket = new WebSocketClient(new URI("wss://localhost:" + port)) {
             @Override
             public void onOpen(ServerHandshake handshakedata) {
-                countClientDownLatch.countDown();
                 countServerDownLatch.countDown();
             }
 
@@ -75,8 +77,8 @@ public class Issue764Test {
             public void onError(Exception ex) {
             }
         };
-        WebSocketServer server = new MyWebSocketServer(port, webSocket, countServerDownLatch);
-
+        TestResult testResult = new TestResult();
+        WebSocketServer server = new MyWebSocketServer(port, testResult, countServerDownLatch);
         SSLContext sslContext = SSLContextUtil.getContext();
 
         server.setWebSocketFactory(new DefaultSSLWebSocketServerFactory(sslContext));
@@ -84,24 +86,60 @@ public class Issue764Test {
         server.start();
         countServerDownLatch.await();
         webSocket.connectBlocking();
-        webSocket.reconnectBlocking();
-        countClientDownLatch.await();
+        assertTrue(testResult.hasSSLSupport);
+        assertNotNull(testResult.sslSession);
+    }
+
+    @Test(timeout = 4000)
+    public void testWithOutSSLSession() throws IOException, URISyntaxException, KeyStoreException, NoSuchAlgorithmException, KeyManagementException, UnrecoverableKeyException, CertificateException, InterruptedException {
+        int port = SocketUtil.getAvailablePort();
+        final CountDownLatch countServerDownLatch = new CountDownLatch(1);
+        final WebSocketClient webSocket = new WebSocketClient(new URI("ws://localhost:" + port)) {
+            @Override
+            public void onOpen(ServerHandshake handshakedata) {
+                countServerDownLatch.countDown();
+            }
+
+            @Override
+            public void onMessage(String message) {
+            }
+
+            @Override
+            public void onClose(int code, String reason, boolean remote) {
+            }
+
+            @Override
+            public void onError(Exception ex) {
+            }
+        };
+        TestResult testResult = new TestResult();
+        WebSocketServer server = new MyWebSocketServer(port, testResult, countServerDownLatch);
+        server.start();
+        countServerDownLatch.await();
+        webSocket.connectBlocking();
+        assertFalse(testResult.hasSSLSupport);
+        assertNull(testResult.sslSession);
     }
 
 
     private static class MyWebSocketServer extends WebSocketServer {
-        private final WebSocketClient webSocket;
+
+        private final TestResult testResult;
         private final CountDownLatch countServerDownLatch;
 
-
-        public MyWebSocketServer(int port, WebSocketClient webSocket, CountDownLatch countServerDownLatch) {
+        public MyWebSocketServer(int port, TestResult testResult, CountDownLatch countServerDownLatch) {
             super(new InetSocketAddress(port));
-            this.webSocket = webSocket;
+            this.testResult = testResult;
             this.countServerDownLatch = countServerDownLatch;
         }
-
         @Override
         public void onOpen(WebSocket conn, ClientHandshake handshake) {
+            testResult.hasSSLSupport = conn.hasSSLSupport();
+            try {
+                testResult.sslSession = conn.getSSLSession();
+            } catch (IllegalArgumentException e){
+                // Ignore
+            }
         }
 
         @Override
@@ -122,5 +160,11 @@ public class Issue764Test {
         public void onStart() {
             countServerDownLatch.countDown();
         }
+    }
+
+    private class TestResult {
+        public SSLSession sslSession = null;
+
+        public boolean hasSSLSupport = false;
     }
 }
