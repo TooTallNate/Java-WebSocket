@@ -52,7 +52,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.net.ssl.SSLEngine;
+import javax.net.ssl.SSLSession;
 
 /**
  * Represents one end (client or server) of a single WebSocketImpl connection.
@@ -824,16 +824,16 @@ public class WebSocketImpl implements WebSocket {
 	}
 
 	@Override
-	public boolean hasSSLEngine() {
+	public boolean hasSSLSupport() {
 		return channel instanceof ISSLChannel;
 	}
 
 	@Override
-	public SSLEngine getSSLEngine() {
-		if (!hasSSLEngine()) {
-			throw new IllegalArgumentException("This websocket does use ws instead of wss. No SSLEngine available.");
+	public SSLSession getSSLSession() {
+		if (!hasSSLSupport()) {
+			throw new IllegalArgumentException("This websocket does use ws instead of wss. No SSLSession available.");
 		}
-		return ((ISSLChannel) channel).getSSLEngine();
+		return ((ISSLChannel) channel).getSSLEngine().getSession();
 	}
 
 	@Override

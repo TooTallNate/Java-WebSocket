@@ -41,10 +41,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import javax.net.SocketFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLEngine;
-import javax.net.ssl.SSLException;
-import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.*;
 
 import org.java_websocket.AbstractWebSocket;
 import org.java_websocket.WebSocket;
@@ -852,13 +849,13 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	}
 
 	@Override
-	public boolean hasSSLEngine() {
-		return engine.hasSSLEngine();
+	public boolean hasSSLSupport() {
+		return engine.hasSSLSupport();
 	}
 
 	@Override
-	public SSLEngine getSSLEngine() {
-		return engine.getSSLEngine();
+	public SSLSession getSSLSession() {
+		return engine.getSSLSession();
 	}
 
 	/**
