@@ -831,7 +831,7 @@ public class WebSocketImpl implements WebSocket {
 	@Override
 	public SSLSession getSSLSession() {
 		if (!hasSSLSupport()) {
-			throw new IllegalArgumentException("This websocket does use ws instead of wss. No SSLSession available.");
+			throw new IllegalStateException("This websocket does use ws instead of wss. No SSLSession available.");
 		}
 		return ((ISSLChannel) channel).getSSLEngine().getSession();
 	}
