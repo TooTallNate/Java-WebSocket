@@ -28,6 +28,7 @@ package org.java_websocket.client;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.Socket;
@@ -452,6 +453,15 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 			onWebsocketError( engine, e );
 			engine.closeConnection( CloseFrame.NEVER_CONNECTED, e.getMessage() );
 			return;
+		} catch (InternalError e) {
+			// https://bugs.openjdk.java.net/browse/JDK-8173620
+			if (e.getCause() instanceof InvocationTargetException && e.getCause().getCause() instanceof IOException) {
+				IOException cause = (IOException) e.getCause().getCause();
+				onWebsocketError(engine, cause);
+				engine.closeConnection(CloseFrame.NEVER_CONNECTED, cause.getMessage());
+				return;
+			}
+			throw e;
 		}
 
 		writeThread = new Thread( new WebsocketWriteThread(this) );
