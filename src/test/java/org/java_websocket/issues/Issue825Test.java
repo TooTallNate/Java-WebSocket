@@ -49,15 +49,18 @@ import java.security.cert.CertificateException;
 import java.util.concurrent.CountDownLatch;
 
 public class Issue825Test {
-    private CountDownLatch countClientDownLatch = new CountDownLatch(3);
-    private CountDownLatch countServerDownLatch = new CountDownLatch(1);
+
 
     @Test(timeout = 15000)
     public void testIssue() throws IOException, URISyntaxException, KeyStoreException, NoSuchAlgorithmException, KeyManagementException, UnrecoverableKeyException, CertificateException, InterruptedException {
+        final CountDownLatch countClientOpenLatch = new CountDownLatch(3);
+        final CountDownLatch countClientMessageLatch = new CountDownLatch(3);
+        final CountDownLatch countServerDownLatch = new CountDownLatch(1);
         int port = SocketUtil.getAvailablePort();
         final WebSocketClient webSocket = new WebSocketClient(new URI("wss://localhost:" + port)) {
             @Override
             public void onOpen(ServerHandshake handshakedata) {
+                countClientOpenLatch.countDown();
             }
 
             @Override
@@ -72,7 +75,7 @@ public class Issue825Test {
             public void onError(Exception ex) {
             }
         };
-        WebSocketServer server = new MyWebSocketServer(port, countServerDownLatch, countClientDownLatch);
+        WebSocketServer server = new MyWebSocketServer(port, countServerDownLatch, countClientMessageLatch);
 
         // load up the key store
         String STORETYPE = "JKS";
@@ -109,23 +112,23 @@ public class Issue825Test {
         webSocket.closeBlocking();
         //Disconnect manually and reconnect
         webSocket.reconnect();
-        Thread.sleep( 100 );
+        countClientOpenLatch.await();
         webSocket.send( "me" );
         Thread.sleep( 100 );
         webSocket.closeBlocking();
-        countClientDownLatch.await();
+        countClientMessageLatch.await();
     }
 
 
     private static class MyWebSocketServer extends WebSocketServer {
-        private final CountDownLatch countServerDownLatch;
-        private final CountDownLatch countClientDownLatch;
+        private final CountDownLatch countServerLatch;
+        private final CountDownLatch countClientMessageLatch;
 
 
-        public MyWebSocketServer(int port, CountDownLatch serverDownLatch, CountDownLatch countClientDownLatch) {
+        public MyWebSocketServer(int port, CountDownLatch serverDownLatch, CountDownLatch countClientMessageLatch) {
             super(new InetSocketAddress(port));
-            this.countServerDownLatch = serverDownLatch;
-            this.countClientDownLatch = countClientDownLatch;
+            this.countServerLatch = serverDownLatch;
+            this.countClientMessageLatch = countClientMessageLatch;
         }
 
         @Override
@@ -138,7 +141,7 @@ public class Issue825Test {
 
         @Override
         public void onMessage(WebSocket conn, String message) {
-            countClientDownLatch.countDown();
+            countClientMessageLatch.countDown();
         }
 
         @Override
@@ -148,7 +151,7 @@ public class Issue825Test {
 
         @Override
         public void onStart() {
-            countServerDownLatch.countDown();
+            countServerLatch.countDown();
         }
     }
 }
