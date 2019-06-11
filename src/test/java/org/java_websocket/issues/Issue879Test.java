@@ -53,7 +53,7 @@ import static org.junit.Assert.assertFalse;
 @RunWith(Parameterized.class)
 public class Issue879Test {
 
-    private static final int NUMBER_OF_TESTS = 40;
+    private static final int NUMBER_OF_TESTS = 20;
 
     @Parameterized.Parameter
     public int numberOfConnections;
