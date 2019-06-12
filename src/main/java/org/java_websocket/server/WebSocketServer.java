@@ -924,16 +924,18 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 			return;
 		}
 		Map<Draft, List<Framedata>> draftFrames = new HashMap<Draft, List<Framedata>>();
+		List<WebSocket> clientCopy;
 		synchronized (clients) {
-			for (WebSocket client : clients) {
-				if (client != null) {
-					Draft draft = client.getDraft();
-					fillFrames(draft, draftFrames, sData, bData);
-					try {
-						client.sendFrame(draftFrames.get(draft));
-					} catch (WebsocketNotConnectedException e) {
-						//Ignore this exception in this case
-					}
+			clientCopy = new ArrayList<WebSocket>(clients);
+		}
+		for (WebSocket client : clientCopy) {
+			if (client != null) {
+				Draft draft = client.getDraft();
+				fillFrames(draft, draftFrames, sData, bData);
+				try {
+					client.sendFrame(draftFrames.get(draft));
+				} catch (WebsocketNotConnectedException e) {
+					//Ignore this exception in this case
 				}
 			}
 		}
