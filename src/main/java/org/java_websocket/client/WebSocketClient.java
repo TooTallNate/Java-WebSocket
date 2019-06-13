@@ -460,7 +460,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 			socket.setReuseAddress( isReuseAddr() );
 
 			if (!socket.isBound()) {
-				InetSocketAddress addr = new InetSocketAddress(dnsResolver.resolve(uri), uri.getPort());
+				InetSocketAddress addr = new InetSocketAddress(dnsResolver.resolve(uri), this.getPort());
 				socket.connect(addr, connectTimeout);
 			}
 
