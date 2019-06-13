@@ -48,7 +48,6 @@ import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSocketFactory;
 
 import org.java_websocket.AbstractWebSocket;
-import org.java_websocket.DnsResolver;
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketImpl;
 import org.java_websocket.drafts.Draft;
