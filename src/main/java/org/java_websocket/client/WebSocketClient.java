@@ -29,10 +29,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.Socket;
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.Collections;
@@ -133,6 +135,14 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	private int connectTimeout = 0;
 
 	/**
+	 * DNS resolver that translates a URI to an InetAddress
+	 *
+	 * @see InetAddress
+	 * @since 1.4.1
+	 */
+	private DnsResolver dnsResolver = null;
+
+	/**
 	 * Constructs a WebSocketClient instance and sets it to the connect to the
 	 * specified URI. The channel does not attampt to connect automatically. The connection
 	 * will be established once you call <var>connect</var>.
@@ -196,6 +206,12 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 		}
 		this.uri = serverUri;
 		this.draft = protocolDraft;
+		this.dnsResolver = new DnsResolver() {
+			@Override
+			public InetAddress resolve(URI uri) throws UnknownHostException {
+				return InetAddress.getByName(uri.getHost());
+			}
+		};
 		if(httpHeaders != null) {
 			headers = new TreeMap<String, String>(String.CASE_INSENSITIVE_ORDER);
 			headers.putAll(httpHeaders);
@@ -265,6 +281,17 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	 */
 	public void clearHeaders() {
 		headers = null;
+	}
+
+	/**
+	 * Sets a custom DNS resolver.
+	 *
+	 * @param dnsResolver The DnsResolver to use.
+	 *
+	 * @since 1.4.1
+	 */
+	public void setDnsResolver(DnsResolver dnsResolver) {
+		this.dnsResolver = dnsResolver;
 	}
 
 	/**
@@ -432,8 +459,9 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 			socket.setTcpNoDelay( isTcpNoDelay() );
 			socket.setReuseAddress( isReuseAddr() );
 
-			if( !socket.isBound() ) {
-				socket.connect( new InetSocketAddress( uri.getHost(), getPort() ), connectTimeout );
+			if (!socket.isBound()) {
+				InetSocketAddress addr = new InetSocketAddress(dnsResolver.resolve(uri), this.getPort());
+				socket.connect(addr, connectTimeout);
 			}
 
 			// if the socket is set by others we don't apply any TLS wrapper
@@ -519,9 +547,9 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 		if( part2 != null )
 			path += '?' + part2;
 		int port = getPort();
-		String host = uri.getHost() + ( 
+		String host = uri.getHost() + (
 			(port != WebSocketImpl.DEFAULT_PORT && port != WebSocketImpl.DEFAULT_WSS_PORT)
-			? ":" + port 
+			? ":" + port
 			: "" );
 
 		HandshakeImpl1Client handshake = new HandshakeImpl1Client();
@@ -854,7 +882,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	public InetSocketAddress getRemoteSocketAddress() {
 		return engine.getRemoteSocketAddress();
 	}
-	
+
 	@Override
 	public String getResourceDescriptor() {
 		return uri.getPath();
