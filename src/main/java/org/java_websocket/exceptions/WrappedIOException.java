@@ -34,7 +34,7 @@ import java.io.IOException;
  * Exception to wrap an IOException and include information about the websocket which had the exception
  * @since 1.4.1
  */
-public class WrappedIOException extends Throwable {
+public class WrappedIOException extends Exception {
 
     /**
      * The websocket where the IOException happened
