@@ -17,38 +17,45 @@ Implemented WebSocket protocol versions are:
 [Here](https://github.com/TooTallNate/Java-WebSocket/wiki/Drafts) some more details about protocol versions/drafts. 
 
 
-## Build
-You can build using Ant, Maven, Gradle or Leiningen but there is nothing against just putting the source path ```src/main/java ``` on your applications buildpath.
+## Getting Started
 
-### Ant
+### Dependency management tools
 
-``` bash
-ant 
-```
+Below is a brief guide to using dependency management tools like maven or gradle.
 
-will create the javadoc of this library at ```doc/``` and build the library itself: ```dist/java_websocket.jar```
-
-The ant targets are: ```compile```, ```jar```, ```doc``` and ```clean```
-
-### Maven
+#### Maven
 To use maven add this dependency to your pom.xml:
 ```xml
 <dependency>
   <groupId>org.java-websocket</groupId>
   <artifactId>Java-WebSocket</artifactId>
-  <version>1.3.9</version>
+  <version>1.4.0</version>
 </dependency>
 ```
 
-### Gradle
-To use Gradle add the maven central repository to your repositories list :
+#### Gradle
+To use Gradle add the maven central repository to your repositories list:
 ```xml
 mavenCentral()
 ```
 Then you can just add the latest version to your build.
 ```xml
-compile "org.java-websocket:Java-WebSocket:1.3.9"
+compile "org.java-websocket:Java-WebSocket:1.4.0"
 ```
+
+#### Logging
+
+This library uses [SLF4J](https://www.slf4j.org/) for logging and does not ship with any default logging implementation.
+
+Exceptions are using the log level `ERROR` and debug logging will be done with log level `TRACE`.
+
+Feel free to use whichever logging framework you desire and use the corresponding [binding](https://mvnrepository.com/artifact/org.slf4j) in your dependency management.
+
+If you want to get started, take a look at the SimpleLogger [example](https://github.com/TooTallNate/Java-WebSocket/wiki/SimpleLogger-example).
+
+### Standalone jar
+
+If you do not use any dependency management tool, you can find the latest standalone jar [here](https://github.com/TooTallNate/Java-WebSocket/releases/latest).
 
 Writing your own WebSocket Server
 ---------------------------------
@@ -107,7 +114,6 @@ Minimum Required JDK
  * Android 4.0 and higher
 
 Other JRE implementations may work as well, but haven't been tested.
-
 
 License
 -------

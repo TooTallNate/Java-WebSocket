@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2018 Nathan Rajlich
+ * Copyright (c) 2010-2019 Nathan Rajlich
  *
  *  Permission is hereby granted, free of charge, to any person
  *  obtaining a copy of this software and associated documentation
@@ -28,14 +28,18 @@ package org.java_websocket.client;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.Socket;
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -131,6 +135,14 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	private int connectTimeout = 0;
 
 	/**
+	 * DNS resolver that translates a URI to an InetAddress
+	 *
+	 * @see InetAddress
+	 * @since 1.4.1
+	 */
+	private DnsResolver dnsResolver = null;
+
+	/**
 	 * Constructs a WebSocketClient instance and sets it to the connect to the
 	 * specified URI. The channel does not attampt to connect automatically. The connection
 	 * will be established once you call <var>connect</var>.
@@ -194,7 +206,16 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 		}
 		this.uri = serverUri;
 		this.draft = protocolDraft;
-		this.headers = httpHeaders;
+		this.dnsResolver = new DnsResolver() {
+			@Override
+			public InetAddress resolve(URI uri) throws UnknownHostException {
+				return InetAddress.getByName(uri.getHost());
+			}
+		};
+		if(httpHeaders != null) {
+			headers = new TreeMap<String, String>(String.CASE_INSENSITIVE_ORDER);
+			headers.putAll(httpHeaders);
+		}
 		this.connectTimeout = connectTimeout;
 		setTcpNoDelay( false );
 		setReuseAddr( false );
@@ -224,6 +245,53 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	 */
 	public Socket getSocket() {
 		return socket;
+	}
+
+	/**
+	 * @since 1.4.1
+	 * Adds an additional header to be sent in the handshake.<br>
+	 * If the connection is already made, adding headers has no effect,
+	 * unless reconnect is called, which then a new handshake is sent.<br>
+	 * If a header with the same key already exists, it is overridden.
+	 * @param key Name of the header to add.
+	 * @param value Value of the header to add.
+	 */
+	public void addHeader(String key, String value){
+		if(headers == null)
+			headers = new TreeMap<String, String>(String.CASE_INSENSITIVE_ORDER);
+		headers.put(key, value);
+	}
+
+	/**
+	 * @since 1.4.1
+	 * Removes a header from the handshake to be sent, if header key exists.<br>
+	 * @param key Name of the header to remove.
+	 * @return the previous value associated with key, or
+	 * null if there was no mapping for key.
+	 */
+	public String removeHeader(String key) {
+		if(headers == null)
+			return null;
+		return headers.remove(key);
+	}
+
+	/**
+	 * @since 1.4.1
+	 * Clears all previously put headers.
+	 */
+	public void clearHeaders() {
+		headers = null;
+	}
+
+	/**
+	 * Sets a custom DNS resolver.
+	 *
+	 * @param dnsResolver The DnsResolver to use.
+	 *
+	 * @since 1.4.1
+	 */
+	public void setDnsResolver(DnsResolver dnsResolver) {
+		this.dnsResolver = dnsResolver;
 	}
 
 	/**
@@ -391,8 +459,9 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 			socket.setTcpNoDelay( isTcpNoDelay() );
 			socket.setReuseAddress( isReuseAddr() );
 
-			if( !socket.isBound() ) {
-				socket.connect( new InetSocketAddress( uri.getHost(), getPort() ), connectTimeout );
+			if (!socket.isBound()) {
+				InetSocketAddress addr = new InetSocketAddress(dnsResolver.resolve(uri), this.getPort());
+				socket.connect(addr, connectTimeout);
 			}
 
 			// if the socket is set by others we don't apply any TLS wrapper
@@ -412,6 +481,15 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 			onWebsocketError( engine, e );
 			engine.closeConnection( CloseFrame.NEVER_CONNECTED, e.getMessage() );
 			return;
+		} catch (InternalError e) {
+			// https://bugs.openjdk.java.net/browse/JDK-8173620
+			if (e.getCause() instanceof InvocationTargetException && e.getCause().getCause() instanceof IOException) {
+				IOException cause = (IOException) e.getCause().getCause();
+				onWebsocketError(engine, cause);
+				engine.closeConnection(CloseFrame.NEVER_CONNECTED, cause.getMessage());
+				return;
+			}
+			throw e;
 		}
 
 		writeThread = new Thread( new WebsocketWriteThread(this) );
@@ -469,9 +547,9 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 		if( part2 != null )
 			path += '?' + part2;
 		int port = getPort();
-		String host = uri.getHost() + ( 
+		String host = uri.getHost() + (
 			(port != WebSocketImpl.DEFAULT_PORT && port != WebSocketImpl.DEFAULT_WSS_PORT)
-			? ":" + port 
+			? ":" + port
 			: "" );
 
 		HandshakeImpl1Client handshake = new HandshakeImpl1Client();
@@ -768,7 +846,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 
 	@Override
 	public void close( int code ) {
-		engine.close();
+		engine.close( code );
 	}
 
 	@Override
@@ -804,7 +882,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	public InetSocketAddress getRemoteSocketAddress() {
 		return engine.getRemoteSocketAddress();
 	}
-	
+
 	@Override
 	public String getResourceDescriptor() {
 		return uri.getPath();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2018 Nathan Rajlich
+ * Copyright (c) 2010-2019 Nathan Rajlich
  *
  *  Permission is hereby granted, free of charge, to any person
  *  obtaining a copy of this software and associated documentation
@@ -60,7 +60,6 @@ class WebSocketChatClient extends WebSocketClient {
 	@Override
 	public void onClose( int code, String reason, boolean remote ) {
 		System.out.println( "Disconnected" );
-		System.exit( 0 );
 
 	}
 
@@ -112,7 +111,9 @@ public class SSLClientExample {
 		while ( true ) {
 			String line = reader.readLine();
 			if( line.equals( "close" ) ) {
-				chatclient.close();
+				chatclient.closeBlocking();
+			} else if ( line.equals( "open" ) ) {
+				chatclient.reconnect();
 			} else {
 				chatclient.send( line );
 			}

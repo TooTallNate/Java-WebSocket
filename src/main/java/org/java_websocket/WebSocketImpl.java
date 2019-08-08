@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2018 Nathan Rajlich
+ * Copyright (c) 2010-2019 Nathan Rajlich
  *
  *  Permission is hereby granted, free of charge, to any person
  *  obtaining a copy of this software and associated documentation
@@ -106,11 +106,11 @@ public class WebSocketImpl implements WebSocket {
 	/**
 	 * Helper variable meant to store the thread which ( exclusively ) triggers this objects decode method.
 	 **/
-	private volatile WebSocketWorker workerThread;
+	private WebSocketWorker workerThread;
 	/**
 	 * When true no further frames may be submitted to be sent
 	 */
-	private volatile boolean flushandclosestate = false;
+	private boolean flushandclosestate = false;
 
 	/**
 	 * The current state of the connection
@@ -151,7 +151,7 @@ public class WebSocketImpl implements WebSocket {
 	/**
 	 * Attribute, when the last pong was recieved
 	 */
-	private long lastPong = System.currentTimeMillis();
+	private long lastPong = System.nanoTime();
 
 	/**
 	 * Attribut to synchronize the write
@@ -802,7 +802,7 @@ public class WebSocketImpl implements WebSocket {
 	 * Update the timestamp when the last pong was received
 	 */
 	public void updateLastPong() {
-		this.lastPong = System.currentTimeMillis();
+		this.lastPong = System.nanoTime();
 	}
 
 	/**

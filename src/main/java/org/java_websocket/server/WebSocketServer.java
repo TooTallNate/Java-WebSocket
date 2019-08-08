@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2018 Nathan Rajlich
+ * Copyright (c) 2010-2019 Nathan Rajlich
  *
  *  Permission is hereby granted, free of charge, to any person
  *  obtaining a copy of this software and associated documentation
@@ -211,7 +211,6 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 		for( int i = 0 ; i < decodercount ; i++ ) {
 			WebSocketWorker ex = new WebSocketWorker();
 			decoders.add( ex );
-			ex.start();
 		}
 	}
 
@@ -450,8 +449,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 		WebSocketImpl conn = (WebSocketImpl) key.attachment();
 		ByteBuffer buf = takeBuffer();
 		if(conn.getChannel() == null){
-			if( key != null )
-				key.cancel();
+			key.cancel();
 
 			handleIOException( key, conn, new IOException() );
 			return false;
@@ -462,10 +460,8 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 					conn.inQueue.put( buf );
 					queue( conn );
 					i.remove();
-					if( conn.getChannel() instanceof WrappedByteChannel ) {
-						if( ( (WrappedByteChannel) conn.getChannel() ).isNeedRead() ) {
-							iqueue.add( conn );
-						}
+					if( conn.getChannel() instanceof WrappedByteChannel && ( (WrappedByteChannel) conn.getChannel() ).isNeedRead() ) {
+						iqueue.add( conn );
 					}
 				} else {
 					pushBuffer(buf);
@@ -488,8 +484,9 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 	private void doWrite(SelectionKey key) throws IOException {
 		WebSocketImpl conn = (WebSocketImpl) key.attachment();
 		if( SocketChannelIOHelper.batch( conn, conn.getChannel() ) ) {
-			if( key.isValid() )
-				key.interestOps( SelectionKey.OP_READ );
+			if( key.isValid() ) {
+				key.interestOps(SelectionKey.OP_READ);
+			}
 		}
 	}
 
@@ -509,6 +506,9 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 			selector = Selector.open();
 			server.register( selector, server.validOps() );
 			startConnectionLostTimer();
+			for( WebSocketWorker ex : decoders ){
+				ex.start();
+			}
 			onStart();
 		} catch ( IOException ex ) {
 			handleFatal( null, ex );
@@ -677,7 +677,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 	 * <p>
 	 * {@link #WebSocketServer(InetSocketAddress, int, List, Collection)} allows to specify a collection which will be used to store current connections in.<br>
 	 * Depending on the type on the connection, modifications of that collection may have to be synchronized.
-	 * @param ws The Webscoket connection which should be removed
+	 * @param ws The Websocket connection which should be removed
 	 * @return Removing connection successful
 	 */
 	protected boolean removeConnection( WebSocket ws ) {
@@ -690,19 +690,15 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 				log.trace("Removing connection which is not in the connections collection! Possible no handshake recieved! {}", ws);
 			}
 		}
-		if( isclosed.get() && connections.size() == 0 ) {
+		if( isclosed.get() && connections.isEmpty() ) {
 			selectorthread.interrupt();
 		}
 		return removed;
 	}
-	@Override
-	public ServerHandshakeBuilder onWebsocketHandshakeReceivedAsServer( WebSocket conn, Draft draft, ClientHandshake request ) throws InvalidDataException {
-		return super.onWebsocketHandshakeReceivedAsServer( conn, draft, request );
-	}
 
 	/**
 	 * @see #removeConnection(WebSocket)
-	 * @param ws the Webscoket connection which should be added
+	 * @param ws the Websocket connection which should be added
 	 * @return Adding connection successful
 	 */
 	protected boolean addConnection( WebSocket ws ) {
@@ -928,13 +924,17 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 			return;
 		}
 		Map<Draft, List<Framedata>> draftFrames = new HashMap<Draft, List<Framedata>>();
-		for( WebSocket client : clients ) {
-			if( client != null ) {
+		List<WebSocket> clientCopy;
+		synchronized (clients) {
+			clientCopy = new ArrayList<WebSocket>(clients);
+		}
+		for (WebSocket client : clientCopy) {
+			if (client != null) {
 				Draft draft = client.getDraft();
 				fillFrames(draft, draftFrames, sData, bData);
 				try {
-					client.sendFrame( draftFrames.get( draft ) );
-				} catch ( WebsocketNotConnectedException e ) {
+					client.sendFrame(draftFrames.get(draft));
+				} catch (WebsocketNotConnectedException e) {
 					//Ignore this exception in this case
 				}
 			}

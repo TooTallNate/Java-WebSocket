@@ -5,7 +5,7 @@
     <groupId>org.java-websocket</groupId>
     <artifactId>Java-WebSocket</artifactId>
     <packaging>bundle</packaging>
-    <version>1.4.0-SNAPSHOT</version>
+    <version>1.4.1-SNAPSHOT</version>
     <name>Java-WebSocket</name>
     <description>A barebones WebSocket client and server implementation written 100% in Java</description>
     <url>https://github.com/TooTallNate/Java-WebSocket</url>
@@ -230,13 +230,13 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.11</version>
+            <version>4.12</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20180130</version>
+            <version>20180813</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

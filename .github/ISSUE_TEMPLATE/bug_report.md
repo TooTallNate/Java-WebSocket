@@ -21,7 +21,7 @@ A link to a github project/gist to reproduce the issue.
 A clear and concise description of what you expected to happen.
 
 **Debug log**
-The the debug log ('WebSocketImpl.DEBUG = true') to help explain your problem.
+The the debug log (set the log level to `TRACE`) to help explain your problem.
 
 **Environment(please complete the following information):**
  - Version used:

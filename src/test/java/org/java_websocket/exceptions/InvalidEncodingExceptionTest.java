@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2018 Nathan Rajlich
+ * Copyright (c) 2010-2019 Nathan Rajlich
  *
  *  Permission is hereby granted, free of charge, to any person
  *  obtaining a copy of this software and associated documentation
@@ -25,11 +25,7 @@
 
 package org.java_websocket.exceptions;
 
-import org.java_websocket.enums.Opcode;
-import org.java_websocket.framing.BinaryFrame;
-import org.java_websocket.framing.DataFrame;
 import org.junit.Test;
-import org.omg.CORBA.DynAnyPackage.Invalid;
 
 import java.io.UnsupportedEncodingException;
 
