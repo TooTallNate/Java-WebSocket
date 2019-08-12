@@ -279,7 +279,9 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 	 * @since 1.3.8
 	 */
 	public Collection<WebSocket> getConnections() {
-		return Collections.unmodifiableCollection( new ArrayList<WebSocket>(connections) );
+		synchronized (connections) {
+			return Collections.unmodifiableCollection( new ArrayList<WebSocket>(connections) );
+		}
 	}
 
 	public InetSocketAddress getAddress() {
