@@ -35,6 +35,8 @@ import org.java_websocket.enums.ReadyState;
 import org.java_websocket.exceptions.WebsocketNotConnectedException;
 import org.java_websocket.framing.Framedata;
 
+import javax.net.ssl.SSLSession;
+
 public interface WebSocket {
 
 	/**
@@ -207,4 +209,19 @@ public interface WebSocket {
 	 * @since 1.3.7
 	 **/
 	<T> T getAttachment();
+
+	/**
+	 * Does this websocket use an encrypted (wss/ssl) or unencrypted (ws) connection
+	 * @return true, if the websocket does use wss and therefore has a SSLSession
+	 * @since 1.4.1
+	 */
+	boolean hasSSLSupport();
+
+	/**
+	 * Returns the ssl session of websocket, if ssl/wss is used for this instance.
+	 * @return the ssl session of this websocket instance
+	 * @throws IllegalArgumentException the underlying channel does not use ssl (use hasSSLSupport() to check)
+	 * @since 1.4.1
+	 */
+	SSLSession getSSLSession() throws IllegalArgumentException;
 }

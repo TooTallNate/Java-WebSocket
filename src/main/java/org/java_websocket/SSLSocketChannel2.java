@@ -24,6 +24,7 @@
  */
 package org.java_websocket;
 
+import org.java_websocket.interfaces.ISSLChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +53,7 @@ import java.util.concurrent.Future;
 /**
  * Implements the relevant portions of the SocketChannel interface with the SSLEngine wrapper.
  */
-public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
+public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel, ISSLChannel {
 
     /**
      * Logger instance
@@ -425,4 +426,8 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel {
         return socketChannel.isBlocking();
     }
 
+    @Override
+    public SSLEngine getSSLEngine() {
+        return sslEngine;
+    }
 }
