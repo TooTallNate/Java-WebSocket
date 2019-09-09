@@ -215,6 +215,7 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel, ISSLC
     }
 
     protected void createBuffers( SSLSession session ) {
+        saveCryptedData(); // save any remaining data in inCrypt
         int netBufferMax = session.getPacketBufferSize();
         int appBufferMax = Math.max(session.getApplicationBufferSize(), netBufferMax);
 
@@ -269,6 +270,7 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel, ISSLC
      * @return the number of bytes read.
      **/
     public int read(ByteBuffer dst) throws IOException {
+        tryRestoreCryptedData();
         while (true) {
             if (!dst.hasRemaining())
                 return 0;
@@ -329,6 +331,7 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel, ISSLC
         }
         if( !inData.hasRemaining() )
             inData.clear();
+        tryRestoreCryptedData();
         // test if some bytes left from last read (e.g. BUFFER_UNDERFLOW)
         if( inCrypt.hasRemaining() ) {
             unwrap();
@@ -396,7 +399,7 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel, ISSLC
 
     @Override
     public boolean isNeedRead() {
-        return inData.hasRemaining() || ( inCrypt.hasRemaining() && readEngineResult.getStatus() != Status.BUFFER_UNDERFLOW && readEngineResult.getStatus() != Status.CLOSED );
+        return saveCryptData != null || inData.hasRemaining() || ( inCrypt.hasRemaining() && readEngineResult.getStatus() != Status.BUFFER_UNDERFLOW && readEngineResult.getStatus() != Status.CLOSED );
     }
 
     @Override
@@ -429,5 +432,32 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel, ISSLC
     @Override
     public SSLEngine getSSLEngine() {
         return sslEngine;
+    }
+
+
+    // to avoid complexities with inCrypt, extra unwrapped data after SSL handshake will be saved off in a byte array
+    // and the inserted back on first read
+    private byte[] saveCryptData = null;
+    private void saveCryptedData()
+    {
+        // did we find any extra data?
+        if (inCrypt != null && inCrypt.remaining() > 0)
+        {
+            int saveCryptSize = inCrypt.remaining();
+            saveCryptData = new byte[saveCryptSize];
+            inCrypt.get(saveCryptData);
+        }
+    }
+
+    private void tryRestoreCryptedData()
+    {
+        // was there any extra data, then put into inCrypt and clean up
+        if ( saveCryptData != null )
+        {
+            inCrypt.clear();
+            inCrypt.put( saveCryptData );
+            inCrypt.flip();
+            saveCryptData = null;
+        }
     }
 }
