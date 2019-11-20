@@ -162,11 +162,6 @@ public class WebSocketImpl implements WebSocket {
 	private final Object synchronizeWriteObject = new Object();
 
 	/**
-	 * Attribute to cache a ping frame
-	 */
-	private PingFrame pingFrame;
-
-	/**
 	 * Attribute to store connection attachment
 	 * @since 1.3.7
 	 */
@@ -658,11 +653,12 @@ public class WebSocketImpl implements WebSocket {
 		send( Collections.singletonList( framedata ) );
 	}
 
-	public void sendPing() {
-		if( pingFrame == null ) {
-			pingFrame = new PingFrame();
-		}
-		sendFrame( pingFrame );
+	public void sendPing() throws NullPointerException {
+		// Gets a PingFrame from WebSocketListener(wsl) and sends it.
+		PingFrame pingFrame = wsl.onPreparePing(this);
+		if(pingFrame == null)
+			throw new NullPointerException("onPreparePing(WebSocket) returned null. PingFrame to sent can't be null.");
+		sendFrame(pingFrame);
 	}
 
 	@Override

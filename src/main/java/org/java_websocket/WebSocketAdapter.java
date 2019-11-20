@@ -40,6 +40,8 @@ import org.java_websocket.handshake.ServerHandshakeBuilder;
  **/
 public abstract class WebSocketAdapter implements WebSocketListener {
 
+	private PingFrame pingFrame;
+
 	/**
 	 * This default implementation does not do anything. Go ahead and overwrite it.
 	 *
@@ -84,5 +86,18 @@ public abstract class WebSocketAdapter implements WebSocketListener {
 	@Override
 	public void onWebsocketPong( WebSocket conn, Framedata f ) {
 		//To overwrite
+	}
+
+	/**
+	 * Default implementation for onPreparePing, returns a (cached) PingFrame that has no application data.
+	 *
+	 * @see org.java_websocket.WebSocketListener#onPreparePing(WebSocket)
+	 * @return PingFrame to be sent.
+	 */
+	@Override
+	public PingFrame onPreparePing(WebSocket conn) {
+		if(pingFrame == null)
+			pingFrame = new PingFrame();
+		return pingFrame;
 	}
 }
