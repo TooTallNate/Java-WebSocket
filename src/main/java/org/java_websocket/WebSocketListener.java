@@ -32,6 +32,7 @@ import org.java_websocket.drafts.Draft;
 import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.Framedata;
+import org.java_websocket.framing.PingFrame;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.handshake.Handshakedata;
 import org.java_websocket.handshake.ServerHandshake;
@@ -168,6 +169,14 @@ public interface WebSocketListener {
 	 * @param f The ping frame. Control frames may contain payload.
 	 */
 	void onWebsocketPing( WebSocket conn, Framedata f );
+
+	/**
+	 * Called just before a ping frame is sent, in order to allow users to customize their ping frame data.
+	 *
+	 * @param conn The <tt>WebSocket</tt> connection from which the ping frame will be sent.
+	 * @return PingFrame to be sent.
+	 */
+	PingFrame onPreparePing(WebSocket conn );
 
 	/**
 	 * Called when a pong frame is received.
