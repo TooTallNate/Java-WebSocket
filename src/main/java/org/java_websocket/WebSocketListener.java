@@ -173,6 +173,7 @@ public interface WebSocketListener {
 	/**
 	 * Called just before a ping frame is sent, in order to allow users to customize their ping frame data.
 	 *
+	 * @param conn The <tt>WebSocket</tt> connection from which the ping frame will be sent.
 	 * @return PingFrame to be sent.
 	 */
 	PingFrame onPreparePing(WebSocket conn );
