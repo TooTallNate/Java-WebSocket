@@ -457,7 +457,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 			socket.setTcpNoDelay( isTcpNoDelay() );
 			socket.setReuseAddress( isReuseAddr() );
 
-			if (!socket.isBound()) {
+			if (!socket.isConnected()) {
 				InetSocketAddress addr = new InetSocketAddress(dnsResolver.resolve(uri), this.getPort());
 				socket.connect(addr, connectTimeout);
 			}
