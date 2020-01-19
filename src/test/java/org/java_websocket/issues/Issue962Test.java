@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2019 Olivier Ayache
+ * Copyright (c) 2010-2020 Olivier Ayache
  *
  *  Permission is hereby granted, free of charge, to any person
  *  obtaining a copy of this software and associated documentation
