@@ -12,6 +12,20 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <slf4j.version>1.7.25</slf4j.version>
+
+        <!-- Test dependencies versions -->
+        <junit.version>4.12</junit.version>
+        <org.json.version>20180813</org.json.version>
+
+        <!-- Maven plugin versions -->
+        <maven.compiler.plugin.version>3.7.0</maven.compiler.plugin.version>
+        <maven.gpg.plugin.version>1.6</maven.gpg.plugin.version>
+        <maven.jar.plugin.version>3.0.2</maven.jar.plugin.version>
+        <maven.javadoc.plugin.version>2.10.3</maven.javadoc.plugin.version>
+        <maven.shade.plugin.version>3.1.0</maven.shade.plugin.version>
+        <maven.source.plugin.version>3.0.0</maven.source.plugin.version>
+        <nexus.staging.maven.plugin.version>1.6.8</nexus.staging.maven.plugin.version>
+
     </properties>
     <licenses>
         <license>
@@ -33,7 +47,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.7.0</version>
+                <version>${maven.compiler.plugin.version}</version>
                 <configuration>
                     <source>1.6</source>
                     <target>1.6</target>
@@ -55,7 +69,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.6</version>
+                        <version>${maven.gpg.plugin.version}</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
@@ -69,7 +83,7 @@
                     <plugin>
                         <groupId>org.sonatype.plugins</groupId>
                         <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.6.8</version>
+                        <version>${nexus.staging.maven.plugin.version}</version>
                         <extensions>true</extensions>
                         <configuration>
                             <serverId>ossrh</serverId>
@@ -79,7 +93,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
-                        <version>2.4</version>
+                        <version>${maven.source.plugin.version}</version>
                         <executions>
                             <execution>
                                 <id>attach-sources</id>
@@ -92,7 +106,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>2.10.2</version>
+                        <version>${maven.javadoc.plugin.version}</version>
                         <executions>
                             <execution>
                                 <id>attach-javadocs</id>
@@ -122,7 +136,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-shade-plugin</artifactId>
-                        <version>3.1.0</version>
+                        <version>${maven.shade.plugin.version}</version>
                         <executions>
                             <execution>
                                 <phase>package</phase>
@@ -146,7 +160,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
-                        <version>3.0.0</version>
+                        <version>${maven.source.plugin.version}</version>
                         <executions>
                             <execution>
                                 <id>attach-sources</id>
@@ -159,7 +173,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-jar-plugin</artifactId>
-                        <version>3.0.2</version>
+                        <version>${maven.jar.plugin.version}</version>
                         <executions>
                             <execution>
                                 <goals>
@@ -171,7 +185,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>2.10.3</version>
+                        <version>${maven.javadoc.plugin.version}</version>
                         <executions>
                             <execution>
                                 <id>attach-javadocs</id>
@@ -184,7 +198,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.6</version>
+                        <version>${maven.gpg.plugin.version}</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
@@ -224,13 +238,13 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.12</version>
+            <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20180813</version>
+            <version>${org.json.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
