@@ -85,7 +85,7 @@ public class WebSocketImpl implements WebSocket {
 	 *
 	 * @since 1.4.0
 	 */
-	private static final Logger log = LoggerFactory.getLogger(WebSocketImpl.class);
+	private final Logger log = LoggerFactory.getLogger(WebSocketImpl.class);
 
 	/**
 	 * Queue of buffers that need to be sent to the client.

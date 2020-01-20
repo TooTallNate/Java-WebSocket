@@ -48,7 +48,7 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
 	 *
 	 * @since 1.4.0
 	 */
-	private static final Logger log = LoggerFactory.getLogger(AbstractWebSocket.class);
+	private final Logger log = LoggerFactory.getLogger(AbstractWebSocket.class);
 
     /**
      * Attribute which allows you to deactivate the Nagle's algorithm

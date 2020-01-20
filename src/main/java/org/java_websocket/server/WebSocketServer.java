@@ -64,14 +64,14 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class WebSocketServer extends AbstractWebSocket implements Runnable {
 
+	private static final int AVAILABLE_PROCESSORS = Runtime.getRuntime().availableProcessors();
+
 	/**
 	 * Logger instance
 	 *
 	 * @since 1.4.0
 	 */
-	private static final Logger log = LoggerFactory.getLogger(WebSocketServer.class);
-
-	private static final int AVAILABLE_PROCESSORS = Runtime.getRuntime().availableProcessors();
+	private final Logger log = LoggerFactory.getLogger(WebSocketServer.class);
 
 	/**
 	 * Holds the list of active WebSocket connections. "Active" means WebSocket
