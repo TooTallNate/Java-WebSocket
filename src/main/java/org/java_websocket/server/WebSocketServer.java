@@ -46,13 +46,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.java_websocket.*;
 import org.java_websocket.drafts.Draft;
-import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.exceptions.WebsocketNotConnectedException;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.handshake.Handshakedata;
-import org.java_websocket.handshake.ServerHandshakeBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,14 +62,14 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class WebSocketServer extends AbstractWebSocket implements Runnable {
 
+	private static final int AVAILABLE_PROCESSORS = Runtime.getRuntime().availableProcessors();
+
 	/**
 	 * Logger instance
 	 *
 	 * @since 1.4.0
 	 */
-	private static final Logger log = LoggerFactory.getLogger(WebSocketServer.class);
-
-	private static final int AVAILABLE_PROCESSORS = Runtime.getRuntime().availableProcessors();
+	private final Logger log = LoggerFactory.getLogger(WebSocketServer.class);
 
 	/**
 	 * Holds the list of active WebSocket connections. "Active" means WebSocket

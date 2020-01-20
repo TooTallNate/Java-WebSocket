@@ -56,16 +56,16 @@ import java.util.concurrent.Future;
 public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel, ISSLChannel {
 
     /**
+     * This object is used to feed the {@link SSLEngine}'s wrap and unwrap methods during the handshake phase.
+     **/
+    protected static ByteBuffer emptybuffer = ByteBuffer.allocate( 0 );
+
+    /**
      * Logger instance
      *
      * @since 1.4.0
      */
-    private static final Logger log = LoggerFactory.getLogger(SSLSocketChannel2.class);
-
-    /**
-     * This object is used to feed the {@link SSLEngine}'s wrap and unwrap methods during the handshake phase.
-     **/
-    protected static ByteBuffer emptybuffer = ByteBuffer.allocate( 0 );
+    private final Logger log = LoggerFactory.getLogger(SSLSocketChannel2.class);
 
     protected ExecutorService exec;
 

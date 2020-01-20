@@ -86,7 +86,7 @@ public class Draft_6455 extends Draft {
 	 *
 	 * @since 1.4.0
 	 */
-	private static final Logger log = LoggerFactory.getLogger(Draft_6455.class);
+	private final Logger log = LoggerFactory.getLogger(Draft_6455.class);
 
 	/**
 	 * Attribute for the used extension in this draft
