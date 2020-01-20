@@ -315,11 +315,13 @@
     </dependencies>
     <developers>
         <developer>
+            <id>TooTallNate</id>
             <name>Nathan Rajlich</name>
             <url>https://github.com/TooTallNate</url>
             <email>nathan@tootallnate.net</email>
         </developer>
         <developer>
+            <id>marci4</id>
             <name>Marcel Prestel</name>
             <url>https://github.com/marci4</url>
             <email>admin@marci4.de</email>
