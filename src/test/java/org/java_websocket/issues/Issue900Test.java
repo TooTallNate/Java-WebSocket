@@ -37,8 +37,6 @@ import org.java_websocket.util.SocketUtil;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.ByteBuffer;
@@ -47,8 +45,8 @@ import java.util.concurrent.CountDownLatch;
 
 public class Issue900Test {
 
-    CountDownLatch countServerDownLatch = new CountDownLatch(1);
-    CountDownLatch countCloseCallsDownLatch = new CountDownLatch(1);
+    CountDownLatch serverStartLatch = new CountDownLatch(1);
+    CountDownLatch closeCalledLatch = new CountDownLatch(1);
 
     @Test(timeout = 2000)
     public void testIssue() throws Exception {
@@ -79,7 +77,7 @@ public class Issue900Test {
 
             @Override
             public void onClose(WebSocket conn, int code, String reason, boolean remote) {
-                countCloseCallsDownLatch.countDown();
+                closeCalledLatch.countDown();
             }
 
             @Override
@@ -94,22 +92,22 @@ public class Issue900Test {
 
             @Override
             public void onStart() {
-                countServerDownLatch.countDown();
+                serverStartLatch.countDown();
             }
         };
         new Thread(server).start();
-        countServerDownLatch.await();
+        serverStartLatch.await();
         client.connectBlocking();
         WebSocketImpl websocketImpl = (WebSocketImpl)new ArrayList<WebSocket>(server.getConnections()).get(0);
         websocketImpl.setChannel(new ExceptionThrowingByteChannel());
         server.broadcast("test");
-        countCloseCallsDownLatch.await();
+        closeCalledLatch.await();
     }
     class ExceptionThrowingByteChannel implements WrappedByteChannel {
 
         @Override
         public boolean isNeedWrite() {
-            return false;
+            return true;
         }
 
         @Override
@@ -119,7 +117,7 @@ public class Issue900Test {
 
         @Override
         public boolean isNeedRead() {
-            return false;
+            return true;
         }
 
         @Override
