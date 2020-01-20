@@ -73,7 +73,7 @@ public class SSLSocketChannel implements WrappedByteChannel, ByteChannel, ISSLCh
 	private final Logger log = LoggerFactory.getLogger(SSLSocketChannel.class);
 
 	/**
-	 * The underlaying socket channel
+	 * The underlying socket channel
 	 */
 	private final SocketChannel socketChannel;
 
