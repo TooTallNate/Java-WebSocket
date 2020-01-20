@@ -510,7 +510,7 @@ public class WebSocketImpl implements WebSocket {
 			try {
 				channel.close();
 			} catch ( IOException e ) {
-				if( e.getMessage().equals( "Broken pipe" ) ) {
+				if( e.getMessage() != null && e.getMessage().equals( "Broken pipe" ) ) {
 					log.trace( "Caught IOException: Broken pipe during closeConnection()", e );
 				} else {
 					log.error("Exception during channel.close()", e);

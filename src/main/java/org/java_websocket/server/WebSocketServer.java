@@ -47,6 +47,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.java_websocket.*;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.exceptions.WebsocketNotConnectedException;
+import org.java_websocket.exceptions.WrappedIOException;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.handshake.ClientHandshake;
@@ -320,7 +321,6 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 			int selectTimeout = 0;
 			while ( !selectorthread.isInterrupted() && iShutdownCount != 0) {
 				SelectionKey key = null;
-				WebSocketImpl conn = null;
 				try {
 					if (isclosed.get()) {
 						selectTimeout = 5;
@@ -334,7 +334,6 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 
 					while ( i.hasNext() ) {
 						key = i.next();
-						conn = null;
 						
 						if( !key.isValid() ) {
 							continue;
@@ -358,10 +357,10 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 					// an other thread may cancel the key
 				} catch ( ClosedByInterruptException e ) {
 					return; // do the same stuff as when InterruptedException is thrown
+				} catch ( WrappedIOException ex) {
+					handleIOException( key, ex.getConnection(), ex.getIOException());
 				} catch ( IOException ex ) {
-					if( key != null )
-						key.cancel();
-					handleIOException( key, conn, ex );
+					handleIOException( key, null, ex );
 				} catch ( InterruptedException e ) {
 					// FIXME controlled shutdown (e.g. take care of buffermanagement)
 					Thread.currentThread().interrupt();
@@ -445,7 +444,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 	 * @throws InterruptedException thrown by taking a buffer
 	 * @throws IOException if an error happened during read
 	 */
-	private boolean doRead(SelectionKey key, Iterator<SelectionKey> i) throws InterruptedException, IOException {
+	private boolean doRead(SelectionKey key, Iterator<SelectionKey> i) throws InterruptedException, WrappedIOException {
 		WebSocketImpl conn = (WebSocketImpl) key.attachment();
 		ByteBuffer buf = takeBuffer();
 		if(conn.getChannel() == null){
@@ -471,7 +470,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 			}
 		} catch ( IOException e ) {
 			pushBuffer( buf );
-			throw e;
+			throw new WrappedIOException(conn, e);
 		}
 		return true;
 	}
@@ -481,12 +480,16 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 	 * @param key the selectionkey to write on
 	 * @throws IOException if an error happened during batch
 	 */
-	private void doWrite(SelectionKey key) throws IOException {
+	private void doWrite(SelectionKey key) throws WrappedIOException {
 		WebSocketImpl conn = (WebSocketImpl) key.attachment();
-		if( SocketChannelIOHelper.batch( conn, conn.getChannel() ) ) {
-			if( key.isValid() ) {
-				key.interestOps(SelectionKey.OP_READ);
+		try {
+			if (SocketChannelIOHelper.batch(conn, conn.getChannel())) {
+				if (key.isValid()) {
+					key.interestOps(SelectionKey.OP_READ);
+				}
 			}
+		} catch (IOException e) {
+			throw new WrappedIOException(conn, e);
 		}
 	}
 
@@ -598,6 +601,9 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 
 	private void handleIOException( SelectionKey key, WebSocket conn, IOException ex ) {
 		// onWebsocketError( conn, ex );// conn may be null here
+		if (key != null) {
+			key.cancel();
+		}
 		if( conn != null ) {
 			conn.closeConnection( CloseFrame.ABNORMAL_CLOSE, ex.getMessage() );
 		} else if( key != null ) {
