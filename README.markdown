@@ -29,7 +29,7 @@ To use maven add this dependency to your pom.xml:
 <dependency>
   <groupId>org.java-websocket</groupId>
   <artifactId>Java-WebSocket</artifactId>
-  <version>1.4.0</version>
+  <version>1.4.1</version>
 </dependency>
 ```
 
@@ -40,7 +40,7 @@ mavenCentral()
 ```
 Then you can just add the latest version to your build.
 ```xml
-compile "org.java-websocket:Java-WebSocket:1.4.0"
+compile "org.java-websocket:Java-WebSocket:1.4.1"
 ```
 
 #### Logging
@@ -109,8 +109,7 @@ Minimum Required JDK
 
 `Java-WebSocket` is known to work with:
 
- * Java 1.6 and higher
- * Android 4.0 and higher
+ * Java 1.7 and higher
 
 Other JRE implementations may work as well, but haven't been tested.
 
