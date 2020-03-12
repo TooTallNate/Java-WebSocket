@@ -1,5 +1,49 @@
 # Change log
 
+## Version Release 1.4.1 (2020/03/12)
+
+#### Bugs Fixed
+
+* [Issue 940](https://github.com/TooTallNate/Java-WebSocket/issues/940) - WebSocket handshake fails over WSS, if client uses TLS False Start ([PR 943](https://github.com/TooTallNate/Java-WebSocket/pull/943))
+* [Issue 921](https://github.com/TooTallNate/Java-WebSocket/issues/921) - ConcurrentModificationException when looping connections
+* [Issue 905](https://github.com/TooTallNate/Java-WebSocket/issues/905) - IOException wrapped in InternalError not handled properly ([PR 901](https://github.com/TooTallNate/Java-WebSocket/pull/901))
+* [Issue 900](https://github.com/TooTallNate/Java-WebSocket/issues/900) - OnClose is not called when client disconnect ([PR 914](https://github.com/TooTallNate/Java-WebSocket/pull/914))
+* [Issue 869](https://github.com/TooTallNate/Java-WebSocket/issues/869) - Lost connection detection is sensitive to changes in system time ([PR 878](https://github.com/TooTallNate/Java-WebSocket/pull/878))
+* [Issue 665](https://github.com/TooTallNate/Java-WebSocket/issues/665) - Data read with end of SSL handshake is discarded ([PR 943](https://github.com/TooTallNate/Java-WebSocket/pull/943))
+* [PR 943](https://github.com/TooTallNate/Java-WebSocket/pull/943) - Merge pull request #943 from da-als/master
+* [PR 922](https://github.com/TooTallNate/Java-WebSocket/pull/922) - Fix ConcurrentModificationException when iterating through connection
+* [PR 914](https://github.com/TooTallNate/Java-WebSocket/pull/914) - Merge pull request #914 from marci4/Issue900
+* [PR 902](https://github.com/TooTallNate/Java-WebSocket/pull/902) - ConcurrentModificationException when using broadcast
+* [PR 901](https://github.com/TooTallNate/Java-WebSocket/pull/901) - fix when proxy tunneling failed (IOException is hidden) JDK-8173
+* [PR 878](https://github.com/TooTallNate/Java-WebSocket/pull/878) - Replace TimerTask with ScheduledExecutorService
+
+#### New Features
+
+* [Issue 969](https://github.com/TooTallNate/Java-WebSocket/issues/969) - Loggers should be declared non-static ([PR 970](https://github.com/TooTallNate/Java-WebSocket/pull/970))
+* [Issue 962](https://github.com/TooTallNate/Java-WebSocket/issues/962) - Improvements in socket connect to server ([PR 964](https://github.com/TooTallNate/Java-WebSocket/pull/964))
+* [Issue 941](https://github.com/TooTallNate/Java-WebSocket/issues/941) - How to send customized ping message on connectionLostTimeout interval ([PR 944](https://github.com/TooTallNate/Java-WebSocket/pull/944))
+* [Issue 890](https://github.com/TooTallNate/Java-WebSocket/issues/890) - Would like to get SSLSession from WebSocket on server to examine client certificates ([PR 893](https://github.com/TooTallNate/Java-WebSocket/pull/893))
+* [Issue 865](https://github.com/TooTallNate/Java-WebSocket/issues/865) - Append new headers to the client when reconnecting
+* [Issue 859](https://github.com/TooTallNate/Java-WebSocket/issues/859) - Hot wo specify a custom DNS Resolver ([PR 906](https://github.com/TooTallNate/Java-WebSocket/pull/906))
+* [PR 971](https://github.com/TooTallNate/Java-WebSocket/pull/971) - Enabled OSGi metadata in MANIFST-MF for created JAR
+* [PR 964](https://github.com/TooTallNate/Java-WebSocket/pull/964) - Use socket isConnected() method rather than isBound()
+* [PR 944](https://github.com/TooTallNate/Java-WebSocket/pull/944) - Add ability to customize ping messages with custom data
+* [PR 906](https://github.com/TooTallNate/Java-WebSocket/pull/906) - Implemented a custom DNS resolver, see #859
+* [PR 893](https://github.com/TooTallNate/Java-WebSocket/pull/893) -  Provide a way to access the SSLSession of a websocket instance
+* [PR 868](https://github.com/TooTallNate/Java-WebSocket/pull/868) - Add a way to put additional headers to handshake for connecting/reconnecting, see #865
+
+#### Refactoring
+
+* [Issue 907](https://github.com/TooTallNate/Java-WebSocket/issues/907) - build fails with Gradle 5+ ([PR 908](https://github.com/TooTallNate/Java-WebSocket/pull/908))
+* [Issue 869](https://github.com/TooTallNate/Java-WebSocket/issues/869) - Lost connection detection is sensitive to changes in system time ([PR 878](https://github.com/TooTallNate/Java-WebSocket/pull/878))
+* [PR 970](https://github.com/TooTallNate/Java-WebSocket/pull/970) - Made loggers non-static to support deployment in containers
+* [PR 931](https://github.com/TooTallNate/Java-WebSocket/pull/931) - Create new github actions
+* [PR 908](https://github.com/TooTallNate/Java-WebSocket/pull/908) - Remove outdated 'wrapper' task from build.gradle (#907)
+* [PR 878](https://github.com/TooTallNate/Java-WebSocket/pull/878) - Replace TimerTask with ScheduledExecutorService
+* [PR 874](https://github.com/TooTallNate/Java-WebSocket/pull/874) - Update dependencies
+
+In this release 14 issues and 17 pull requests were closed.
+
 ## Version Release 1.4.0 (2019/02/19)
 
 #### Breaking Changes
