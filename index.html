@@ -1,6 +1,6 @@
 <!doctype html>
 <html>
-  <head>
+<head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
     <title>Java-WebSocket by TooTallNate</title>
@@ -9,161 +9,96 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
     <script src="javascripts/respond.js"></script>
     <!--[if lt IE 9]>
-      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
     <!--[if lt IE 8]>
     <link rel="stylesheet" href="stylesheets/ie.css">
     <![endif]-->
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 
-  </head>
-  <body>
-      <div id="header">
-        <nav>
-          <li class="fork"><a href="https://github.com/TooTallNate/Java-WebSocket">View On GitHub</a></li>
-          <li class="downloads"><a href="https://github.com/TooTallNate/Java-WebSocket/zipball/master">ZIP</a></li>
-          <li class="downloads"><a href="https://github.com/TooTallNate/Java-WebSocket/tarball/master">TAR</a></li>
-          <li class="title">DOWNLOADS</li>
-        </nav>
-      </div><!-- end header -->
+</head>
+<body>
+<div id="header">
+    <nav>
+        <li class="fork"><a href="https://github.com/TooTallNate/Java-WebSocket">View On GitHub</a></li>
+        <li class="downloads"><a href="https://github.com/TooTallNate/Java-WebSocket/zipball/master">ZIP</a></li>
+        <li class="downloads"><a href="https://github.com/TooTallNate/Java-WebSocket/tarball/master">TAR</a></li>
+        <li class="title">DOWNLOADS</li>
+    </nav>
+</div><!-- end header -->
 
-    <div class="wrapper">
+<div class="wrapper">
 
-      <section>
+    <section>
         <div id="title">
-          <h1>Java-WebSocket</h1>
-          <p>A barebones WebSocket client and server implementation written in 100% Java.</p>
-          <hr>
-          <span class="credits left">Project maintained by <a href="https://github.com/marci4">marci4</a></span>
-          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="http://twitter.com/#!/michigangraham">mattgraham</a></span>
+            <h1>Java-WebSocket</h1>
+            <p>A barebones WebSocket client and server implementation written in 100% Java.</p>
+            <hr>
+            <span class="credits left">Project maintained by <a href="https://github.com/marci4">marci4</a></span>
+            <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a
+                    href="http://twitter.com/#!/michigangraham">mattgraham</a></span>
         </div>
 
         <h1>Java WebSockets</h1>
 
-<p>This repository contains a barebones WebSocket server and client implementation
-written in 100% Java. The underlying classes are implemented using the Java
-<code>ServerSocketChannel</code> and <code>SocketChannel</code> classes, which allows for a
-non-blocking event-driven model (similar to the
-<a href="https://html.spec.whatwg.org/multipage/web-sockets.html#network">WebSocket API</a> for web browsers).</p>
+        <p>This repository contains a barebones WebSocket server and client implementation
+            written in 100% Java. The underlying classes are implemented <code>java.nio</code>, which allows for a
+            non-blocking event-driven model (similar to the <a href="http://dev.w3.org/html5/websockets/">WebSocket
+                API</a> for web browsers).</p>
 
-<p>Implemented WebSocket protocol versions are:</p>
+        <p>Implemented WebSocket protocol versions are:</p>
 
-<ul>
-<li><a href="http://tools.ietf.org/html/rfc6455">RFC 6455</a></li>
-</ul><h2>Running the Example</h2>
+        <ul>
+            <li><a href="http://tools.ietf.org/html/rfc6455">RFC 6455</a></li>
+        </ul>
+        <p>
+            <a href="https://github.com/TooTallNate/Java-WebSocket/wiki/Drafts">Here</a> some more details about
+            protocol versions/drafts.
+        </p>
+        <h2>Getting started</h2>
 
-<p>There's a simple chat server and client example located in the <code>example</code>
-folder. First, compile the example classes and JAR file:</p>
+        <h3>Dependency management tools</h3>
 
-<div class="highlight">
-<pre>ant
-</pre>
+        <p>You can find instructions on how to use this library for your dependency management tool in <a
+                href="https://mvnrepository.com/artifact/org.java-websocket/Java-WebSocket">mvnrepository.com</a>.</p>
+
+        <h3>Github releases</h3>
+        <p>You can also find any releases <a href="https://github.com/TooTallNate/Java-WebSocket/releases">here</a>.</p>
+        <h2>Writing your own WebSocket Server</h2>
+
+        <p>
+            The <code>org.java_websocket.server.WebSocketServer</code> abstract class implements the
+            server-side of the <a href="http://www.whatwg.org/specs/web-socket-protocol">WebSocket Protocol</a>.
+            A WebSocket server by itself doesn't do anything except establish socket
+            connections though HTTP. After that it's up to **your** subclass to add purpose.
+        </p>
+        <p>
+            An example for a WebSocketServer can be found in both the <a
+                href="https://github.com/TooTallNate/Java-WebSocket/wiki#server-example">wiki</a> and the <a
+                href="https://github.com/TooTallNate/Java-WebSocket/tree/master/src/main/example">example</a> folder.
+        </p>
+        <h2>Writing your own WebSocket Client</h2>
+
+        <p>
+            The <code>org.java_websocket.client.WebSocketClient</code> abstract class can connect to
+            valid WebSocket servers. The constructor expects a valid <code>ws://</code> or <code>wss://</code> URI to
+            connect to. Important events <code>onOpen</code>, <code>onClose</code>, <code>onMessage</code> and <code>onError</code>
+            get fired throughout the life of the WebSocketClient, and must be implemented
+            in **your** subclass.
+        </p>
+        <p>
+            An example for a WebSocketClient can be found in both the <a
+                href="https://github.com/TooTallNate/Java-WebSocket/wiki#client-example">wiki</a> and the <a
+                href="https://github.com/TooTallNate/Java-WebSocket/tree/master/src/main/example">example</a> folder.
+        </p>
+        <h2>Examples</h2>
+        <p>You can find a lot of additional examples <a
+                href="https://github.com/TooTallNate/Java-WebSocket/tree/master/src/main/example">here</a>.</p>
+        <h2>License</h2>
+
+        <p>Everything found in this repo is licensed under an MIT license. See
+            the <code>LICENSE</code> file for specifics.</p>
+    </section>
 </div>
-
-
-<p>Then, start the chat server (a <code>WebSocketServer</code> subclass):</p>
-
-<div class="highlight">
-<pre>java -cp build/examples:dist/java_websocket.jar ChatServer
-</pre>
-</div>
-
-
-<p>Now that the server is started, we need to connect some clients. Run the
-Java chat client (a <code>WebSocketClient</code> subclass):</p>
-
-<div class="highlight">
-<pre>java -cp build/examples:dist/java_websocket.jar ChatClient
-</pre>
-</div>
-
-
-<p><strong>Note:</strong> If you're on Windows, then replace the <code>:</code> (colon) in the classpath
-in the commands above with a <code>;</code> (semicolon).</p>
-
-<p>The chat client is a simple Swing GUI application that allows you to send
-messages to all other connected clients, and receive messages from others in a
-text box.</p>
-
-<p>There's also a simple HTML file chat client <code>chat.html</code>, which can be opened
-by any browser. If the browser natively supports the WebSocket API, then it's
-implementation will be used, otherwise it will fall back to a
-<a href="http://github.com/gimite/web-socket-js">Flash-based WebSocket Implementation</a>.</p>
-
-<h2>Writing your own WebSocket Server</h2>
-
-<p>The <code>org.java_websocket.server.WebSocketServer</code> abstract class implements the
-server-side of the
-<a href="http://www.whatwg.org/specs/web-socket-protocol/">WebSocket Protocol</a>.
-A WebSocket server by itself doesn't do anything except establish socket
-connections though HTTP. After that it's up to <strong>your</strong> subclass to add purpose.</p>
-
-<h2>Writing your own WebSocket Client</h2>
-
-<p>The <code>org.java_websocket.server.WebSocketClient</code> abstract class can connect to
-valid WebSocket servers. The constructor expects a valid <code>ws://</code> URI to
-connect to. Important events <code>onOpen</code>, <code>onClose</code>, <code>onMessage</code> and <code>onIOError</code> 
-get fired throughout the life of the WebSocketClient, and must be implemented 
-in <strong>your</strong> subclass.</p>
-
-<h2>WSS Support</h2>
-
-<p>WSS support is still VERY young ( <a href="https://github.com/TooTallNate/Java-WebSocket/pull/101">https://github.com/TooTallNate/Java-WebSocket/pull/101</a> ).
-The only way to use wss is currently the one shown in the example. That also means that you have to switch between ws and wss. 
-You can not have both at the same time on the same port.</p>
-
-<p>If you do not have a valid certificate in place then you will have to create a self signed one.
-Browsers will simply refuse the connection in case of a bad certificate and will not ask the user to accept it.
-So the first step will be to make a browser to accept your self signed certificate. ( <a href="https://bugzilla.mozilla.org/show_bug.cgi?id=594502">https://bugzilla.mozilla.org/show_bug.cgi?id=594502</a> )
-If the websocket server url is <code>wss://localhost:8000</code> visit the url <code>htts://localhost:8000</code> with your browser. The browser will recognize the handshake and allow you to accept the certificate.</p>
-
-<p>I ( <a href="https://github.com/Davidiusdadi" class="user-mention">@Davidiusdadi</a> ) would be glad if you would give some feedback whether wss is working fine for you or not.</p>
-
-<h2>Minimum Required JDK</h2>
-
-<p><code>Java-WebSocket</code> is known to work with:</p>
-
-<ul>
-<li>Java 1.6 or higher</li>
-<li>Android 4.0 or higher</li>
-</ul><p>Other JRE implementations may work as well, but haven't been tested.</p>
-
-<h2>Testing in Android Emulator</h2>
-
-<p>Please note Android Emulator has issues using <code>IPv6 addresses</code>. Executing any
-socket related code (like this library) inside it will address an error</p>
-
-<div class="highlight">
-<pre>java.net.SocketException: Bad address family
-</pre>
-</div>
-
-
-<p>You have to manually disable <code>IPv6</code> by calling</p>
-
-<div class="highlight">
-<pre><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">System</span><span class="o">.</span><span class="na">setProperty</span><span class="o">(</span><span class="s">"java.net.preferIPv6Addresses"</span><span class="o">,</span> <span class="s">"false"</span><span class="o">);</span>
-<span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">System</span><span class="o">.</span><span class="na">setProperty</span><span class="o">(</span><span class="s">"java.net.preferIPv4Stack"</span><span class="o">,</span> <span class="s">"true"</span><span class="o">);</span>
-</pre>
-</div>
-
-
-<p>somewhere in your project, before instantiating the <code>WebSocketClient</code> class. 
-You can check if you are currently testing in the Android Emulator like this</p>
-
-<div class="highlight">
-<pre><span class="k">if</span> <span class="o">(</span><span class="s">"google_sdk"</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span> <span class="n">Build</span><span class="o">.</span><span class="na">PRODUCT</span> <span class="o">))</span> <span class="o">{</span>
-  <span class="c1">// ... disable IPv6</span>
-<span class="o">}</span>
-</pre>
-</div>
-
-
-<h2>License</h2>
-
-<p>Everything found in this repo is licensed under an MIT license. See
-the <code>LICENSE</code> file for specifics.</p>
-      </section>
-    </div>
-  </body>
+</body>
 </html>
