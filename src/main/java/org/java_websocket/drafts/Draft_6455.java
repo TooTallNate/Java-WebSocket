@@ -427,6 +427,12 @@ public class Draft_6455 extends Draft {
 		byte optcode = fromOpcode( framedata.getOpcode() );
 		byte one = ( byte ) ( framedata.isFin() ? -128 : 0 );
 		one |= optcode;
+		if(framedata.isRSV1())
+			one |= getRSVByte(1);
+		if(framedata.isRSV2())
+			one |= getRSVByte(2);
+		if(framedata.isRSV3())
+			one |= getRSVByte(3);
 		buf.put( one );
 		byte[] payloadlengthbytes = toByteArray( mes.remaining(), sizebytes );
 		assert ( payloadlengthbytes.length == sizebytes );
@@ -583,6 +589,27 @@ public class Draft_6455 extends Draft {
 			log.trace( "Incomplete frame: maxpacketsize < realpacketsize" );
 			throw new IncompleteException( realpacketsize );
 		}
+	}
+
+	/**
+	 * Get a byte that can set RSV bits when OR(|)'d.
+	 * 0 1 2 3 4 5 6 7
+	 * +-+-+-+-+-------+
+	 * |F|R|R|R| opcode|
+	 * |I|S|S|S|  (4)  |
+	 * |N|V|V|V|       |
+	 * | |1|2|3|       |
+	 * @param rsv Can only be {0, 1, 2, 3}
+	 * @return byte that represents which RSV bit is set.
+	 */
+	private byte getRSVByte(int rsv){
+		if(rsv == 1) // 0100 0000
+			return 0x40;
+		if(rsv == 2) // 0010 0000
+			return 0x20;
+		if(rsv == 3) // 0001 0000
+			return 0x10;
+		return 0;
 	}
 
 	/**
