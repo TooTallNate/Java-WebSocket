@@ -52,7 +52,7 @@ public class SSLServerCustomWebsocketFactoryExample {
 
         // load up the key store
         String STORETYPE = "JKS";
-        String KEYSTORE = "keystore.jks";
+        String KEYSTORE = String.format("src%1$stest%1$1sjava%1$1sorg%1$1sjava_websocket%1$1skeystore.jks", File.separator);
         String STOREPASSWORD = "storepassword";
         String KEYPASSWORD = "keypassword";
 
