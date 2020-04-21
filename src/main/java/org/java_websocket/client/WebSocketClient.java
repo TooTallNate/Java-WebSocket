@@ -472,6 +472,8 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 			if (socket instanceof SSLSocket) {
 				SSLSocket sslSocket = (SSLSocket)socket;
 				SSLParameters sslParameters = sslSocket.getSSLParameters();
+				// Make sure we perform hostname validation
+				sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
 				onSetSSLParameters(sslParameters);
 				sslSocket.setSSLParameters(sslParameters);
 			}
@@ -517,12 +519,11 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	}
 
 	/**
-	 * Apply specific
+	 * Apply specific SSLParameters
+	 *
 	 * @param sslParameters the SSLParameters which will be used for the SSLSocket
 	 */
 	protected void onSetSSLParameters(SSLParameters sslParameters) {
-		// Make sure we perform hostname validation
-		sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
 	}
 
 	/**

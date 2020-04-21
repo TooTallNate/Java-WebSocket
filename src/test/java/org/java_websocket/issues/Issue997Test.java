@@ -68,6 +68,13 @@ public class Issue997Test {
     }
 
     @Test(timeout=2000)
+    public void test_localServer_ServerLocalhost_Client127_CheckDefault() throws CertificateException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyManagementException, KeyStoreException, IOException, URISyntaxException, InterruptedException {
+        SSLWebSocketClient client = testIssueWithLocalServer("127.0.0.1", SocketUtil.getAvailablePort(), SSLContextUtil.getLocalhostOnlyContext(), SSLContextUtil.getLocalhostOnlyContext(), null);
+        assertFalse(client.onOpen);
+        assertTrue(client.onSSLError);
+    }
+
+    @Test(timeout=2000)
     public void test_localServer_ServerLocalhost_ClientLocalhost_CheckActive() throws CertificateException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyManagementException, KeyStoreException, IOException, URISyntaxException, InterruptedException {
         SSLWebSocketClient client = testIssueWithLocalServer("localhost", SocketUtil.getAvailablePort(), SSLContextUtil.getLocalhostOnlyContext(), SSLContextUtil.getLocalhostOnlyContext(), "HTTPS");
         assertTrue(client.onOpen);
@@ -76,6 +83,13 @@ public class Issue997Test {
     @Test(timeout=2000)
     public void test_localServer_ServerLocalhost_ClientLocalhost_CheckInactive() throws CertificateException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyManagementException, KeyStoreException, IOException, URISyntaxException, InterruptedException {
         SSLWebSocketClient client = testIssueWithLocalServer("localhost", SocketUtil.getAvailablePort(), SSLContextUtil.getLocalhostOnlyContext(), SSLContextUtil.getLocalhostOnlyContext(), "");
+        assertTrue(client.onOpen);
+        assertFalse(client.onSSLError);
+    }
+
+    @Test(timeout=2000)
+    public void test_localServer_ServerLocalhost_ClientLocalhost_CheckDefault() throws CertificateException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyManagementException, KeyStoreException, IOException, URISyntaxException, InterruptedException {
+        SSLWebSocketClient client = testIssueWithLocalServer("localhost", SocketUtil.getAvailablePort(), SSLContextUtil.getLocalhostOnlyContext(), SSLContextUtil.getLocalhostOnlyContext(), null);
         assertTrue(client.onOpen);
         assertFalse(client.onSSLError);
     }
@@ -129,9 +143,7 @@ public class Issue997Test {
 
         @Override
         protected void onSetSSLParameters(SSLParameters sslParameters) {
-            if (endpointIdentificationAlgorithm == null) {
-                super.onSetSSLParameters(sslParameters);
-            } else {
+            if (endpointIdentificationAlgorithm != null) {
                 sslParameters.setEndpointIdentificationAlgorithm(endpointIdentificationAlgorithm);
             }
         }
