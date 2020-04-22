@@ -109,6 +109,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 	/**
 	 * Attribute which allows you to configure the socket "backlog" parameter
 	 * which determines how many client connections can be queued.
+	 * @since 1.5.0
 	 */
 	private int maxPendingConnections = -1;
 
@@ -316,6 +317,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 	 * Set the requested maximum number of pending connections on the socket. The exact semantics are implementation
 	 * specific. The value provided should be greater than 0. If it is less than or equal to 0, then
 	 * an implementation specific default will be used. This option will be passed as "backlog" parameter to {@link ServerSocket#bind(SocketAddress, int)}
+	 * @since 1.5.0
 	 */
 	public void setMaxPendingConnections(int numberOfConnections) {
 		maxPendingConnections = numberOfConnections;
@@ -325,6 +327,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 	 * Returns the currently configured maximum number of pending connections.
 	 *
 	 * @see #setMaxPendingConnections(int)
+	 * @since 1.5.0
 	 */
 	public int getMaxPendingConnections() {
 		return maxPendingConnections;
