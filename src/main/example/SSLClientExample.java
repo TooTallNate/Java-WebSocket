@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.nio.file.Paths;
 import java.security.KeyStore;
 
 import javax.net.ssl.KeyManagerFactory;
@@ -83,7 +84,7 @@ public class SSLClientExample {
 
 		// load up the key store
 		String STORETYPE = "JKS";
-		String KEYSTORE = "keystore.jks";
+		String KEYSTORE = Paths.get("src", "test", "java", "org", "java_websocket", "keystore.jks").toString();
 		String STOREPASSWORD = "storepassword";
 		String KEYPASSWORD = "keypassword";
 

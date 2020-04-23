@@ -85,7 +85,7 @@ public class Issue962Test {
 
     }
 
-    @Test
+    @Test(timeout = 2000)
     public void testIssue() throws IOException, URISyntaxException, InterruptedException {
         int port = SocketUtil.getAvailablePort();
         WebSocketClient client = new WebSocketClient(new URI("ws://127.0.0.1:" + port)) {
@@ -103,7 +103,7 @@ public class Issue962Test {
 
             @Override
             public void onError(Exception ex) {
-                Assert.fail(ex.toString() + " sould not occur");
+                Assert.fail(ex.toString() + " should not occur");
             }
         };
         

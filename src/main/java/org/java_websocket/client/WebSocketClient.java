@@ -449,7 +449,6 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 			} else if( socket == null ) {
 				socket = new Socket( proxy );
 				isNewSocket = true;
-
 			} else if( socket.isClosed() ) {
 				throw new IOException();
 			}
@@ -464,11 +463,19 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 
 			// if the socket is set by others we don't apply any TLS wrapper
 			if (isNewSocket && "wss".equals( uri.getScheme())) {
-
 				SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
 				sslContext.init(null, null, null);
 				SSLSocketFactory factory = sslContext.getSocketFactory();
 				socket = factory.createSocket(socket, uri.getHost(), getPort(), true);
+			}
+
+			if (socket instanceof SSLSocket) {
+				SSLSocket sslSocket = (SSLSocket)socket;
+				SSLParameters sslParameters = sslSocket.getSSLParameters();
+				// Make sure we perform hostname validation
+				sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
+				onSetSSLParameters(sslParameters);
+				sslSocket.setSSLParameters(sslParameters);
 			}
 
 			istream = socket.getInputStream();
@@ -509,6 +516,14 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 			engine.closeConnection( CloseFrame.ABNORMAL_CLOSE, e.getMessage() );
 		}
 		connectReadThread = null;
+	}
+
+	/**
+	 * Apply specific SSLParameters
+	 *
+	 * @param sslParameters the SSLParameters which will be used for the SSLSocket
+	 */
+	protected void onSetSSLParameters(SSLParameters sslParameters) {
 	}
 
 	/**

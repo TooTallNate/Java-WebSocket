@@ -33,6 +33,7 @@ import javax.net.ssl.SSLParameters;
 import javax.net.ssl.TrustManagerFactory;
 import java.io.File;
 import java.io.FileInputStream;
+import java.nio.file.Paths;
 import java.security.KeyStore;
 
 /**
@@ -51,7 +52,7 @@ public class TwoWaySSLServerExample {
 
 		// load up the key store
 		String STORETYPE = "JKS";
-		String KEYSTORE = "keystore.jks";
+		String KEYSTORE = Paths.get("src", "test", "java", "org", "java_websocket", "keystore.jks").toString();
 		String STOREPASSWORD = "storepassword";
 		String KEYPASSWORD = "keypassword";
 
