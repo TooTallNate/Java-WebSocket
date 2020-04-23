@@ -26,9 +26,7 @@
 package org.java_websocket.server;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.CancelledKeyException;
 import java.nio.channels.ClosedByInterruptException;
@@ -107,6 +105,13 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 	private final AtomicInteger queuesize = new AtomicInteger( 0 );
 
 	private WebSocketServerFactory wsf = new DefaultWebSocketServerFactory();
+
+	/**
+	 * Attribute which allows you to configure the socket "backlog" parameter
+	 * which determines how many client connections can be queued.
+	 * @since 1.5.0
+	 */
+	private int maxPendingConnections = -1;
 
 	/**
 	 * Creates a WebSocketServer that will attempt to
@@ -308,6 +313,26 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 		return Collections.unmodifiableList( drafts );
 	}
 
+	/**
+	 * Set the requested maximum number of pending connections on the socket. The exact semantics are implementation
+	 * specific. The value provided should be greater than 0. If it is less than or equal to 0, then
+	 * an implementation specific default will be used. This option will be passed as "backlog" parameter to {@link ServerSocket#bind(SocketAddress, int)}
+	 * @since 1.5.0
+	 */
+	public void setMaxPendingConnections(int numberOfConnections) {
+		maxPendingConnections = numberOfConnections;
+	}
+
+	/**
+	 * Returns the currently configured maximum number of pending connections.
+	 *
+	 * @see #setMaxPendingConnections(int)
+	 * @since 1.5.0
+	 */
+	public int getMaxPendingConnections() {
+		return maxPendingConnections;
+	}
+
 	// Runnable IMPLEMENTATION /////////////////////////////////////////////////
 	public void run() {
 		if (!doEnsureSingleThread()) {
@@ -505,7 +530,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 			ServerSocket socket = server.socket();
 			socket.setReceiveBufferSize( WebSocketImpl.RCVBUF );
 			socket.setReuseAddress( isReuseAddr() );
-			socket.bind( address );
+			socket.bind( address, getMaxPendingConnections() );
 			selector = Selector.open();
 			server.register( selector, server.validOps() );
 			startConnectionLostTimer();
