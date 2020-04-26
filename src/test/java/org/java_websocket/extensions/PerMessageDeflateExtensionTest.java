@@ -108,7 +108,7 @@ public class PerMessageDeflateExtensionTest {
     @Test
     public void testGetProvidedExtensionAsServer() {
         PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
-        assertEquals( "permessage-deflate; server_no_context_takeover; client_no_context_takeover",
+        assertEquals( "permessage-deflate; server_no_context_takeover",
                 deflateExtension.getProvidedExtensionAsServer() );
     }
 
