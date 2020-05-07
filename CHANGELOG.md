@@ -1,4 +1,29 @@
 # Change log
+## Version Release 1.5.0 (2020/05/06)
+
+#### Breaking Changes
+
+This release requires API Level 1.7.
+
+#### Security 
+
+This release contains a security fix for [CVE-2020-11050](https://nvd.nist.gov/vuln/detail/CVE-2020-11050).
+
+Take a look at the advisory [here](https://github.com/TooTallNate/Java-WebSocket/security/advisories/GHSA-gw55-jm4h-x339) for more information.
+
+#### New Features
+
+* [Issue 574](https://github.com/TooTallNate/Java-WebSocket/issues/574) - Implementation of per message deflate extension ([PR 866](https://github.com/TooTallNate/Java-WebSocket/pull/866))
+* [PR 866](https://github.com/TooTallNate/Java-WebSocket/pull/866) - Add PerMessageDeflate Extension support, see #574
+* [Issue 997](https://github.com/TooTallNate/Java-WebSocket/issues/997) - Access to SSLParameters used by the WebSocketClient ([PR 1000](https://github.com/TooTallNate/Java-WebSocket/pull/1000))
+* [Issue 574](https://github.com/TooTallNate/Java-WebSocket/issues/574) - Implementation of per message deflate extension ([PR 866](https://github.com/TooTallNate/Java-WebSocket/pull/866))
+* [PR 1001](https://github.com/TooTallNate/Java-WebSocket/pull/1001) - Allow user to specify max number of pending connections to a server
+* [PR 1000](https://github.com/TooTallNate/Java-WebSocket/pull/1000) - SSLParameters for WebSocketClient
+* [PR 866](https://github.com/TooTallNate/Java-WebSocket/pull/866) - Add PerMessageDeflate Extension support, see #574
+
+In this release 3 issues and 4 pull requests were closed.
+
+###############################################################################
 
 ## Version Release 1.4.1 (2020/03/12)
 
