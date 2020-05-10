@@ -472,8 +472,6 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 			if (socket instanceof SSLSocket) {
 				SSLSocket sslSocket = (SSLSocket)socket;
 				SSLParameters sslParameters = sslSocket.getSSLParameters();
-				// Make sure we perform hostname validation
-				sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
 				onSetSSLParameters(sslParameters);
 				sslSocket.setSSLParameters(sslParameters);
 			}
@@ -520,10 +518,14 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 
 	/**
 	 * Apply specific SSLParameters
+	 * If you override this method make sure to always call super.onSetSSLParameters() to ensure the hostname validation is active
 	 *
 	 * @param sslParameters the SSLParameters which will be used for the SSLSocket
 	 */
 	protected void onSetSSLParameters(SSLParameters sslParameters) {
+		// If you run into problem on Android (NoSuchMethodException), check out the wiki https://github.com/TooTallNate/Java-WebSocket/wiki/No-such-method-error-setEndpointIdentificationAlgorithm
+		// Perform hostname validation
+		sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
 	}
 
 	/**
