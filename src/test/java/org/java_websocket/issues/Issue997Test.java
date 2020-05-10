@@ -143,6 +143,8 @@ public class Issue997Test {
 
         @Override
         protected void onSetSSLParameters(SSLParameters sslParameters) {
+            // Always call super to ensure hostname validation is active by default
+            super.onSetSSLParameters(sslParameters);
             if (endpointIdentificationAlgorithm != null) {
                 sslParameters.setEndpointIdentificationAlgorithm(endpointIdentificationAlgorithm);
             }
