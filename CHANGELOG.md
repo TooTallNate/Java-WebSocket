@@ -1,4 +1,13 @@
 # Change log
+
+## Version Release 1.5.1 (2020/05/10)
+
+#### Bugs Fixed
+
+* [Issue 1011](https://github.com/TooTallNate/Java-WebSocket/issues/1011) - Crash on Android due to missing method `setEndpointIdentificationAlgorithm` on 1.5.0. ([PR 1014](https://github.com/TooTallNate/Java-WebSocket/pull/1014))
+
+In this release 1 issue and 1 pull request were closed.
+
 ## Version Release 1.5.0 (2020/05/06)
 
 #### Breaking Changes
