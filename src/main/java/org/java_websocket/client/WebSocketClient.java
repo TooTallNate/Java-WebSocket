@@ -319,7 +319,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	private void reset() {
 		Thread current = Thread.currentThread();
 		if (current == writeThread || current == connectReadThread) {
-			throw new IllegalStateException("You cannot initialize a reconnect out of the websocket thread. Use reconnect in another thread to insure a successful cleanup.");
+			throw new IllegalStateException("You cannot initialize a reconnect out of the websocket thread. Use reconnect in another thread to ensure a successful cleanup.");
 		}
 		try {
 			closeBlocking();
