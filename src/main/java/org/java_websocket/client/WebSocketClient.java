@@ -534,17 +534,14 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	 */
 	private int getPort() {
 		int port = uri.getPort();
-		if( port == -1 ) {
-			String scheme = uri.getScheme();
-			if( "wss".equals( scheme ) ) {
-				return WebSocketImpl.DEFAULT_WSS_PORT;
-			} else if(  "ws".equals( scheme ) ) {
-				return WebSocketImpl.DEFAULT_PORT;
-			} else {
-				throw new IllegalArgumentException( "unknown scheme: " + scheme );
-			}
+		String scheme = uri.getScheme();
+		if( "wss".equals( scheme ) ) {
+			return port == -1 ? WebSocketImpl.DEFAULT_WSS_PORT : port;
+		} else if(  "ws".equals( scheme ) ) {
+			return port == -1 ? WebSocketImpl.DEFAULT_PORT : port;
+		} else {
+			throw new IllegalArgumentException( "unknown scheme: " + scheme );
 		}
-		return port;
 	}
 
 	/**
