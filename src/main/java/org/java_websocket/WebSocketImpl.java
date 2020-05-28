@@ -34,6 +34,7 @@ import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.framing.PingFrame;
 import org.java_websocket.handshake.*;
+import org.java_websocket.protocols.IProtocol;
 import org.java_websocket.server.WebSocketServer.WebSocketWorker;
 import org.java_websocket.util.Charsetfunctions;
 
@@ -830,6 +831,15 @@ public class WebSocketImpl implements WebSocket {
 			throw new IllegalArgumentException("This websocket uses ws instead of wss. No SSLSession available.");
 		}
 		return ((ISSLChannel) channel).getSSLEngine().getSession();
+	}
+
+	@Override
+	public IProtocol getProtocol() {
+		if (draft == null)
+			return null;
+		if (!(draft instanceof Draft_6455))
+			throw new IllegalArgumentException("This draft does not support Sec-WebSocket-Protocol");
+		return ((Draft_6455) draft).getProtocol();
 	}
 
 	@Override

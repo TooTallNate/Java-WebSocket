@@ -59,6 +59,7 @@ import org.java_websocket.framing.Framedata;
 import org.java_websocket.handshake.HandshakeImpl1Client;
 import org.java_websocket.handshake.Handshakedata;
 import org.java_websocket.handshake.ServerHandshake;
+import org.java_websocket.protocols.IProtocol;
 
 /**
  * A subclass must implement at least <var>onOpen</var>, <var>onClose</var>, and <var>onMessage</var> to be
@@ -912,6 +913,9 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 	public SSLSession getSSLSession() {
 		return engine.getSSLSession();
 	}
+
+	@Override
+	public IProtocol getProtocol() { return engine.getProtocol();}
 
 	/**
 	 * Method to give some additional info for specific IOExceptions

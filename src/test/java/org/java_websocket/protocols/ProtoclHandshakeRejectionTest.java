@@ -48,16 +48,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Scanner;
 
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 public class ProtoclHandshakeRejectionTest {
 
 	private static final String additionalHandshake = "HTTP/1.1 101 Websocket Connection Upgrade\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n";
-	private static int counter = 0;
 	private static Thread thread;
 	private static ServerSocket serverSocket;
-
-	private static boolean debugPrintouts = false;
 
 	private static int port;
 
@@ -70,7 +67,6 @@ public class ProtoclHandshakeRejectionTest {
 						try {
 							serverSocket = new ServerSocket( port );
 							serverSocket.setReuseAddress( true );
-							int count = 1;
 							while( true ) {
 								Socket client = null;
 								try {
@@ -94,7 +90,6 @@ public class ProtoclHandshakeRejectionTest {
 										}
 									}
 									OutputStream os = client.getOutputStream();
-									count++;
 									if( "/0".equals( testCase ) ) {
 										os.write( Charsetfunctions.asciiBytes( additionalHandshake + getSecKey( seckey ) + "\r\n" ) );
 										os.flush();
@@ -175,6 +170,47 @@ public class ProtoclHandshakeRejectionTest {
 										os.write( Charsetfunctions.asciiBytes( additionalHandshake + "\r\n" ) );
 										os.flush();
 									}
+									// Order check
+									if( "/20".equals( testCase ) ) {
+										os.write( Charsetfunctions.asciiBytes( additionalHandshake + getSecKey( seckey ) + "Sec-WebSocket-Protocol: chat1,chat2,chat3" + "\r\n\r\n" ) );
+										os.flush();
+									}
+									if( "/21".equals( testCase ) ) {
+										os.write( Charsetfunctions.asciiBytes( additionalHandshake +getSecKey( seckey ) + "Sec-WebSocket-Protocol: chat1,chat2,chat3" + "\r\n\r\n" ) );
+										os.flush();
+									}
+									if( "/22".equals( testCase ) ) {
+										os.write( Charsetfunctions.asciiBytes( additionalHandshake + getSecKey( seckey ) + "Sec-WebSocket-Protocol: chat1,chat2,chat3" + "\r\n\r\n" ) );
+										os.flush();
+									}
+									if( "/23".equals( testCase ) ) {
+										os.write( Charsetfunctions.asciiBytes( additionalHandshake + getSecKey( seckey ) + "Sec-WebSocket-Protocol: chat1,chat2,chat3" + "\r\n\r\n" ) );
+										os.flush();
+									}
+									if( "/24".equals( testCase ) ) {
+										os.write( Charsetfunctions.asciiBytes( additionalHandshake + getSecKey( seckey ) + "Sec-WebSocket-Protocol: chat1,chat2,chat3" + "\r\n\r\n" ) );
+										os.flush();
+									}
+									if( "/25".equals( testCase ) ) {
+										os.write( Charsetfunctions.asciiBytes( additionalHandshake + getSecKey( seckey ) + "Sec-WebSocket-Protocol: abc" + "\r\n\r\n" ) );
+										os.flush();
+									}
+									if( "/26".equals( testCase ) ) {
+										os.write( Charsetfunctions.asciiBytes( additionalHandshake + getSecKey( seckey ) + "\r\n\r\n" ) );
+										os.flush();
+									}
+									if( "/27".equals( testCase ) ) {
+										os.write( Charsetfunctions.asciiBytes( additionalHandshake + getSecKey( seckey ) + "Sec-WebSocket-Protocol: chat1,chat2,chat3" + "\r\n\r\n" ) );
+										os.flush();
+									}
+									if( "/28".equals( testCase ) ) {
+										os.write( Charsetfunctions.asciiBytes( additionalHandshake + getSecKey( seckey ) + "Sec-WebSocket-Protocol: abc" + "\r\n\r\n" ) );
+										os.flush();
+									}
+									if( "/29".equals( testCase ) ) {
+										os.write( Charsetfunctions.asciiBytes( additionalHandshake + getSecKey( seckey ) + "\r\n\r\n" ) );
+										os.flush();
+									}
 								} catch ( IOException e ) {
 									//
 								}
@@ -193,16 +229,14 @@ public class ProtoclHandshakeRejectionTest {
 	}
 
 	@AfterClass
-	public static void successTests() throws InterruptedException, IOException {
+	public static void successTests() throws IOException {
 		serverSocket.close();
 		thread.interrupt();
-		if( debugPrintouts )
-			System.out.println( counter + " successful tests" );
 	}
 
 	@Test(timeout = 5000)
 	public void testProtocolRejectionTestCase0() throws Exception {
-		testProtocolRejection( 0, new Draft_6455() );
+		testProtocolRejection( 0, new Draft_6455(Collections.<IExtension>emptyList(), Collections.<IProtocol>singletonList( new Protocol( "" ))) );
 	}
 
 	@Test(timeout = 5000)
@@ -312,6 +346,62 @@ public class ProtoclHandshakeRejectionTest {
 		testProtocolRejection( 19, new Draft_6455() );
 	}
 
+	@Test(timeout = 5000)
+	public void testHandshakeRejectionTestCase20() throws Exception {
+		testProtocolRejection( 20, new Draft_6455() );
+	}
+
+	@Test(timeout = 5000)
+	public void testHandshakeRejectionTestCase21() throws Exception {
+		ArrayList<IProtocol> protocols = new ArrayList<IProtocol>();
+		protocols.add( new Protocol( "chat1" ) );
+		protocols.add( new Protocol( "chat2" ) );
+		protocols.add( new Protocol( "chat3" ) );
+		testProtocolRejection( 21, new Draft_6455( Collections.<IExtension>emptyList(), protocols  ) );
+	}
+
+	@Test(timeout = 5000)
+	public void testHandshakeRejectionTestCase22() throws Exception {
+		ArrayList<IProtocol> protocols = new ArrayList<IProtocol>();
+		protocols.add( new Protocol( "chat2" ) );
+		protocols.add( new Protocol( "chat3" ) );
+		protocols.add( new Protocol( "chat1" ) );
+		testProtocolRejection( 22, new Draft_6455( Collections.<IExtension>emptyList(), protocols  ) );
+	}
+	@Test(timeout = 5000)
+	public void testHandshakeRejectionTestCase23() throws Exception {
+		ArrayList<IProtocol> protocols = new ArrayList<IProtocol>();
+		protocols.add( new Protocol( "chat3" ) );
+		protocols.add( new Protocol( "chat2" ) );
+		protocols.add( new Protocol( "chat1" ) );
+		testProtocolRejection( 23, new Draft_6455( Collections.<IExtension>emptyList(), protocols  ) );
+	}
+
+	@Test(timeout = 5000)
+	public void testHandshakeRejectionTestCase24() throws Exception {
+		testProtocolRejection( 24, new Draft_6455() );
+	}
+	@Test(timeout = 5000)
+	public void testHandshakeRejectionTestCase25() throws Exception {
+		testProtocolRejection( 25, new Draft_6455() );
+	}
+	@Test(timeout = 5000)
+	public void testHandshakeRejectionTestCase26() throws Exception {
+		testProtocolRejection( 26, new Draft_6455() );
+	}
+
+	@Test(timeout = 5000)
+	public void testHandshakeRejectionTestCase27() throws Exception {
+		testProtocolRejection( 27, new Draft_6455( Collections.<IExtension>emptyList(), Collections.<IProtocol>singletonList( new Protocol( "opc" ) ) ) );
+	}
+	@Test(timeout = 5000)
+	public void testHandshakeRejectionTestCase28() throws Exception {
+		testProtocolRejection( 28, new Draft_6455( Collections.<IExtension>emptyList(), Collections.<IProtocol>singletonList( new Protocol( "opc" ) ) ) );
+	}
+	@Test(timeout = 5000)
+	public void testHandshakeRejectionTestCase29() throws Exception {
+		testProtocolRejection( 29, new Draft_6455( Collections.<IExtension>emptyList(), Collections.<IProtocol>singletonList( new Protocol( "opc" ) ) ) );
+	}
 	private void testProtocolRejection( int i, Draft_6455 draft ) throws Exception {
 		final int finalI = i;
 		final boolean[] threadReturned = { false };
@@ -320,6 +410,11 @@ public class ProtoclHandshakeRejectionTest {
 			public void onOpen( ServerHandshake handshakedata ) {
 				switch(finalI) {
 					case 0:
+					case 1:
+					case 2:
+					case 3:
+					case 4:
+					case 5:
 					case 6:
 					case 7:
 					case 8:
@@ -327,7 +422,13 @@ public class ProtoclHandshakeRejectionTest {
 					case 13:
 					case 14:
 					case 17:
-						counter++;
+					case 20:
+					case 21:
+					case 22:
+					case 23:
+					case 24:
+					case 25:
+					case 26:
 						threadReturned[0] = true;
 						closeConnection( CloseFrame.ABNORMAL_CLOSE, "Bye" );
 						break;
@@ -343,9 +444,60 @@ public class ProtoclHandshakeRejectionTest {
 
 			@Override
 			public void onClose( int code, String reason, boolean remote ) {
+				switch (finalI) {
+					case 0:
+					case 1:
+					case 2:
+					case 3:
+					case 4:
+					case 20:
+					case 24:
+					case 25:
+					case 26:
+						assertEquals("" ,getProtocol().getProvidedProtocol());
+						break;
+					case 5:
+					case 9:
+					case 10:
+					case 11:
+					case 12:
+					case 13:
+					case 15:
+					case 16:
+					case 18:
+					case 19:
+					case 27:
+					case 28:
+					case 29:
+						assertNull(getProtocol());
+						break;
+					case 6:
+					case 7:
+					case 8:
+					case 17:
+						assertEquals("chat" ,getProtocol().getProvidedProtocol());
+						break;
+					case 14:
+					case 22:
+						assertEquals("chat2" ,getProtocol().getProvidedProtocol());
+						break;
+					case 21:
+						assertEquals("chat1" ,getProtocol().getProvidedProtocol());
+						break;
+					case 23:
+						assertEquals("chat3" ,getProtocol().getProvidedProtocol());
+						break;
+					default:
+						fail();
+				}
 				if( code == CloseFrame.ABNORMAL_CLOSE ) {
 					switch(finalI) {
 						case 0:
+						case 1:
+						case 2:
+						case 3:
+						case 4:
+						case 5:
 						case 6:
 						case 7:
 						case 8:
@@ -353,16 +505,20 @@ public class ProtoclHandshakeRejectionTest {
 						case 13:
 						case 14:
 						case 17:
+						case 20:
+						case 21:
+						case 22:
+						case 23:
+						case 24:
+						case 25:
+						case 26:
 							return;
 					}
 				}
 				if( code != CloseFrame.PROTOCOL_ERROR ) {
 					fail( "There should be a protocol error! " + finalI + " " + code );
 				} else if( reason.endsWith( "refuses handshake" ) ) {
-					if( debugPrintouts )
-						System.out.println( "Protocol error for test case: " + finalI );
 					threadReturned[0] = true;
-					counter++;
 				} else {
 					fail( "The reason should be included!" );
 				}
