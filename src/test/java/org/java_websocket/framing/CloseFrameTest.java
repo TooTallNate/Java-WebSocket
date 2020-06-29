@@ -42,7 +42,7 @@ public class CloseFrameTest {
         CloseFrame frame = new CloseFrame();
         assertEquals("Opcode must be equal", Opcode.CLOSING, frame.getOpcode());
         assertEquals("Fin must be set", true, frame.isFin());
-        assertEquals("TransferedMask must not be set", false, frame.getTransfereMasked());
+        assertEquals("transferredMask must not be set", false, frame.getTransfereMasked());
         assertEquals("Payload must be 2 (close code)", 2, frame.getPayloadData().capacity());
         assertEquals("RSV1 must be false", false, frame.isRSV1());
         assertEquals("RSV2 must be false", false, frame.isRSV2());

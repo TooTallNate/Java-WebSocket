@@ -51,7 +51,7 @@ import org.java_websocket.handshake.ServerHandshakeBuilder;
 import org.java_websocket.util.Charsetfunctions;
 
 /**
- * Base class for everything of a websocket specification which is not common such as the way the handshake is read or frames are transfered.
+ * Base class for everything of a websocket specification which is not common such as the way the handshake is read or frames are transferred.
  **/
 public abstract class Draft {
 

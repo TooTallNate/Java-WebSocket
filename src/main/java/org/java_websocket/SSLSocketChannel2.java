@@ -315,11 +315,11 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel, ISSLC
             inCrypt.flip();
             unwrap();
 
-            int transfered = transfereTo(inData, dst);
-            if (transfered == 0 && isBlocking()) {
+            int transferred = transfereTo(inData, dst);
+            if (transferred == 0 && isBlocking()) {
                 continue;
             }
-            return transfered;
+            return transferred;
         }
     }
     /**

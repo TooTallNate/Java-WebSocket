@@ -718,7 +718,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 				removed = this.connections.remove( ws );
 			} else {
 				//Don't throw an assert error if the ws is not in the list. e.g. when the other endpoint did not send any handshake. see #512
-				log.trace("Removing connection which is not in the connections collection! Possible no handshake recieved! {}", ws);
+				log.trace("Removing connection which is not in the connections collection! Possible no handshake received! {}", ws);
 			}
 		}
 		if( isclosed.get() && connections.isEmpty() ) {
@@ -823,14 +823,14 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 	}
 
 	/** Called after an opening handshake has been performed and the given websocket is ready to be written on.
-	 * @param conn The <tt>WebSocket</tt> instance this event is occuring on.
+	 * @param conn The <tt>WebSocket</tt> instance this event is occurring on.
 	 * @param handshake The handshake of the websocket instance
 	 */
 	public abstract void onOpen( WebSocket conn, ClientHandshake handshake );
 	/**
 	 * Called after the websocket connection has been closed.
 	 *
-	 * @param conn The <tt>WebSocket</tt> instance this event is occuring on.
+	 * @param conn The <tt>WebSocket</tt> instance this event is occurring on.
 	 * @param code
 	 *            The codes can be looked up here: {@link CloseFrame}
 	 * @param reason
@@ -843,7 +843,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 	 * Callback for string messages received from the remote host
 	 * 
 	 * @see #onMessage(WebSocket, ByteBuffer)
-	 * @param conn The <tt>WebSocket</tt> instance this event is occuring on.
+	 * @param conn The <tt>WebSocket</tt> instance this event is occurring on.
 	 * @param message The UTF-8 decoded message that was received.
 	 **/
 	public abstract void onMessage( WebSocket conn, String message );
@@ -860,7 +860,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 	/**
 	 * Called when the server started up successfully.
 	 *
-	 * If any error occured, onError is called instead.
+	 * If any error occurred, onError is called instead.
 	 */
 	public abstract void onStart();
 

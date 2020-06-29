@@ -26,7 +26,7 @@
 package org.java_websocket.exceptions;
 
 /**
- * exception which indicates that a invalid data was recieved
+ * exception which indicates that a invalid data was received
  */
 public class InvalidDataException extends Exception {
 

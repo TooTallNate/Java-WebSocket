@@ -59,7 +59,7 @@ public interface WebSocket {
 
 	/**
 	 * This will close the connection immediately without a proper close handshake.
-	 * The code and the message therefore won't be transfered over the wire also they will be forwarded to onClose/onWebsocketClose.
+	 * The code and the message therefore won't be transferred over the wire also they will be forwarded to onClose/onWebsocketClose.
 	 * @param code the closing code
 	 * @param message the closing message
 	 **/

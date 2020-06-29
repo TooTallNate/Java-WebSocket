@@ -44,7 +44,7 @@ public class FramedataImpl1Test {
         FramedataImpl1 binary = FramedataImpl1.get(Opcode.BINARY);
         assertEquals("Opcode must be equal", Opcode.BINARY, binary.getOpcode());
         assertEquals("Fin must be set", true, binary.isFin());
-        assertEquals("TransferedMask must not be set", false, binary.getTransfereMasked());
+        assertEquals("transferredMask must not be set", false, binary.getTransfereMasked());
         assertEquals("Payload must be empty", 0, binary.getPayloadData().capacity());
         assertEquals("RSV1 must be false", false, binary.isRSV1());
         assertEquals("RSV2 must be false", false, binary.isRSV2());
@@ -79,7 +79,7 @@ public class FramedataImpl1Test {
         frame.setFin(false);
         assertEquals("Fin must not be set", false, frame.isFin());
         frame.setTransferemasked(true);
-        assertEquals("TransferedMask must be set", true, frame.getTransfereMasked());
+        assertEquals("transferredMask must be set", true, frame.getTransfereMasked());
         ByteBuffer buffer = ByteBuffer.allocate(100);
         frame.setPayload(buffer);
         assertEquals("Payload must be of size 100", 100, frame.getPayloadData().capacity());

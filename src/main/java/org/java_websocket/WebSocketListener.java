@@ -117,7 +117,7 @@ public interface WebSocketListener {
 	 * Indicates that a complete WebSocket connection has been established,
 	 * and we are ready to send/receive data.
 	 * 
-	 * @param conn The <tt>WebSocket</tt> instance this event is occuring on.
+	 * @param conn The <tt>WebSocket</tt> instance this event is occurring on.
 	 * @param d The handshake of the websocket instance
 	 */
 	void onWebsocketOpen( WebSocket conn, Handshakedata d );
@@ -126,7 +126,7 @@ public interface WebSocketListener {
 	 * Called after <tt>WebSocket#close</tt> is explicity called, or when the
 	 * other end of the WebSocket connection is closed.
 	 * 
-	 * @param ws The <tt>WebSocket</tt> instance this event is occuring on.
+	 * @param ws The <tt>WebSocket</tt> instance this event is occurring on.
 	 * @param code The codes can be looked up here: {@link CloseFrame}
 	 * @param reason Additional information string
 	 * @param remote Returns whether or not the closing of the connection was initiated by the remote host.
@@ -135,7 +135,7 @@ public interface WebSocketListener {
 
 	/** Called as soon as no further frames are accepted
 	 *
-	 * @param ws The <tt>WebSocket</tt> instance this event is occuring on.
+	 * @param ws The <tt>WebSocket</tt> instance this event is occurring on.
 	 * @param code The codes can be looked up here: {@link CloseFrame}
 	 * @param reason Additional information string
 	 * @param remote Returns whether or not the closing of the connection was initiated by the remote host.
@@ -144,7 +144,7 @@ public interface WebSocketListener {
 
 	/** send when this peer sends a close handshake
 	 *
-	 * @param ws The <tt>WebSocket</tt> instance this event is occuring on.
+	 * @param ws The <tt>WebSocket</tt> instance this event is occurring on.
 	 * @param code The codes can be looked up here: {@link CloseFrame}
 	 * @param reason Additional information string
 	 */
@@ -154,7 +154,7 @@ public interface WebSocketListener {
 	 * Called if an exception worth noting occurred.
 	 * If an error causes the connection to fail onClose will be called additionally afterwards.
 	 *
-	 * @param conn The <tt>WebSocket</tt> instance this event is occuring on.
+	 * @param conn The <tt>WebSocket</tt> instance this event is occurring on.
 	 * @param ex
 	 *            The exception that occurred. <br>
 	 *            Might be null if the exception is not related to any specific connection. For example if the server port could not be bound.
@@ -165,7 +165,7 @@ public interface WebSocketListener {
 	 * Called a ping frame has been received.
 	 * This method must send a corresponding pong by itself.
 	 *
-	 * @param conn The <tt>WebSocket</tt> instance this event is occuring on.
+	 * @param conn The <tt>WebSocket</tt> instance this event is occurring on.
 	 * @param f The ping frame. Control frames may contain payload.
 	 */
 	void onWebsocketPing( WebSocket conn, Framedata f );
@@ -181,20 +181,20 @@ public interface WebSocketListener {
 	/**
 	 * Called when a pong frame is received.
 	 *
-	 * @param conn The <tt>WebSocket</tt> instance this event is occuring on.
+	 * @param conn The <tt>WebSocket</tt> instance this event is occurring on.
 	 * @param f The pong frame. Control frames may contain payload.
 	 **/
 	void onWebsocketPong( WebSocket conn, Framedata f );
 
 	/** This method is used to inform the selector thread that there is data queued to be written to the socket.
-	 * @param conn The <tt>WebSocket</tt> instance this event is occuring on.
+	 * @param conn The <tt>WebSocket</tt> instance this event is occurring on.
 	 */
 	void onWriteDemand( WebSocket conn );
 
 	/**
 	 * @see  WebSocket#getLocalSocketAddress()
 	 *
-	 * @param conn The <tt>WebSocket</tt> instance this event is occuring on.
+	 * @param conn The <tt>WebSocket</tt> instance this event is occurring on.
 	 * @return Returns the address of the endpoint this socket is bound to.
 	 */
 	InetSocketAddress getLocalSocketAddress( WebSocket conn );
@@ -202,7 +202,7 @@ public interface WebSocketListener {
 	/**
 	 * @see  WebSocket#getRemoteSocketAddress()
 	 *
-	 * @param conn The <tt>WebSocket</tt> instance this event is occuring on.
+	 * @param conn The <tt>WebSocket</tt> instance this event is occurring on.
 	 * @return Returns the address of the endpoint this socket is connected to, or{@code null} if it is unconnected.
 	 */
 	InetSocketAddress getRemoteSocketAddress( WebSocket conn );

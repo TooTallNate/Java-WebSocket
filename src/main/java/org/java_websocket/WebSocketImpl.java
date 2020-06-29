@@ -152,7 +152,7 @@ public class WebSocketImpl implements WebSocket {
 	private String resourceDescriptor = null;
 
 	/**
-	 * Attribute, when the last pong was recieved
+	 * Attribute, when the last pong was received
 	 */
 	private long lastPong = System.nanoTime();
 
@@ -483,7 +483,7 @@ public class WebSocketImpl implements WebSocket {
 
 	/**
 	 * This will close the connection immediately without a proper close handshake.
-	 * The code and the message therefore won't be transfered over the wire also they will be forwarded to onClose/onWebsocketClose.
+	 * The code and the message therefore won't be transferred over the wire also they will be forwarded to onClose/onWebsocketClose.
 	 *
 	 * @param code    the closing code
 	 * @param message the closing message
@@ -789,9 +789,9 @@ public class WebSocketImpl implements WebSocket {
 	}
 
 	/**
-	 * Getter for the last pong recieved
+	 * Getter for the last pong received
 	 *
-	 * @return the timestamp for the last recieved pong
+	 * @return the timestamp for the last received pong
 	 */
 	long getLastPong() {
 		return lastPong;

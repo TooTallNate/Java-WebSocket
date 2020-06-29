@@ -190,7 +190,7 @@ public class CloseFrame extends ControlFrame {
 	 */
 	public void setCode(int code) {
         this.code = code;
-        // CloseFrame.TLS_ERROR is not allowed to be transfered over the wire
+        // CloseFrame.TLS_ERROR is not allowed to be transferred over the wire
         if (code == CloseFrame.TLS_ERROR) {
             this.code = CloseFrame.NOCODE;
             this.reason = "";
