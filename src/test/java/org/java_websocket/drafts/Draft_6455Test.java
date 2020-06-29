@@ -132,7 +132,7 @@ public class Draft_6455Test {
 
 	@Test
 	public void testGetProtocol() throws Exception {
-		Draft_6455 draft_6455 = new Draft_6455();
+		Draft_6455 draft_6455 = new Draft_6455(Collections.<IExtension>emptyList(), Collections.<IProtocol>emptyList());
 		assertNull( draft_6455.getProtocol() );
 		draft_6455.acceptHandshakeAsServer( handshakedataProtocolExtension );
 		assertNull( draft_6455.getProtocol() );
@@ -194,7 +194,7 @@ public class Draft_6455Test {
 		Draft_6455 draft_6455 = new Draft_6455();
 		assertEquals( "Draft_6455 extension: DefaultExtension max frame size: 2147483647", draft_6455.toString() );
 		draft_6455.acceptHandshakeAsServer( handshakedataProtocolExtension );
-		assertEquals( "Draft_6455 extension: DefaultExtension max frame size: 2147483647", draft_6455.toString() );
+		assertEquals( "Draft_6455 extension: DefaultExtension protocol:  max frame size: 2147483647", draft_6455.toString() );
 		draft_6455 = new Draft_6455( Collections.<IExtension>emptyList(), Collections.<IProtocol>singletonList( new Protocol( "chat" ) ) );
 		assertEquals( "Draft_6455 extension: DefaultExtension max frame size: 2147483647", draft_6455.toString() );
 		draft_6455.acceptHandshakeAsServer( handshakedataProtocolExtension );
@@ -223,7 +223,7 @@ public class Draft_6455Test {
 		draft1.acceptHandshakeAsServer( handshakedataProtocolExtension );
 		assertNotEquals( draft2, draft3 );
 		assertNotEquals( draft0, draft2 );
-		assertEquals( draft0, draft1 );
+		assertNotEquals( draft0, draft1 );
 		draft2 = draft2.copyInstance();
 		draft1 = draft1.copyInstance();
 		//unequal for draft draft2 due to a provided protocol
@@ -231,7 +231,7 @@ public class Draft_6455Test {
 		draft1.acceptHandshakeAsServer( handshakedataProtocol );
 		assertNotEquals( draft2, draft3 );
 		assertNotEquals( draft0, draft2 );
-		assertEquals( draft0, draft1 );
+		assertNotEquals( draft0, draft1 );
 		draft2 = draft2.copyInstance();
 		draft1 = draft1.copyInstance();
 		//unequal for draft draft0 due to a provided protocol (no protocol)
@@ -297,14 +297,14 @@ public class Draft_6455Test {
 	public void acceptHandshakeAsServer() throws Exception {
 		Draft_6455 draft_6455 = new Draft_6455();
 		assertEquals( HandshakeState.MATCHED, draft_6455.acceptHandshakeAsServer( handshakedata ) );
-		assertEquals( HandshakeState.NOT_MATCHED, draft_6455.acceptHandshakeAsServer( handshakedataProtocol ) );
+		assertEquals( HandshakeState.MATCHED, draft_6455.acceptHandshakeAsServer( handshakedataProtocol ) );
 		assertEquals( HandshakeState.MATCHED, draft_6455.acceptHandshakeAsServer( handshakedataExtension ) );
-		assertEquals( HandshakeState.NOT_MATCHED, draft_6455.acceptHandshakeAsServer( handshakedataProtocolExtension ) );
+		assertEquals( HandshakeState.MATCHED, draft_6455.acceptHandshakeAsServer( handshakedataProtocolExtension ) );
 		draft_6455 = new Draft_6455( new TestExtension() );
 		assertEquals( HandshakeState.MATCHED, draft_6455.acceptHandshakeAsServer( handshakedata ) );
-		assertEquals( HandshakeState.NOT_MATCHED, draft_6455.acceptHandshakeAsServer( handshakedataProtocol ) );
+		assertEquals( HandshakeState.MATCHED, draft_6455.acceptHandshakeAsServer( handshakedataProtocol ) );
 		assertEquals( HandshakeState.MATCHED, draft_6455.acceptHandshakeAsServer( handshakedataExtension ) );
-		assertEquals( HandshakeState.NOT_MATCHED, draft_6455.acceptHandshakeAsServer( handshakedataProtocolExtension ) );
+		assertEquals( HandshakeState.MATCHED, draft_6455.acceptHandshakeAsServer( handshakedataProtocolExtension ) );
 		draft_6455 = new Draft_6455( Collections.<IExtension>emptyList(), Collections.<IProtocol>singletonList( new Protocol( "chat" ) ) );
 		assertEquals( HandshakeState.NOT_MATCHED, draft_6455.acceptHandshakeAsServer( handshakedata ) );
 		assertEquals( HandshakeState.MATCHED, draft_6455.acceptHandshakeAsServer( handshakedataProtocol ) );
@@ -336,7 +336,7 @@ public class Draft_6455Test {
 		response.put( "Sec-WebSocket-Accept", "s3pPLMBiTxaQ9kYGzzhZRbK+xOo=" );
 		assertEquals( HandshakeState.MATCHED, draft_6455.acceptHandshakeAsClient( request, response ) );
 		response.put( "Sec-WebSocket-Protocol", "chat" );
-		assertEquals( HandshakeState.NOT_MATCHED, draft_6455.acceptHandshakeAsClient( request, response ) );
+		assertEquals( HandshakeState.MATCHED, draft_6455.acceptHandshakeAsClient( request, response ) );
 		draft_6455 = new Draft_6455( Collections.<IExtension>emptyList(), Collections.<IProtocol>singletonList( new Protocol( "chat" ) ) );
 		assertEquals( HandshakeState.MATCHED, draft_6455.acceptHandshakeAsClient( request, response ) );
 		ArrayList<IProtocol> protocols = new ArrayList<IProtocol>();
@@ -344,7 +344,7 @@ public class Draft_6455Test {
 		protocols.add( new Protocol( "chat" ) );
 		draft_6455 = new Draft_6455( Collections.<IExtension>emptyList(), protocols );
 		assertEquals( HandshakeState.MATCHED, draft_6455.acceptHandshakeAsClient( request, response ) );
-		draft_6455 = new Draft_6455();
+		draft_6455 =new Draft_6455(Collections.<IExtension>emptyList(), Collections.<IProtocol>emptyList());
 		assertEquals( HandshakeState.NOT_MATCHED, draft_6455.acceptHandshakeAsClient( request, response ) );
 		protocols.clear();
 		protocols.add( new Protocol( "chat3" ) );
