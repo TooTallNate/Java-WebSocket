@@ -42,7 +42,7 @@ public class BinaryFrameTest {
         BinaryFrame frame = new BinaryFrame();
         assertEquals("Opcode must be equal", Opcode.BINARY , frame.getOpcode());
         assertEquals("Fin must be set", true , frame.isFin());
-        assertEquals("transferredMask must not be set", false , frame.getTransfereMasked());
+        assertEquals("TransferedMask must not be set", false , frame.getTransfereMasked());
         assertEquals("Payload must be empty", 0 , frame.getPayloadData().capacity());
         assertEquals("RSV1 must be false", false , frame.isRSV1());
         assertEquals("RSV2 must be false", false , frame.isRSV2());
