@@ -2246,13 +2246,13 @@ function toggleClose() {
       <a name="case_desc_6_3_1"></a>
       <h2>Case 6.3.1</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send invalid UTF-8 text message unfragmented.<br><br>MESSAGE:<br>Îºá½¹ÏƒÎ¼Îµï¿½edited<br>cebae1bdb9cf83cebcceb5eda080656469746564</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send invalid UTF-8 text message unfragmented.<br><br>MESSAGE:<br>Îºá½¹ÏƒÎ¼Îµí €edited<br>cebae1bdb9cf83cebcceb5eda080656469746564</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_3_2"></a>
       <h2>Case 6.3.2</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send invalid UTF-8 text message in fragments of 1 octet, resulting in frames ending on positions which are not code point ends.<br><br>MESSAGE:<br>Îºá½¹ÏƒÎ¼Îµï¿½edited<br>cebae1bdb9cf83cebcceb5eda080656469746564</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send invalid UTF-8 text message in fragments of 1 octet, resulting in frames ending on positions which are not code point ends.<br><br>MESSAGE:<br>Îºá½¹ÏƒÎ¼Îµí €edited<br>cebae1bdb9cf83cebcceb5eda080656469746564</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_4_1"></a>
@@ -2263,7 +2263,7 @@ First frame payload is valid, then wait, then 2nd frame which contains the paylo
 Note that PART1 and PART3 are valid UTF-8 in themselves, PART2 is a 0x11000 encoded as in the UTF-8 integer encoding scheme, but the codepoint is invalid (out of range).
 <br><br>MESSAGE PARTS:<br>
 PART1 = Îºá½¹ÏƒÎ¼Îµ (cebae1bdb9cf83cebcceb5)<br>
-PART2 = ï¿½ï¿½ï¿½ï¿½ (f4908080)<br>
+PART2 = ô€€ (f4908080)<br>
 PART3 = edited (656469746564)<br>
 </p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The first frame is accepted, we expect to timeout on the first wait. The 2nd frame should be rejected immediately (fail fast on UTF-8). If we timeout, we expect the connection is failed at least then, since the complete message payload is not valid UTF-8.</p>
@@ -2273,9 +2273,9 @@ PART3 = edited (656469746564)<br>
       <a class="up" href="#top">Up</a>
       <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Same as Case 6.4.1, but in 2nd frame, we send only up to and including the octet making the complete payload invalid.
 <br><br>MESSAGE PARTS:<br>
-PART1 = Îºá½¹ÏƒÎ¼Îµï¿½ (cebae1bdb9cf83cebcceb5f4)<br>
-PART2 = ï¿½ (90)<br>
-PART3 = ï¿½ï¿½edited (8080656469746564)<br>
+PART1 = Îºá½¹ÏƒÎ¼Îµô (cebae1bdb9cf83cebcceb5f4)<br>
+PART2 =  (90)<br>
+PART3 = €€edited (8080656469746564)<br>
 </p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The first frame is accepted, we expect to timeout on the first wait. The 2nd frame should be rejected immediately (fail fast on UTF-8). If we timeout, we expect the connection is failed at least then, since the complete message payload is not valid UTF-8.</p>
       <br/>
@@ -2285,7 +2285,7 @@ PART3 = ï¿½ï¿½edited (8080656469746564)<br>
       <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Same as Case 6.4.1, but we send message not in 3 frames, but in 3 chops of the same message frame.
 <br><br>MESSAGE PARTS:<br>
 PART1 = Îºá½¹ÏƒÎ¼Îµ (cebae1bdb9cf83cebcceb5)<br>
-PART2 = ï¿½ï¿½ï¿½ï¿½ (f4908080)<br>
+PART2 = ô€€ (f4908080)<br>
 PART3 = edited (656469746564)<br>
 </p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The first chop is accepted, we expect to timeout on the first wait. The 2nd chop should be rejected immediately (fail fast on UTF-8). If we timeout, we expect the connection is failed at least then, since the complete message payload is not valid UTF-8.</p>
@@ -2295,8 +2295,8 @@ PART3 = edited (656469746564)<br>
       <a class="up" href="#top">Up</a>
       <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Same as Case 6.4.2, but we send message not in 3 frames, but in 3 chops of the same message frame.
 <br><br>MESSAGE PARTS:<br>
-PART1 = Îºá½¹ÏƒÎ¼Îµï¿½ (cebae1bdb9cf83cebcceb5f4)<br>
-PART2 = ï¿½ (90)<br>
+PART1 = Îºá½¹ÏƒÎ¼Îµô (cebae1bdb9cf83cebcceb5f4)<br>
+PART2 =  (90)<br>
 PART3 =  ()<br>
 </p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The first chop is accepted, we expect to timeout on the first wait. The 2nd chop should be rejected immediately (fail fast on UTF-8). If we timeout, we expect the connection is failed at least then, since the complete message payload is not valid UTF-8.</p>
@@ -2310,7 +2310,7 @@ PART3 =  ()<br>
       <a name="case_desc_6_6_1"></a>
       <h2>Case 6.6.1</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½<br>ce</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>Î<br>ce</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_6_2"></a>
@@ -2322,13 +2322,13 @@ PART3 =  ()<br>
       <a name="case_desc_6_6_3"></a>
       <h2>Case 6.6.3</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>Îºï¿½<br>cebae1</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>Îºá<br>cebae1</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_6_4"></a>
       <h2>Case 6.6.4</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>Îºï¿½<br>cebae1bd</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>Îºá½<br>cebae1bd</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_6_5"></a>
@@ -2340,7 +2340,7 @@ PART3 =  ()<br>
       <a name="case_desc_6_6_6"></a>
       <h2>Case 6.6.6</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>Îºá½¹ï¿½<br>cebae1bdb9cf</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>Îºá½¹Ï<br>cebae1bdb9cf</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_6_7"></a>
@@ -2352,7 +2352,7 @@ PART3 =  ()<br>
       <a name="case_desc_6_6_8"></a>
       <h2>Case 6.6.8</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>Îºá½¹Ïƒï¿½<br>cebae1bdb9cf83ce</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>Îºá½¹ÏƒÎ<br>cebae1bdb9cf83ce</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_6_9"></a>
@@ -2364,7 +2364,7 @@ PART3 =  ()<br>
       <a name="case_desc_6_6_10"></a>
       <h2>Case 6.6.10</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>Îºá½¹ÏƒÎ¼ï¿½<br>cebae1bdb9cf83cebcce</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>Îºá½¹ÏƒÎ¼Î<br>cebae1bdb9cf83cebcce</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_6_11"></a>
@@ -2400,13 +2400,13 @@ PART3 =  ()<br>
       <a name="case_desc_6_8_1"></a>
       <h2>Case 6.8.1</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½ï¿½ï¿½ï¿½<br>f888808080</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>øˆ€€€<br>f888808080</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_8_2"></a>
       <h2>Case 6.8.2</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½<br>fc8480808080</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ü„€€€€<br>fc8480808080</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_9_1"></a>
@@ -2436,19 +2436,19 @@ PART3 =  ()<br>
       <a name="case_desc_6_10_1"></a>
       <h2>Case 6.10.1</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½ï¿½ï¿½<br>f7bfbfbf</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>÷¿¿¿<br>f7bfbfbf</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_10_2"></a>
       <h2>Case 6.10.2</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½ï¿½ï¿½ï¿½<br>fbbfbfbfbf</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>û¿¿¿¿<br>fbbfbfbfbf</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_10_3"></a>
       <h2>Case 6.10.3</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½<br>fdbfbfbfbfbf</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ı¿¿¿¿¿<br>fdbfbfbfbfbf</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_11_1"></a>
@@ -2478,349 +2478,349 @@ PART3 =  ()<br>
       <a name="case_desc_6_11_5"></a>
       <h2>Case 6.11.5</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½ï¿½ï¿½<br>f4908080</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ô€€<br>f4908080</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_12_1"></a>
       <h2>Case 6.12.1</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½<br>80</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>€<br>80</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_12_2"></a>
       <h2>Case 6.12.2</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½<br>bf</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>¿<br>bf</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_12_3"></a>
       <h2>Case 6.12.3</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½<br>80bf</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>€¿<br>80bf</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_12_4"></a>
       <h2>Case 6.12.4</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½ï¿½<br>80bf80</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>€¿€<br>80bf80</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_12_5"></a>
       <h2>Case 6.12.5</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½ï¿½ï¿½<br>80bf80bf</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>€¿€¿<br>80bf80bf</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_12_6"></a>
       <h2>Case 6.12.6</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½ï¿½ï¿½ï¿½<br>80bf80bf80</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>€¿€¿€<br>80bf80bf80</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_12_7"></a>
       <h2>Case 6.12.7</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½<br>80bf80bf80bf</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>€¿€¿€¿<br>80bf80bf80bf</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_12_8"></a>
       <h2>Case 6.12.8</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½<br>808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9fa0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbe</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>€‚ƒ„…†‡ˆ‰Š‹Œ‘’“”•–—˜™š›œŸ ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾<br>808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9fa0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbe</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_13_1"></a>
       <h2>Case 6.13.1</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ <br>c020c120c220c320c420c520c620c720c820c920ca20cb20cc20cd20ce20cf20d020d120d220d320d420d520d620d720d820d920da20db20dc20dd20de20</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>À Á Â Ã Ä Å Æ Ç È É Ê Ë Ì Í Î Ï Ğ Ñ Ò Ó Ô Õ Ö × Ø Ù Ú Û Ü İ Ş <br>c020c120c220c320c420c520c620c720c820c920ca20cb20cc20cd20ce20cf20d020d120d220d320d420d520d620d720d820d920da20db20dc20dd20de20</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_13_2"></a>
       <h2>Case 6.13.2</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ <br>e020e120e220e320e420e520e620e720e820e920ea20eb20ec20ed20ee20</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>à á â ã ä å æ ç è é ê ë ì í î <br>e020e120e220e320e420e520e620e720e820e920ea20eb20ec20ed20ee20</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_13_3"></a>
       <h2>Case 6.13.3</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ <br>f020f120f220f320f420f520f620</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ğ ñ ò ó ô õ ö <br>f020f120f220f320f420f520f620</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_13_4"></a>
       <h2>Case 6.13.4</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ ï¿½ ï¿½ <br>f820f920fa20</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ø ù ú <br>f820f920fa20</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_13_5"></a>
       <h2>Case 6.13.5</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ <br>fc20</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ü <br>fc20</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_14_1"></a>
       <h2>Case 6.14.1</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½<br>c0</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>À<br>c0</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_14_2"></a>
       <h2>Case 6.14.2</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½<br>e080</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>à€<br>e080</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_14_3"></a>
       <h2>Case 6.14.3</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½ï¿½<br>f08080</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ğ€€<br>f08080</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_14_4"></a>
       <h2>Case 6.14.4</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½ï¿½ï¿½<br>f8808080</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ø€€€<br>f8808080</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_14_5"></a>
       <h2>Case 6.14.5</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½ï¿½ï¿½ï¿½<br>fc80808080</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ü€€€€<br>fc80808080</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_14_6"></a>
       <h2>Case 6.14.6</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½<br>df</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ß<br>df</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_14_7"></a>
       <h2>Case 6.14.7</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½<br>efbf</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿<br>efbf</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_14_8"></a>
       <h2>Case 6.14.8</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½ï¿½<br>f7bfbf</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>÷¿¿<br>f7bfbf</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_14_9"></a>
       <h2>Case 6.14.9</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½ï¿½ï¿½<br>fbbfbfbf</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>û¿¿¿<br>fbbfbfbf</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_14_10"></a>
       <h2>Case 6.14.10</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½ï¿½ï¿½ï¿½<br>fdbfbfbfbf</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ı¿¿¿¿<br>fdbfbfbfbf</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_15_1"></a>
       <h2>Case 6.15.1</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½<br>c0e080f08080f8808080fc80808080dfefbff7bfbffbbfbfbffdbfbfbfbf</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>Àà€ğ€€ø€€€ü€€€€ßï¿÷¿¿û¿¿¿ı¿¿¿¿<br>c0e080f08080f8808080fc80808080dfefbff7bfbffbbfbfbffdbfbfbfbf</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_16_1"></a>
       <h2>Case 6.16.1</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½<br>fe</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ş<br>fe</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_16_2"></a>
       <h2>Case 6.16.2</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½<br>ff</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ÿ<br>ff</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_16_3"></a>
       <h2>Case 6.16.3</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½ï¿½ï¿½<br>fefeffff</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>şşÿÿ<br>fefeffff</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_17_1"></a>
       <h2>Case 6.17.1</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½<br>c0af</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>À¯<br>c0af</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_17_2"></a>
       <h2>Case 6.17.2</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½ï¿½<br>e080af</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>à€¯<br>e080af</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_17_3"></a>
       <h2>Case 6.17.3</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½ï¿½ï¿½<br>f08080af</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ğ€€¯<br>f08080af</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_17_4"></a>
       <h2>Case 6.17.4</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½ï¿½ï¿½ï¿½<br>f8808080af</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ø€€€¯<br>f8808080af</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_17_5"></a>
       <h2>Case 6.17.5</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½<br>fc80808080af</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ü€€€€¯<br>fc80808080af</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_18_1"></a>
       <h2>Case 6.18.1</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½<br>c1bf</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>Á¿<br>c1bf</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_18_2"></a>
       <h2>Case 6.18.2</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½ï¿½<br>e09fbf</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>àŸ¿<br>e09fbf</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_18_3"></a>
       <h2>Case 6.18.3</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½ï¿½ï¿½<br>f08fbfbf</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ğ¿¿<br>f08fbfbf</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_18_4"></a>
       <h2>Case 6.18.4</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½ï¿½ï¿½ï¿½<br>f887bfbfbf</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ø‡¿¿¿<br>f887bfbfbf</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_18_5"></a>
       <h2>Case 6.18.5</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½<br>fc83bfbfbfbf</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>üƒ¿¿¿¿<br>fc83bfbfbfbf</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_19_1"></a>
       <h2>Case 6.19.1</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½<br>c080</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>À€<br>c080</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_19_2"></a>
       <h2>Case 6.19.2</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½ï¿½<br>e08080</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>à€€<br>e08080</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_19_3"></a>
       <h2>Case 6.19.3</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½ï¿½ï¿½<br>f0808080</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ğ€€€<br>f0808080</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_19_4"></a>
       <h2>Case 6.19.4</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½ï¿½ï¿½ï¿½<br>f880808080</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ø€€€€<br>f880808080</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_19_5"></a>
       <h2>Case 6.19.5</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½<br>fc8080808080</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ü€€€€€<br>fc8080808080</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_20_1"></a>
       <h2>Case 6.20.1</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½<br>eda080</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>í €<br>eda080</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_20_2"></a>
       <h2>Case 6.20.2</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½<br>edadbf</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>í­¿<br>edadbf</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_20_3"></a>
       <h2>Case 6.20.3</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½<br>edae80</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>í®€<br>edae80</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_20_4"></a>
       <h2>Case 6.20.4</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½<br>edafbf</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>í¯¿<br>edafbf</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_20_5"></a>
       <h2>Case 6.20.5</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½<br>edb080</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>í°€<br>edb080</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_20_6"></a>
       <h2>Case 6.20.6</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½<br>edbe80</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>í¾€<br>edbe80</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_20_7"></a>
       <h2>Case 6.20.7</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½<br>edbfbf</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>í¿¿<br>edbfbf</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_21_1"></a>
       <h2>Case 6.21.1</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½<br>eda080edb080</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>í €í°€<br>eda080edb080</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_21_2"></a>
       <h2>Case 6.21.2</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½<br>eda080edbfbf</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>í €í¿¿<br>eda080edbfbf</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_21_3"></a>
       <h2>Case 6.21.3</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½<br>edadbfedb080</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>í­¿í°€<br>edadbfedb080</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_21_4"></a>
       <h2>Case 6.21.4</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½<br>edadbfedbfbf</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>í­¿í¿¿<br>edadbfedbfbf</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_21_5"></a>
       <h2>Case 6.21.5</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½<br>edae80edb080</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>í®€í°€<br>edae80edb080</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_21_6"></a>
       <h2>Case 6.21.6</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½<br>edae80edbfbf</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>í®€í¿¿<br>edae80edbfbf</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_21_7"></a>
       <h2>Case 6.21.7</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½<br>edafbfedb080</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>í¯¿í°€<br>edafbfedb080</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_21_8"></a>
       <h2>Case 6.21.8</h2>
       <a class="up" href="#top">Up</a>
-      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>ï¿½ï¿½<br>edafbfedbfbf</p>
+      <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send a text message with payload which is not valid UTF-8 in one fragment.<br><br>MESSAGE:<br>í¯¿í¿¿<br>edafbfedbfbf</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>The connection is failed immediately, since the payload is not valid UTF-8.</p>
       <br/>
       <a name="case_desc_6_22_1"></a>
@@ -3067,7 +3067,7 @@ PART3 =  ()<br>
       <h2>Case 7.1.6</h2>
       <a class="up" href="#top">Up</a>
       <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send 256K message followed by close then a ping</p>
-      <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>Case outcome depends on implimentation defined close behavior. Message and close frame are sent back to back. If the close frame is processed before the text message write is complete (as can happen in asyncronous processing models) the close frame is processed first and the text message may not be received or may only be partially received.</p>
+      <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>Case outcome depends on implimentation defined close behavior. Message and close frame are sent back to back. If the close frame is processed before the text message write is complete (as can happen in asyncronous processing models) the close frame is processed first and the text message may not be recieved or may only be partially recieved.</p>
       <br/>
       <a name="case_desc_7_3_1"></a>
       <h2>Case 7.3.1</h2>

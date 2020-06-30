@@ -462,7 +462,7 @@ public class Base64
     /**
      * Encodes up to the first three bytes of array <var>threeBytes</var>
      * and returns a four-byte array in Base64 notation.
-     * The actual number of significan't bytes in your array is
+     * The actual number of significant bytes in your array is
      * given by <var>numSigBytes</var>.
      * The array <var>threeBytes</var> needs only be as big as
      * <var>numSigBytes</var>.
@@ -470,7 +470,7 @@ public class Base64
      *
      * @param b4 A reusable byte array to reduce array instantiation
      * @param threeBytes the array to convert
-     * @param numSigBytes the number of significan't bytes in your array
+     * @param numSigBytes the number of significant bytes in your array
      * @return four byte array in Base64 notation.
      * @since 1.5.1
      */
@@ -490,14 +490,14 @@ public class Base64
      * are large enough to accommodate <var>srcOffset</var> + 3 for
      * the <var>source</var> array or <var>destOffset</var> + 4 for
      * the <var>destination</var> array.
-     * The actual number of significan't bytes in your array is
+     * The actual number of significant bytes in your array is
      * given by <var>numSigBytes</var>.</p>
 	 * <p>This is the lowest level of the encoding methods with
 	 * all possible parameters.</p>
      *
      * @param source the array to convert
      * @param srcOffset the index where conversion begins
-     * @param numSigBytes the number of significan't bytes in your array
+     * @param numSigBytes the number of significant bytes in your array
      * @param destination the array to hold the conversion
      * @param destOffset the index where output will be put
      * @return the <var>destination</var> array
@@ -517,7 +517,7 @@ public class Base64
         //                0x3f  0x3f  0x3f  Additional AND
         
         // Create buffer with zero-padding if there are only one or two
-        // significan't bytes passed in the array.
+        // significant bytes passed in the array.
         // We have to shift left 24 in order to flush out the 1's that appear
         // when Java treats a value as negative that is cast from a byte to an int.
         int inBuff =   ( numSigBytes > 0 ? ((source[ srcOffset     ] << 24) >>>  8) : 0 )
