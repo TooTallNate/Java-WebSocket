@@ -8,7 +8,7 @@ Java WebSockets
 This repository contains a barebones WebSocket server and client implementation
 written in 100% Java. The underlying classes are implemented `java.nio`, which allows for a
 non-blocking event-driven model (similar to the
-[WebSocket API](http://dev.w3.org/html5/websockets/) for web browsers).
+[WebSocket API](https://html.spec.whatwg.org/multipage/web-sockets.html) for web browsers).
 
 Implemented WebSocket protocol versions are:
 
