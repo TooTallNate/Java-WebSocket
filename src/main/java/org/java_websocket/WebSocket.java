@@ -34,6 +34,7 @@ import org.java_websocket.enums.Opcode;
 import org.java_websocket.enums.ReadyState;
 import org.java_websocket.exceptions.WebsocketNotConnectedException;
 import org.java_websocket.framing.Framedata;
+import org.java_websocket.protocols.IProtocol;
 
 import javax.net.ssl.SSLSession;
 
@@ -224,4 +225,12 @@ public interface WebSocket {
 	 * @since 1.4.1
 	 */
 	SSLSession getSSLSession() throws IllegalArgumentException;
+
+	/**
+	 * Returns the used Sec-WebSocket-Protocol for this websocket connection
+	 * @return the Sec-WebSocket-Protocol or null, if no draft available
+	 * @throws IllegalArgumentException the underlying draft does not support a Sec-WebSocket-Protocol
+	 * @since 1.5.2
+	 */
+	IProtocol getProtocol();
 }
