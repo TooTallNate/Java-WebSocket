@@ -8,7 +8,11 @@ import org.junit.Test;
 
 import java.nio.ByteBuffer;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class PerMessageDeflateExtensionTest {
 
@@ -113,7 +117,7 @@ public class PerMessageDeflateExtensionTest {
     }
 
     @Test
-    public void testToString() throws Exception {
+    public void testToString() {
         PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
         assertEquals( "PerMessageDeflateExtension", deflateExtension.toString() );
     }
