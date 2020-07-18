@@ -117,4 +117,18 @@ public class PerMessageDeflateExtensionTest {
         PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
         assertEquals( "PerMessageDeflateExtension", deflateExtension.toString() );
     }
+
+    @Test
+    public void testIsServerNoContextTakeover()
+    {
+        PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
+        assertTrue(deflateExtension.isServerNoContextTakeover());
+    }
+
+    @Test
+    public void testIsClientNoContextTakeover()
+    {
+        PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
+        assertFalse(deflateExtension.isClientNoContextTakeover());
+    }
 }

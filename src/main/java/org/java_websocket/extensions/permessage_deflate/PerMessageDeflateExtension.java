@@ -6,7 +6,13 @@ import org.java_websocket.exceptions.InvalidFrameException;
 import org.java_websocket.extensions.CompressionExtension;
 import org.java_websocket.extensions.ExtensionRequestData;
 import org.java_websocket.extensions.IExtension;
-import org.java_websocket.framing.*;
+import org.java_websocket.framing.BinaryFrame;
+import org.java_websocket.framing.CloseFrame;
+import org.java_websocket.framing.ContinuousFrame;
+import org.java_websocket.framing.DataFrame;
+import org.java_websocket.framing.Framedata;
+import org.java_websocket.framing.FramedataImpl1;
+import org.java_websocket.framing.TextFrame;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
@@ -16,6 +22,12 @@ import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
+/**
+ * PerMessage Deflate Extension (<a href="https://tools.ietf.org/html/rfc7692#section-7">7&#46; The "permessage-deflate" Extension</a> in
+ * <a href="https://tools.ietf.org/html/rfc7692">RFC 7692</a>).
+ *
+ * @see <a href="https://tools.ietf.org/html/rfc7692#section-7">7&#46; The "permessage-deflate" Extension in RFC 7692</a>
+ */
 public class PerMessageDeflateExtension extends CompressionExtension {
 
     // Name of the extension as registered by IETF https://tools.ietf.org/html/rfc7692#section-9.
@@ -28,7 +40,7 @@ public class PerMessageDeflateExtension extends CompressionExtension {
     private static final String CLIENT_MAX_WINDOW_BITS = "client_max_window_bits";
     private static final int serverMaxWindowBits = 1 << 15;
     private static final int clientMaxWindowBits = 1 << 15;
-    private static final byte[] TAIL_BYTES = {0x00, 0x00, (byte)0xFF, (byte)0xFF};
+    private static final byte[] TAIL_BYTES = { (byte)0x00, (byte)0x00, (byte)0xFF, (byte)0xFF };
     private static final int BUFFER_SIZE = 1 << 10;
 
     private boolean serverNoContextTakeover = true;
@@ -39,6 +51,24 @@ public class PerMessageDeflateExtension extends CompressionExtension {
     private Map<String, String> requestedParameters = new LinkedHashMap<String, String>();
     private Inflater inflater = new Inflater(true);
     private Deflater deflater = new Deflater(Deflater.DEFAULT_COMPRESSION, true);
+
+    /**
+     *
+     * @return serverNoContextTakeover
+     */
+    public boolean isServerNoContextTakeover()
+    {
+        return serverNoContextTakeover;
+    }
+
+    /**
+     *
+     * @return clientNoContextTakeover
+     */
+    public boolean isClientNoContextTakeover()
+    {
+        return clientNoContextTakeover;
+    }
 
     /*
         An endpoint uses the following algorithm to decompress a message.
@@ -93,6 +123,12 @@ public class PerMessageDeflateExtension extends CompressionExtension {
         ((FramedataImpl1) inputFrame).setPayload(ByteBuffer.wrap(output.toByteArray(), 0, output.size()));
     }
 
+    /**
+     *
+     * @param data the bytes of date
+     * @param outputBuffer the output stream
+     * @throws DataFormatException
+     */
     private void decompress(byte[] data, ByteArrayOutputStream outputBuffer) throws DataFormatException{
         inflater.setInput(data);
         byte[] buffer = new byte[BUFFER_SIZE];
@@ -146,6 +182,11 @@ public class PerMessageDeflateExtension extends CompressionExtension {
         ((FramedataImpl1) inputFrame).setPayload(ByteBuffer.wrap(outputBytes, 0, outputLength));
     }
 
+    /**
+     *
+     * @param data the bytes of data
+     * @return true if the data is OK
+     */
     private boolean endsWithTail(byte[] data){
         if(data.length < 4)
             return false;
