@@ -63,11 +63,29 @@ public class PerMessageDeflateExtension extends CompressionExtension {
 
     /**
      *
+     * @param serverNoContextTakeover
+     */
+    public void setServerNoContextTakeover(boolean serverNoContextTakeover)
+    {
+        this.serverNoContextTakeover = serverNoContextTakeover;
+    }
+
+    /**
+     *
      * @return clientNoContextTakeover
      */
     public boolean isClientNoContextTakeover()
     {
         return clientNoContextTakeover;
+    }
+
+    /**
+     *
+     * @param clientNoContextTakeover
+     */
+    public void setClientNoContextTakeover(boolean clientNoContextTakeover)
+    {
+        this.clientNoContextTakeover = clientNoContextTakeover;
     }
 
     /*
