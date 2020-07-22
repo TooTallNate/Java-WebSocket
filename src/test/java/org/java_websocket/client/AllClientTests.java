@@ -32,7 +32,8 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
 		org.java_websocket.client.AttachmentTest.class,
-		org.java_websocket.client.SchemaCheckTest.class
+		org.java_websocket.client.SchemaCheckTest.class,
+		org.java_websocket.client.HeadersTest.class
 })
 /**
  * Start all tests for the client
