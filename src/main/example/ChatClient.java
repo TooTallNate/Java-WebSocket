@@ -146,7 +146,7 @@ public class ChatClient extends JFrame implements ActionListener {
 
 					@Override
 					public void onError( Exception ex ) {
-						ta.append( "Exception occured ...\n" + ex + "\n" );
+						ta.append( "Exception occurred ...\n" + ex + "\n" );
 						ta.setCaretPosition( ta.getDocument().getLength() );
 						ex.printStackTrace();
 						connect.setEnabled( true );

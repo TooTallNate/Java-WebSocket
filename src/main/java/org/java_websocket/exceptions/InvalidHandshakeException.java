@@ -28,7 +28,7 @@ package org.java_websocket.exceptions;
 import org.java_websocket.framing.CloseFrame;
 
 /**
- * exception which indicates that a invalid handshake was recieved (CloseFrame.PROTOCOL_ERROR)
+ * exception which indicates that a invalid handshake was received (CloseFrame.PROTOCOL_ERROR)
  */
 public class InvalidHandshakeException extends InvalidDataException {
 

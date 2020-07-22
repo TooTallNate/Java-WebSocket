@@ -61,7 +61,7 @@ import java.util.concurrent.ExecutorService;
  *         <p>
  *         Modified by marci4 to allow the usage as a ByteChannel
  *         <p>
- *         Permission for usage recieved at May 25, 2017 by Alex Karnezis
+ *         Permission for usage received at May 25, 2017 by Alex Karnezis
  */
 public class SSLSocketChannel implements WrappedByteChannel, ByteChannel, ISSLChannel {
 
@@ -214,7 +214,7 @@ public class SSLSocketChannel implements WrappedByteChannel, ByteChannel, ISSLCh
 					myNetData = enlargePacketBuffer( myNetData );
 					break;
 				case BUFFER_UNDERFLOW:
-					throw new SSLException( "Buffer underflow occured after a wrap. I don't think we should ever get here." );
+					throw new SSLException( "Buffer underflow occurred after a wrap. I don't think we should ever get here." );
 				case CLOSED:
 					closeConnection();
 					return 0;
@@ -283,7 +283,7 @@ public class SSLSocketChannel implements WrappedByteChannel, ByteChannel, ISSLCh
 						try {
 							engine.closeInbound();
 						} catch ( SSLException e ) {
-							//Ignore, cant do anything against this exception
+							//Ignore, can't do anything against this exception
 						}
 						engine.closeOutbound();
 						// After closeOutbound the engine will be set to WRAP state, in order to try to send a close message to the client.
@@ -347,7 +347,7 @@ public class SSLSocketChannel implements WrappedByteChannel, ByteChannel, ISSLCh
 							myNetData = enlargePacketBuffer( myNetData );
 							break;
 						case BUFFER_UNDERFLOW:
-							throw new SSLException( "Buffer underflow occured after a wrap. I don't think we should ever get here." );
+							throw new SSLException( "Buffer underflow occurred after a wrap. I don't think we should ever get here." );
 						case CLOSED:
 							try {
 								myNetData.flip();

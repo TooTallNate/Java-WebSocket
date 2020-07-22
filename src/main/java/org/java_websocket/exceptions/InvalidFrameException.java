@@ -28,7 +28,7 @@ package org.java_websocket.exceptions;
 import org.java_websocket.framing.CloseFrame;
 
 /**
- * exception which indicates that a invalid frame was recieved (CloseFrame.PROTOCOL_ERROR)
+ * exception which indicates that a invalid frame was received (CloseFrame.PROTOCOL_ERROR)
  */
 public class InvalidFrameException extends InvalidDataException {
 
