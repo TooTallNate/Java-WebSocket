@@ -49,8 +49,25 @@ public class PerMessageDeflateExtension extends CompressionExtension {
     // For WebSocketServers, this variable holds the extension parameters that the peer client has requested.
     // For WebSocketClients, this variable holds the extension parameters that client himself has requested.
     private Map<String, String> requestedParameters = new LinkedHashMap<String, String>();
+
     private Inflater inflater = new Inflater(true);
     private Deflater deflater = new Deflater(Deflater.DEFAULT_COMPRESSION, true);
+
+    public Inflater getInflater() {
+        return inflater;
+    }
+
+    public void setInflater(Inflater inflater) {
+        this.inflater = inflater;
+    }
+
+    public Deflater getDeflater() {
+        return deflater;
+    }
+
+    public void setDeflater(Deflater deflater) {
+        this.deflater = deflater;
+    }
 
     /**
      *
@@ -141,7 +158,7 @@ public class PerMessageDeflateExtension extends CompressionExtension {
 
     /**
      *
-     * @param data the bytes of date
+     * @param data the bytes of data
      * @param outputBuffer the output stream
      * @throws DataFormatException
      */

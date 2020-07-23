@@ -7,6 +7,8 @@ import org.java_websocket.framing.TextFrame;
 import org.junit.Test;
 
 import java.nio.ByteBuffer;
+import java.util.zip.Deflater;
+import java.util.zip.Inflater;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -153,5 +155,31 @@ public class PerMessageDeflateExtensionTest {
         PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
         IExtension newDeflateExtension = deflateExtension.copyInstance();
         assertEquals(deflateExtension.toString(), newDeflateExtension.toString());
+    }
+
+    @Test
+    public void testGetInflater() {
+        PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
+        assertEquals(deflateExtension.getInflater(), new Inflater(true));
+    }
+
+    @Test
+    public void testSetInflater() {
+        PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
+        deflateExtension.setInflater(new Inflater(false));
+        assertEquals(deflateExtension.getInflater(), new Inflater(false));
+    }
+
+    @Test
+    public void testGetDeflater() {
+        PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
+        assertEquals(deflateExtension.getDeflater(), new Deflater(Deflater.DEFAULT_COMPRESSION, true));
+    }
+
+    @Test
+    public void testSetDeflater() {
+        PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
+        deflateExtension.setDeflater(new Deflater(Deflater.DEFAULT_COMPRESSION, false));
+        assertEquals(deflateExtension.getDeflater(), new Deflater(Deflater.DEFAULT_COMPRESSION, false));
     }
 }
