@@ -160,26 +160,26 @@ public class PerMessageDeflateExtensionTest {
     @Test
     public void testGetInflater() {
         PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
-        assertEquals(deflateExtension.getInflater(), new Inflater(true));
+        assertEquals(deflateExtension.getInflater().getRemaining(), new Inflater(true).getRemaining());
     }
 
     @Test
     public void testSetInflater() {
         PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
         deflateExtension.setInflater(new Inflater(false));
-        assertEquals(deflateExtension.getInflater(), new Inflater(false));
+        assertEquals(deflateExtension.getInflater().getRemaining(), new Inflater(false).getRemaining());
     }
 
     @Test
     public void testGetDeflater() {
         PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
-        assertEquals(deflateExtension.getDeflater(), new Deflater(Deflater.DEFAULT_COMPRESSION, true));
+        assertEquals(deflateExtension.getDeflater().finished(), new Deflater(Deflater.DEFAULT_COMPRESSION, true).finished());
     }
 
     @Test
     public void testSetDeflater() {
         PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
         deflateExtension.setDeflater(new Deflater(Deflater.DEFAULT_COMPRESSION, false));
-        assertEquals(deflateExtension.getDeflater(), new Deflater(Deflater.DEFAULT_COMPRESSION, false));
+        assertEquals(deflateExtension.getDeflater().finished(),new Deflater(Deflater.DEFAULT_COMPRESSION, false).finished());
     }
 }
