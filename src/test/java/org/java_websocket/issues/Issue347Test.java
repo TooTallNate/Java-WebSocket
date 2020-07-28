@@ -35,7 +35,8 @@ public class Issue347Test {
 
     private static WebSocketServer server;
     private static int port;
-
+	static CountDownLatch countServerDownLatch = new CountDownLatch( 1 );
+	
     @Parameterized.Parameter
     public int delay;
 
@@ -59,10 +60,13 @@ public class Issue347Test {
             public void onError(WebSocket conn, Exception ex) {}
 
             @Override
-            public void onStart() {}
+            public void onStart() {
+				countServerDownLatch.countDown();
+			}
         };
         server.setConnectionLostTimeout(0);
         server.start();
+        countServerDownLatch.await();
     }
 
     @AfterClass
