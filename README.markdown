@@ -13,8 +13,10 @@ non-blocking event-driven model (similar to the
 Implemented WebSocket protocol versions are:
 
  * [RFC 6455](http://tools.ietf.org/html/rfc6455)
+ * [RFC 7692](http://tools.ietf.org/html/rfc7692)
 
 [Here](https://github.com/TooTallNate/Java-WebSocket/wiki/Drafts) some more details about protocol versions/drafts. 
+[PerMessageDeflateExample](https://github.com/TooTallNate/Java-WebSocket/wiki/PerMessageDeflateExample) enable the extension with reference to both a server and client example. 
 
 
 ## Getting Started
