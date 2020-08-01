@@ -36,7 +36,7 @@ public class IncompleteHandshakeException extends RuntimeException {
     private static final long serialVersionUID = 7906596804233893092L;
 
     /**
-     * attribut which size of handshake would have been preferred
+     * attribute which size of handshake would have been preferred
      */
     private final int preferredSize;
 

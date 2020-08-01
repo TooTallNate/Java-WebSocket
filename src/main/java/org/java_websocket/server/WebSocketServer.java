@@ -977,7 +977,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 	 * @param draft The draft to use
 	 * @param draftFrames The list of frames per draft to fill
 	 * @param sData the string data, can be null
-	 * @param bData the bytebuffer data, can be null
+	 * @param bData the byte buffer data, can be null
 	 */
 	private void fillFrames(Draft draft, Map<Draft, List<Framedata>> draftFrames, String sData, ByteBuffer bData) {
 		if( !draftFrames.containsKey( draft ) ) {
@@ -1036,7 +1036,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 		}
 
 		/**
-		 * call ws.decode on the bytebuffer
+		 * call ws.decode on the byteBuffer
 		 * @param ws the Websocket
 		 * @param buf the buffer to decode to
 		 * @throws InterruptedException thrown by pushBuffer
