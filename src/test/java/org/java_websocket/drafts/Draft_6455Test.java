@@ -27,6 +27,7 @@ package org.java_websocket.drafts;
 
 import org.java_websocket.enums.CloseHandshakeType;
 import org.java_websocket.enums.HandshakeState;
+import org.java_websocket.exceptions.InvalidHandshakeException;
 import org.java_websocket.extensions.DefaultExtension;
 import org.java_websocket.extensions.IExtension;
 import org.java_websocket.framing.BinaryFrame;
@@ -459,6 +460,19 @@ public class Draft_6455Test {
 		draft_6455.postProcessHandshakeResponseAsServer(request, response);
 		assertEquals( "test", response.getFieldValue( "Sec-WebSocket-Protocol" ) );
 		assertTrue( !response.hasFieldValue( "Sec-WebSocket-Extensions" ) );
+
+		// issue #1053 : check the exception - missing Sec-WebSocket-Key
+		response = new HandshakeImpl1Server();
+		request = new HandshakeImpl1Client();
+		draft_6455.reset();
+		request.put( "Connection", "upgrade" );
+
+		try {
+			draft_6455.postProcessHandshakeResponseAsServer(request, response);
+			fail( "InvalidHandshakeException should be thrown" );
+		} catch ( InvalidHandshakeException e ) {
+
+		}
 	}
 
 
