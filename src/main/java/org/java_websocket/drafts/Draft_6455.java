@@ -383,7 +383,7 @@ public class Draft_6455 extends Draft {
 		response.put( UPGRADE, "websocket" );
 		response.put( CONNECTION, request.getFieldValue( CONNECTION) ); // to respond to a Connection keep alives
 		String seckey = request.getFieldValue(SEC_WEB_SOCKET_KEY);
-		if( seckey == null )
+		if( seckey == null || "".equals(seckey) )
 			throw new InvalidHandshakeException( "missing Sec-WebSocket-Key" );
 		response.put( SEC_WEB_SOCKET_ACCEPT, generateFinalKey( seckey ) );
 		if( getExtension().getProvidedExtensionAsServer().length() != 0 ) {
