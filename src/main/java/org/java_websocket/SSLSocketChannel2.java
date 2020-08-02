@@ -71,7 +71,7 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel, ISSLC
 
     protected List<Future<?>> tasks;
 
-    /** raw payload incomming */
+    /** raw payload incoming */
     protected ByteBuffer inData;
     /** encrypted data outgoing */
     protected ByteBuffer outCrypt;
@@ -130,7 +130,7 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel, ISSLC
     }
 
     /**
-     * This method will do whatever necessary to process the sslengine handshake.
+     * This method will do whatever necessary to process the sslEngine handshake.
      * Thats why it's called both from the {@link #read(ByteBuffer)} and {@link #write(ByteBuffer)}
      **/
     private synchronized void processHandshake() throws IOException {

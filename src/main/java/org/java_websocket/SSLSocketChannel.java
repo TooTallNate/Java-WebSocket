@@ -167,7 +167,7 @@ public class SSLSocketChannel implements WrappedByteChannel, ByteChannel, ISSLCh
 				try {
 					result = engine.unwrap( peerNetData, peerAppData );
 				} catch ( SSLException e ) {
-					log.error("SSLExcpetion during unwrap", e);
+					log.error("SSLException during unwrap", e);
 					throw e;
 				}
 				switch(result.getStatus()) {

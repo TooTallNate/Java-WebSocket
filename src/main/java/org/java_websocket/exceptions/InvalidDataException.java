@@ -36,7 +36,7 @@ public class InvalidDataException extends Exception {
     private static final long serialVersionUID = 3731842424390998726L;
 
     /**
-     * attribut which closecode will be returned
+     * attribute which closecode will be returned
      */
     private final int closecode;
 

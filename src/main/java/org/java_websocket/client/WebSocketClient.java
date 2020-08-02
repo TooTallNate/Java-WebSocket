@@ -684,7 +684,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 		return null;
 	}
 
-	// ABTRACT METHODS /////////////////////////////////////////////////////////
+	// ABSTRACT METHODS /////////////////////////////////////////////////////////
 
 	/**
 	 * Called after an opening handshake has been performed and the given websocket is ready to be written on.
