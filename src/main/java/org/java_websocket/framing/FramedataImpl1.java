@@ -159,7 +159,7 @@ public abstract class FramedataImpl1 implements Framedata {
 
     @Override
     public String toString() {
-        return "Framedata{ opcode:" + getOpcode() + ", fin:" + isFin() + ", rsv1:" + isRSV1() + ", rsv2:" + isRSV2() + ", rsv3:" + isRSV3() + ", payloadlength:[pos:" + unmaskedpayload.position() + ", len:" + unmaskedpayload.remaining() + "], payload:" + ( unmaskedpayload.remaining() > 1000 ? "(too big to display)" : new String( unmaskedpayload.array() ) ) + '}';
+        return "Framedata{ opcode:" + getOpcode() + ", fin:" + isFin() + ", rsv1:" + isRSV1() + ", rsv2:" + isRSV2() + ", rsv3:" + isRSV3() + ", payload length:[pos:" + unmaskedpayload.position() + ", len:" + unmaskedpayload.remaining() + "], payload:" + ( unmaskedpayload.remaining() > 1000 ? "(too big to display)" : new String( unmaskedpayload.array() ) ) + '}';
     }
 
     /**
