@@ -25,19 +25,6 @@
 
 package org.java_websocket;
 
-import org.java_websocket.interfaces.ISSLChannel;
-import org.java_websocket.drafts.Draft;
-import org.java_websocket.drafts.Draft_6455;
-import org.java_websocket.enums.*;
-import org.java_websocket.exceptions.*;
-import org.java_websocket.framing.CloseFrame;
-import org.java_websocket.framing.Framedata;
-import org.java_websocket.framing.PingFrame;
-import org.java_websocket.handshake.*;
-import org.java_websocket.protocols.IProtocol;
-import org.java_websocket.server.WebSocketServer.WebSocketWorker;
-import org.java_websocket.util.Charsetfunctions;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -49,11 +36,33 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-
+import javax.net.ssl.SSLSession;
+import org.java_websocket.drafts.Draft;
+import org.java_websocket.drafts.Draft_6455;
+import org.java_websocket.enums.CloseHandshakeType;
+import org.java_websocket.enums.HandshakeState;
+import org.java_websocket.enums.Opcode;
+import org.java_websocket.enums.ReadyState;
+import org.java_websocket.enums.Role;
+import org.java_websocket.exceptions.IncompleteHandshakeException;
+import org.java_websocket.exceptions.InvalidDataException;
+import org.java_websocket.exceptions.InvalidHandshakeException;
+import org.java_websocket.exceptions.LimitExceededException;
+import org.java_websocket.exceptions.WebsocketNotConnectedException;
+import org.java_websocket.framing.CloseFrame;
+import org.java_websocket.framing.Framedata;
+import org.java_websocket.framing.PingFrame;
+import org.java_websocket.handshake.ClientHandshake;
+import org.java_websocket.handshake.ClientHandshakeBuilder;
+import org.java_websocket.handshake.Handshakedata;
+import org.java_websocket.handshake.ServerHandshake;
+import org.java_websocket.handshake.ServerHandshakeBuilder;
+import org.java_websocket.interfaces.ISSLChannel;
+import org.java_websocket.protocols.IProtocol;
+import org.java_websocket.server.WebSocketServer.WebSocketWorker;
+import org.java_websocket.util.Charsetfunctions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.net.ssl.SSLSession;
 
 /**
  * Represents one end (client or server) of a single WebSocketImpl connection. Takes care of the
@@ -507,8 +516,8 @@ public class WebSocketImpl implements WebSocket {
    * @param message the closing message
    * @param remote  Indicates who "generated" <code>code</code>.<br>
    *                <code>true</code> means that this endpoint received the <code>code</code> from
-   *                the other endpoint.<br>
-   *                false means this endpoint decided to send the given code,<br>
+   *                the other endpoint.<br> false means this endpoint decided to send the given
+   *                code,<br>
    *                <code>remote</code> may also be true if this endpoint started the closing
    *                handshake since the other endpoint may not simply echo the <code>code</code> but
    *                close the connection the same time this endpoint does do but with an other

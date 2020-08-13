@@ -25,17 +25,9 @@
 
 package org.java_websocket.protocols;
 
-import org.java_websocket.client.WebSocketClient;
-import org.java_websocket.drafts.Draft_6455;
-import org.java_websocket.extensions.IExtension;
-import org.java_websocket.framing.CloseFrame;
-import org.java_websocket.handshake.ServerHandshake;
-import org.java_websocket.util.Base64;
-import org.java_websocket.util.Charsetfunctions;
-import org.java_websocket.util.SocketUtil;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -47,8 +39,17 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Scanner;
-
-import static org.junit.Assert.*;
+import org.java_websocket.client.WebSocketClient;
+import org.java_websocket.drafts.Draft_6455;
+import org.java_websocket.extensions.IExtension;
+import org.java_websocket.framing.CloseFrame;
+import org.java_websocket.handshake.ServerHandshake;
+import org.java_websocket.util.Base64;
+import org.java_websocket.util.Charsetfunctions;
+import org.java_websocket.util.SocketUtil;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 public class ProtoclHandshakeRejectionTest {
 

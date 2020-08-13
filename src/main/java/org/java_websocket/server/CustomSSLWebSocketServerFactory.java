@@ -25,16 +25,15 @@
 
 package org.java_websocket.server;
 
-import org.java_websocket.SSLSocketChannel2;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLEngine;
 import java.io.IOException;
 import java.nio.channels.ByteChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
+import org.java_websocket.SSLSocketChannel2;
 
 /**
  * WebSocketFactory that can be configured to only support specific protocols and cipher suites.

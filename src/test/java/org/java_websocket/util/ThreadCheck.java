@@ -28,7 +28,6 @@ package org.java_websocket.util;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.LockSupport;
-
 import org.junit.Assert;
 import org.junit.rules.ExternalResource;
 

@@ -25,6 +25,14 @@
 
 package org.java_websocket.misc;
 
+import static org.junit.Assert.fail;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.URI;
+import java.util.Scanner;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.handshake.ServerHandshake;
@@ -33,15 +41,6 @@ import org.java_websocket.util.SocketUtil;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.URI;
-import java.util.Scanner;
-
-import static org.junit.Assert.fail;
 
 public class OpeningHandshakeRejectionTest {
 

@@ -25,6 +25,12 @@
 
 package org.java_websocket.issues;
 
+import java.net.InetSocketAddress;
+import java.net.URI;
+import java.nio.ByteBuffer;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import org.java_websocket.WebSocket;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft;
@@ -39,15 +45,6 @@ import org.java_websocket.protocols.Protocol;
 import org.java_websocket.server.WebSocketServer;
 import org.java_websocket.util.SocketUtil;
 import org.junit.Test;
-
-import java.net.InetSocketAddress;
-import java.net.URI;
-import java.nio.ByteBuffer;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-
-import static org.junit.Assert.assertTrue;
 
 public class Issue598Test {
 

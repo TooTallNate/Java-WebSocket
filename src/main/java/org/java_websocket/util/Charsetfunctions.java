@@ -25,16 +25,15 @@
 
 package org.java_websocket.util;
 
-import org.java_websocket.exceptions.InvalidDataException;
-import org.java_websocket.exceptions.InvalidEncodingException;
-import org.java_websocket.framing.CloseFrame;
-
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CodingErrorAction;
+import org.java_websocket.exceptions.InvalidDataException;
+import org.java_websocket.exceptions.InvalidEncodingException;
+import org.java_websocket.framing.CloseFrame;
 
 public class Charsetfunctions {
 

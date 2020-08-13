@@ -23,13 +23,6 @@
  *  OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import org.java_websocket.WebSocketImpl;
-import org.java_websocket.server.CustomSSLWebSocketServerFactory;
-
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLEngine;
-import javax.net.ssl.TrustManagerFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.nio.file.Paths;
@@ -37,6 +30,11 @@ import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
+import javax.net.ssl.TrustManagerFactory;
+import org.java_websocket.server.CustomSSLWebSocketServerFactory;
 
 /**
  * Example for using the CustomSSLWebSocketServerFactory to allow just specific cipher suites

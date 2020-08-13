@@ -23,15 +23,13 @@
  *  OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Collections;
 import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.extensions.IExtension;
 import org.java_websocket.protocols.IProtocol;
 import org.java_websocket.protocols.Protocol;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Collections;
 
 /**
  * This example demonstrates how to use a specific Sec-WebSocket-Protocol for your connection.

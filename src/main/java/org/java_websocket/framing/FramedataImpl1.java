@@ -25,11 +25,10 @@
 
 package org.java_websocket.framing;
 
+import java.nio.ByteBuffer;
 import org.java_websocket.enums.Opcode;
 import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.util.ByteBufferUtils;
-
-import java.nio.ByteBuffer;
 
 /**
  * Abstract implementation of a frame

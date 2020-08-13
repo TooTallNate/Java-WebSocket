@@ -25,6 +25,17 @@
 
 package org.java_websocket.drafts;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import org.java_websocket.enums.CloseHandshakeType;
 import org.java_websocket.enums.HandshakeState;
 import org.java_websocket.exceptions.InvalidHandshakeException;
@@ -39,13 +50,6 @@ import org.java_websocket.protocols.IProtocol;
 import org.java_websocket.protocols.Protocol;
 import org.java_websocket.util.Charsetfunctions;
 import org.junit.Test;
-
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import static org.junit.Assert.*;
 
 public class Draft_6455Test {
 

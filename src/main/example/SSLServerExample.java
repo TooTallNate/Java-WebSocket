@@ -29,12 +29,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.nio.file.Paths;
 import java.security.KeyStore;
-
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
-
-import org.java_websocket.WebSocketImpl;
 import org.java_websocket.server.DefaultSSLWebSocketServerFactory;
 
 public class SSLServerExample {

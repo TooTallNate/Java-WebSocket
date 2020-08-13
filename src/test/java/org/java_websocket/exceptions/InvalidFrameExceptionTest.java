@@ -25,10 +25,10 @@
 
 package org.java_websocket.exceptions;
 
+import static org.junit.Assert.assertEquals;
+
 import org.java_websocket.framing.CloseFrame;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * JUnit Test for the InvalidFrameException class

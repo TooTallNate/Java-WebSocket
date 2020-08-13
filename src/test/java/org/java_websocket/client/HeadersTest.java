@@ -25,16 +25,15 @@
 
 package org.java_websocket.client;
 
-import org.java_websocket.handshake.ServerHandshake;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import org.java_websocket.handshake.ServerHandshake;
+import org.junit.Test;
 
 public class HeadersTest {
 

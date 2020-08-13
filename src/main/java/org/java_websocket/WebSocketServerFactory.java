@@ -25,13 +25,12 @@
 
 package org.java_websocket;
 
-import org.java_websocket.drafts.Draft;
-
 import java.io.IOException;
 import java.nio.channels.ByteChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.util.List;
+import org.java_websocket.drafts.Draft;
 
 /**
  * Interface to encapsulate the required methods for a websocket factory

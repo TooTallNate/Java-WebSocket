@@ -25,25 +25,49 @@
 
 package org.java_websocket.drafts;
 
-import org.java_websocket.WebSocketImpl;
-import org.java_websocket.enums.*;
-import org.java_websocket.exceptions.*;
-import org.java_websocket.extensions.*;
-import org.java_websocket.framing.*;
-import org.java_websocket.handshake.*;
-import org.java_websocket.protocols.IProtocol;
-import org.java_websocket.protocols.Protocol;
-import org.java_websocket.util.*;
-import org.java_websocket.util.Base64;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Random;
+import java.util.TimeZone;
+import org.java_websocket.WebSocketImpl;
+import org.java_websocket.enums.CloseHandshakeType;
+import org.java_websocket.enums.HandshakeState;
+import org.java_websocket.enums.Opcode;
+import org.java_websocket.enums.ReadyState;
+import org.java_websocket.enums.Role;
+import org.java_websocket.exceptions.IncompleteException;
+import org.java_websocket.exceptions.InvalidDataException;
+import org.java_websocket.exceptions.InvalidFrameException;
+import org.java_websocket.exceptions.InvalidHandshakeException;
+import org.java_websocket.exceptions.LimitExceededException;
+import org.java_websocket.exceptions.NotSendableException;
+import org.java_websocket.extensions.DefaultExtension;
+import org.java_websocket.extensions.IExtension;
+import org.java_websocket.framing.BinaryFrame;
+import org.java_websocket.framing.CloseFrame;
+import org.java_websocket.framing.Framedata;
+import org.java_websocket.framing.FramedataImpl1;
+import org.java_websocket.framing.TextFrame;
+import org.java_websocket.handshake.ClientHandshake;
+import org.java_websocket.handshake.ClientHandshakeBuilder;
+import org.java_websocket.handshake.HandshakeBuilder;
+import org.java_websocket.handshake.ServerHandshake;
+import org.java_websocket.handshake.ServerHandshakeBuilder;
+import org.java_websocket.protocols.IProtocol;
+import org.java_websocket.protocols.Protocol;
+import org.java_websocket.util.Base64;
+import org.java_websocket.util.Charsetfunctions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implementation for the RFC 6455 websocket protocol This is the recommended class for your

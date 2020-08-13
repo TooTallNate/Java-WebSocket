@@ -25,11 +25,13 @@
 
 package org.java_websocket.util;
 
-import org.junit.Test;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.nio.ByteBuffer;
-
-import static org.junit.Assert.*;
+import org.junit.Test;
 
 /**
  * JUnit Test for the new ByteBufferUtils class

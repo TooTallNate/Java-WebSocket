@@ -25,8 +25,12 @@
 
 package org.java_websocket.issues;
 
+import static org.junit.Assert.fail;
+
+import java.net.InetSocketAddress;
+import java.net.URI;
+import java.util.concurrent.CountDownLatch;
 import org.java_websocket.WebSocket;
-import org.java_websocket.WebSocketImpl;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.handshake.ServerHandshake;
@@ -36,12 +40,6 @@ import org.java_websocket.util.ThreadCheck;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
-
-import java.net.InetSocketAddress;
-import java.net.URI;
-import java.util.concurrent.CountDownLatch;
-
-import static org.junit.Assert.fail;
 
 public class Issue732Test {
 

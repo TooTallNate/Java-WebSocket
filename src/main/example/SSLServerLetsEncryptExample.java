@@ -23,13 +23,6 @@
  *  OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import org.java_websocket.WebSocketImpl;
-import org.java_websocket.server.DefaultSSLWebSocketServerFactory;
-
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.xml.bind.DatatypeConverter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -44,6 +37,11 @@ import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.xml.bind.DatatypeConverter;
+import org.java_websocket.server.DefaultSSLWebSocketServerFactory;
 
 
 /**

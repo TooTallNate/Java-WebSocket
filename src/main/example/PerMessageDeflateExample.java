@@ -1,3 +1,7 @@
+import java.net.InetSocketAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Collections;
 import org.java_websocket.WebSocket;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft;
@@ -6,11 +10,6 @@ import org.java_websocket.extensions.permessage_deflate.PerMessageDeflateExtensi
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.handshake.ServerHandshake;
 import org.java_websocket.server.WebSocketServer;
-
-import java.net.InetSocketAddress;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Collections;
 
 /**
  * This class only serves the purpose of showing how to enable PerMessageDeflateExtension for both

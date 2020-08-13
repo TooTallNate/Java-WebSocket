@@ -25,9 +25,9 @@
 
 package org.java_websocket.exceptions;
 
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
 
 /**
  * JUnit Test for the IncompleteHandshakeException class

@@ -25,12 +25,11 @@
 
 package org.java_websocket.util;
 
+import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-
-import java.io.IOException;
 
 public class Base64Test {
 

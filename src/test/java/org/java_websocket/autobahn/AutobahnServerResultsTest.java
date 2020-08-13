@@ -25,16 +25,15 @@
 
 package org.java_websocket.autobahn;
 
-import org.json.JSONObject;
-import org.junit.Assume;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
-
-import static org.junit.Assert.assertEquals;
+import org.json.JSONObject;
+import org.junit.Assume;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 public class AutobahnServerResultsTest {
 

@@ -34,11 +34,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
-
-import org.java_websocket.*;
+import org.java_websocket.SSLSocketChannel2;
+import org.java_websocket.WebSocketAdapter;
+import org.java_websocket.WebSocketImpl;
+import org.java_websocket.WebSocketServerFactory;
 import org.java_websocket.drafts.Draft;
 
 public class DefaultSSLWebSocketServerFactory implements WebSocketServerFactory {

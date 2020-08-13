@@ -42,10 +42,13 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
 import javax.net.SocketFactory;
-import javax.net.ssl.*;
-
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLParameters;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
 import org.java_websocket.AbstractWebSocket;
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketImpl;

@@ -28,7 +28,6 @@ package org.java_websocket;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
-
 import org.java_websocket.enums.Role;
 
 public class SocketChannelIOHelper {

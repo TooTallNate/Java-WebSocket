@@ -30,14 +30,10 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.Collections;
-
 import org.java_websocket.WebSocket;
-import org.java_websocket.WebSocketImpl;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft_6455;
-import org.java_websocket.framing.Framedata;
 import org.java_websocket.handshake.ClientHandshake;
-import org.java_websocket.protocols.IProtocol;
 import org.java_websocket.server.WebSocketServer;
 
 /**

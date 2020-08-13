@@ -1,13 +1,12 @@
 package org.java_websocket.client;
 
-import org.java_websocket.handshake.ServerHandshake;
-import org.junit.Test;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.java_websocket.handshake.ServerHandshake;
+import org.junit.Test;
 
 public class SchemaCheckTest {
 

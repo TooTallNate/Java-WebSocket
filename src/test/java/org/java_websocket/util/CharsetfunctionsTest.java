@@ -25,11 +25,10 @@
 
 package org.java_websocket.util;
 
+import java.nio.ByteBuffer;
 import org.java_websocket.exceptions.InvalidDataException;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.nio.ByteBuffer;
 
 public class CharsetfunctionsTest {
 

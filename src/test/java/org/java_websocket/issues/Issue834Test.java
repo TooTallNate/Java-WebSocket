@@ -1,15 +1,14 @@
 package org.java_websocket.issues;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.util.Set;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 import org.java_websocket.util.SocketUtil;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.util.Set;
 
 public class Issue834Test {
 

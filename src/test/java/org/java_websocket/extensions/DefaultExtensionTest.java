@@ -25,13 +25,15 @@
 
 package org.java_websocket.extensions;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.nio.ByteBuffer;
 import org.java_websocket.framing.BinaryFrame;
 import org.java_websocket.framing.TextFrame;
 import org.junit.Test;
-
-import java.nio.ByteBuffer;
-
-import static org.junit.Assert.*;
 
 public class DefaultExtensionTest {
 

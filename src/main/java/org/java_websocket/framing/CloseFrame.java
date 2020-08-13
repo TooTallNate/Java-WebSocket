@@ -25,13 +25,12 @@
 
 package org.java_websocket.framing;
 
+import java.nio.ByteBuffer;
 import org.java_websocket.enums.Opcode;
 import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.exceptions.InvalidFrameException;
 import org.java_websocket.util.ByteBufferUtils;
 import org.java_websocket.util.Charsetfunctions;
-
-import java.nio.ByteBuffer;
 
 /**
  * Class to represent a close frame

@@ -1,6 +1,13 @@
 package org.java_websocket.server;
 
-import org.java_websocket.SocketChannelIOHelper;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
+import java.util.Collections;
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketAdapter;
 import org.java_websocket.WebSocketImpl;
@@ -8,14 +15,6 @@ import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.handshake.Handshakedata;
 import org.junit.Test;
-
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.nio.ByteBuffer;
-import java.nio.channels.SocketChannel;
-import java.util.Collections;
-
-import static org.junit.Assert.*;
 
 public class DefaultWebSocketServerFactoryTest {
 
