@@ -34,11 +34,12 @@ import static org.junit.Assert.assertEquals;
  */
 public class IncompleteHandshakeExceptionTest {
 
-    @Test
-    public void testConstructor() {
-        IncompleteHandshakeException incompleteHandshakeException = new IncompleteHandshakeException(42);
-        assertEquals("The argument should be set", 42, incompleteHandshakeException.getPreferredSize());
-        incompleteHandshakeException = new IncompleteHandshakeException();
-        assertEquals("The default has to be 0", 0, incompleteHandshakeException.getPreferredSize());
-    }
+  @Test
+  public void testConstructor() {
+    IncompleteHandshakeException incompleteHandshakeException = new IncompleteHandshakeException(
+        42);
+    assertEquals("The argument should be set", 42, incompleteHandshakeException.getPreferredSize());
+    incompleteHandshakeException = new IncompleteHandshakeException();
+    assertEquals("The default has to be 0", 0, incompleteHandshakeException.getPreferredSize());
+  }
 }

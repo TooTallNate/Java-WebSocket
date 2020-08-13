@@ -24,7 +24,8 @@
  */
 
 /**
- * This package encapsulates all interfaces and implementations in relation with the WebSocket handshake.
+ * This package encapsulates all interfaces and implementations in relation with the WebSocket
+ * handshake.
  */
 package org.java_websocket.handshake;
 

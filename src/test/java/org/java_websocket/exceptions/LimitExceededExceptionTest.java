@@ -39,19 +39,23 @@ import static org.junit.Assert.fail;
  */
 public class LimitExceededExceptionTest {
 
-    @Test
-    public void testConstructor() {
-        LimitExceededException limitExceededException = new LimitExceededException();
-        assertEquals("The close code has to be TOOBIG", CloseFrame.TOOBIG, limitExceededException.getCloseCode());
-        assertEquals("The message has to be empty", null, limitExceededException.getMessage());
-        limitExceededException = new LimitExceededException("Message");
-        assertEquals("The close code has to be TOOBIG", CloseFrame.TOOBIG, limitExceededException.getCloseCode());
-        assertEquals("The message has to be the argument", "Message", limitExceededException.getMessage());
-    }
+  @Test
+  public void testConstructor() {
+    LimitExceededException limitExceededException = new LimitExceededException();
+    assertEquals("The close code has to be TOOBIG", CloseFrame.TOOBIG,
+        limitExceededException.getCloseCode());
+    assertEquals("The message has to be empty", null, limitExceededException.getMessage());
+    limitExceededException = new LimitExceededException("Message");
+    assertEquals("The close code has to be TOOBIG", CloseFrame.TOOBIG,
+        limitExceededException.getCloseCode());
+    assertEquals("The message has to be the argument", "Message",
+        limitExceededException.getMessage());
+  }
 
-    @Test
-    public void testExtends() {
-        LimitExceededException limitExceededException = new LimitExceededException();
-        assertEquals("LimitExceededException must extend InvalidDataException", true, limitExceededException instanceof InvalidDataException);
-    }
+  @Test
+  public void testExtends() {
+    LimitExceededException limitExceededException = new LimitExceededException();
+    assertEquals("LimitExceededException must extend InvalidDataException", true,
+        limitExceededException instanceof InvalidDataException);
+  }
 }

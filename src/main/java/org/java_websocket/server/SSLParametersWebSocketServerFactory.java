@@ -45,23 +45,26 @@ public class SSLParametersWebSocketServerFactory extends DefaultSSLWebSocketServ
   private final SSLParameters sslParameters;
 
   /**
-   * New CustomSSLWebSocketServerFactory configured to only support given protocols and given cipher suites.
+   * New CustomSSLWebSocketServerFactory configured to only support given protocols and given cipher
+   * suites.
    *
-   * @param sslContext          - can not be <code>null</code>
-   * @param sslParameters       - can not be <code>null</code>
+   * @param sslContext    - can not be <code>null</code>
+   * @param sslParameters - can not be <code>null</code>
    */
   public SSLParametersWebSocketServerFactory(SSLContext sslContext, SSLParameters sslParameters) {
     this(sslContext, Executors.newSingleThreadScheduledExecutor(), sslParameters);
   }
 
   /**
-   * New CustomSSLWebSocketServerFactory configured to only support given protocols and given cipher suites.
+   * New CustomSSLWebSocketServerFactory configured to only support given protocols and given cipher
+   * suites.
    *
-   * @param sslContext          - can not be <code>null</code>
-   * @param executerService     - can not be <code>null</code>
-   * @param sslParameters       - can not be <code>null</code>
+   * @param sslContext      - can not be <code>null</code>
+   * @param executerService - can not be <code>null</code>
+   * @param sslParameters   - can not be <code>null</code>
    */
-  public SSLParametersWebSocketServerFactory(SSLContext sslContext, ExecutorService executerService, SSLParameters sslParameters) {
+  public SSLParametersWebSocketServerFactory(SSLContext sslContext, ExecutorService executerService,
+      SSLParameters sslParameters) {
     super(sslContext, executerService);
     if (sslParameters == null) {
       throw new IllegalArgumentException();

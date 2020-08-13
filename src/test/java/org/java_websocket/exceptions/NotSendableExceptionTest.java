@@ -35,15 +35,17 @@ import static org.junit.Assert.assertEquals;
  */
 public class NotSendableExceptionTest {
 
-    @Test
-    public void testConstructor() {
-        NotSendableException notSendableException = new NotSendableException("Message");
-        assertEquals("The message has to be the argument", "Message", notSendableException.getMessage());
-        Exception e = new Exception();
-        notSendableException = new NotSendableException(e);
-        assertEquals("The throwable has to be the argument", e, notSendableException.getCause());
-        notSendableException = new NotSendableException("Message", e);
-        assertEquals("The message has to be the argument", "Message", notSendableException.getMessage());
-        assertEquals("The throwable has to be the argument", e,notSendableException.getCause());
-    }
+  @Test
+  public void testConstructor() {
+    NotSendableException notSendableException = new NotSendableException("Message");
+    assertEquals("The message has to be the argument", "Message",
+        notSendableException.getMessage());
+    Exception e = new Exception();
+    notSendableException = new NotSendableException(e);
+    assertEquals("The throwable has to be the argument", e, notSendableException.getCause());
+    notSendableException = new NotSendableException("Message", e);
+    assertEquals("The message has to be the argument", "Message",
+        notSendableException.getMessage());
+    assertEquals("The throwable has to be the argument", e, notSendableException.getCause());
+  }
 }

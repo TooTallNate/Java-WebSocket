@@ -35,9 +35,10 @@ import javax.net.ssl.SSLEngine;
  */
 public interface ISSLChannel {
 
-    /**
-     * Get the ssl engine used for the de- and encryption of the communication.
-     * @return the ssl engine of this channel
-     */
-    SSLEngine getSSLEngine();
+  /**
+   * Get the ssl engine used for the de- and encryption of the communication.
+   *
+   * @return the ssl engine of this channel
+   */
+  SSLEngine getSSLEngine();
 }

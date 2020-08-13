@@ -32,18 +32,19 @@ import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-        org.java_websocket.exceptions.IncompleteExceptionTest.class,
-        org.java_websocket.exceptions.IncompleteHandshakeExceptionTest.class,
-        org.java_websocket.exceptions.InvalidDataExceptionTest.class,
-        org.java_websocket.exceptions.InvalidEncodingExceptionTest.class,
-        org.java_websocket.exceptions.InvalidFrameExceptionTest.class,
-        org.java_websocket.exceptions.InvalidHandshakeExceptionTest.class,
-        org.java_websocket.exceptions.LimitExceededExceptionTest.class,
-        org.java_websocket.exceptions.NotSendableExceptionTest.class,
-        org.java_websocket.exceptions.WebsocketNotConnectedExceptionTest.class
+    org.java_websocket.exceptions.IncompleteExceptionTest.class,
+    org.java_websocket.exceptions.IncompleteHandshakeExceptionTest.class,
+    org.java_websocket.exceptions.InvalidDataExceptionTest.class,
+    org.java_websocket.exceptions.InvalidEncodingExceptionTest.class,
+    org.java_websocket.exceptions.InvalidFrameExceptionTest.class,
+    org.java_websocket.exceptions.InvalidHandshakeExceptionTest.class,
+    org.java_websocket.exceptions.LimitExceededExceptionTest.class,
+    org.java_websocket.exceptions.NotSendableExceptionTest.class,
+    org.java_websocket.exceptions.WebsocketNotConnectedExceptionTest.class
 })
 /**
  * Start all tests for the exceptions
  */
 public class AllExceptionsTests {
+
 }

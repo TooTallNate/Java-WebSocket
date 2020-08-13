@@ -45,109 +45,111 @@ import java.util.concurrent.CountDownLatch;
 
 public class Issue900Test {
 
-    CountDownLatch serverStartLatch = new CountDownLatch(1);
-    CountDownLatch closeCalledLatch = new CountDownLatch(1);
+  CountDownLatch serverStartLatch = new CountDownLatch(1);
+  CountDownLatch closeCalledLatch = new CountDownLatch(1);
 
-    @Test(timeout = 2000)
-    public void testIssue() throws Exception {
-        int port = SocketUtil.getAvailablePort();
-        final WebSocketClient client = new WebSocketClient(new URI("ws://localhost:" + port)) {
-            @Override
-            public void onOpen(ServerHandshake handshakedata) {
+  @Test(timeout = 2000)
+  public void testIssue() throws Exception {
+    int port = SocketUtil.getAvailablePort();
+    final WebSocketClient client = new WebSocketClient(new URI("ws://localhost:" + port)) {
+      @Override
+      public void onOpen(ServerHandshake handshakedata) {
 
-            }
+      }
 
-            @Override
-            public void onMessage(String message) {
-            }
+      @Override
+      public void onMessage(String message) {
+      }
 
-            @Override
-            public void onClose(int code, String reason, boolean remote) {
-            }
+      @Override
+      public void onClose(int code, String reason, boolean remote) {
+      }
 
-            @Override
-            public void onError(Exception ex) {
+      @Override
+      public void onError(Exception ex) {
 
-            }
-        };
-        WebSocketServer server = new WebSocketServer(new InetSocketAddress(port)) {
-            @Override
-            public void onOpen(WebSocket conn, ClientHandshake handshake) {
-            }
+      }
+    };
+    WebSocketServer server = new WebSocketServer(new InetSocketAddress(port)) {
+      @Override
+      public void onOpen(WebSocket conn, ClientHandshake handshake) {
+      }
 
-            @Override
-            public void onClose(WebSocket conn, int code, String reason, boolean remote) {
-                closeCalledLatch.countDown();
-            }
+      @Override
+      public void onClose(WebSocket conn, int code, String reason, boolean remote) {
+        closeCalledLatch.countDown();
+      }
 
-            @Override
-            public void onMessage(WebSocket conn, String message) {
+      @Override
+      public void onMessage(WebSocket conn, String message) {
 
-            }
+      }
 
-            @Override
-            public void onError(WebSocket conn, Exception ex) {
+      @Override
+      public void onError(WebSocket conn, Exception ex) {
 
-            }
+      }
 
-            @Override
-            public void onStart() {
-                serverStartLatch.countDown();
-            }
-        };
-        new Thread(server).start();
-        serverStartLatch.await();
-        client.connectBlocking();
-        WebSocketImpl websocketImpl = (WebSocketImpl)new ArrayList<WebSocket>(server.getConnections()).get(0);
-        websocketImpl.setChannel(new ExceptionThrowingByteChannel());
-        server.broadcast("test");
-        closeCalledLatch.await();
+      @Override
+      public void onStart() {
+        serverStartLatch.countDown();
+      }
+    };
+    new Thread(server).start();
+    serverStartLatch.await();
+    client.connectBlocking();
+    WebSocketImpl websocketImpl = (WebSocketImpl) new ArrayList<WebSocket>(server.getConnections())
+        .get(0);
+    websocketImpl.setChannel(new ExceptionThrowingByteChannel());
+    server.broadcast("test");
+    closeCalledLatch.await();
+  }
+
+  class ExceptionThrowingByteChannel implements WrappedByteChannel {
+
+    @Override
+    public boolean isNeedWrite() {
+      return true;
     }
-    class ExceptionThrowingByteChannel implements WrappedByteChannel {
 
-        @Override
-        public boolean isNeedWrite() {
-            return true;
-        }
-
-        @Override
-        public void writeMore() throws IOException {
-            throw new IOException();
-        }
-
-        @Override
-        public boolean isNeedRead() {
-            return true;
-        }
-
-        @Override
-        public int readMore(ByteBuffer dst) throws IOException {
-            throw new IOException();
-        }
-
-        @Override
-        public boolean isBlocking() {
-            return false;
-        }
-
-        @Override
-        public int read(ByteBuffer dst) throws IOException {
-            throw new IOException();
-        }
-
-        @Override
-        public int write(ByteBuffer src) throws IOException {
-            throw new IOException();
-        }
-
-        @Override
-        public boolean isOpen() {
-            return false;
-        }
-
-        @Override
-        public void close() throws IOException {
-            throw new IOException();
-        }
+    @Override
+    public void writeMore() throws IOException {
+      throw new IOException();
     }
+
+    @Override
+    public boolean isNeedRead() {
+      return true;
+    }
+
+    @Override
+    public int readMore(ByteBuffer dst) throws IOException {
+      throw new IOException();
+    }
+
+    @Override
+    public boolean isBlocking() {
+      return false;
+    }
+
+    @Override
+    public int read(ByteBuffer dst) throws IOException {
+      throw new IOException();
+    }
+
+    @Override
+    public int write(ByteBuffer src) throws IOException {
+      throw new IOException();
+    }
+
+    @Override
+    public boolean isOpen() {
+      return false;
+    }
+
+    @Override
+    public void close() throws IOException {
+      throw new IOException();
+    }
+  }
 }

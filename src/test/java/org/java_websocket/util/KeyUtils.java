@@ -30,26 +30,27 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class KeyUtils {
-    /**
-     * Generate a final key from a input string
-     *
-     * @param in the input string
-     * @return a final key
-     */
-    public static String generateFinalKey( String in ) {
-        String seckey = in.trim();
-        String acc = seckey + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
-        MessageDigest sh1;
-        try {
-            sh1 = MessageDigest.getInstance( "SHA1" );
-        } catch ( NoSuchAlgorithmException e ) {
-            throw new IllegalStateException( e );
-        }
-        return Base64.encodeBytes( sh1.digest( acc.getBytes() ) );
-    }
 
-    public static String getSecKey( String seckey ) {
-        return "Sec-WebSocket-Accept: " + KeyUtils.generateFinalKey( seckey ) + "\r\n";
+  /**
+   * Generate a final key from a input string
+   *
+   * @param in the input string
+   * @return a final key
+   */
+  public static String generateFinalKey(String in) {
+    String seckey = in.trim();
+    String acc = seckey + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+    MessageDigest sh1;
+    try {
+      sh1 = MessageDigest.getInstance("SHA1");
+    } catch (NoSuchAlgorithmException e) {
+      throw new IllegalStateException(e);
     }
+    return Base64.encodeBytes(sh1.digest(acc.getBytes()));
+  }
+
+  public static String getSecKey(String seckey) {
+    return "Sec-WebSocket-Accept: " + KeyUtils.generateFinalKey(seckey) + "\r\n";
+  }
 
 }

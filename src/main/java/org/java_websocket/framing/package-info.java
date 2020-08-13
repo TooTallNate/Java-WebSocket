@@ -24,6 +24,7 @@
  */
 
 /**
- * This package encapsulates all interfaces and implementations in relation with the WebSocket frames.
+ * This package encapsulates all interfaces and implementations in relation with the WebSocket
+ * frames.
  */
 package org.java_websocket.framing;

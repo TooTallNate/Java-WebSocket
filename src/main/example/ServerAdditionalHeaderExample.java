@@ -38,43 +38,45 @@ import java.net.InetSocketAddress;
 
 /**
  * This example shows how to add additional headers to your server handshake response
- *
+ * <p>
  * For this you have to override onWebsocketHandshakeReceivedAsServer in your WebSocketServer class
- *
+ * <p>
  * We are simple adding the additional header "Access-Control-Allow-Origin" to our server response
  */
 public class ServerAdditionalHeaderExample extends ChatServer {
 
-	public ServerAdditionalHeaderExample( int port ) {
-		super( new InetSocketAddress( port ));
-	}
+  public ServerAdditionalHeaderExample(int port) {
+    super(new InetSocketAddress(port));
+  }
 
-	@Override
-	public ServerHandshakeBuilder onWebsocketHandshakeReceivedAsServer( WebSocket conn, Draft draft, ClientHandshake request) throws InvalidDataException {
-		ServerHandshakeBuilder builder = super.onWebsocketHandshakeReceivedAsServer( conn, draft, request );
-		builder.put( "Access-Control-Allow-Origin" , "*");
-		return builder;
-	}
+  @Override
+  public ServerHandshakeBuilder onWebsocketHandshakeReceivedAsServer(WebSocket conn, Draft draft,
+      ClientHandshake request) throws InvalidDataException {
+    ServerHandshakeBuilder builder = super
+        .onWebsocketHandshakeReceivedAsServer(conn, draft, request);
+    builder.put("Access-Control-Allow-Origin", "*");
+    return builder;
+  }
 
 
-	public static void main( String[] args ) throws InterruptedException , IOException {
-		int port = 8887; // 843 flash policy port
-		try {
-			port = Integer.parseInt( args[ 0 ] );
-		} catch ( Exception ex ) {
-		}
-		ServerAdditionalHeaderExample s = new ServerAdditionalHeaderExample( port );
-		s.start();
-		System.out.println( "Server started on port: " + s.getPort() );
+  public static void main(String[] args) throws InterruptedException, IOException {
+    int port = 8887; // 843 flash policy port
+    try {
+      port = Integer.parseInt(args[0]);
+    } catch (Exception ex) {
+    }
+    ServerAdditionalHeaderExample s = new ServerAdditionalHeaderExample(port);
+    s.start();
+    System.out.println("Server started on port: " + s.getPort());
 
-		BufferedReader sysin = new BufferedReader( new InputStreamReader( System.in ) );
-		while ( true ) {
-			String in = sysin.readLine();
-			s.broadcast( in );
-			if( in.equals( "exit" ) ) {
-				s.stop(1000);
-				break;
-			}
-		}
-	}
+    BufferedReader sysin = new BufferedReader(new InputStreamReader(System.in));
+    while (true) {
+      String in = sysin.readLine();
+      s.broadcast(in);
+      if (in.equals("exit")) {
+        s.stop(1000);
+        break;
+      }
+    }
+  }
 }

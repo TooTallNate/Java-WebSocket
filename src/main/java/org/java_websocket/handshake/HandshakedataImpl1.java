@@ -34,54 +34,54 @@ import java.util.TreeMap;
  */
 public class HandshakedataImpl1 implements HandshakeBuilder {
 
-	/**
-	 * Attribute for the content of the handshake
-	 */
-	private byte[] content;
+  /**
+   * Attribute for the content of the handshake
+   */
+  private byte[] content;
 
-	/**
-	 * Attribute for the http fields and values
-	 */
-	private TreeMap<String,String> map;
+  /**
+   * Attribute for the http fields and values
+   */
+  private TreeMap<String, String> map;
 
-	/**
-	 * Constructor for handshake implementation
-	 */
-	public HandshakedataImpl1() {
-		map = new TreeMap<String,String>( String.CASE_INSENSITIVE_ORDER );
-	}
+  /**
+   * Constructor for handshake implementation
+   */
+  public HandshakedataImpl1() {
+    map = new TreeMap<String, String>(String.CASE_INSENSITIVE_ORDER);
+  }
 
-	@Override
-	public Iterator<String> iterateHttpFields() {
-		return Collections.unmodifiableSet( map.keySet() ).iterator();// Safety first
-	}
+  @Override
+  public Iterator<String> iterateHttpFields() {
+    return Collections.unmodifiableSet(map.keySet()).iterator();// Safety first
+  }
 
-	@Override
-	public String getFieldValue( String name ) {
-		String s = map.get( name );
-		if ( s == null ) {
-			return "";
-		}
-		return s;
-	}
+  @Override
+  public String getFieldValue(String name) {
+    String s = map.get(name);
+    if (s == null) {
+      return "";
+    }
+    return s;
+  }
 
-	@Override
-	public byte[] getContent() {
-		return content;
-	}
+  @Override
+  public byte[] getContent() {
+    return content;
+  }
 
-	@Override
-	public void setContent( byte[] content ) {
-		this.content = content;
-	}
+  @Override
+  public void setContent(byte[] content) {
+    this.content = content;
+  }
 
-	@Override
-	public void put( String name, String value ) {
-		map.put( name, value );
-	}
+  @Override
+  public void put(String name, String value) {
+    map.put(name, value);
+  }
 
-	@Override
-	public boolean hasFieldValue( String name ) {
-		return map.containsKey( name );
-	}
+  @Override
+  public boolean hasFieldValue(String name) {
+    return map.containsKey(name);
+  }
 }

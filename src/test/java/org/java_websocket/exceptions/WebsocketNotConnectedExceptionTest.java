@@ -36,9 +36,9 @@ import static org.junit.Assert.assertTrue;
  */
 public class WebsocketNotConnectedExceptionTest {
 
-    @Test
-    public void testConstructor() {
-        WebsocketNotConnectedException websocketNotConnectedException = new WebsocketNotConnectedException();
-        assertNotNull(websocketNotConnectedException);
-    }
+  @Test
+  public void testConstructor() {
+    WebsocketNotConnectedException websocketNotConnectedException = new WebsocketNotConnectedException();
+    assertNotNull(websocketNotConnectedException);
+  }
 }

@@ -44,62 +44,65 @@ import java.util.List;
 
 public class Issue765Test {
 
-    boolean isClosedCalled = false;
-    @Test
-    public void testIssue() {
-        WebSocketServer webSocketServer = new MyWebSocketServer();
-        webSocketServer.setWebSocketFactory(new LocalWebSocketFactory());
-        Assert.assertFalse("Close should not have been called yet",isClosedCalled);
-        webSocketServer.setWebSocketFactory(new LocalWebSocketFactory());
-        Assert.assertTrue("Close has been called", isClosedCalled);
+  boolean isClosedCalled = false;
+
+  @Test
+  public void testIssue() {
+    WebSocketServer webSocketServer = new MyWebSocketServer();
+    webSocketServer.setWebSocketFactory(new LocalWebSocketFactory());
+    Assert.assertFalse("Close should not have been called yet", isClosedCalled);
+    webSocketServer.setWebSocketFactory(new LocalWebSocketFactory());
+    Assert.assertTrue("Close has been called", isClosedCalled);
+  }
+
+  private static class MyWebSocketServer extends WebSocketServer {
+
+    @Override
+    public void onOpen(WebSocket conn, ClientHandshake handshake) {
+
     }
 
-    private static class MyWebSocketServer extends WebSocketServer {
-        @Override
-        public void onOpen(WebSocket conn, ClientHandshake handshake) {
+    @Override
+    public void onClose(WebSocket conn, int code, String reason, boolean remote) {
 
-        }
-
-        @Override
-        public void onClose(WebSocket conn, int code, String reason, boolean remote) {
-
-        }
-
-        @Override
-        public void onMessage(WebSocket conn, String message) {
-
-        }
-
-        @Override
-        public void onError(WebSocket conn, Exception ex) {
-
-        }
-
-        @Override
-        public void onStart() {
-
-        }
     }
 
-    private class LocalWebSocketFactory implements WebSocketServerFactory {
-        @Override
-        public WebSocketImpl createWebSocket(WebSocketAdapter a, Draft d) {
-            return null;
-        }
+    @Override
+    public void onMessage(WebSocket conn, String message) {
 
-        @Override
-        public WebSocketImpl createWebSocket(WebSocketAdapter a, List<Draft> drafts) {
-            return null;
-        }
-
-        @Override
-        public ByteChannel wrapChannel(SocketChannel channel, SelectionKey key) throws IOException {
-            return null;
-        }
-
-        @Override
-        public void close() {
-            isClosedCalled = true;
-        }
     }
+
+    @Override
+    public void onError(WebSocket conn, Exception ex) {
+
+    }
+
+    @Override
+    public void onStart() {
+
+    }
+  }
+
+  private class LocalWebSocketFactory implements WebSocketServerFactory {
+
+    @Override
+    public WebSocketImpl createWebSocket(WebSocketAdapter a, Draft d) {
+      return null;
+    }
+
+    @Override
+    public WebSocketImpl createWebSocket(WebSocketAdapter a, List<Draft> drafts) {
+      return null;
+    }
+
+    @Override
+    public ByteChannel wrapChannel(SocketChannel channel, SelectionKey key) throws IOException {
+      return null;
+    }
+
+    @Override
+    public void close() {
+      isClosedCalled = true;
+    }
+  }
 }

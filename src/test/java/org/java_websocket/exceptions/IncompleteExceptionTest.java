@@ -37,9 +37,9 @@ import static org.junit.Assert.fail;
  */
 public class IncompleteExceptionTest {
 
-    @Test
-    public void testConstructor() {
-        IncompleteException incompleteException = new IncompleteException(42);
-        assertEquals("The argument should be set", 42, incompleteException.getPreferredSize());
-    }
+  @Test
+  public void testConstructor() {
+    IncompleteException incompleteException = new IncompleteException(42);
+    assertEquals("The argument should be set", 42, incompleteException.getPreferredSize());
+  }
 }

@@ -33,17 +33,17 @@ import org.java_websocket.exceptions.InvalidDataException;
  */
 public abstract class DataFrame extends FramedataImpl1 {
 
-	/**
-	 * Class to represent a data frame
-	 * @param opcode the opcode to use
-	 */
-	public DataFrame(Opcode opcode) {
-		super(opcode);
-	}
+  /**
+   * Class to represent a data frame
+   *
+   * @param opcode the opcode to use
+   */
+  public DataFrame(Opcode opcode) {
+    super(opcode);
+  }
 
-	@Override
-	public void isValid() throws InvalidDataException
-	{
-      //Nothing specific to check
-	}
+  @Override
+  public void isValid() throws InvalidDataException {
+    //Nothing specific to check
+  }
 }

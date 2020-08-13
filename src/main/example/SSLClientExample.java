@@ -42,83 +42,85 @@ import org.java_websocket.handshake.ServerHandshake;
 
 class WebSocketChatClient extends WebSocketClient {
 
-	public WebSocketChatClient( URI serverUri ) {
-		super( serverUri );
-	}
+  public WebSocketChatClient(URI serverUri) {
+    super(serverUri);
+  }
 
-	@Override
-	public void onOpen( ServerHandshake handshakedata ) {
-		System.out.println( "Connected" );
+  @Override
+  public void onOpen(ServerHandshake handshakedata) {
+    System.out.println("Connected");
 
-	}
+  }
 
-	@Override
-	public void onMessage( String message ) {
-		System.out.println( "got: " + message );
+  @Override
+  public void onMessage(String message) {
+    System.out.println("got: " + message);
 
-	}
+  }
 
-	@Override
-	public void onClose( int code, String reason, boolean remote ) {
-		System.out.println( "Disconnected" );
+  @Override
+  public void onClose(int code, String reason, boolean remote) {
+    System.out.println("Disconnected");
 
-	}
+  }
 
-	@Override
-	public void onError( Exception ex ) {
-		ex.printStackTrace();
+  @Override
+  public void onError(Exception ex) {
+    ex.printStackTrace();
 
-	}
+  }
 
 }
 
 public class SSLClientExample {
 
-	/*
-	 * Keystore with certificate created like so (in JKS format):
-	 *
-	 *keytool -genkey -keyalg RSA -validity 3650 -keystore "keystore.jks" -storepass "storepassword" -keypass "keypassword" -alias "default" -dname "CN=127.0.0.1, OU=MyOrgUnit, O=MyOrg, L=MyCity, S=MyRegion, C=MyCountry"
-	 */
-	public static void main( String[] args ) throws Exception {
-		WebSocketChatClient chatclient = new WebSocketChatClient( new URI( "wss://localhost:8887" ) );
+  /*
+   * Keystore with certificate created like so (in JKS format):
+   *
+   *keytool -genkey -keyalg RSA -validity 3650 -keystore "keystore.jks" -storepass "storepassword" -keypass "keypassword" -alias "default" -dname "CN=127.0.0.1, OU=MyOrgUnit, O=MyOrg, L=MyCity, S=MyRegion, C=MyCountry"
+   */
+  public static void main(String[] args) throws Exception {
+    WebSocketChatClient chatclient = new WebSocketChatClient(new URI("wss://localhost:8887"));
 
-		// load up the key store
-		String STORETYPE = "JKS";
-		String KEYSTORE = Paths.get("src", "test", "java", "org", "java_websocket", "keystore.jks").toString();
-		String STOREPASSWORD = "storepassword";
-		String KEYPASSWORD = "keypassword";
+    // load up the key store
+    String STORETYPE = "JKS";
+    String KEYSTORE = Paths.get("src", "test", "java", "org", "java_websocket", "keystore.jks")
+        .toString();
+    String STOREPASSWORD = "storepassword";
+    String KEYPASSWORD = "keypassword";
 
-		KeyStore ks = KeyStore.getInstance( STORETYPE );
-		File kf = new File( KEYSTORE );
-		ks.load( new FileInputStream( kf ), STOREPASSWORD.toCharArray() );
+    KeyStore ks = KeyStore.getInstance(STORETYPE);
+    File kf = new File(KEYSTORE);
+    ks.load(new FileInputStream(kf), STOREPASSWORD.toCharArray());
 
-		KeyManagerFactory kmf = KeyManagerFactory.getInstance( "SunX509" );
-		kmf.init( ks, KEYPASSWORD.toCharArray() );
-		TrustManagerFactory tmf = TrustManagerFactory.getInstance( "SunX509" );
-		tmf.init( ks );
+    KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+    kmf.init(ks, KEYPASSWORD.toCharArray());
+    TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
+    tmf.init(ks);
 
-		SSLContext sslContext = null;
-		sslContext = SSLContext.getInstance( "TLS" );
-		sslContext.init( kmf.getKeyManagers(), tmf.getTrustManagers(), null );
-		// sslContext.init( null, null, null ); // will use java's default key and trust store which is sufficient unless you deal with self-signed certificates
+    SSLContext sslContext = null;
+    sslContext = SSLContext.getInstance("TLS");
+    sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+    // sslContext.init( null, null, null ); // will use java's default key and trust store which is sufficient unless you deal with self-signed certificates
 
-		SSLSocketFactory factory = sslContext.getSocketFactory();// (SSLSocketFactory) SSLSocketFactory.getDefault();
+    SSLSocketFactory factory = sslContext
+        .getSocketFactory();// (SSLSocketFactory) SSLSocketFactory.getDefault();
 
-		chatclient.setSocketFactory( factory );
+    chatclient.setSocketFactory(factory);
 
-		chatclient.connectBlocking();
+    chatclient.connectBlocking();
 
-		BufferedReader reader = new BufferedReader( new InputStreamReader( System.in ) );
-		while ( true ) {
-			String line = reader.readLine();
-			if( line.equals( "close" ) ) {
-				chatclient.closeBlocking();
-			} else if ( line.equals( "open" ) ) {
-				chatclient.reconnect();
-			} else {
-				chatclient.send( line );
-			}
-		}
+    BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+    while (true) {
+      String line = reader.readLine();
+      if (line.equals("close")) {
+        chatclient.closeBlocking();
+      } else if (line.equals("open")) {
+        chatclient.reconnect();
+      } else {
+        chatclient.send(line);
+      }
+    }
 
-	}
+  }
 }

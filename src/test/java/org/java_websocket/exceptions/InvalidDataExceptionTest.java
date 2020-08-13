@@ -35,20 +35,22 @@ import static org.junit.Assert.assertEquals;
  */
 public class InvalidDataExceptionTest {
 
-    @Test
-    public void testConstructor() {
-        InvalidDataException invalidDataException = new InvalidDataException(42);
-        assertEquals("The close code has to be the argument", 42, invalidDataException.getCloseCode());
-        invalidDataException = new InvalidDataException(42, "Message");
-        assertEquals("The close code has to be the argument", 42, invalidDataException.getCloseCode());
-        assertEquals("The message has to be the argument", "Message", invalidDataException.getMessage());
-        Exception e = new Exception();
-        invalidDataException = new InvalidDataException(42, "Message", e);
-        assertEquals("The close code has to be the argument", 42, invalidDataException.getCloseCode());
-        assertEquals("The message has to be the argument", "Message", invalidDataException.getMessage());
-        assertEquals("The throwable has to be the argument", e, invalidDataException.getCause());
-        invalidDataException = new InvalidDataException(42, e);
-        assertEquals("The close code has to be the argument", 42, invalidDataException.getCloseCode());
-        assertEquals("The throwable has to be the argument", e, invalidDataException.getCause());
-    }
+  @Test
+  public void testConstructor() {
+    InvalidDataException invalidDataException = new InvalidDataException(42);
+    assertEquals("The close code has to be the argument", 42, invalidDataException.getCloseCode());
+    invalidDataException = new InvalidDataException(42, "Message");
+    assertEquals("The close code has to be the argument", 42, invalidDataException.getCloseCode());
+    assertEquals("The message has to be the argument", "Message",
+        invalidDataException.getMessage());
+    Exception e = new Exception();
+    invalidDataException = new InvalidDataException(42, "Message", e);
+    assertEquals("The close code has to be the argument", 42, invalidDataException.getCloseCode());
+    assertEquals("The message has to be the argument", "Message",
+        invalidDataException.getMessage());
+    assertEquals("The throwable has to be the argument", e, invalidDataException.getCause());
+    invalidDataException = new InvalidDataException(42, e);
+    assertEquals("The close code has to be the argument", 42, invalidDataException.getCloseCode());
+    assertEquals("The throwable has to be the argument", e, invalidDataException.getCause());
+  }
 }

@@ -34,18 +34,18 @@ import org.java_websocket.util.Charsetfunctions;
  */
 public class TextFrame extends DataFrame {
 
-    /**
-     * constructor which sets the opcode of this frame to text
-     */
-    public TextFrame() {
-        super(Opcode.TEXT);
-    }
+  /**
+   * constructor which sets the opcode of this frame to text
+   */
+  public TextFrame() {
+    super(Opcode.TEXT);
+  }
 
-    @Override
-    public void isValid() throws InvalidDataException {
-        super.isValid();
-        if (!Charsetfunctions.isValidUTF8( getPayloadData() )) {
-            throw new InvalidDataException(CloseFrame.NO_UTF8, "Received text is no valid utf8 string!");
-        }
+  @Override
+  public void isValid() throws InvalidDataException {
+    super.isValid();
+    if (!Charsetfunctions.isValidUTF8(getPayloadData())) {
+      throw new InvalidDataException(CloseFrame.NO_UTF8, "Received text is no valid utf8 string!");
     }
+  }
 }

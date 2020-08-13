@@ -35,20 +35,24 @@ import org.java_websocket.drafts.Draft;
 import org.java_websocket.WebSocketServerFactory;
 
 public class DefaultWebSocketServerFactory implements WebSocketServerFactory {
-	@Override
-	public WebSocketImpl createWebSocket( WebSocketAdapter a, Draft d) {
-		return new WebSocketImpl( a, d );
-	}
-	@Override
-	public WebSocketImpl createWebSocket( WebSocketAdapter a, List<Draft> d) {
-		return new WebSocketImpl( a, d );
-	}
-	@Override
-	public SocketChannel wrapChannel( SocketChannel channel, SelectionKey key ) {
-		return channel;
-	}
-	@Override
-	public void close() {
-		//Nothing to do for a normal ws factory
-	}
+
+  @Override
+  public WebSocketImpl createWebSocket(WebSocketAdapter a, Draft d) {
+    return new WebSocketImpl(a, d);
+  }
+
+  @Override
+  public WebSocketImpl createWebSocket(WebSocketAdapter a, List<Draft> d) {
+    return new WebSocketImpl(a, d);
+  }
+
+  @Override
+  public SocketChannel wrapChannel(SocketChannel channel, SelectionKey key) {
+    return channel;
+  }
+
+  @Override
+  public void close() {
+    //Nothing to do for a normal ws factory
+  }
 }

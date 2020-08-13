@@ -30,15 +30,17 @@ package org.java_websocket.handshake;
  */
 public interface ServerHandshake extends Handshakedata {
 
-	/**
-	 * Get the http status code
-	 * @return the http status code
-	 */
-	short getHttpStatus();
+  /**
+   * Get the http status code
+   *
+   * @return the http status code
+   */
+  short getHttpStatus();
 
-	/**
-	 * Get the http status message
-	 * @return the http status message
-	 */
-	String getHttpStatusMessage();
+  /**
+   * Get the http status message
+   *
+   * @return the http status message
+   */
+  String getHttpStatusMessage();
 }

@@ -32,29 +32,33 @@ import java.util.Iterator;
  */
 public interface Handshakedata {
 
-	/**
-	 * Iterator for the http fields
-	 * @return the http fields
-	 */
-	Iterator<String> iterateHttpFields();
+  /**
+   * Iterator for the http fields
+   *
+   * @return the http fields
+   */
+  Iterator<String> iterateHttpFields();
 
-	/**
-	 * Gets the value of the field
-	 * @param name The name of the field
-	 * @return the value of the field or an empty String if not in the handshake
-	 */
-	String getFieldValue( String name );
+  /**
+   * Gets the value of the field
+   *
+   * @param name The name of the field
+   * @return the value of the field or an empty String if not in the handshake
+   */
+  String getFieldValue(String name);
 
-	/**
-	 * Checks if this handshake contains a specific field
-	 * @param name The name of the field
-	 * @return true, if it contains the field
-	 */
-	boolean hasFieldValue( String name );
+  /**
+   * Checks if this handshake contains a specific field
+   *
+   * @param name The name of the field
+   * @return true, if it contains the field
+   */
+  boolean hasFieldValue(String name);
 
-	/**
-	 * Get the content of the handshake
-	 * @return the content as byte-array
-	 */
-	byte[] getContent();
+  /**
+   * Get the content of the handshake
+   *
+   * @return the content as byte-array
+   */
+  byte[] getContent();
 }

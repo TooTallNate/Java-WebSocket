@@ -30,9 +30,10 @@ package org.java_websocket.handshake;
  */
 public interface ClientHandshakeBuilder extends HandshakeBuilder, ClientHandshake {
 
-	/**
-	 * Set a specific resource descriptor
-	 * @param resourceDescriptor the resource descriptior to set
-	 */
-	void setResourceDescriptor( String resourceDescriptor );
+  /**
+   * Set a specific resource descriptor
+   *
+   * @param resourceDescriptor the resource descriptior to set
+   */
+  void setResourceDescriptor(String resourceDescriptor);
 }

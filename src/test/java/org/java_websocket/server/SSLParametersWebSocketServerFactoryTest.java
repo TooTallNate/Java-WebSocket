@@ -25,107 +25,114 @@ import static org.junit.Assert.fail;
 
 public class SSLParametersWebSocketServerFactoryTest {
 
-    @Test
-    public void testConstructor() throws NoSuchAlgorithmException {
-        try {
-            new SSLParametersWebSocketServerFactory(null, null);
-            fail("IllegalArgumentException should be thrown");
-        } catch (IllegalArgumentException e) {
-            // Good
-        }
-        try {
-            new SSLParametersWebSocketServerFactory(SSLContext.getDefault(), null);
-            fail("IllegalArgumentException should be thrown");
-        } catch (IllegalArgumentException e) {
-        }
-        try {
-            new SSLParametersWebSocketServerFactory(SSLContext.getDefault(), new SSLParameters());
-        } catch (IllegalArgumentException e) {
-            fail("IllegalArgumentException should not be thrown");
-        }
-        try {
-            new SSLParametersWebSocketServerFactory(SSLContext.getDefault(), Executors.newCachedThreadPool(), new SSLParameters());
-        } catch (IllegalArgumentException e) {
-            fail("IllegalArgumentException should not be thrown");
-        }
+  @Test
+  public void testConstructor() throws NoSuchAlgorithmException {
+    try {
+      new SSLParametersWebSocketServerFactory(null, null);
+      fail("IllegalArgumentException should be thrown");
+    } catch (IllegalArgumentException e) {
+      // Good
     }
-    @Test
-    public void testCreateWebSocket() throws NoSuchAlgorithmException {
-        SSLParametersWebSocketServerFactory webSocketServerFactory = new SSLParametersWebSocketServerFactory(SSLContext.getDefault(), new SSLParameters());
-        CustomWebSocketAdapter webSocketAdapter = new CustomWebSocketAdapter();
-        WebSocketImpl webSocketImpl = webSocketServerFactory.createWebSocket(webSocketAdapter, new Draft_6455());
-        assertNotNull("webSocketImpl != null", webSocketImpl);
-        webSocketImpl = webSocketServerFactory.createWebSocket(webSocketAdapter, Collections.<Draft>singletonList(new Draft_6455()));
-        assertNotNull("webSocketImpl != null", webSocketImpl);
+    try {
+      new SSLParametersWebSocketServerFactory(SSLContext.getDefault(), null);
+      fail("IllegalArgumentException should be thrown");
+    } catch (IllegalArgumentException e) {
+    }
+    try {
+      new SSLParametersWebSocketServerFactory(SSLContext.getDefault(), new SSLParameters());
+    } catch (IllegalArgumentException e) {
+      fail("IllegalArgumentException should not be thrown");
+    }
+    try {
+      new SSLParametersWebSocketServerFactory(SSLContext.getDefault(),
+          Executors.newCachedThreadPool(), new SSLParameters());
+    } catch (IllegalArgumentException e) {
+      fail("IllegalArgumentException should not be thrown");
+    }
+  }
+
+  @Test
+  public void testCreateWebSocket() throws NoSuchAlgorithmException {
+    SSLParametersWebSocketServerFactory webSocketServerFactory = new SSLParametersWebSocketServerFactory(
+        SSLContext.getDefault(), new SSLParameters());
+    CustomWebSocketAdapter webSocketAdapter = new CustomWebSocketAdapter();
+    WebSocketImpl webSocketImpl = webSocketServerFactory
+        .createWebSocket(webSocketAdapter, new Draft_6455());
+    assertNotNull("webSocketImpl != null", webSocketImpl);
+    webSocketImpl = webSocketServerFactory
+        .createWebSocket(webSocketAdapter, Collections.<Draft>singletonList(new Draft_6455()));
+    assertNotNull("webSocketImpl != null", webSocketImpl);
+  }
+
+  @Test
+  public void testWrapChannel() throws IOException, NoSuchAlgorithmException {
+    SSLParametersWebSocketServerFactory webSocketServerFactory = new SSLParametersWebSocketServerFactory(
+        SSLContext.getDefault(), new SSLParameters());
+    SocketChannel channel = SocketChannel.open();
+    try {
+      ByteChannel result = webSocketServerFactory.wrapChannel(channel, null);
+    } catch (NotYetConnectedException e) {
+      //We do not really connect
+    }
+    channel.close();
+  }
+
+  @Test
+  public void testClose() {
+    DefaultWebSocketServerFactory webSocketServerFactory = new DefaultWebSocketServerFactory();
+    webSocketServerFactory.close();
+  }
+
+  private static class CustomWebSocketAdapter extends WebSocketAdapter {
+
+    @Override
+    public void onWebsocketMessage(WebSocket conn, String message) {
+
     }
 
-    @Test
-    public void testWrapChannel() throws IOException, NoSuchAlgorithmException {
-        SSLParametersWebSocketServerFactory webSocketServerFactory = new SSLParametersWebSocketServerFactory(SSLContext.getDefault(), new SSLParameters());
-        SocketChannel channel =  SocketChannel.open();
-        try {
-            ByteChannel result = webSocketServerFactory.wrapChannel(channel, null);
-        } catch (NotYetConnectedException e) {
-            //We do not really connect
-        }
-        channel.close();
+    @Override
+    public void onWebsocketMessage(WebSocket conn, ByteBuffer blob) {
+
     }
 
-    @Test
-    public void testClose() {
-        DefaultWebSocketServerFactory webSocketServerFactory = new DefaultWebSocketServerFactory();
-        webSocketServerFactory.close();
+    @Override
+    public void onWebsocketOpen(WebSocket conn, Handshakedata d) {
+
     }
 
-    private static class CustomWebSocketAdapter extends WebSocketAdapter {
-        @Override
-        public void onWebsocketMessage(WebSocket conn, String message) {
+    @Override
+    public void onWebsocketClose(WebSocket ws, int code, String reason, boolean remote) {
 
-        }
-
-        @Override
-        public void onWebsocketMessage(WebSocket conn, ByteBuffer blob) {
-
-        }
-
-        @Override
-        public void onWebsocketOpen(WebSocket conn, Handshakedata d) {
-
-        }
-
-        @Override
-        public void onWebsocketClose(WebSocket ws, int code, String reason, boolean remote) {
-
-        }
-
-        @Override
-        public void onWebsocketClosing(WebSocket ws, int code, String reason, boolean remote) {
-
-        }
-
-        @Override
-        public void onWebsocketCloseInitiated(WebSocket ws, int code, String reason) {
-
-        }
-
-        @Override
-        public void onWebsocketError(WebSocket conn, Exception ex) {
-
-        }
-
-        @Override
-        public void onWriteDemand(WebSocket conn) {
-
-        }
-
-        @Override
-        public InetSocketAddress getLocalSocketAddress(WebSocket conn) {
-            return null;
-        }
-
-        @Override
-        public InetSocketAddress getRemoteSocketAddress(WebSocket conn) {
-            return null;
-        }
     }
+
+    @Override
+    public void onWebsocketClosing(WebSocket ws, int code, String reason, boolean remote) {
+
+    }
+
+    @Override
+    public void onWebsocketCloseInitiated(WebSocket ws, int code, String reason) {
+
+    }
+
+    @Override
+    public void onWebsocketError(WebSocket conn, Exception ex) {
+
+    }
+
+    @Override
+    public void onWriteDemand(WebSocket conn) {
+
+    }
+
+    @Override
+    public InetSocketAddress getLocalSocketAddress(WebSocket conn) {
+      return null;
+    }
+
+    @Override
+    public InetSocketAddress getRemoteSocketAddress(WebSocket conn) {
+      return null;
+    }
+  }
 }

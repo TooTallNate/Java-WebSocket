@@ -24,17 +24,19 @@
  */
 
 package org.java_websocket.extensions;
+
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-		org.java_websocket.extensions.DefaultExtensionTest.class,
-		org.java_websocket.extensions.CompressionExtensionTest.class
+    org.java_websocket.extensions.DefaultExtensionTest.class,
+    org.java_websocket.extensions.CompressionExtensionTest.class
 })
 /**
  * Start all tests for extensions
  */
 public class AllExtensionTests {
+
 }

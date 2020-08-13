@@ -37,16 +37,18 @@ import static org.junit.Assert.fail;
  */
 public class InvalidEncodingExceptionTest {
 
-    @Test
-    public void testConstructor() {
-        UnsupportedEncodingException unsupportedEncodingException = new UnsupportedEncodingException();
-        InvalidEncodingException invalidEncodingException = new InvalidEncodingException(unsupportedEncodingException);
-        assertEquals("The argument has to be the provided exception", unsupportedEncodingException, invalidEncodingException.getEncodingException());
-        try {
-            invalidEncodingException = new InvalidEncodingException(null);
-            fail("IllegalArgumentException should be thrown");
-        } catch (IllegalArgumentException e) {
-            //Null is not allowed
-        }
+  @Test
+  public void testConstructor() {
+    UnsupportedEncodingException unsupportedEncodingException = new UnsupportedEncodingException();
+    InvalidEncodingException invalidEncodingException = new InvalidEncodingException(
+        unsupportedEncodingException);
+    assertEquals("The argument has to be the provided exception", unsupportedEncodingException,
+        invalidEncodingException.getEncodingException());
+    try {
+      invalidEncodingException = new InvalidEncodingException(null);
+      fail("IllegalArgumentException should be thrown");
+    } catch (IllegalArgumentException e) {
+      //Null is not allowed
     }
+  }
 }

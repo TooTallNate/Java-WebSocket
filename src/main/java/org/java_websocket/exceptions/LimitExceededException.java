@@ -32,61 +32,62 @@ import org.java_websocket.framing.CloseFrame;
  */
 public class LimitExceededException extends InvalidDataException {
 
-    /**
-     * Serializable
-     */
-    private static final long serialVersionUID = 6908339749836826785L;
+  /**
+   * Serializable
+   */
+  private static final long serialVersionUID = 6908339749836826785L;
 
-    /**
-     * A closer indication about the limit
-     */
-    private final int limit;
+  /**
+   * A closer indication about the limit
+   */
+  private final int limit;
 
-    /**
-     * constructor for a LimitExceededException
-     * <p>
-     * calling LimitExceededException with closecode TOOBIG
-     */
-    public LimitExceededException() {
-        this(Integer.MAX_VALUE);
-    }
+  /**
+   * constructor for a LimitExceededException
+   * <p>
+   * calling LimitExceededException with closecode TOOBIG
+   */
+  public LimitExceededException() {
+    this(Integer.MAX_VALUE);
+  }
 
-    /**
-     * constructor for a LimitExceededException
-     * <p>
-     * calling InvalidDataException with closecode TOOBIG
-     */
-    public LimitExceededException(int limit) {
-        super( CloseFrame.TOOBIG);
-        this.limit = limit;
-    }
+  /**
+   * constructor for a LimitExceededException
+   * <p>
+   * calling InvalidDataException with closecode TOOBIG
+   */
+  public LimitExceededException(int limit) {
+    super(CloseFrame.TOOBIG);
+    this.limit = limit;
+  }
 
-    /**
-     * constructor for a LimitExceededException
-     * <p>
-     * calling InvalidDataException with closecode TOOBIG
-     */
-    public LimitExceededException(String s, int limit) {
-        super( CloseFrame.TOOBIG, s);
-        this.limit = limit;
-    }
+  /**
+   * constructor for a LimitExceededException
+   * <p>
+   * calling InvalidDataException with closecode TOOBIG
+   */
+  public LimitExceededException(String s, int limit) {
+    super(CloseFrame.TOOBIG, s);
+    this.limit = limit;
+  }
 
-    /**
-     * constructor for a LimitExceededException
-     * <p>
-     * calling InvalidDataException with closecode TOOBIG
-     *
-     * @param s the detail message.
-     */
-    public LimitExceededException(String s) {
-        this(s, Integer.MAX_VALUE);
-    }
+  /**
+   * constructor for a LimitExceededException
+   * <p>
+   * calling InvalidDataException with closecode TOOBIG
+   *
+   * @param s the detail message.
+   */
+  public LimitExceededException(String s) {
+    this(s, Integer.MAX_VALUE);
+  }
 
-    /**
-     * Get the limit which was hit so this exception was caused
-     * @return the limit as int
-     */
-    public int getLimit() {
-        return limit;
-    }
+  /**
+   * Get the limit which was hit so this exception was caused
+   *
+   * @return the limit as int
+   */
+  public int getLimit() {
+    return limit;
+  }
 }

@@ -38,96 +38,96 @@ import static org.junit.Assert.assertNull;
 
 public class HeadersTest {
 
-	@Test
-	public void testHttpHeaders() throws URISyntaxException {
-		Map<String, String> httpHeaders = new HashMap<String, String>();
-		httpHeaders.put("Cache-Control", "only-if-cached");
-		httpHeaders.put("Keep-Alive", "1000");
+  @Test
+  public void testHttpHeaders() throws URISyntaxException {
+    Map<String, String> httpHeaders = new HashMap<String, String>();
+    httpHeaders.put("Cache-Control", "only-if-cached");
+    httpHeaders.put("Keep-Alive", "1000");
 
-		WebSocketClient client = new WebSocketClient(new URI( "ws://localhost"), httpHeaders) {
-			@Override
-			public void onOpen( ServerHandshake handshakedata ) {
+    WebSocketClient client = new WebSocketClient(new URI("ws://localhost"), httpHeaders) {
+      @Override
+      public void onOpen(ServerHandshake handshakedata) {
 
-			}
+      }
 
-			@Override
-			public void onMessage( String message ) {
+      @Override
+      public void onMessage(String message) {
 
-			}
+      }
 
-			@Override
-			public void onClose( int code, String reason, boolean remote ) {
+      @Override
+      public void onClose(int code, String reason, boolean remote) {
 
-			}
+      }
 
-			@Override
-			public void onError( Exception ex ) {
+      @Override
+      public void onError(Exception ex) {
 
-			}
-		};
-		
-		assertEquals("only-if-cached", client.removeHeader("Cache-Control"));
-		assertEquals("1000", client.removeHeader("Keep-Alive"));
-	}
+      }
+    };
 
-	@Test
-	public void test_Add_RemoveHeaders() throws URISyntaxException {
-		Map<String, String> httpHeaders = null;
-		WebSocketClient client = new WebSocketClient(new URI( "ws://localhost"), httpHeaders) {
-			@Override
-			public void onOpen( ServerHandshake handshakedata ) {
+    assertEquals("only-if-cached", client.removeHeader("Cache-Control"));
+    assertEquals("1000", client.removeHeader("Keep-Alive"));
+  }
 
-			}
+  @Test
+  public void test_Add_RemoveHeaders() throws URISyntaxException {
+    Map<String, String> httpHeaders = null;
+    WebSocketClient client = new WebSocketClient(new URI("ws://localhost"), httpHeaders) {
+      @Override
+      public void onOpen(ServerHandshake handshakedata) {
 
-			@Override
-			public void onMessage( String message ) {
+      }
 
-			}
+      @Override
+      public void onMessage(String message) {
 
-			@Override
-			public void onClose( int code, String reason, boolean remote ) {
+      }
 
-			}
+      @Override
+      public void onClose(int code, String reason, boolean remote) {
 
-			@Override
-			public void onError( Exception ex ) {
+      }
 
-			}
-		};
-		client.addHeader("Cache-Control", "only-if-cached");
-		assertEquals("only-if-cached", client.removeHeader("Cache-Control"));
-		assertNull(client.removeHeader("Cache-Control"));
+      @Override
+      public void onError(Exception ex) {
 
-		client.addHeader("Cache-Control", "only-if-cached");
-		client.clearHeaders();
-		assertNull(client.removeHeader("Cache-Control"));
-	}
+      }
+    };
+    client.addHeader("Cache-Control", "only-if-cached");
+    assertEquals("only-if-cached", client.removeHeader("Cache-Control"));
+    assertNull(client.removeHeader("Cache-Control"));
 
-	@Test
-	public void testGetURI() throws URISyntaxException {
-		WebSocketClient client = new WebSocketClient(new URI( "ws://localhost")) {
-			@Override
-			public void onOpen( ServerHandshake handshakedata ) {
+    client.addHeader("Cache-Control", "only-if-cached");
+    client.clearHeaders();
+    assertNull(client.removeHeader("Cache-Control"));
+  }
 
-			}
+  @Test
+  public void testGetURI() throws URISyntaxException {
+    WebSocketClient client = new WebSocketClient(new URI("ws://localhost")) {
+      @Override
+      public void onOpen(ServerHandshake handshakedata) {
 
-			@Override
-			public void onMessage( String message ) {
+      }
 
-			}
+      @Override
+      public void onMessage(String message) {
 
-			@Override
-			public void onClose( int code, String reason, boolean remote ) {
+      }
 
-			}
+      @Override
+      public void onClose(int code, String reason, boolean remote) {
 
-			@Override
-			public void onError( Exception ex ) {
+      }
 
-			}
-		};
-		String actualURI = client.getURI().getScheme() + "://" + client.getURI().getHost();
-		
-		assertEquals("ws://localhost", actualURI);
-	}
+      @Override
+      public void onError(Exception ex) {
+
+      }
+    };
+    String actualURI = client.getURI().getScheme() + "://" + client.getURI().getHost();
+
+    assertEquals("ws://localhost", actualURI);
+  }
 }

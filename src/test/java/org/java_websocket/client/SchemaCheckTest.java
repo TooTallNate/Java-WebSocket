@@ -13,15 +13,15 @@ public class SchemaCheckTest {
 
   @Test
   public void testSchemaCheck() throws URISyntaxException {
-    final String []invalidCase = {
-      "http://localhost:80",
-      "http://localhost:81",
-      "http://localhost",
-      "https://localhost:443",
-      "https://localhost:444",
-      "https://localhost",
-      "any://localhost",
-      "any://localhost:82",
+    final String[] invalidCase = {
+        "http://localhost:80",
+        "http://localhost:81",
+        "http://localhost",
+        "https://localhost:443",
+        "https://localhost:444",
+        "https://localhost",
+        "any://localhost",
+        "any://localhost:82",
     };
     final Exception[] exs = new Exception[invalidCase.length];
     for (int i = 0; i < invalidCase.length; i++) {
@@ -51,7 +51,7 @@ public class SchemaCheckTest {
     for (Exception exception : exs) {
       assertTrue(exception instanceof IllegalArgumentException);
     }
-    final String []validCase = {
+    final String[] validCase = {
         "ws://localhost",
         "ws://localhost:80",
         "ws://localhost:81",
