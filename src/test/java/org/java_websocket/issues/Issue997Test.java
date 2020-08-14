@@ -175,8 +175,6 @@ public class Issue997Test {
 
   }
 
-  ;
-
 
   private static class SSLWebSocketServer extends WebSocketServer {
 

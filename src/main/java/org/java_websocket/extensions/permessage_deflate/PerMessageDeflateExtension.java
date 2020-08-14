@@ -196,7 +196,7 @@ public class PerMessageDeflateExtension extends CompressionExtension {
       output.write(buffer, 0, bytesCompressed);
     }
 
-    byte outputBytes[] = output.toByteArray();
+    byte[] outputBytes = output.toByteArray();
     int outputLength = outputBytes.length;
 
         /*
