@@ -7,4 +7,8 @@
 <suppressions>
   <suppress checks="Javadoc" files="."/>
   <suppress checks="MagicNumberCheck" files="."/>
+  <suppress checks="PackageName" files="."/>
+  <suppress checks="AbbreviationAsWordInName" files="."/>
+  <suppress checks="LineLength" files="."/>
+  <suppress checks="VariableDeclarationUsageDistance" files="."/>
 </suppressions>

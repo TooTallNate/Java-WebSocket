@@ -522,12 +522,12 @@ public class Draft_6455 extends Draft {
     int maxpacketsize = buffer.remaining();
     int realpacketsize = 2;
     translateSingleFrameCheckPacketSize(maxpacketsize, realpacketsize);
-    byte b1 = buffer.get( /*0*/);
+    byte b1 = buffer.get(/*0*/);
     boolean fin = b1 >> 8 != 0;
     boolean rsv1 = (b1 & 0x40) != 0;
     boolean rsv2 = (b1 & 0x20) != 0;
     boolean rsv3 = (b1 & 0x10) != 0;
-    byte b2 = buffer.get( /*1*/);
+    byte b2 = buffer.get(/*1*/);
     boolean mask = (b2 & -128) != 0;
     int payloadlength = (byte) (b2 & ~(byte) 128);
     Opcode optcode = toOpcode((byte) (b1 & 15));
@@ -548,7 +548,7 @@ public class Draft_6455 extends Draft {
       byte[] maskskey = new byte[4];
       buffer.get(maskskey);
       for (int i = 0; i < payloadlength; i++) {
-        payload.put((byte) (buffer.get( /*payloadstart + i*/) ^ maskskey[i % 4]));
+        payload.put((byte) (buffer.get(/*payloadstart + i*/) ^ maskskey[i % 4]));
       }
     } else {
       payload.put(buffer.array(), buffer.position(), payload.limit());
@@ -599,15 +599,15 @@ public class Draft_6455 extends Draft {
       realpacketsize += 2; // additional length bytes
       translateSingleFrameCheckPacketSize(maxpacketsize, realpacketsize);
       byte[] sizebytes = new byte[3];
-      sizebytes[1] = buffer.get( /*1 + 1*/);
-      sizebytes[2] = buffer.get( /*1 + 2*/);
+      sizebytes[1] = buffer.get(/*1 + 1*/);
+      sizebytes[2] = buffer.get(/*1 + 2*/);
       payloadlength = new BigInteger(sizebytes).intValue();
     } else {
       realpacketsize += 8; // additional length bytes
       translateSingleFrameCheckPacketSize(maxpacketsize, realpacketsize);
       byte[] bytes = new byte[8];
       for (int i = 0; i < 8; i++) {
-        bytes[i] = buffer.get( /*1 + i*/);
+        bytes[i] = buffer.get(/*1 + i*/);
       }
       long length = new BigInteger(bytes).longValue();
       translateSingleFrameCheckLengthLimit(length);
@@ -735,7 +735,8 @@ public class Draft_6455 extends Draft {
         }
       }
 
-      while (buffer.hasRemaining()) {// Read as much as possible full frames
+      // Read as much as possible full frames
+      while (buffer.hasRemaining()) {
         buffer.mark();
         try {
           cur = translateSingleFrame(buffer);

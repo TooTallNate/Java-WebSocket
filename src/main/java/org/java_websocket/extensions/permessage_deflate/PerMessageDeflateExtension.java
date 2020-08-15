@@ -123,14 +123,14 @@ public class PerMessageDeflateExtension extends CompressionExtension {
     try {
       decompress(inputFrame.getPayloadData().array(), output);
 
-            /*
-                If a message is "first fragmented and then compressed", as this project does, then the inflater
-                    can not inflate fragments except the first one.
-                This behavior occurs most likely because those fragments end with "final deflate blocks".
-                We can check the getRemaining() method to see whether the data we supplied has been decompressed or not.
-                And if not, we just reset the inflater and decompress again.
-                Note that this behavior doesn't occur if the message is "first compressed and then fragmented".
-             */
+      /*
+          If a message is "first fragmented and then compressed", as this project does, then the inflater
+              can not inflate fragments except the first one.
+          This behavior occurs most likely because those fragments end with "final deflate blocks".
+          We can check the getRemaining() method to see whether the data we supplied has been decompressed or not.
+          And if not, we just reset the inflater and decompress again.
+          Note that this behavior doesn't occur if the message is "first compressed and then fragmented".
+       */
       if (inflater.getRemaining() > 0) {
         inflater = new Inflater(true);
         decompress(inputFrame.getPayloadData().array(), output);
@@ -199,12 +199,12 @@ public class PerMessageDeflateExtension extends CompressionExtension {
     byte[] outputBytes = output.toByteArray();
     int outputLength = outputBytes.length;
 
-        /*
-            https://tools.ietf.org/html/rfc7692#section-7.2.1 states that if the final fragment's compressed
-                payload ends with 0x00 0x00 0xff 0xff, they should be removed.
-            To simulate removal, we just pass 4 bytes less to the new payload
-                if the frame is final and outputBytes ends with 0x00 0x00 0xff 0xff.
-        */
+    /*
+        https://tools.ietf.org/html/rfc7692#section-7.2.1 states that if the final fragment's compressed
+            payload ends with 0x00 0x00 0xff 0xff, they should be removed.
+        To simulate removal, we just pass 4 bytes less to the new payload
+            if the frame is final and outputBytes ends with 0x00 0x00 0xff 0xff.
+     */
     if (inputFrame.isFin()) {
       if (endsWithTail(outputBytes)) {
         outputLength -= TAIL_BYTES.length;
