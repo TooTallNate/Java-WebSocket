@@ -3,7 +3,7 @@
 
 name: Java Code Style Check with Maven
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   build:
