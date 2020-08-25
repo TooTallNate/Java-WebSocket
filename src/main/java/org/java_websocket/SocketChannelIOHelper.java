@@ -107,7 +107,7 @@ public class SocketChannelIOHelper {
     }
 
     if (ws.outQueue.isEmpty() && ws.isFlushAndClose() && ws.getDraft() != null
-        && ws.getDraft().getRole() != null && ws.getDraft().getRole() == Role.SERVER) {//
+        && ws.getDraft().getRole() != null && ws.getDraft().getRole() == Role.SERVER) {
       ws.closeConnection();
     }
     return c == null || !((WrappedByteChannel) sockchannel).isNeedWrite();

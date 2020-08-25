@@ -25,14 +25,12 @@
 
 package org.java_websocket.util;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
-import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CodingErrorAction;
+import java.nio.charset.StandardCharsets;
 import org.java_websocket.exceptions.InvalidDataException;
-import org.java_websocket.exceptions.InvalidEncodingException;
 import org.java_websocket.framing.CloseFrame;
 
 public class Charsetfunctions {
@@ -49,22 +47,14 @@ public class Charsetfunctions {
    * @return UTF-8 encoding in bytes
    */
   public static byte[] utf8Bytes(String s) {
-    try {
-      return s.getBytes("UTF8");
-    } catch (UnsupportedEncodingException e) {
-      throw new InvalidEncodingException(e);
-    }
+    return s.getBytes(StandardCharsets.UTF_8);
   }
 
   /*
    * @return ASCII encoding in bytes
    */
   public static byte[] asciiBytes(String s) {
-    try {
-      return s.getBytes("ASCII");
-    } catch (UnsupportedEncodingException e) {
-      throw new InvalidEncodingException(e);
-    }
+    return s.getBytes(StandardCharsets.US_ASCII);
   }
 
   public static String stringAscii(byte[] bytes) {
@@ -72,11 +62,7 @@ public class Charsetfunctions {
   }
 
   public static String stringAscii(byte[] bytes, int offset, int length) {
-    try {
-      return new String(bytes, offset, length, "ASCII");
-    } catch (UnsupportedEncodingException e) {
-      throw new InvalidEncodingException(e);
-    }
+    return new String(bytes, offset, length, StandardCharsets.US_ASCII);
   }
 
   public static String stringUtf8(byte[] bytes) throws InvalidDataException {
@@ -84,7 +70,7 @@ public class Charsetfunctions {
   }
 
   public static String stringUtf8(ByteBuffer bytes) throws InvalidDataException {
-    CharsetDecoder decode = Charset.forName("UTF8").newDecoder();
+    CharsetDecoder decode = StandardCharsets.UTF_8.newDecoder();
     decode.onMalformedInput(codingErrorAction);
     decode.onUnmappableCharacter(codingErrorAction);
     String s;

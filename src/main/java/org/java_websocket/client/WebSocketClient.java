@@ -498,7 +498,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
       ostream = socket.getOutputStream();
 
       sendHandshake();
-    } catch ( /*IOException | SecurityException | UnresolvedAddressException | InvalidHandshakeException | ClosedByInterruptException | SocketTimeoutException */Exception e) {
+    } catch (/*IOException | SecurityException | UnresolvedAddressException | InvalidHandshakeException | ClosedByInterruptException | SocketTimeoutException */Exception e) {
       onWebsocketError(engine, e);
       engine.closeConnection(CloseFrame.NEVER_CONNECTED, e.getMessage());
       return;

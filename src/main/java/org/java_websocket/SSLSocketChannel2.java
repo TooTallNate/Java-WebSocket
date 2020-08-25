@@ -22,6 +22,7 @@
  *  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  *  OTHER DEALINGS IN THE SOFTWARE.
  */
+
 package org.java_websocket;
 
 import java.io.EOFException;
@@ -275,10 +276,10 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel, ISSLC
       processHandshake();
       return 0;
     }
-    // assert ( bufferallocations > 1 ); //see #190
-    //if( bufferallocations <= 1 ) {
-    //	createBuffers( sslEngine.getSession() );
-    //}
+    // assert(bufferallocations > 1); // see #190
+    // if(bufferallocations <= 1) {
+    //   createBuffers(sslEngine.getSession());
+    // }
     int num = socketChannel.write(wrap(src));
     if (writeEngineResult.getStatus() == SSLEngineResult.Status.CLOSED) {
       throw new EOFException("Connection is closed");
@@ -311,10 +312,11 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel, ISSLC
           }
         }
       }
-      // assert ( bufferallocations > 1 ); //see #190
-      //if( bufferallocations <= 1 ) {
-      //	createBuffers( sslEngine.getSession() );
-      //}
+      // assert(bufferallocations > 1); // see #190
+      // if (bufferallocations <= 1) {
+      //   createBuffers(sslEngine.getSession());
+      // }
+
       /* 1. When "dst" is smaller than "inData" readRemaining will fill "dst" with data decoded in a previous read call.
        * 2. When "inCrypt" contains more data than "inData" has remaining space, unwrap has to be called on more time(readRemaining)
        */

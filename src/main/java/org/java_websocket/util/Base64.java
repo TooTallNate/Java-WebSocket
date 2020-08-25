@@ -177,22 +177,22 @@ public class Base64 {
   /**
    * No options specified. Value is zero.
    */
-  public final static int NO_OPTIONS = 0;
+  public static final int NO_OPTIONS = 0;
 
   /**
    * Specify encoding in first bit. Value is one.
    */
-  public final static int ENCODE = 1;
+  public static final int ENCODE = 1;
 
   /**
    * Specify that data should be gzip-compressed in second bit. Value is two.
    */
-  public final static int GZIP = 2;
+  public static final int GZIP = 2;
 
   /**
    * Do break lines when encoding. Value is 8.
    */
-  public final static int DO_BREAK_LINES = 8;
+  public static final int DO_BREAK_LINES = 8;
 
   /**
    * Encode using Base64-like encoding that is URL- and Filename-safe as described in Section 4 of
@@ -202,14 +202,14 @@ public class Base64 {
    * at the very least should not be called Base64 without also specifying that is was encoded using
    * the URL- and Filename-safe dialect.
    */
-  public final static int URL_SAFE = 16;
+  public static final int URL_SAFE = 16;
 
 
   /**
    * Encode using the special "ordered" dialect of Base64 described here:
    * <a href="http://www.faqs.org/qa/rfcc-1940.html">http://www.faqs.org/qa/rfcc-1940.html</a>.
    */
-  public final static int ORDERED = 32;
+  public static final int ORDERED = 32;
 
 
   /* ********  P R I V A T E   F I E L D S  ******** */
@@ -218,28 +218,28 @@ public class Base64 {
   /**
    * Maximum line length (76) of Base64 output.
    */
-  private final static int MAX_LINE_LENGTH = 76;
+  private static final int MAX_LINE_LENGTH = 76;
 
 
   /**
    * The equals sign (=) as a byte.
    */
-  private final static byte EQUALS_SIGN = (byte) '=';
+  private static final byte EQUALS_SIGN = (byte) '=';
 
 
   /**
    * The new line character (\n) as a byte.
    */
-  private final static byte NEW_LINE = (byte) '\n';
+  private static final byte NEW_LINE = (byte) '\n';
 
 
   /**
    * Preferred encoding.
    */
-  private final static String PREFERRED_ENCODING = "US-ASCII";
+  private static final String PREFERRED_ENCODING = "US-ASCII";
 
 
-  private final static byte WHITE_SPACE_ENC = -5; // Indicates white space in encoding
+  private static final byte WHITE_SPACE_ENC = -5; // Indicates white space in encoding
 
 
   /* ********  S T A N D A R D   B A S E 6 4   A L P H A B E T  ******** */
@@ -248,7 +248,7 @@ public class Base64 {
    * The 64 valid Base64 values.
    */
   /* Host platform me be something funny like EBCDIC, so we hardcode these values. */
-  private final static byte[] _STANDARD_ALPHABET = {
+  private static final byte[] _STANDARD_ALPHABET = {
       (byte) 'A', (byte) 'B', (byte) 'C', (byte) 'D', (byte) 'E', (byte) 'F', (byte) 'G',
       (byte) 'H', (byte) 'I', (byte) 'J', (byte) 'K', (byte) 'L', (byte) 'M', (byte) 'N',
       (byte) 'O', (byte) 'P', (byte) 'Q', (byte) 'R', (byte) 'S', (byte) 'T', (byte) 'U',
@@ -266,29 +266,29 @@ public class Base64 {
    * Translates a Base64 value to either its 6-bit reconstruction value or a negative number
    * indicating some other meaning.
    **/
-  private final static byte[] _STANDARD_DECODABET = {
-      -9, -9, -9, -9, -9, -9, -9, -9, -9,                 // Decimal  0 -  8
-      -5, -5,                                      // Whitespace: Tab and Linefeed
-      -9, -9,                                      // Decimal 11 - 12
-      -5,                                         // Whitespace: Carriage Return
+  private static final byte[] _STANDARD_DECODABET = {
+      -9, -9, -9, -9, -9, -9, -9, -9, -9,                     // Decimal  0 -  8
+      -5, -5,                                                 // Whitespace: Tab and Linefeed
+      -9, -9,                                                 // Decimal 11 - 12
+      -5,                                                     // Whitespace: Carriage Return
       -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9,     // Decimal 14 - 26
-      -9, -9, -9, -9, -9,                             // Decimal 27 - 31
-      -5,                                         // Whitespace: Space
-      -9, -9, -9, -9, -9, -9, -9, -9, -9, -9,              // Decimal 33 - 42
-      62,                                         // Plus sign at decimal 43
-      -9, -9, -9,                                   // Decimal 44 - 46
-      63,                                         // Slash at decimal 47
-      52, 53, 54, 55, 56, 57, 58, 59, 60, 61,              // Numbers zero through nine
-      -9, -9, -9,                                   // Decimal 58 - 60
-      -1,                                         // Equals sign at decimal 61
-      -9, -9, -9,                                      // Decimal 62 - 64
-      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,            // Letters 'A' through 'N'
-      14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,        // Letters 'O' through 'Z'
-      -9, -9, -9, -9, -9, -9,                          // Decimal 91 - 96
+      -9, -9, -9, -9, -9,                                     // Decimal 27 - 31
+      -5,                                                     // Whitespace: Space
+      -9, -9, -9, -9, -9, -9, -9, -9, -9, -9,                 // Decimal 33 - 42
+      62,                                                     // Plus sign at decimal 43
+      -9, -9, -9,                                             // Decimal 44 - 46
+      63,                                                     // Slash at decimal 47
+      52, 53, 54, 55, 56, 57, 58, 59, 60, 61,                 // Numbers zero through nine
+      -9, -9, -9,                                             // Decimal 58 - 60
+      -1,                                                     // Equals sign at decimal 61
+      -9, -9, -9,                                             // Decimal 62 - 64
+      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,           // Letters 'A' through 'N'
+      14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,         // Letters 'O' through 'Z'
+      -9, -9, -9, -9, -9, -9,                                 // Decimal 91 - 96
       26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38,     // Letters 'a' through 'm'
       39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51,     // Letters 'n' through 'z'
-      -9, -9, -9, -9, -9                              // Decimal 123 - 127
-      , -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9,       // Decimal 128 - 139
+      -9, -9, -9, -9, -9,                                     // Decimal 123 - 127
+      -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9,         // Decimal 128 - 139
       -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9,     // Decimal 140 - 152
       -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9,     // Decimal 153 - 165
       -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9,     // Decimal 166 - 178
@@ -297,7 +297,7 @@ public class Base64 {
       -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9,     // Decimal 205 - 217
       -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9,     // Decimal 218 - 230
       -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9,     // Decimal 231 - 243
-      -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9         // Decimal 244 - 255
+      -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9          // Decimal 244 - 255
   };
 
 
@@ -308,7 +308,7 @@ public class Base64 {
    * <a href="http://www.faqs.org/rfcs/rfc3548.html">http://www.faqs.org/rfcs/rfc3548.html</a>.
    * Notice that the last two bytes become "hyphen" and "underscore" instead of "plus" and "slash."
    */
-  private final static byte[] _URL_SAFE_ALPHABET = {
+  private static final byte[] _URL_SAFE_ALPHABET = {
       (byte) 'A', (byte) 'B', (byte) 'C', (byte) 'D', (byte) 'E', (byte) 'F', (byte) 'G',
       (byte) 'H', (byte) 'I', (byte) 'J', (byte) 'K', (byte) 'L', (byte) 'M', (byte) 'N',
       (byte) 'O', (byte) 'P', (byte) 'Q', (byte) 'R', (byte) 'S', (byte) 'T', (byte) 'U',
@@ -324,33 +324,33 @@ public class Base64 {
   /**
    * Used in decoding URL- and Filename-safe dialects of Base64.
    */
-  private final static byte[] _URL_SAFE_DECODABET = {
-      -9, -9, -9, -9, -9, -9, -9, -9, -9,                 // Decimal  0 -  8
-      -5, -5,                                      // Whitespace: Tab and Linefeed
-      -9, -9,                                      // Decimal 11 - 12
-      -5,                                         // Whitespace: Carriage Return
+  private static final byte[] _URL_SAFE_DECODABET = {
+      -9, -9, -9, -9, -9, -9, -9, -9, -9,                     // Decimal  0 -  8
+      -5, -5,                                                 // Whitespace: Tab and Linefeed
+      -9, -9,                                                 // Decimal 11 - 12
+      -5,                                                     // Whitespace: Carriage Return
       -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9,     // Decimal 14 - 26
-      -9, -9, -9, -9, -9,                             // Decimal 27 - 31
-      -5,                                         // Whitespace: Space
-      -9, -9, -9, -9, -9, -9, -9, -9, -9, -9,              // Decimal 33 - 42
-      -9,                                         // Plus sign at decimal 43
-      -9,                                         // Decimal 44
-      62,                                         // Minus sign at decimal 45
-      -9,                                         // Decimal 46
-      -9,                                         // Slash at decimal 47
-      52, 53, 54, 55, 56, 57, 58, 59, 60, 61,              // Numbers zero through nine
-      -9, -9, -9,                                   // Decimal 58 - 60
-      -1,                                         // Equals sign at decimal 61
-      -9, -9, -9,                                   // Decimal 62 - 64
-      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,            // Letters 'A' through 'N'
-      14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,        // Letters 'O' through 'Z'
-      -9, -9, -9, -9,                                // Decimal 91 - 94
-      63,                                         // Underscore at decimal 95
-      -9,                                         // Decimal 96
+      -9, -9, -9, -9, -9,                                     // Decimal 27 - 31
+      -5,                                                     // Whitespace: Space
+      -9, -9, -9, -9, -9, -9, -9, -9, -9, -9,                 // Decimal 33 - 42
+      -9,                                                     // Plus sign at decimal 43
+      -9,                                                     // Decimal 44
+      62,                                                     // Minus sign at decimal 45
+      -9,                                                     // Decimal 46
+      -9,                                                     // Slash at decimal 47
+      52, 53, 54, 55, 56, 57, 58, 59, 60, 61,                 // Numbers zero through nine
+      -9, -9, -9,                                             // Decimal 58 - 60
+      -1,                                                     // Equals sign at decimal 61
+      -9, -9, -9,                                             // Decimal 62 - 64
+      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,           // Letters 'A' through 'N'
+      14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,         // Letters 'O' through 'Z'
+      -9, -9, -9, -9,                                         // Decimal 91 - 94
+      63,                                                     // Underscore at decimal 95
+      -9,                                                     // Decimal 96
       26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38,     // Letters 'a' through 'm'
       39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51,     // Letters 'n' through 'z'
-      -9, -9, -9, -9, -9                              // Decimal 123 - 127
-      , -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9,     // Decimal 128 - 139
+      -9, -9, -9, -9, -9,                                     // Decimal 123 - 127
+      -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9,         // Decimal 128 - 139
       -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9,     // Decimal 140 - 152
       -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9,     // Decimal 153 - 165
       -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9,     // Decimal 166 - 178
@@ -359,7 +359,7 @@ public class Base64 {
       -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9,     // Decimal 205 - 217
       -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9,     // Decimal 218 - 230
       -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9,     // Decimal 231 - 243
-      -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9         // Decimal 244 - 255
+      -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9          // Decimal 244 - 255
   };
 
 
@@ -370,7 +370,7 @@ public class Base64 {
    * I don't get the point of this technique, but someone requested it, and it is described here:
    * <a href="http://www.faqs.org/qa/rfcc-1940.html">http://www.faqs.org/qa/rfcc-1940.html</a>.
    */
-  private final static byte[] _ORDERED_ALPHABET = {
+  private static final byte[] _ORDERED_ALPHABET = {
       (byte) '-',
       (byte) '0', (byte) '1', (byte) '2', (byte) '3', (byte) '4',
       (byte) '5', (byte) '6', (byte) '7', (byte) '8', (byte) '9',
@@ -388,33 +388,33 @@ public class Base64 {
   /**
    * Used in decoding the "ordered" dialect of Base64.
    */
-  private final static byte[] _ORDERED_DECODABET = {
-      -9, -9, -9, -9, -9, -9, -9, -9, -9,                 // Decimal  0 -  8
-      -5, -5,                                      // Whitespace: Tab and Linefeed
-      -9, -9,                                      // Decimal 11 - 12
-      -5,                                         // Whitespace: Carriage Return
+  private static final byte[] _ORDERED_DECODABET = {
+      -9, -9, -9, -9, -9, -9, -9, -9, -9,                     // Decimal  0 -  8
+      -5, -5,                                                 // Whitespace: Tab and Linefeed
+      -9, -9,                                                 // Decimal 11 - 12
+      -5,                                                     // Whitespace: Carriage Return
       -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9,     // Decimal 14 - 26
-      -9, -9, -9, -9, -9,                             // Decimal 27 - 31
-      -5,                                         // Whitespace: Space
-      -9, -9, -9, -9, -9, -9, -9, -9, -9, -9,              // Decimal 33 - 42
-      -9,                                         // Plus sign at decimal 43
-      -9,                                         // Decimal 44
-      0,                                          // Minus sign at decimal 45
-      -9,                                         // Decimal 46
-      -9,                                         // Slash at decimal 47
-      1, 2, 3, 4, 5, 6, 7, 8, 9, 10,                       // Numbers zero through nine
-      -9, -9, -9,                                   // Decimal 58 - 60
-      -1,                                         // Equals sign at decimal 61
-      -9, -9, -9,                                   // Decimal 62 - 64
+      -9, -9, -9, -9, -9,                                     // Decimal 27 - 31
+      -5,                                                     // Whitespace: Space
+      -9, -9, -9, -9, -9, -9, -9, -9, -9, -9,                 // Decimal 33 - 42
+      -9,                                                     // Plus sign at decimal 43
+      -9,                                                     // Decimal 44
+      0,                                                      // Minus sign at decimal 45
+      -9,                                                     // Decimal 46
+      -9,                                                     // Slash at decimal 47
+      1, 2, 3, 4, 5, 6, 7, 8, 9, 10,                          // Numbers zero through nine
+      -9, -9, -9,                                             // Decimal 58 - 60
+      -1,                                                     // Equals sign at decimal 61
+      -9, -9, -9,                                             // Decimal 62 - 64
       11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,     // Letters 'A' through 'M'
       24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36,     // Letters 'N' through 'Z'
-      -9, -9, -9, -9,                                // Decimal 91 - 94
-      37,                                         // Underscore at decimal 95
-      -9,                                         // Decimal 96
+      -9, -9, -9, -9,                                         // Decimal 91 - 94
+      37,                                                     // Underscore at decimal 95
+      -9,                                                     // Decimal 96
       38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50,     // Letters 'a' through 'm'
       51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63,     // Letters 'n' through 'z'
-      -9, -9, -9, -9, -9                                 // Decimal 123 - 127
-      , -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9,     // Decimal 128 - 139
+      -9, -9, -9, -9, -9,                                     // Decimal 123 - 127
+      -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9,     // Decimal 128 - 139
       -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9,     // Decimal 140 - 152
       -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9,     // Decimal 153 - 165
       -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9,     // Decimal 166 - 178
@@ -423,7 +423,7 @@ public class Base64 {
       -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9,     // Decimal 205 - 217
       -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9,     // Decimal 218 - 230
       -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9,     // Decimal 231 - 243
-      -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9         // Decimal 244 - 255
+      -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9, -9          // Decimal 244 - 255
   };
 
 
@@ -435,7 +435,7 @@ public class Base64 {
    * possible, though silly, to specify ORDERED <b>and</b> URLSAFE in which case one of them will be
    * picked, though there is no guarantee as to which one will be picked.
    */
-  private final static byte[] getAlphabet(int options) {
+  private static final byte[] getAlphabet(int options) {
     if ((options & URL_SAFE) == URL_SAFE) {
       return _URL_SAFE_ALPHABET;
     } else if ((options & ORDERED) == ORDERED) {
@@ -451,7 +451,7 @@ public class Base64 {
    * possible, though silly, to specify ORDERED and URL_SAFE in which case one of them will be
    * picked, though there is no guarantee as to which one will be picked.
    */
-  private final static byte[] getDecodabet(int options) {
+  private static final byte[] getDecodabet(int options) {
     if ((options & URL_SAFE) == URL_SAFE) {
       return _URL_SAFE_DECODABET;
     } else if ((options & ORDERED) == ORDERED) {
@@ -622,8 +622,7 @@ public class Base64 {
     // Return value according to relevant encoding.
     try {
       return new String(encoded, PREFERRED_ENCODING);
-    }   // end try
-    catch (java.io.UnsupportedEncodingException uue) {
+    } catch (java.io.UnsupportedEncodingException uue) {
       return new String(encoded);
     }   // end catch
 
@@ -682,13 +681,11 @@ public class Base64 {
 
         gzos.write(source, off, len);
         gzos.close();
-      }   // end try
-      catch (java.io.IOException e) {
+      } catch (java.io.IOException e) {
         // Catch it and then throw it immediately so that
         // the finally{} block is called for cleanup.
         throw e;
-      }   // end catch
-      finally {
+      } finally {
         try {
           if (gzos != null) {
             gzos.close();
@@ -720,6 +717,7 @@ public class Base64 {
       //byte[] outBuff = new byte[   ( len43 )                      // Main 4:3
       //                           + ( (len % 3) > 0 ? 4 : 0 )      // Account for padding
       //                           + (breakLines ? ( len43 / MAX_LINE_LENGTH ) : 0) ]; // New lines
+
       // Try to determine more precisely how big the array needs to be.
       // If we get it right, we don't have to do an array copy, and
       // we save a bunch of memory.
@@ -742,7 +740,7 @@ public class Base64 {
           e++;
           lineLength = 0;
         }   // end if: end of line
-      }   // en dfor: each piece of array
+      }   // end for: each piece of array
 
       if (d < len) {
         encode3to4(source, d + off, len - d, outBuff, e, options);
