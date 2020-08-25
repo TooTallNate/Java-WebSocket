@@ -17,4 +17,4 @@ jobs:
         with:
           java-version: 1.8
       - name: Code Style Check
-        run: mvn -B validate --file pom.xml
+        run: mvn -B checkstyle:check --file pom.xml
