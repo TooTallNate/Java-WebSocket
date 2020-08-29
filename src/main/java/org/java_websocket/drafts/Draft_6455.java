@@ -660,19 +660,16 @@ public class Draft_6455 extends Draft {
    * @return byte that represents which RSV bit is set.
    */
   private byte getRSVByte(int rsv) {
-    if (rsv == 1) // 0100 0000
-    {
-      return 0x40;
+    switch (rsv) {
+      case 1 : // 0100 0000
+        return 0x40;
+      case 2 : // 0010 0000
+        return 0x20;
+      case 3 : // 0001 0000
+        return 0x10;
+      default:
+        return 0;
     }
-    if (rsv == 2) // 0010 0000
-    {
-      return 0x20;
-    }
-    if (rsv == 3) // 0001 0000
-    {
-      return 0x10;
-    }
-    return 0;
   }
 
   /**
