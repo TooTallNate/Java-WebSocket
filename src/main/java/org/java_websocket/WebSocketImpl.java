@@ -204,9 +204,8 @@ public class WebSocketImpl implements WebSocket {
    * @param draft    The draft which should be used
    */
   public WebSocketImpl(WebSocketListener listener, Draft draft) {
-    if (listener == null || (draft == null && role
-        == Role.SERVER))// socket can be null because we want do be able to create the object without already having a bound channel
-    {
+    // socket can be null because we want do be able to create the object without already having a bound channel
+    if (listener == null || (draft == null && role == Role.SERVER)) {
       throw new IllegalArgumentException("parameters must not be null");
     }
     this.outQueue = new LinkedBlockingQueue<ByteBuffer>();
