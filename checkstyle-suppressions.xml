@@ -14,4 +14,5 @@
   <suppress checks="OverloadMethodsDeclarationOrder" files="."/>
   <suppress checks="NonEmptyAtclauseDescription" files="."/>
   <suppress checks="TypeName" files="Draft_6455.java"/>
+  <suppress checks="RightCurly" files="Base64.java"/>
 </suppressions>
