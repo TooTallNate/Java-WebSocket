@@ -11,4 +11,8 @@
   <suppress checks="AbbreviationAsWordInName" files="."/>
   <suppress checks="LineLength" files="."/>
   <suppress checks="VariableDeclarationUsageDistance" files="."/>
+  <suppress checks="OverloadMethodsDeclarationOrder" files="."/>
+  <suppress checks="NonEmptyAtclauseDescription" files="."/>
+  <suppress checks="TypeName" files="Draft_6455.java"/>
+  <suppress checks="RightCurly" files="Base64.java"/>
 </suppressions>

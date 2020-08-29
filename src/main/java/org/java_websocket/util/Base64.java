@@ -517,7 +517,7 @@ public class Base64 {
       byte[] source, int srcOffset, int numSigBytes,
       byte[] destination, int destOffset, int options) {
 
-    byte[] ALPHABET = getAlphabet(options);
+    final byte[] ALPHABET = getAlphabet(options);
 
     //           1         2         3
     // 01234567890123456789012345678901 Bit position
@@ -691,18 +691,21 @@ public class Base64 {
             gzos.close();
           }
         } catch (Exception e) {
+          // do nothing
         }
         try {
           if (b64os != null) {
             b64os.close();
           }
         } catch (Exception e) {
+          // do nothing
         }
         try {
           if (baos != null) {
             baos.close();
           }
         } catch (Exception e) {
+          // do nothing
         }
       }   // end finally
 
@@ -818,7 +821,7 @@ public class Base64 {
           destination.length, destOffset));
     }   // end if
 
-    byte[] DECODABET = getDecodabet(options);
+    final byte[] DECODABET = getDecodabet(options);
 
     // Example: Dk==
     if (source[srcOffset + 2] == EQUALS_SIGN) {

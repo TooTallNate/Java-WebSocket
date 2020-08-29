@@ -443,12 +443,12 @@ public class Draft_6455 extends Draft {
   @Override
   public Draft copyInstance() {
     ArrayList<IExtension> newExtensions = new ArrayList<IExtension>();
-    for (IExtension iExtension : getKnownExtensions()) {
-      newExtensions.add(iExtension.copyInstance());
+    for (IExtension extension : getKnownExtensions()) {
+      newExtensions.add(extension.copyInstance());
     }
     ArrayList<IProtocol> newProtocols = new ArrayList<IProtocol>();
-    for (IProtocol iProtocol : getKnownProtocols()) {
-      newProtocols.add(iProtocol.copyInstance());
+    for (IProtocol protocol : getKnownProtocols()) {
+      newProtocols.add(protocol.copyInstance());
     }
     return new Draft_6455(newExtensions, newProtocols, maxFrameSize);
   }
@@ -589,8 +589,8 @@ public class Draft_6455 extends Draft {
   private TranslatedPayloadMetaData translateSingleFramePayloadLength(ByteBuffer buffer,
       Opcode optcode, int oldPayloadlength, int maxpacketsize, int oldRealpacketsize)
       throws InvalidFrameException, IncompleteException, LimitExceededException {
-    int payloadlength = oldPayloadlength,
-        realpacketsize = oldRealpacketsize;
+    int payloadlength = oldPayloadlength;
+    int realpacketsize = oldRealpacketsize;
     if (optcode == Opcode.PING || optcode == Opcode.PONG || optcode == Opcode.CLOSING) {
       log.trace("Invalid frame: more than 125 octets");
       throw new InvalidFrameException("more than 125 octets");
@@ -660,19 +660,16 @@ public class Draft_6455 extends Draft {
    * @return byte that represents which RSV bit is set.
    */
   private byte getRSVByte(int rsv) {
-    if (rsv == 1) // 0100 0000
-    {
-      return 0x40;
+    switch (rsv) {
+      case 1 : // 0100 0000
+        return 0x40;
+      case 2 : // 0010 0000
+        return 0x20;
+      case 3 : // 0001 0000
+        return 0x10;
+      default:
+        return 0;
     }
-    if (rsv == 2) // 0010 0000
-    {
-      return 0x20;
-    }
-    if (rsv == 3) // 0001 0000
-    {
-      return 0x10;
-    }
-    return 0;
   }
 
   /**

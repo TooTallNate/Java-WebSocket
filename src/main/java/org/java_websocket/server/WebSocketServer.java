@@ -361,9 +361,9 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
       return;
     }
     try {
-      int iShutdownCount = 5;
+      int shutdownCount = 5;
       int selectTimeout = 0;
-      while (!selectorthread.isInterrupted() && iShutdownCount != 0) {
+      while (!selectorthread.isInterrupted() && shutdownCount != 0) {
         SelectionKey key = null;
         try {
           if (isclosed.get()) {
@@ -371,7 +371,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
           }
           int keyCount = selector.select(selectTimeout);
           if (keyCount == 0 && isclosed.get()) {
-            iShutdownCount--;
+            shutdownCount--;
           }
           Set<SelectionKey> keys = selector.selectedKeys();
           Iterator<SelectionKey> i = keys.iterator();
@@ -993,15 +993,15 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
    * @param clients the clients to send the message to
    */
   private void doBroadcast(Object data, Collection<WebSocket> clients) {
-    String sData = null;
+    String strData = null;
     if (data instanceof String) {
-      sData = (String) data;
+      strData = (String) data;
     }
-    ByteBuffer bData = null;
+    ByteBuffer byteData = null;
     if (data instanceof ByteBuffer) {
-      bData = (ByteBuffer) data;
+      byteData = (ByteBuffer) data;
     }
-    if (sData == null && bData == null) {
+    if (strData == null && byteData == null) {
       return;
     }
     Map<Draft, List<Framedata>> draftFrames = new HashMap<Draft, List<Framedata>>();
@@ -1012,7 +1012,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
     for (WebSocket client : clientCopy) {
       if (client != null) {
         Draft draft = client.getDraft();
-        fillFrames(draft, draftFrames, sData, bData);
+        fillFrames(draft, draftFrames, strData, byteData);
         try {
           client.sendFrame(draftFrames.get(draft));
         } catch (WebsocketNotConnectedException e) {
@@ -1027,18 +1027,18 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
    *
    * @param draft       The draft to use
    * @param draftFrames The list of frames per draft to fill
-   * @param sData       the string data, can be null
-   * @param bData       the byte buffer data, can be null
+   * @param strData       the string data, can be null
+   * @param byteData       the byte buffer data, can be null
    */
-  private void fillFrames(Draft draft, Map<Draft, List<Framedata>> draftFrames, String sData,
-      ByteBuffer bData) {
+  private void fillFrames(Draft draft, Map<Draft, List<Framedata>> draftFrames, String strData,
+      ByteBuffer byteData) {
     if (!draftFrames.containsKey(draft)) {
       List<Framedata> frames = null;
-      if (sData != null) {
-        frames = draft.createFrames(sData, false);
+      if (strData != null) {
+        frames = draft.createFrames(strData, false);
       }
-      if (bData != null) {
-        frames = draft.createFrames(bData, false);
+      if (byteData != null) {
+        frames = draft.createFrames(byteData, false);
       }
       if (frames != null) {
         draftFrames.put(draft, frames);
