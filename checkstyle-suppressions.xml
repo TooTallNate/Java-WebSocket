@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE suppressions PUBLIC
+  "-//Checkstyle//DTD SuppressionFilter Configuration 1.0//EN"
+  "https://checkstyle.org/dtds/suppressions_1_0.dtd">
+
+<suppressions>
+  <suppress checks="Javadoc" files="."/>
+  <suppress checks="MagicNumberCheck" files="."/>
+  <suppress checks="PackageName" files="."/>
+  <suppress checks="AbbreviationAsWordInName" files="."/>
+  <suppress checks="LineLength" files="."/>
+  <suppress checks="VariableDeclarationUsageDistance" files="."/>
+  <suppress checks="OverloadMethodsDeclarationOrder" files="."/>
+  <suppress checks="NonEmptyAtclauseDescription" files="."/>
+  <suppress checks="TypeName" files="Draft_6455.java"/>
+  <suppress checks="RightCurly" files="Base64.java"/>
+</suppressions>

@@ -24,16 +24,18 @@
  */
 
 package org.java_websocket.misc;
+
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-		org.java_websocket.misc.OpeningHandshakeRejectionTest.class
+    org.java_websocket.misc.OpeningHandshakeRejectionTest.class
 })
 /**
  * Start all tests for mics
  */
 public class AllMiscTests {
+
 }

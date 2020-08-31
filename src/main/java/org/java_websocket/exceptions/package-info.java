@@ -24,6 +24,7 @@
  */
 
 /**
- * This package encapsulates all implementations in relation with the exceptions thrown in this lib.
+ * This package encapsulates all implementations in relation with the exceptions thrown in this
+ * lib.
  */
 package org.java_websocket.exceptions;

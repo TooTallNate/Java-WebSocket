@@ -31,18 +31,19 @@ import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-        org.java_websocket.util.ByteBufferUtilsTest.class,
-	org.java_websocket.util.Base64Test.class,
-        org.java_websocket.client.AllClientTests.class,
-        org.java_websocket.drafts.AllDraftTests.class,
-        org.java_websocket.issues.AllIssueTests.class,
-        org.java_websocket.exceptions.AllExceptionsTests.class,
-		org.java_websocket.misc.AllMiscTests.class,
-		org.java_websocket.protocols.AllProtocolTests.class,
-        org.java_websocket.framing.AllFramingTests.class
+    org.java_websocket.util.ByteBufferUtilsTest.class,
+    org.java_websocket.util.Base64Test.class,
+    org.java_websocket.client.AllClientTests.class,
+    org.java_websocket.drafts.AllDraftTests.class,
+    org.java_websocket.issues.AllIssueTests.class,
+    org.java_websocket.exceptions.AllExceptionsTests.class,
+    org.java_websocket.misc.AllMiscTests.class,
+    org.java_websocket.protocols.AllProtocolTests.class,
+    org.java_websocket.framing.AllFramingTests.class
 })
 /**
  * Start all tests
  */
 public class AllTests {
+
 }

@@ -25,28 +25,29 @@
 
 package org.java_websocket.exceptions;
 
-import org.junit.Test;
-
-import java.io.UnsupportedEncodingException;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+
+import java.io.UnsupportedEncodingException;
+import org.junit.Test;
 
 /**
  * JUnit Test for the InvalidEncodingException class
  */
 public class InvalidEncodingExceptionTest {
 
-    @Test
-    public void testConstructor() {
-        UnsupportedEncodingException unsupportedEncodingException = new UnsupportedEncodingException();
-        InvalidEncodingException invalidEncodingException = new InvalidEncodingException(unsupportedEncodingException);
-        assertEquals("The argument has to be the provided exception", unsupportedEncodingException, invalidEncodingException.getEncodingException());
-        try {
-            invalidEncodingException = new InvalidEncodingException(null);
-            fail("IllegalArgumentException should be thrown");
-        } catch (IllegalArgumentException e) {
-            //Null is not allowed
-        }
+  @Test
+  public void testConstructor() {
+    UnsupportedEncodingException unsupportedEncodingException = new UnsupportedEncodingException();
+    InvalidEncodingException invalidEncodingException = new InvalidEncodingException(
+        unsupportedEncodingException);
+    assertEquals("The argument has to be the provided exception", unsupportedEncodingException,
+        invalidEncodingException.getEncodingException());
+    try {
+      invalidEncodingException = new InvalidEncodingException(null);
+      fail("IllegalArgumentException should be thrown");
+    } catch (IllegalArgumentException e) {
+      //Null is not allowed
     }
+  }
 }

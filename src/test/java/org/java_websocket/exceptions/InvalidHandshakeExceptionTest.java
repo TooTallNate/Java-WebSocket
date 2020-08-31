@@ -25,37 +25,44 @@
 
 package org.java_websocket.exceptions;
 
+import static org.junit.Assert.assertEquals;
+
 import org.java_websocket.framing.CloseFrame;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * JUnit Test for the InvalidHandshakeException class
  */
 public class InvalidHandshakeExceptionTest {
 
-    @Test
-    public void testConstructor() {
-        InvalidHandshakeException invalidHandshakeException = new InvalidHandshakeException();
-        assertEquals("The close code has to be PROTOCOL_ERROR", CloseFrame.PROTOCOL_ERROR, invalidHandshakeException.getCloseCode());
-        invalidHandshakeException = new InvalidHandshakeException("Message");
-        assertEquals("The close code has to be PROTOCOL_ERROR", CloseFrame.PROTOCOL_ERROR, invalidHandshakeException.getCloseCode());
-        assertEquals("The message has to be the argument", "Message", invalidHandshakeException.getMessage());
-        Exception e = new Exception();
-        invalidHandshakeException = new InvalidHandshakeException("Message", e);
-        assertEquals("The close code has to be PROTOCOL_ERROR", CloseFrame.PROTOCOL_ERROR, invalidHandshakeException.getCloseCode());
-        assertEquals("The message has to be the argument", "Message", invalidHandshakeException.getMessage());
-        assertEquals("The throwable has to be the argument", e, invalidHandshakeException.getCause());
-        invalidHandshakeException = new InvalidHandshakeException(e);
-        assertEquals("The close code has to be PROTOCOL_ERROR", CloseFrame.PROTOCOL_ERROR, invalidHandshakeException.getCloseCode());
-        assertEquals("The throwable has to be the argument", e, invalidHandshakeException.getCause());
+  @Test
+  public void testConstructor() {
+    InvalidHandshakeException invalidHandshakeException = new InvalidHandshakeException();
+    assertEquals("The close code has to be PROTOCOL_ERROR", CloseFrame.PROTOCOL_ERROR,
+        invalidHandshakeException.getCloseCode());
+    invalidHandshakeException = new InvalidHandshakeException("Message");
+    assertEquals("The close code has to be PROTOCOL_ERROR", CloseFrame.PROTOCOL_ERROR,
+        invalidHandshakeException.getCloseCode());
+    assertEquals("The message has to be the argument", "Message",
+        invalidHandshakeException.getMessage());
+    Exception e = new Exception();
+    invalidHandshakeException = new InvalidHandshakeException("Message", e);
+    assertEquals("The close code has to be PROTOCOL_ERROR", CloseFrame.PROTOCOL_ERROR,
+        invalidHandshakeException.getCloseCode());
+    assertEquals("The message has to be the argument", "Message",
+        invalidHandshakeException.getMessage());
+    assertEquals("The throwable has to be the argument", e, invalidHandshakeException.getCause());
+    invalidHandshakeException = new InvalidHandshakeException(e);
+    assertEquals("The close code has to be PROTOCOL_ERROR", CloseFrame.PROTOCOL_ERROR,
+        invalidHandshakeException.getCloseCode());
+    assertEquals("The throwable has to be the argument", e, invalidHandshakeException.getCause());
 
-    }
+  }
 
-    @Test
-    public void testExtends() {
-        InvalidHandshakeException invalidHandshakeException = new InvalidHandshakeException();
-        assertEquals("InvalidHandshakeException must extend InvalidDataException", true, invalidHandshakeException instanceof InvalidDataException);
-    }
+  @Test
+  public void testExtends() {
+    InvalidHandshakeException invalidHandshakeException = new InvalidHandshakeException();
+    assertEquals("InvalidHandshakeException must extend InvalidDataException", true,
+        invalidHandshakeException instanceof InvalidDataException);
+  }
 }

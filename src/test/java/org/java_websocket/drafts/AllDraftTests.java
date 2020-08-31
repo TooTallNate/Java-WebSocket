@@ -24,16 +24,18 @@
  */
 
 package org.java_websocket.drafts;
+
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-		org.java_websocket.drafts.Draft_6455Test.class
+    org.java_websocket.drafts.Draft_6455Test.class
 })
 /**
  * Start all tests for drafts
  */
 public class AllDraftTests {
+
 }

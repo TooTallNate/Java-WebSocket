@@ -26,6 +26,17 @@
 
 package org.java_websocket.issues;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
+import java.util.concurrent.CountDownLatch;
+import javax.net.ssl.SSLContext;
 import org.java_websocket.WebSocket;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ClientHandshake;
@@ -36,91 +47,82 @@ import org.java_websocket.util.SSLContextUtil;
 import org.java_websocket.util.SocketUtil;
 import org.junit.Test;
 
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.security.*;
-import java.security.cert.CertificateException;
-import java.util.concurrent.CountDownLatch;
-
 public class Issue764Test {
-    private CountDownLatch countClientDownLatch = new CountDownLatch(2);
-    private CountDownLatch countServerDownLatch = new CountDownLatch(1);
 
-    @Test(timeout = 2000)
-    public void testIssue() throws IOException, URISyntaxException, KeyStoreException, NoSuchAlgorithmException, KeyManagementException, UnrecoverableKeyException, CertificateException, InterruptedException {
-        int port = SocketUtil.getAvailablePort();
-        final WebSocketClient webSocket = new WebSocketClient(new URI("wss://localhost:" + port)) {
-            @Override
-            public void onOpen(ServerHandshake handshakedata) {
-                countClientDownLatch.countDown();
-                countServerDownLatch.countDown();
-            }
+  private CountDownLatch countClientDownLatch = new CountDownLatch(2);
+  private CountDownLatch countServerDownLatch = new CountDownLatch(1);
 
-            @Override
-            public void onMessage(String message) {
-            }
+  @Test(timeout = 2000)
+  public void testIssue()
+      throws IOException, URISyntaxException, KeyStoreException, NoSuchAlgorithmException, KeyManagementException, UnrecoverableKeyException, CertificateException, InterruptedException {
+    int port = SocketUtil.getAvailablePort();
+    final WebSocketClient webSocket = new WebSocketClient(new URI("wss://localhost:" + port)) {
+      @Override
+      public void onOpen(ServerHandshake handshakedata) {
+        countClientDownLatch.countDown();
+        countServerDownLatch.countDown();
+      }
 
-            @Override
-            public void onClose(int code, String reason, boolean remote) {
-            }
+      @Override
+      public void onMessage(String message) {
+      }
 
-            @Override
-            public void onError(Exception ex) {
-            }
-        };
-        WebSocketServer server = new MyWebSocketServer(port, webSocket, countServerDownLatch);
+      @Override
+      public void onClose(int code, String reason, boolean remote) {
+      }
 
-        SSLContext sslContext = SSLContextUtil.getContext();
+      @Override
+      public void onError(Exception ex) {
+      }
+    };
+    WebSocketServer server = new MyWebSocketServer(port, webSocket, countServerDownLatch);
 
-        server.setWebSocketFactory(new DefaultSSLWebSocketServerFactory(sslContext));
-        webSocket.setSocketFactory(sslContext.getSocketFactory());
-        server.start();
-        countServerDownLatch.await();
-        webSocket.connectBlocking();
-        webSocket.reconnectBlocking();
-        countClientDownLatch.await();
+    SSLContext sslContext = SSLContextUtil.getContext();
+
+    server.setWebSocketFactory(new DefaultSSLWebSocketServerFactory(sslContext));
+    webSocket.setSocketFactory(sslContext.getSocketFactory());
+    server.start();
+    countServerDownLatch.await();
+    webSocket.connectBlocking();
+    webSocket.reconnectBlocking();
+    countClientDownLatch.await();
+  }
+
+
+  private static class MyWebSocketServer extends WebSocketServer {
+
+    private final WebSocketClient webSocket;
+    private final CountDownLatch countServerDownLatch;
+
+
+    public MyWebSocketServer(int port, WebSocketClient webSocket,
+        CountDownLatch countServerDownLatch) {
+      super(new InetSocketAddress(port));
+      this.webSocket = webSocket;
+      this.countServerDownLatch = countServerDownLatch;
     }
 
-
-    private static class MyWebSocketServer extends WebSocketServer {
-        private final WebSocketClient webSocket;
-        private final CountDownLatch countServerDownLatch;
-
-
-        public MyWebSocketServer(int port, WebSocketClient webSocket, CountDownLatch countServerDownLatch) {
-            super(new InetSocketAddress(port));
-            this.webSocket = webSocket;
-            this.countServerDownLatch = countServerDownLatch;
-        }
-
-        @Override
-        public void onOpen(WebSocket conn, ClientHandshake handshake) {
-        }
-
-        @Override
-        public void onClose(WebSocket conn, int code, String reason, boolean remote) {
-        }
-
-        @Override
-        public void onMessage(WebSocket conn, String message) {
-
-        }
-
-        @Override
-        public void onError(WebSocket conn, Exception ex) {
-            ex.printStackTrace();
-        }
-
-        @Override
-        public void onStart() {
-            countServerDownLatch.countDown();
-        }
+    @Override
+    public void onOpen(WebSocket conn, ClientHandshake handshake) {
     }
+
+    @Override
+    public void onClose(WebSocket conn, int code, String reason, boolean remote) {
+    }
+
+    @Override
+    public void onMessage(WebSocket conn, String message) {
+
+    }
+
+    @Override
+    public void onError(WebSocket conn, Exception ex) {
+      ex.printStackTrace();
+    }
+
+    @Override
+    public void onStart() {
+      countServerDownLatch.countDown();
+    }
+  }
 }

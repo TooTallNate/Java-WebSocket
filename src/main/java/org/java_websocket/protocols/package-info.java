@@ -24,6 +24,7 @@
  */
 
 /**
- * This package encapsulates all interfaces and implementations in relation with the WebSocket Sec-WebSocket-Protocol.
+ * This package encapsulates all interfaces and implementations in relation with the WebSocket
+ * Sec-WebSocket-Protocol.
  */
 package org.java_websocket.protocols;

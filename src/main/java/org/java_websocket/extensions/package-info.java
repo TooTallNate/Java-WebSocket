@@ -24,6 +24,7 @@
  */
 
 /**
- * This package encapsulates all interfaces and implementations in relation with the WebSocket Sec-WebSocket-Extensions.
+ * This package encapsulates all interfaces and implementations in relation with the WebSocket
+ * Sec-WebSocket-Extensions.
  */
 package org.java_websocket.extensions;
