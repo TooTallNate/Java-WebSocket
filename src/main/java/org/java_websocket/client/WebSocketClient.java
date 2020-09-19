@@ -488,8 +488,8 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
         SSLSocketFactory factory = null;
         // Prioritise the provided socketfactory
         // Helps when using web debuggers like Fiddler Classic
-        if (socketFactory != null  && (socketFactory instanceof SSLSocketFactory)) {
-            factory = (SSLSocketFactory) socketFactory;
+        if (socketFactory != null && (socketFactory instanceof SSLSocketFactory)) {
+          factory = (SSLSocketFactory) socketFactory;
         } else {
           SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
           sslContext.init(null, null, null);
