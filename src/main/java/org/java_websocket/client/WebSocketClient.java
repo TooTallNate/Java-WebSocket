@@ -485,7 +485,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 
       // if the socket is set by others we don't apply any TLS wrapper
       if (upgradeSocketToSSLSocket && "wss".equals(uri.getScheme())) {
-        SSLSocketFactory factory = null;
+        SSLSocketFactory factory;
         // Prioritise the provided socketfactory
         // Helps when using web debuggers like Fiddler Classic
         if (socketFactory != null && (socketFactory instanceof SSLSocketFactory)) {
