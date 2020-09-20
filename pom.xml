@@ -27,7 +27,9 @@
         <maven.shade.plugin.version>3.1.0</maven.shade.plugin.version>
         <maven.source.plugin.version>3.0.0</maven.source.plugin.version>
         <nexus.staging.maven.plugin.version>1.6.8</nexus.staging.maven.plugin.version>
-
+        <sonar.projectKey>org.java-websocket:Java-WebSocket</sonar.projectKey>
+        <sonar.organization>marci4-github</sonar.organization>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     </properties>
     <licenses>
         <license>
