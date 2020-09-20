@@ -190,7 +190,7 @@ public class WebSocketImpl implements WebSocket {
     this.role = Role.SERVER;
     // draft.copyInstance will be called when the draft is first needed
     if (drafts == null || drafts.isEmpty()) {
-      knownDrafts = new ArrayList<Draft>();
+      knownDrafts = new ArrayList<>();
       knownDrafts.add(new Draft_6455());
     } else {
       knownDrafts = drafts;
@@ -208,8 +208,8 @@ public class WebSocketImpl implements WebSocket {
     if (listener == null || (draft == null && role == Role.SERVER)) {
       throw new IllegalArgumentException("parameters must not be null");
     }
-    this.outQueue = new LinkedBlockingQueue<ByteBuffer>();
-    inQueue = new LinkedBlockingQueue<ByteBuffer>();
+    this.outQueue = new LinkedBlockingQueue<>();
+    inQueue = new LinkedBlockingQueue<>();
     this.wsl = listener;
     this.role = Role.CLIENT;
     if (draft != null) {
@@ -666,7 +666,7 @@ public class WebSocketImpl implements WebSocket {
     if (frames == null) {
       throw new IllegalArgumentException();
     }
-    ArrayList<ByteBuffer> outgoingFrames = new ArrayList<ByteBuffer>();
+    ArrayList<ByteBuffer> outgoingFrames = new ArrayList<>();
     for (Framedata f : frames) {
       log.trace("send frame: {}", f);
       outgoingFrames.add(draft.createBinaryFrame(f));

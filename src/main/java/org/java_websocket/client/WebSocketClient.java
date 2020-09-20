@@ -223,7 +223,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
       }
     };
     if (httpHeaders != null) {
-      headers = new TreeMap<String, String>(String.CASE_INSENSITIVE_ORDER);
+      headers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
       headers.putAll(httpHeaders);
     }
     this.connectTimeout = connectTimeout;
@@ -269,7 +269,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
    */
   public void addHeader(String key, String value) {
     if (headers == null) {
-      headers = new TreeMap<String, String>(String.CASE_INSENSITIVE_ORDER);
+      headers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     }
     headers.put(key, value);
   }

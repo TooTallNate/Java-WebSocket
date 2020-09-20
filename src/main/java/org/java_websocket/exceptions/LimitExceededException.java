@@ -55,6 +55,7 @@ public class LimitExceededException extends InvalidDataException {
    * constructor for a LimitExceededException
    * <p>
    * calling InvalidDataException with closecode TOOBIG
+   * @param limit the allowed size which was not enough
    */
   public LimitExceededException(int limit) {
     super(CloseFrame.TOOBIG);
@@ -65,6 +66,8 @@ public class LimitExceededException extends InvalidDataException {
    * constructor for a LimitExceededException
    * <p>
    * calling InvalidDataException with closecode TOOBIG
+   * @param s the detail message.
+   * @param limit the allowed size which was not enough
    */
   public LimitExceededException(String s, int limit) {
     super(CloseFrame.TOOBIG, s);
