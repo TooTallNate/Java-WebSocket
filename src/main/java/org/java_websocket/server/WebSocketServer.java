@@ -287,7 +287,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
     }
   }
 
-  public void stop() throws IOException, InterruptedException {
+  public void stop() throws InterruptedException {
     stop(0);
   }
 
@@ -538,10 +538,8 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
   private void doWrite(SelectionKey key) throws WrappedIOException {
     WebSocketImpl conn = (WebSocketImpl) key.attachment();
     try {
-      if (SocketChannelIOHelper.batch(conn, conn.getChannel())) {
-        if (key.isValid()) {
-          key.interestOps(SelectionKey.OP_READ);
-        }
+      if (SocketChannelIOHelper.batch(conn, conn.getChannel()) && key.isValid()) {
+        key.interestOps(SelectionKey.OP_READ);
       }
     } catch (IOException e) {
       throw new WrappedIOException(conn, e);
@@ -693,9 +691,6 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
     }
     try {
       stop();
-    } catch (IOException e1) {
-      log.error("Error during shutdown", e1);
-      onError(null, e1);
     } catch (InterruptedException e1) {
       Thread.currentThread().interrupt();
       log.error("Interrupt during stop", e);

@@ -36,6 +36,8 @@ import java.net.Socket;
 import java.net.URI;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -461,19 +463,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
   public void run() {
     InputStream istream;
     try {
-      boolean upgradeSocketToSSLSocket = false;
-      // Prioritise a proxy over a socket factory and apply the socketfactory later
-      if (proxy != Proxy.NO_PROXY) {
-        socket = new Socket(proxy);
-        upgradeSocketToSSLSocket = true;
-      } else if (socketFactory != null) {
-        socket = socketFactory.createSocket();
-      } else if (socket == null) {
-        socket = new Socket(proxy);
-        upgradeSocketToSSLSocket = true;
-      } else if (socket.isClosed()) {
-        throw new IOException();
-      }
+      boolean upgradeSocketToSSLSocket = prepareSocket();
 
       socket.setTcpNoDelay(isTcpNoDelay());
       socket.setReuseAddress(isReuseAddr());
@@ -485,17 +475,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 
       // if the socket is set by others we don't apply any TLS wrapper
       if (upgradeSocketToSSLSocket && "wss".equals(uri.getScheme())) {
-        SSLSocketFactory factory;
-        // Prioritise the provided socketfactory
-        // Helps when using web debuggers like Fiddler Classic
-        if (socketFactory != null && (socketFactory instanceof SSLSocketFactory)) {
-          factory = (SSLSocketFactory) socketFactory;
-        } else {
-          SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
-          sslContext.init(null, null, null);
-          factory = sslContext.getSocketFactory();
-        }
-        socket = factory.createSocket(socket, uri.getHost(), getPort(), true);
+        upgradeSocketToSSL();
       }
 
       if (socket instanceof SSLSocket) {
@@ -544,6 +524,38 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
       engine.closeConnection(CloseFrame.ABNORMAL_CLOSE, e.getMessage());
     }
     connectReadThread = null;
+  }
+
+  private void upgradeSocketToSSL()
+      throws NoSuchAlgorithmException, KeyManagementException, IOException {
+    SSLSocketFactory factory;
+    // Prioritise the provided socketfactory
+    // Helps when using web debuggers like Fiddler Classic
+    if (socketFactory instanceof SSLSocketFactory) {
+      factory = (SSLSocketFactory) socketFactory;
+    } else {
+      SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
+      sslContext.init(null, null, null);
+      factory = sslContext.getSocketFactory();
+    }
+    socket = factory.createSocket(socket, uri.getHost(), getPort(), true);
+  }
+
+  private boolean prepareSocket() throws IOException {
+    boolean upgradeSocketToSSLSocket = false;
+    // Prioritise a proxy over a socket factory and apply the socketfactory later
+    if (proxy != Proxy.NO_PROXY) {
+      socket = new Socket(proxy);
+      upgradeSocketToSSLSocket = true;
+    } else if (socketFactory != null) {
+      socket = socketFactory.createSocket();
+    } else if (socket == null) {
+      socket = new Socket(proxy);
+      upgradeSocketToSSLSocket = true;
+    } else if (socket.isClosed()) {
+      throw new IOException();
+    }
+    return upgradeSocketToSSLSocket;
   }
 
   /**
