@@ -721,6 +721,8 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 
   @Override
   public final void onWebsocketClose(WebSocket conn, int code, String reason, boolean remote) {
+    // fix: reason display suppressed by removeConnection(conn) or onClose(...)
+		log.error(reason);   // added
     selector.wakeup();
     try {
       if (removeConnection(conn)) {
