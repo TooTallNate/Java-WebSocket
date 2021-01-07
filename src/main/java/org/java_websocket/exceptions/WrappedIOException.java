@@ -40,7 +40,7 @@ public class WrappedIOException extends Exception {
   /**
    * The websocket where the IOException happened
    */
-  private final WebSocket connection;
+  private final transient WebSocket connection;
 
   /**
    * The IOException

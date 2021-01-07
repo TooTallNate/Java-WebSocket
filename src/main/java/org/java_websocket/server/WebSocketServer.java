@@ -221,10 +221,10 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
     this.connections = connectionscontainer;
     setTcpNoDelay(false);
     setReuseAddr(false);
-    iqueue = new LinkedList<WebSocketImpl>();
+    iqueue = new LinkedList<>();
 
-    decoders = new ArrayList<WebSocketWorker>(decodercount);
-    buffers = new LinkedBlockingQueue<ByteBuffer>();
+    decoders = new ArrayList<>(decodercount);
+    buffers = new LinkedBlockingQueue<>();
     for (int i = 0; i < decodercount; i++) {
       WebSocketWorker ex = new WebSocketWorker();
       decoders.add(ex);
@@ -270,7 +270,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 
     // copy the connections in a list (prevent callback deadlocks)
     synchronized (connections) {
-      socketsToClose = new ArrayList<WebSocket>(connections);
+      socketsToClose = new ArrayList<>(connections);
     }
 
     for (WebSocket ws : socketsToClose) {
@@ -287,7 +287,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
     }
   }
 
-  public void stop() throws IOException, InterruptedException {
+  public void stop() throws InterruptedException {
     stop(0);
   }
 
@@ -300,7 +300,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
    */
   public Collection<WebSocket> getConnections() {
     synchronized (connections) {
-      return Collections.unmodifiableCollection(new ArrayList<WebSocket>(connections));
+      return Collections.unmodifiableCollection(new ArrayList<>(connections));
     }
   }
 
@@ -337,6 +337,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
    * "backlog" parameter to {@link ServerSocket#bind(SocketAddress, int)}
    *
    * @since 1.5.0
+   * @param numberOfConnections the new number of allowed pending connections
    */
   public void setMaxPendingConnections(int numberOfConnections) {
     maxPendingConnections = numberOfConnections;
@@ -347,6 +348,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
    *
    * @see #setMaxPendingConnections(int)
    * @since 1.5.0
+   * @return the maximum number of pending connections
    */
   public int getMaxPendingConnections() {
     return maxPendingConnections;
@@ -536,10 +538,8 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
   private void doWrite(SelectionKey key) throws WrappedIOException {
     WebSocketImpl conn = (WebSocketImpl) key.attachment();
     try {
-      if (SocketChannelIOHelper.batch(conn, conn.getChannel())) {
-        if (key.isValid()) {
-          key.interestOps(SelectionKey.OP_READ);
-        }
+      if (SocketChannelIOHelper.batch(conn, conn.getChannel()) && key.isValid()) {
+        key.interestOps(SelectionKey.OP_READ);
       }
     } catch (IOException e) {
       throw new WrappedIOException(conn, e);
@@ -691,9 +691,6 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
     }
     try {
       stop();
-    } catch (IOException e1) {
-      log.error("Error during shutdown", e1);
-      onError(null, e1);
     } catch (InterruptedException e1) {
       Thread.currentThread().interrupt();
       log.error("Interrupt during stop", e);
@@ -1004,10 +1001,10 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
     if (strData == null && byteData == null) {
       return;
     }
-    Map<Draft, List<Framedata>> draftFrames = new HashMap<Draft, List<Framedata>>();
+    Map<Draft, List<Framedata>> draftFrames = new HashMap<>();
     List<WebSocket> clientCopy;
     synchronized (clients) {
-      clientCopy = new ArrayList<WebSocket>(clients);
+      clientCopy = new ArrayList<>(clients);
     }
     for (WebSocket client : clientCopy) {
       if (client != null) {
@@ -1054,7 +1051,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
     private BlockingQueue<WebSocketImpl> iqueue;
 
     public WebSocketWorker() {
-      iqueue = new LinkedBlockingQueue<WebSocketImpl>();
+      iqueue = new LinkedBlockingQueue<>();
       setName("WebSocketWorker-" + getId());
       setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
         @Override

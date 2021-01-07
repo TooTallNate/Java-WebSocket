@@ -51,7 +51,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class ProtoclHandshakeRejectionTest {
+public class ProtocolHandshakeRejectionTest {
 
   private static final String additionalHandshake = "HTTP/1.1 101 Websocket Connection Upgrade\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n";
   private static Thread thread;
@@ -355,7 +355,7 @@ public class ProtoclHandshakeRejectionTest {
 
   @Test(timeout = 5000)
   public void testHandshakeRejectionTestCase14() throws Exception {
-    ArrayList<IProtocol> protocols = new ArrayList<IProtocol>();
+    ArrayList<IProtocol> protocols = new ArrayList<>();
     protocols.add(new Protocol("chat"));
     protocols.add(new Protocol("chat2"));
     testProtocolRejection(14, new Draft_6455(Collections.<IExtension>emptyList(), protocols));
@@ -363,7 +363,7 @@ public class ProtoclHandshakeRejectionTest {
 
   @Test(timeout = 5000)
   public void testHandshakeRejectionTestCase15() throws Exception {
-    ArrayList<IProtocol> protocols = new ArrayList<IProtocol>();
+    ArrayList<IProtocol> protocols = new ArrayList<>();
     protocols.add(new Protocol("chat"));
     protocols.add(new Protocol("chat2"));
     testProtocolRejection(15, new Draft_6455(Collections.<IExtension>emptyList(), protocols));
@@ -371,7 +371,7 @@ public class ProtoclHandshakeRejectionTest {
 
   @Test(timeout = 5000)
   public void testHandshakeRejectionTestCase16() throws Exception {
-    ArrayList<IProtocol> protocols = new ArrayList<IProtocol>();
+    ArrayList<IProtocol> protocols = new ArrayList<>();
     protocols.add(new Protocol("chat"));
     protocols.add(new Protocol("chat2"));
     testProtocolRejection(16, new Draft_6455(Collections.<IExtension>emptyList(), protocols));
@@ -379,7 +379,7 @@ public class ProtoclHandshakeRejectionTest {
 
   @Test(timeout = 5000)
   public void testHandshakeRejectionTestCase17() throws Exception {
-    ArrayList<IProtocol> protocols = new ArrayList<IProtocol>();
+    ArrayList<IProtocol> protocols = new ArrayList<>();
     protocols.add(new Protocol("chat"));
     protocols.add(new Protocol(""));
     testProtocolRejection(17, new Draft_6455(Collections.<IExtension>emptyList(), protocols));
@@ -402,7 +402,7 @@ public class ProtoclHandshakeRejectionTest {
 
   @Test(timeout = 5000)
   public void testHandshakeRejectionTestCase21() throws Exception {
-    ArrayList<IProtocol> protocols = new ArrayList<IProtocol>();
+    ArrayList<IProtocol> protocols = new ArrayList<>();
     protocols.add(new Protocol("chat1"));
     protocols.add(new Protocol("chat2"));
     protocols.add(new Protocol("chat3"));
@@ -411,7 +411,7 @@ public class ProtoclHandshakeRejectionTest {
 
   @Test(timeout = 5000)
   public void testHandshakeRejectionTestCase22() throws Exception {
-    ArrayList<IProtocol> protocols = new ArrayList<IProtocol>();
+    ArrayList<IProtocol> protocols = new ArrayList<>();
     protocols.add(new Protocol("chat2"));
     protocols.add(new Protocol("chat3"));
     protocols.add(new Protocol("chat1"));
@@ -420,7 +420,7 @@ public class ProtoclHandshakeRejectionTest {
 
   @Test(timeout = 5000)
   public void testHandshakeRejectionTestCase23() throws Exception {
-    ArrayList<IProtocol> protocols = new ArrayList<IProtocol>();
+    ArrayList<IProtocol> protocols = new ArrayList<>();
     protocols.add(new Protocol("chat3"));
     protocols.add(new Protocol("chat2"));
     protocols.add(new Protocol("chat1"));
@@ -463,7 +463,7 @@ public class ProtoclHandshakeRejectionTest {
   private void testProtocolRejection(int i, Draft_6455 draft) throws Exception {
     final int finalI = i;
     final boolean[] threadReturned = {false};
-    WebSocketClient webSocketClient = new WebSocketClient(
+    final WebSocketClient webSocketClient = new WebSocketClient(
         new URI("ws://localhost:" + port + "/" + finalI), draft) {
       @Override
       public void onOpen(ServerHandshake handshakedata) {
@@ -509,6 +509,7 @@ public class ProtoclHandshakeRejectionTest {
           case 2:
           case 3:
           case 4:
+          case 17:
           case 20:
           case 24:
           case 25:
@@ -533,10 +534,9 @@ public class ProtoclHandshakeRejectionTest {
           case 6:
           case 7:
           case 8:
-          case 17:
+          case 14:
             assertEquals("chat", getProtocol().getProvidedProtocol());
             break;
-          case 14:
           case 22:
             assertEquals("chat2", getProtocol().getProvidedProtocol());
             break;
@@ -588,9 +588,24 @@ public class ProtoclHandshakeRejectionTest {
         fail("There should not be an exception");
       }
     };
-    Thread finalThread = new Thread(webSocketClient);
+    final AssertionError[] exc = new AssertionError[1];
+    exc[0] = null;
+    Thread finalThread = new Thread(new Runnable() {
+      @Override
+      public void run() {
+        try {
+          webSocketClient.run();
+        }catch(AssertionError e){
+          exc[0] = e;
+        }
+      }
+
+    });
     finalThread.start();
     finalThread.join();
+    if (exc[0] != null) {
+      throw exc[0];
+    }
 
     if (!threadReturned[0]) {
       fail("Error");

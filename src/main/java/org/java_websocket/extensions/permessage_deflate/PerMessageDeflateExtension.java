@@ -49,7 +49,7 @@ public class PerMessageDeflateExtension extends CompressionExtension {
 
   // For WebSocketServers, this variable holds the extension parameters that the peer client has requested.
   // For WebSocketClients, this variable holds the extension parameters that client himself has requested.
-  private Map<String, String> requestedParameters = new LinkedHashMap<String, String>();
+  private Map<String, String> requestedParameters = new LinkedHashMap<>();
 
   private Inflater inflater = new Inflater(true);
   private Deflater deflater = new Deflater(Deflater.DEFAULT_COMPRESSION, true);
@@ -71,28 +71,38 @@ public class PerMessageDeflateExtension extends CompressionExtension {
   }
 
   /**
-   * @return serverNoContextTakeover
+   * Access the "server_no_context_takeover" extension parameter
+   *
+   * @see <a href="https://tools.ietf.org/html/rfc7692#section-7.1.1.1">The "server_no_context_takeover" Extension Parameter</a>
+   * @return serverNoContextTakeover is the server no context parameter active
    */
   public boolean isServerNoContextTakeover() {
     return serverNoContextTakeover;
   }
 
   /**
-   * @param serverNoContextTakeover
+   * Setter for the "server_no_context_takeover" extension parameter
+   * @see <a href="https://tools.ietf.org/html/rfc7692#section-7.1.1.1">The "server_no_context_takeover" Extension Parameter</a>
+   * @param serverNoContextTakeover set the server no context parameter
    */
   public void setServerNoContextTakeover(boolean serverNoContextTakeover) {
     this.serverNoContextTakeover = serverNoContextTakeover;
   }
 
   /**
-   * @return clientNoContextTakeover
+   * Access the "client_no_context_takeover" extension parameter
+   *
+   * @see <a href="https://tools.ietf.org/html/rfc7692#section-7.1.1.2">The "client_no_context_takeover" Extension Parameter</a>
+   * @return clientNoContextTakeover is the client no context parameter active
    */
   public boolean isClientNoContextTakeover() {
     return clientNoContextTakeover;
   }
 
   /**
-   * @param clientNoContextTakeover
+   * Setter for the "client_no_context_takeover" extension parameter
+   * @see <a href="https://tools.ietf.org/html/rfc7692#section-7.1.1.2">The "client_no_context_takeover" Extension Parameter</a>
+   * @param clientNoContextTakeover set the client no context parameter
    */
   public void setClientNoContextTakeover(boolean clientNoContextTakeover) {
     this.clientNoContextTakeover = clientNoContextTakeover;
@@ -224,7 +234,7 @@ public class PerMessageDeflateExtension extends CompressionExtension {
    * @param data the bytes of data
    * @return true if the data is OK
    */
-  private boolean endsWithTail(byte[] data) {
+  private static boolean endsWithTail(byte[] data) {
     if (data.length < 4) {
       return false;
     }

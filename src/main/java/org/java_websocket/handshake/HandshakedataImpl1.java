@@ -48,7 +48,7 @@ public class HandshakedataImpl1 implements HandshakeBuilder {
    * Constructor for handshake implementation
    */
   public HandshakedataImpl1() {
-    map = new TreeMap<String, String>(String.CASE_INSENSITIVE_ORDER);
+    map = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
   }
 
   @Override

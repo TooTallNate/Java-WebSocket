@@ -5,13 +5,13 @@ import java.util.Map;
 
 public class ExtensionRequestData {
 
-  public static String EMPTY_VALUE = "";
+  public static final String EMPTY_VALUE = "";
 
   private Map<String, String> extensionParameters;
   private String extensionName;
 
   private ExtensionRequestData() {
-    extensionParameters = new LinkedHashMap<String, String>();
+    extensionParameters = new LinkedHashMap<>();
   }
 
   public static ExtensionRequestData parseExtensionRequest(String extensionRequest) {

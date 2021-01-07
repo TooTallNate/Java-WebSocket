@@ -143,6 +143,14 @@ public class WebSocketServerTest {
   }
 
   @Test
+  public void testMaxPendingConnections() {
+    MyWebSocketServer server = new MyWebSocketServer(1337);
+    assertEquals(server.getMaxPendingConnections(), -1);
+    server.setMaxPendingConnections(10);
+    assertEquals(server.getMaxPendingConnections(), 10);
+  }
+
+  @Test
   public void testBroadcast() {
     MyWebSocketServer server = new MyWebSocketServer(1337);
     try {

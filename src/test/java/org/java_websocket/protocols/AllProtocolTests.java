@@ -32,7 +32,7 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
     org.java_websocket.protocols.ProtocolTest.class,
-    org.java_websocket.protocols.ProtoclHandshakeRejectionTest.class
+    ProtocolHandshakeRejectionTest.class
 })
 /**
  * Start all tests for protocols

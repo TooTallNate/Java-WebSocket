@@ -229,10 +229,10 @@ public class Draft_6455 extends Draft {
     if (inputExtensions == null || inputProtocols == null || inputMaxFrameSize < 1) {
       throw new IllegalArgumentException();
     }
-    knownExtensions = new ArrayList<IExtension>(inputExtensions.size());
-    knownProtocols = new ArrayList<IProtocol>(inputProtocols.size());
+    knownExtensions = new ArrayList<>(inputExtensions.size());
+    knownProtocols = new ArrayList<>(inputProtocols.size());
     boolean hasDefault = false;
-    byteBufferList = new ArrayList<ByteBuffer>();
+    byteBufferList = new ArrayList<>();
     for (IExtension inputExtension : inputExtensions) {
       if (inputExtension.getClass().equals(DefaultExtension.class)) {
         hasDefault = true;
@@ -442,13 +442,13 @@ public class Draft_6455 extends Draft {
 
   @Override
   public Draft copyInstance() {
-    ArrayList<IExtension> newExtensions = new ArrayList<IExtension>();
-    for (IExtension extension : getKnownExtensions()) {
-      newExtensions.add(extension.copyInstance());
+    ArrayList<IExtension> newExtensions = new ArrayList<>();
+    for (IExtension knownExtension : getKnownExtensions()) {
+      newExtensions.add(knownExtension.copyInstance());
     }
-    ArrayList<IProtocol> newProtocols = new ArrayList<IProtocol>();
-    for (IProtocol protocol : getKnownProtocols()) {
-      newProtocols.add(protocol.copyInstance());
+    ArrayList<IProtocol> newProtocols = new ArrayList<>();
+    for (IProtocol knownProtocol : getKnownProtocols()) {
+      newProtocols.add(knownProtocol.copyInstance());
     }
     return new Draft_6455(newExtensions, newProtocols, maxFrameSize);
   }
@@ -700,7 +700,7 @@ public class Draft_6455 extends Draft {
   @Override
   public List<Framedata> translateFrame(ByteBuffer buffer) throws InvalidDataException {
     while (true) {
-      List<Framedata> frames = new LinkedList<Framedata>();
+      List<Framedata> frames = new LinkedList<>();
       Framedata cur;
       if (incompleteframe != null) {
         // complete an incomplete frame

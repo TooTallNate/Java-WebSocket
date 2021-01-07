@@ -25,6 +25,7 @@
 
 package org.java_websocket.server;
 
+import org.java_websocket.protocols.ProtocolHandshakeRejectionTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
@@ -32,7 +33,7 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
     org.java_websocket.server.DefaultWebSocketServerFactoryTest.class,
-    org.java_websocket.protocols.ProtoclHandshakeRejectionTest.class
+    ProtocolHandshakeRejectionTest.class
 })
 /**
  * Start all tests for the server
