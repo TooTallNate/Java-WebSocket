@@ -137,17 +137,18 @@ public interface WebSocket {
   boolean hasBufferedData();
 
   /**
-   * Returns the address of the endpoint this socket is connected to, or{@code null} if it is
+   * Returns the address of the endpoint this socket is connected to, or {@code null} if it is
    * unconnected.
    *
-   * @return never returns null
+   * @return the remote socket address or null, if this socket is unconnected
    */
   InetSocketAddress getRemoteSocketAddress();
 
   /**
-   * Returns the address of the endpoint this socket is bound to.
+   * Returns the address of the endpoint this socket is bound to, or {@code null} if it is not
+   * bound.
    *
-   * @return never returns null
+   * @return the local socket address or null, if this socket is not bound
    */
   InetSocketAddress getLocalSocketAddress();
 
