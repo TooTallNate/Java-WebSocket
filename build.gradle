@@ -1,7 +1,8 @@
-apply plugin: 'java'
-apply plugin: 'idea'
-apply plugin: 'maven'
-
+plugins {
+    id 'java'
+    id 'idea'
+    id 'maven'
+}
 
 repositories {
     mavenLocal()
@@ -17,10 +18,12 @@ configurations {
     deployerJars
 }
 
-configure(install.repositories.mavenInstaller) {
-    pom.version = project.version
-    pom.groupId = "org.java-websocket"
-    pom.artifactId = 'Java-WebSocket'
+install {
+    repositories.mavenInstaller {
+        pom.version = project.version
+        pom.groupId = project.group
+        pom.artifactId = 'Java-WebSocket'
+    }
 }
 
 dependencies {
@@ -30,14 +33,3 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
     testCompile group: 'org.json', name: 'json', version: '20180813'
 }
-
-
-//deploy to maven repository
-//uploadArchives {
-//    repositories.mavenDeployer {
-//        configuration = configurations.deployerJars
-//        repository(url: repositoryUrl) {
-//			authentication(userName: repositoryUsername, password: repositoryPassword)
-//		}
-//    }
-//}
