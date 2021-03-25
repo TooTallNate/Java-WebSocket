@@ -29,6 +29,7 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -36,7 +37,6 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Random;
 import java.util.TimeZone;
 import org.java_websocket.WebSocketImpl;
 import org.java_websocket.enums.CloseHandshakeType;
@@ -150,7 +150,7 @@ public class Draft_6455 extends Draft {
   /**
    * Attribute for the reusable random instance
    */
-  private final Random reuseableRandom = new Random();
+  private final SecureRandom reuseableRandom = new SecureRandom();
 
   /**
    * Attribute for the maximum allowed size of a frame
