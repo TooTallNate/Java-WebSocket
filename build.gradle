@@ -18,6 +18,14 @@ configurations {
     deployerJars
 }
 
+compileJava {
+    options.compilerArgs += ['-encoding', 'UTF-8']
+}
+
+javadoc {
+    options.encoding = 'UTF-8'
+}
+
 install {
     repositories.mavenInstaller {
         pom.version = project.version
