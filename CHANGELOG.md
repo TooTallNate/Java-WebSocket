@@ -1,5 +1,30 @@
 # Change log
 
+## Version Release 1.5.2 (2021/04/05)
+
+#### Bugs Fixed
+
+* [Issue 1132](https://github.com/TooTallNate/Java-WebSocket/issues/1132) - Draft_6455 flagged by Veracode CWE-331 replace Random with SecureRandom ([PR 1133 ](https://github.com/TooTallNate/Java-WebSocket/pull/1133) by [@marci4](https://github.com/marci4))
+* [Issue 1053](https://github.com/TooTallNate/Java-WebSocket/issues/1053) - It's an invalid check null with SEC_WEB_SOCKET_KEY . ([PR 1054 ](https://github.com/TooTallNate/Java-WebSocket/pull/1054) by [@dota17](https://github.com/dota17))
+* [Issue 1026](https://github.com/TooTallNate/Java-WebSocket/issues/1026) - Force client to use the valid schema ([PR 1025 ](https://github.com/TooTallNate/Java-WebSocket/pull/1025) by [@yindex](https://github.com/yindex))
+* [PR 1070](https://github.com/TooTallNate/Java-WebSocket/pull/1070) - Prioritise using provided socket factory when creating socket with proxy, by [@marci4](https://github.com/marci4)
+* [PR 1028](https://github.com/TooTallNate/Java-WebSocket/pull/1028) - Fixed typo in WebSocketClient.reset's error message, by [@alphaho](https://github.com/alphaho)
+* [PR 1018](https://github.com/TooTallNate/Java-WebSocket/pull/1018) - Added missing return character, by [@pawankgupta-se](https://github.com/pawankgupta-se)
+
+#### New Features
+
+* [Issue 1008](https://github.com/TooTallNate/Java-WebSocket/issues/1008) - Improve Sec-WebSocket-Protocol usability ([PR 1034 ](https://github.com/TooTallNate/Java-WebSocket/pull/1034) by [@marci4](https://github.com/marci4))
+
+#### Refactoring
+
+* [Issue 1050](https://github.com/TooTallNate/Java-WebSocket/issues/1050) - What about adding the CodeFormatterProfile.xml with the code format ? ([PR 1060 ](https://github.com/TooTallNate/Java-WebSocket/pull/1060) by [@dota17](https://github.com/dota17))
+* [PR 1072](https://github.com/TooTallNate/Java-WebSocket/pull/1072) - Improve code quality, by [@marci4](https://github.com/marci4)
+* [PR 1060](https://github.com/TooTallNate/Java-WebSocket/pull/1060) - Using Google Java Code Style To Reformat Code, by [@dota17](https://github.com/dota17)
+
+In this release 5 issues and 9 pull requests were closed.
+
+###############################################################################
+
 ## Version Release 1.5.1 (2020/05/10)
 
 #### Bugs Fixed
@@ -7,6 +32,8 @@
 * [Issue 1011](https://github.com/TooTallNate/Java-WebSocket/issues/1011) - Crash on Android due to missing method `setEndpointIdentificationAlgorithm` on 1.5.0. ([PR 1014](https://github.com/TooTallNate/Java-WebSocket/pull/1014))
 
 In this release 1 issue and 1 pull request were closed.
+
+###############################################################################
 
 ## Version Release 1.5.0 (2020/05/06)
 
