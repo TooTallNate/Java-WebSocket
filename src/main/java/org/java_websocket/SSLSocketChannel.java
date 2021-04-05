@@ -417,7 +417,7 @@ public class SSLSocketChannel implements WrappedByteChannel, ByteChannel, ISSLCh
   }
 
   /**
-   * Compares <code>sessionProposedCapacity<code> with buffer's capacity. If buffer's capacity is
+   * Compares sessionProposedCapacity with buffer's capacity. If buffer's capacity is
    * smaller, returns a buffer with the proposed capacity. If it's equal or larger, returns a buffer
    * with capacity twice the size of the initial one.
    *
