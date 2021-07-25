@@ -101,8 +101,10 @@ public class AutobahnServerTest extends WebSocketServer {
       System.out.println("No limit specified. Defaulting to MaxInteger");
       limit = Integer.MAX_VALUE;
     }
+    PerMessageDeflateExtension perMessageDeflateExtension = new PerMessageDeflateExtension();
+    perMessageDeflateExtension.setThreshold(0);
     AutobahnServerTest test = new AutobahnServerTest(port, limit,
-        new Draft_6455(new PerMessageDeflateExtension()));
+        new Draft_6455(perMessageDeflateExtension));
     test.setConnectionLostTimeout(0);
     test.start();
   }

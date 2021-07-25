@@ -44,6 +44,8 @@ public class PerMessageDeflateExtension extends CompressionExtension {
   private static final byte[] TAIL_BYTES = {(byte) 0x00, (byte) 0x00, (byte) 0xFF, (byte) 0xFF};
   private static final int BUFFER_SIZE = 1 << 10;
 
+  private int threshold = 1024;
+
   private boolean serverNoContextTakeover = true;
   private boolean clientNoContextTakeover = false;
 
@@ -68,6 +70,24 @@ public class PerMessageDeflateExtension extends CompressionExtension {
 
   public void setDeflater(Deflater deflater) {
     this.deflater = deflater;
+  }
+
+  /**
+   * Get the size threshold for doing the compression
+   * @return Size (in bytes) below which messages will not be compressed
+   * @since 1.5.3
+   */
+  public int getThreshold() {
+    return threshold;
+  }
+
+  /**
+   * Set the size when payloads smaller than this will not be compressed.
+   * @param threshold the size in bytes
+   * @since 1.5.3
+   */
+  public void setThreshold(int threshold) {
+    this.threshold = threshold;
   }
 
   /**
@@ -126,6 +146,10 @@ public class PerMessageDeflateExtension extends CompressionExtension {
     if (inputFrame.getOpcode() == Opcode.CONTINUOUS && inputFrame.isRSV1()) {
       throw new InvalidDataException(CloseFrame.POLICY_VALIDATION,
           "RSV1 bit can only be set for the first frame.");
+    }
+    // If rsv1 is not set, we dont have a compressed message
+    if (!inputFrame.isRSV1()) {
+      return;
     }
 
     // Decompressed output buffer.
@@ -190,12 +214,16 @@ public class PerMessageDeflateExtension extends CompressionExtension {
       return;
     }
 
+    byte[] payloadData = inputFrame.getPayloadData().array();
+    if (payloadData.length < threshold) {
+      return;
+    }
     // Only the first frame's RSV1 must be set.
     if (!(inputFrame instanceof ContinuousFrame)) {
       ((DataFrame) inputFrame).setRSV1(true);
     }
 
-    deflater.setInput(inputFrame.getPayloadData().array());
+    deflater.setInput(payloadData);
     // Compressed output buffer.
     ByteArrayOutputStream output = new ByteArrayOutputStream();
     // Temporary buffer to hold compressed output.
@@ -316,10 +344,6 @@ public class PerMessageDeflateExtension extends CompressionExtension {
    */
   @Override
   public void isFrameValid(Framedata inputFrame) throws InvalidDataException {
-    if ((inputFrame instanceof TextFrame || inputFrame instanceof BinaryFrame) && !inputFrame
-        .isRSV1()) {
-      throw new InvalidFrameException("RSV1 bit must be set for DataFrames.");
-    }
     if ((inputFrame instanceof ContinuousFrame) && (inputFrame.isRSV1() || inputFrame.isRSV2()
         || inputFrame.isRSV3())) {
       throw new InvalidFrameException(
@@ -333,4 +357,6 @@ public class PerMessageDeflateExtension extends CompressionExtension {
   public String toString() {
     return "PerMessageDeflateExtension";
   }
+
+
 }
