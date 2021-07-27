@@ -15,8 +15,8 @@ Implemented WebSocket protocol versions are:
  * [RFC 6455](http://tools.ietf.org/html/rfc6455)
  * [RFC 7692](http://tools.ietf.org/html/rfc7692)
 
-[Here](https://github.com/TooTallNate/Java-WebSocket/wiki/Drafts) some more details about protocol versions/drafts. 
-[PerMessageDeflateExample](https://github.com/TooTallNate/Java-WebSocket/wiki/PerMessageDeflateExample) enable the extension with reference to both a server and client example. 
+[Here](https://github.com/TooTallNate/Java-WebSocket/wiki/Drafts) some more details about protocol versions/drafts.
+[PerMessageDeflateExample](https://github.com/TooTallNate/Java-WebSocket/wiki/PerMessageDeflateExample) enable the extension with reference to both a server and client example.
 
 
 ## Getting Started
@@ -76,14 +76,14 @@ Writing your own WebSocket Client
 The `org.java_websocket.client.WebSocketClient` abstract class can connect to
 valid WebSocket servers. The constructor expects a valid `ws://` URI to
 connect to. Important events `onOpen`, `onClose`, `onMessage` and `onError`
-get fired throughout the life of the WebSocketClient, and must be implemented 
+get fired throughout the life of the WebSocketClient, and must be implemented
 in **your** subclass.
 
 An example for a WebSocketClient can be found in both the [wiki](https://github.com/TooTallNate/Java-WebSocket/wiki#client-example) and the [example](https://github.com/TooTallNate/Java-WebSocket/tree/master/src/main/example) folder.
 
 Examples
 -------------------
- 
+
 You can find a lot of examples [here](https://github.com/TooTallNate/Java-WebSocket/tree/master/src/main/example).
 
 WSS Support

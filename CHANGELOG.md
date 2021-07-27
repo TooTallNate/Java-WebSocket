@@ -41,7 +41,7 @@ In this release 1 issue and 1 pull request were closed.
 
 This release requires API Level 1.7.
 
-#### Security 
+#### Security
 
 This release contains a security fix for [CVE-2020-11050](https://nvd.nist.gov/vuln/detail/CVE-2020-11050).
 
