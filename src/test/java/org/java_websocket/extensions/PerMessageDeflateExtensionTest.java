@@ -11,6 +11,7 @@ import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.extensions.permessage_deflate.PerMessageDeflateExtension;
+import org.java_websocket.framing.BinaryFrame;
 import org.java_websocket.framing.ContinuousFrame;
 import org.java_websocket.framing.TextFrame;
 import org.junit.Test;
@@ -20,6 +21,7 @@ public class PerMessageDeflateExtensionTest {
   @Test
   public void testDecodeFrame() throws InvalidDataException {
     PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
+    deflateExtension.setThreshold(0);
     String str = "This is a highly compressable text"
         + "This is a highly compressable text"
         + "This is a highly compressable text"
@@ -29,13 +31,30 @@ public class PerMessageDeflateExtensionTest {
     TextFrame frame = new TextFrame();
     frame.setPayload(ByteBuffer.wrap(message));
     deflateExtension.encodeFrame(frame);
+    assertTrue(frame.isRSV1());
     deflateExtension.decodeFrame(frame);
     assertArrayEquals(message, frame.getPayloadData().array());
+  }
+  @Test
+  public void testDecodeFrameIfRSVIsNotSet() throws InvalidDataException {
+    PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
+    String str = "This is a highly compressable text"
+        + "This is a highly compressable text"
+        + "This is a highly compressable text"
+        + "This is a highly compressable text"
+        + "This is a highly compressable text";
+    byte[] message = str.getBytes();
+    TextFrame frame = new TextFrame();
+    frame.setPayload(ByteBuffer.wrap(message));
+    deflateExtension.decodeFrame(frame);
+    assertArrayEquals(message, frame.getPayloadData().array());
+    assertFalse(frame.isRSV1());
   }
 
   @Test
   public void testEncodeFrame() {
     PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
+    deflateExtension.setThreshold(0);
     String str = "This is a highly compressable text"
         + "This is a highly compressable text"
         + "This is a highly compressable text"
@@ -46,6 +65,25 @@ public class PerMessageDeflateExtensionTest {
     frame.setPayload(ByteBuffer.wrap(message));
     deflateExtension.encodeFrame(frame);
     assertTrue(message.length > frame.getPayloadData().array().length);
+  }
+  @Test
+  public void testEncodeFrameBelowThreshold() {
+    PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
+    deflateExtension.setThreshold(11);
+    String str = "Hello World";
+    byte[] message = str.getBytes();
+    TextFrame frame = new TextFrame();
+    frame.setPayload(ByteBuffer.wrap(message));
+    deflateExtension.encodeFrame(frame);
+    // Message length is equal to the threshold --> encode
+    assertTrue(frame.isRSV1());
+    str = "Hello Worl";
+    message = str.getBytes();
+    frame = new TextFrame();
+    frame.setPayload(ByteBuffer.wrap(message));
+    deflateExtension.encodeFrame(frame);
+    // Message length is below to the threshold --> do NOT encode
+    assertFalse(frame.isRSV1());
   }
 
   @Test
@@ -72,9 +110,8 @@ public class PerMessageDeflateExtensionTest {
     TextFrame frame = new TextFrame();
     try {
       deflateExtension.isFrameValid(frame);
-      fail("Frame not valid. RSV1 must be set.");
     } catch (Exception e) {
-      //
+      fail("RSV1 is optional and should therefore not fail");
     }
     frame.setRSV1(true);
     try {
