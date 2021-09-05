@@ -86,6 +86,7 @@ public class Issue256Test {
 		};
 		ws.setConnectionLostTimeout( 0 );
 		ws.start();
+		countServerDownLatch.await();
 	}
 
 	private void runTestScenarioReconnect( boolean closeBlocking ) throws Exception {
