@@ -469,7 +469,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
       socket.setReuseAddress(isReuseAddr());
 
       if (!socket.isConnected()) {
-        InetSocketAddress addr = new InetSocketAddress(dnsResolver.resolve(uri), this.getPort());
+        InetSocketAddress addr = dnsResolver == null ? InetSocketAddress.createUnresolved(uri.getHost(), getPort()) : new InetSocketAddress(dnsResolver.resolve(uri), this.getPort());
         socket.connect(addr, connectTimeout);
       }
 
