@@ -31,7 +31,7 @@ To use maven add this dependency to your pom.xml:
 <dependency>
   <groupId>org.java-websocket</groupId>
   <artifactId>Java-WebSocket</artifactId>
-  <version>1.5.1</version>
+  <version>1.5.2</version>
 </dependency>
 ```
 
@@ -42,7 +42,7 @@ mavenCentral()
 ```
 Then you can just add the latest version to your build.
 ```xml
-compile "org.java-websocket:Java-WebSocket:1.5.1"
+compile "org.java-websocket:Java-WebSocket:1.5.2"
 ```
 
 #### Logging
