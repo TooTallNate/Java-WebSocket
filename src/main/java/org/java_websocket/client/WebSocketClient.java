@@ -1003,5 +1003,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
    */
   public void setDaemon(boolean daemon) {
       this.daemon = daemon;
+      //pass it to the AbstractWebSocket too, to use it on the connectionLostChecker thread factory
+      super.setDaemon(daemon);
   }  
 }

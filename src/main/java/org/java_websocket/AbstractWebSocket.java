@@ -89,6 +89,12 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
    * @since 1.3.9
    */
   private boolean websocketRunning = false;
+  /**
+   * Attribute to start the connectionLostChecker as daemon
+   *
+   * @since 1.5.3
+   */
+  private boolean daemon = false;
 
   /**
    * Attribute to sync on
@@ -182,7 +188,7 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
   private void restartConnectionLostTimer() {
     cancelConnectionLostTimer();
     connectionLostCheckerService = Executors
-        .newSingleThreadScheduledExecutor(new NamedThreadFactory("connectionLostChecker"));
+        .newSingleThreadScheduledExecutor(new NamedThreadFactory("connectionLostChecker",daemon));
     Runnable connectionLostChecker = new Runnable() {
 
       /**
@@ -307,5 +313,30 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
   public void setReuseAddr(boolean reuseAddr) {
     this.reuseAddr = reuseAddr;
   }
+
+ 
+   /**
+   * Getter to daemon 
+   *
+   * @return whether connectionLostChecker factory spawns threads as daemon
+   * @since 1.5.3
+   */
+  public boolean isDaemon() {
+      return daemon;
+  }
+
+    /**
+   * Setter for daemon
+   * <p>
+   * Enables/disables connectionLostChecker factory spawning daemon threads
+   *
+   * @param daemon whether to enable or disable SO_REUSEADDR
+   * @since 1.5.3
+   */
+  public void setDaemon(boolean daemon) {
+      this.daemon = daemon;
+  }
+  
+  
 
 }
