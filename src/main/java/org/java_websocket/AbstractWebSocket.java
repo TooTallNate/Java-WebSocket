@@ -91,6 +91,13 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
   private boolean websocketRunning = false;
 
   /**
+   * Attribute to start internal threads as daemon
+   *
+   * @since 1.5.6
+   */
+  private boolean daemon = false;
+
+  /**
    * Attribute to sync on
    */
   private final Object syncConnectionLost = new Object();
@@ -182,7 +189,7 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
   private void restartConnectionLostTimer() {
     cancelConnectionLostTimer();
     connectionLostCheckerService = Executors
-        .newSingleThreadScheduledExecutor(new NamedThreadFactory("connectionLostChecker"));
+        .newSingleThreadScheduledExecutor(new NamedThreadFactory("connectionLostChecker", daemon));
     Runnable connectionLostChecker = new Runnable() {
 
       /**
@@ -308,4 +315,25 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
     this.reuseAddr = reuseAddr;
   }
 
+ 
+  /**
+   * Getter for daemon
+   *
+   * @return whether internal threads are spawned in daemon mode
+   * @since 1.5.6
+   */
+  public boolean isDaemon() {
+    return daemon;
+  }
+
+  /**
+   * Setter for daemon
+   * <p>
+   * Controls whether or not internal threads are spawned in daemon mode
+   *
+   * @since 1.5.6
+   */
+  public void setDaemon(boolean daemon) {
+    this.daemon = daemon;
+  }
 }
