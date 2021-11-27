@@ -148,6 +148,11 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
    * @since 1.4.1
    */
   private DnsResolver dnsResolver = null;
+  
+   /**
+   * Indicates whether the client should be started as daemon.
+   */
+  private boolean daemon;
 
   /**
    * Constructs a WebSocketClient instance and sets it to the connect to the specified URI. The
@@ -372,6 +377,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
       throw new IllegalStateException("WebSocketClient objects are not reuseable");
     }
     connectReadThread = new Thread(this);
+    connectReadThread.setDaemon(daemon);
     connectReadThread.setName("WebSocketConnectReadThread-" + connectReadThread.getId());
     connectReadThread.start();
   }
@@ -506,6 +512,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
     }
 
     writeThread = new Thread(new WebsocketWriteThread(this));
+    writeThread.setDaemon(daemon);
     writeThread.start();
 
     byte[] rawbuffer = new byte[WebSocketImpl.RCVBUF];
@@ -983,4 +990,18 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
     }
     engine.eot();
   }
+  
+   /**
+   * Indicates whether the client was started as daemon.
+   */
+  public boolean isDaemon() {
+      return daemon;
+  }
+
+   /**
+   * Indicates whether the client should be started as daemon.
+   */
+  public void setDaemon(boolean daemon) {
+      this.daemon = daemon;
+  }  
 }

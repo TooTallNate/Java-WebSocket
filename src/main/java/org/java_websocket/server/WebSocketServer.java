@@ -110,6 +110,10 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
   private List<Draft> drafts;
 
   private Thread selectorthread;
+  /**
+   * Indicates whether the server should be started as daemon.
+   */
+  private boolean daemon;
 
   private final AtomicBoolean isclosed = new AtomicBoolean(false);
 
@@ -245,7 +249,9 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
     if (selectorthread != null) {
       throw new IllegalStateException(getClass().getName() + " can only be started once.");
     }
-    new Thread(this).start();
+   Thread t = new Thread(this);
+   t.setDaemon(daemon);
+   t.start();
   }
 
   /**
@@ -321,6 +327,20 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
     return port;
   }
 
+   /**
+   * Indicates whether the server was started as daemon.
+   */
+  public boolean isDaemon() {
+      return daemon;
+  }
+
+   /**
+   * Indicates whether the server should be started as daemon.
+   */
+  public void setDaemon(boolean daemon) {
+      this.daemon = daemon;
+  }  
+  
   /**
    * Get the list of active drafts
    *
