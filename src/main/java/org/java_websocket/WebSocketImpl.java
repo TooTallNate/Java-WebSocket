@@ -752,6 +752,7 @@ public class WebSocketImpl implements WebSocket {
   private void open(Handshakedata d) {
     log.trace("open using draft: {}", draft);
     readyState = ReadyState.OPEN;
+    updateLastPong();
     try {
       wsl.onWebsocketOpen(this, d);
     } catch (RuntimeException e) {
