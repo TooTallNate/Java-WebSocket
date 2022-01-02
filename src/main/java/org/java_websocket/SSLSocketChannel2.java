@@ -385,10 +385,13 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel, ISSLC
   public void close() throws IOException {
     sslEngine.closeOutbound();
     sslEngine.getSession().invalidate();
-    if (socketChannel.isOpen()) {
-      socketChannel.write(wrap(emptybuffer));// FIXME what if not all bytes can be written
+    try {
+      if (socketChannel.isOpen()) {
+        socketChannel.write(wrap(emptybuffer));
+      }
+    } finally { // in case socketChannel.write produce exception - channel will never close
+      socketChannel.close();
     }
-    socketChannel.close();
   }
 
   private boolean isHandShakeComplete() {
