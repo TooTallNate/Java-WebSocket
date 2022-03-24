@@ -417,7 +417,7 @@ public class WebSocketImpl implements WebSocket {
       throw e;
     } catch (Error e) {
       log.error("Closing web socket due to an error during frame processing");
-      Exception exception = new Exception(e.getMessage());
+      Exception exception = new Exception(e);
       wsl.onWebsocketError(this, exception);
       close(CloseFrame.UNEXPECTED_CONDITION, exception.getMessage());
     }
