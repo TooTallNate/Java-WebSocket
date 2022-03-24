@@ -26,6 +26,8 @@
 package org.java_websocket;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
@@ -410,6 +412,14 @@ public class WebSocketImpl implements WebSocket {
       log.error("Closing due to invalid data in frame", e);
       wsl.onWebsocketError(this, e);
       close(e);
+    } catch (VirtualMachineError | ThreadDeath | LinkageError e) {
+      log.error("Got fatal error during frame processing");
+      throw e;
+    } catch (Error e) {
+      log.error("Closing web socket due to an error during frame processing");
+      Exception exception = new Exception(e.getMessage());
+      wsl.onWebsocketError(this, exception);
+      close(CloseFrame.UNEXPECTED_CONDITION, exception.getMessage());
     }
   }
 
