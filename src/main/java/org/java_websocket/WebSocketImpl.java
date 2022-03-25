@@ -26,8 +26,6 @@
 package org.java_websocket;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
@@ -419,7 +417,8 @@ public class WebSocketImpl implements WebSocket {
       log.error("Closing web socket due to an error during frame processing");
       Exception exception = new Exception(e);
       wsl.onWebsocketError(this, exception);
-      close(CloseFrame.UNEXPECTED_CONDITION, exception.getMessage());
+      String errorMessage = "Got error " + e.getClass().getName() + " on the server side";
+      close(CloseFrame.UNEXPECTED_CONDITION, errorMessage);
     }
   }
 

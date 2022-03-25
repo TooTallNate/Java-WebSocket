@@ -1083,7 +1083,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
         if (ws != null) {
           ws.close();
         }
-        log.error("Got fatal error in worker thread" + getName());
+        log.error("Got fatal error in worker thread {}", getName());
         Exception exception = new Exception(e);
         handleFatal(ws, exception);
       } catch (Throwable e) {
