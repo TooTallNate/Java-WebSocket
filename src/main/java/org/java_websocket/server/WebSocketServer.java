@@ -1089,9 +1089,6 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
       } catch (VirtualMachineError | ThreadDeath | LinkageError e) {
-        if (ws != null) {
-          ws.close();
-        }
         log.error("Got fatal error in worker thread {}", getName());
         Exception exception = new Exception(e);
         handleFatal(ws, exception);
