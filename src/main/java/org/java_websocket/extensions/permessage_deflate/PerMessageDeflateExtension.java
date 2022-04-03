@@ -142,14 +142,14 @@ public class PerMessageDeflateExtension extends CompressionExtension {
       return;
     }
 
+    if (!inputFrame.isRSV1() && inputFrame.getOpcode() != Opcode.CONTINUOUS) {
+      return;
+    }
+
     // RSV1 bit must be set only for the first frame.
     if (inputFrame.getOpcode() == Opcode.CONTINUOUS && inputFrame.isRSV1()) {
       throw new InvalidDataException(CloseFrame.POLICY_VALIDATION,
           "RSV1 bit can only be set for the first frame.");
-    }
-    // If rsv1 is not set, we dont have a compressed message
-    if (!inputFrame.isRSV1()) {
-      return;
     }
 
     // Decompressed output buffer.
@@ -179,11 +179,6 @@ public class PerMessageDeflateExtension extends CompressionExtension {
       }
     } catch (DataFormatException e) {
       throw new InvalidDataException(CloseFrame.POLICY_VALIDATION, e.getMessage());
-    }
-
-    // RSV1 bit must be cleared after decoding, so that other extensions don't throw an exception.
-    if (inputFrame.isRSV1()) {
-      ((DataFrame) inputFrame).setRSV1(false);
     }
 
     // Set frames payload to the new decompressed data.
