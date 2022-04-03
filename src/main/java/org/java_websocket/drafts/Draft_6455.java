@@ -575,7 +575,7 @@ public class Draft_6455 extends Draft {
     frame.setPayload(payload);
     if (frame.getOpcode() != Opcode.CONTINUOUS) {
       // Prioritize the negotiated extension
-      if (frame.isRSV1() ||frame.isRSV2() || frame.isRSV3()) {
+      if (frame.isRSV1() || frame.isRSV2() || frame.isRSV3()) {
         currentDecodingExtension = getExtension();
       } else {
         // No encoded message, so we can use the default one
