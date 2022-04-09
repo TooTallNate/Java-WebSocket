@@ -1,5 +1,26 @@
 # Change log
 
+## Version Release 1.5.3 (2022/04/09)
+
+#### Bugs Fixed
+
+* [Issue 1230](https://github.com/TooTallNate/Java-WebSocket/issues/1230) - CONTINUOUS should be decoded depending on the first frame ([PR 1232 ](https://github.com/TooTallNate/Java-WebSocket/pull/1232) by [@marci4](https://github.com/marci4))
+* [Issue 1203](https://github.com/TooTallNate/Java-WebSocket/issues/1203) - Lost connection detection not working on delayed connect-Call ([PR 1204 ](https://github.com/TooTallNate/Java-WebSocket/pull/1204) by [@marci4](https://github.com/marci4))
+* [Issue 1164](https://github.com/TooTallNate/Java-WebSocket/issues/1164) - [Android & Node.js Server] Problem using PerMessageDeflateExtension with custom ping/pong messages ?  ([PR 1165 ](https://github.com/TooTallNate/Java-WebSocket/pull/1165) by [@marci4](https://github.com/marci4))
+* [Issue 1160](https://github.com/TooTallNate/Java-WebSocket/issues/1160) - `WebSocketWorker` does not handle `Throwable` ([PR 1223 ](https://github.com/TooTallNate/Java-WebSocket/pull/1223) by [@Serpion-ua](https://github.com/Serpion-ua))
+* [Issue 1142](https://github.com/TooTallNate/Java-WebSocket/issues/1142) - Verifying server certificate ([PR 1143 ](https://github.com/TooTallNate/Java-WebSocket/pull/1143) by [@marci4](https://github.com/marci4))
+* [PR 1227](https://github.com/TooTallNate/Java-WebSocket/pull/1227) - Correct web socket closing, by [@Serpion-ua](https://github.com/Serpion-ua)
+* [PR 1223](https://github.com/TooTallNate/Java-WebSocket/pull/1223) - Issue-1160 Added java.lang.Error handling in WebSocketImpl and WebSocketServer, by [@Serpion-ua](https://github.com/Serpion-ua)
+* [PR 1212](https://github.com/TooTallNate/Java-WebSocket/pull/1212) - high cpu when channel close exception fix, by [@Adeptius](https://github.com/Adeptius)
+
+#### New Features
+
+* [PR 1185](https://github.com/TooTallNate/Java-WebSocket/pull/1185) - Added support unresolved socket addresses, by [@vtsykun](https://github.com/vtsykun)
+
+In this release 5 issues and 8 pull requests were closed.
+
+###############################################################################
+
 ## Version Release 1.5.2 (2021/04/05)
 
 #### Bugs Fixed
