@@ -329,6 +329,21 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
   }
 
   /**
+   * Same as <code>reconnect</code> but blocks with a timeout until the websocket reconnected or 
+   * failed to do so.<br>
+   *
+   * @param timeout  The connect timeout
+   * @param timeUnit The timeout time unit
+   * @return Returns whether it succeeded or not.
+   * @throws InterruptedException Thrown when the threads get interrupted
+   * @since 1.3.8
+   */
+  public boolean reconnectBlocking(long timeout, TimeUnit timeUnit) throws InterruptedException {
+	  reset();
+	  return connectBlocking(timeout, timeUnit);
+  }
+
+  /**
    * Reset everything relevant to allow a reconnect
    *
    * @since 1.3.8
