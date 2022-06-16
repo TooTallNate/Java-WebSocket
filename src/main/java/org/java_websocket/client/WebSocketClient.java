@@ -321,7 +321,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
    *
    * @return Returns whether it succeeded or not.
    * @throws InterruptedException Thrown when the threads get interrupted
-   * @since 1.3.8
+   * @since 1.5.4
    */
   public boolean reconnectBlocking() throws InterruptedException {
     reset();
