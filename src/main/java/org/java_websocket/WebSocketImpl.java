@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
+import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -59,6 +60,7 @@ import org.java_websocket.handshake.ServerHandshake;
 import org.java_websocket.handshake.ServerHandshakeBuilder;
 import org.java_websocket.interfaces.ISSLChannel;
 import org.java_websocket.protocols.IProtocol;
+import org.java_websocket.server.WebSocketServer;
 import org.java_websocket.server.WebSocketServer.WebSocketWorker;
 import org.java_websocket.util.Charsetfunctions;
 import org.slf4j.Logger;
@@ -69,7 +71,7 @@ import org.slf4j.LoggerFactory;
  * "handshake" phase, then allows for easy sending of text frames, and receiving frames through an
  * event-based model.
  */
-public class WebSocketImpl implements WebSocket {
+public class WebSocketImpl implements WebSocket, Runnable {
 
   /**
    * The default port of WebSockets, as defined in the spec. If the nullary constructor is used,
@@ -914,6 +916,120 @@ public class WebSocketImpl implements WebSocket {
   public void setWorkerThread(WebSocketWorker workerThread) {
     this.workerThread = workerThread;
   }
-
-
+  
+  @Override
+  public void run() {
+      if( key.isValid() ) {
+          WebSocketImpl conn = (WebSocketImpl) key.attachment();
+          if (key.isReadable()) {
+              ByteBuffer buf = null;
+              try {
+                  synchronized (this.wsl) {
+                      buf = ((WebSocketServer) wsl).takeBuffer();
+                  }
+              } catch (InterruptedException e) {
+                  log.error(e.getMessage(), e);
+              }
+              if(conn.getChannel() == null){
+                  key.cancel();
+                  handleIOException( key, conn, new IOException() );
+              }
+              try {
+                  if( SocketChannelIOHelper.read(buf, conn, conn.getChannel())) {
+                      if(buf.hasRemaining()) {
+                          conn.inQueue.put( buf );
+                          synchronized (this.wsl) {
+                              ((WebSocketServer) wsl).queue( conn );
+                          }
+                          if(conn.getChannel() instanceof WrappedByteChannel && ((WrappedByteChannel) conn.getChannel()).isNeedRead()) {
+                              synchronized (this.wsl) {
+                                  ((WebSocketServer) wsl).getIqueue().add( conn );
+                              }
+                          }
+                      } else {
+                          synchronized (this.wsl) {
+                              ((WebSocketServer) wsl).pushBuffer(buf);
+                          }
+                      }
+                  } else {
+                      synchronized (this.wsl) {
+                          ((WebSocketServer) wsl).pushBuffer( buf );
+                      }
+                  }
+              } catch ( IOException e ) {
+                  try {
+                      synchronized (this.wsl) {
+                          ((WebSocketServer) wsl).pushBuffer( buf );
+                      }
+                  } catch (InterruptedException e1) {
+                      log.error(e1.getMessage(), e1);
+                  }
+              } catch (InterruptedException e) {
+                  log.error(e.getMessage(), e);
+              }
+          } else if(key.isWritable()) {
+              try {
+                  if(SocketChannelIOHelper.batch(conn, conn.getChannel()) && key.isValid()) {
+                      key.interestOps(SelectionKey.OP_READ);
+                  }
+              } catch (IOException e) {
+                  log.error(e.getMessage(), e);
+              }
+          }
+          try {
+            synchronized (this.wsl) {
+                doAdditionalRead();
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } catch (IOException e) {
+            if( key != null )
+                key.cancel();
+            handleIOException( key, conn, e );
+        }
+      }
+  }
+  
+  private void handleIOException(SelectionKey key, WebSocket conn, IOException ex) {
+      // onWebsocketError( conn, ex );// conn may be null here
+      if (key != null) {
+        key.cancel();
+      }
+      if (conn != null) {
+        conn.closeConnection(CloseFrame.ABNORMAL_CLOSE, ex.getMessage());
+      } else if (key != null) {
+        SelectableChannel channel = key.channel();
+        if (channel != null && channel
+            .isOpen()) { // this could be the case if the IOException ex is a SSLException
+          try {
+            channel.close();
+          } catch (IOException e) {
+            // there is nothing that must be done here
+          }
+          log.trace("Connection closed because of exception", ex);
+        }
+      }
+    }
+  
+  private void doAdditionalRead() throws InterruptedException, IOException {
+      WebSocketImpl conn;
+      while ( !((WebSocketServer) wsl).getIqueue().isEmpty() ) {
+          conn = ((WebSocketServer) wsl).getIqueue().remove( 0 );
+          WrappedByteChannel c = ( (WrappedByteChannel) conn.getChannel() );
+          ByteBuffer buf = ((WebSocketServer) wsl).takeBuffer();
+          try {
+              if( SocketChannelIOHelper.readMore( buf, conn, c ) )
+                  ((WebSocketServer) wsl).getIqueue().add( conn );
+              if( buf.hasRemaining() ) {
+                  conn.inQueue.put( buf );
+                  ((WebSocketServer) wsl).queue( conn );
+              } else {
+                  ((WebSocketServer) wsl).pushBuffer( buf );
+              }
+          } catch ( IOException e ) {
+              ((WebSocketServer) wsl).pushBuffer( buf );
+              throw e;
+          }
+      }
+  }
 }

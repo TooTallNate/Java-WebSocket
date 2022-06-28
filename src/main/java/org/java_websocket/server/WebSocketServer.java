@@ -32,7 +32,6 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.CancelledKeyException;
-import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -47,12 +46,12 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import org.java_websocket.AbstractWebSocket;
 import org.java_websocket.SocketChannelIOHelper;
 import org.java_websocket.WebSocket;
@@ -67,6 +66,7 @@ import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.handshake.Handshakedata;
+import org.java_websocket.reactor.TCPReactor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -367,62 +367,6 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
     if (!doSetupSelectorAndServerThread()) {
       return;
     }
-    try {
-      int shutdownCount = 5;
-      int selectTimeout = 0;
-      while (!selectorthread.isInterrupted() && shutdownCount != 0) {
-        SelectionKey key = null;
-        try {
-          if (isclosed.get()) {
-            selectTimeout = 5;
-          }
-          int keyCount = selector.select(selectTimeout);
-          if (keyCount == 0 && isclosed.get()) {
-            shutdownCount--;
-          }
-          Set<SelectionKey> keys = selector.selectedKeys();
-          Iterator<SelectionKey> i = keys.iterator();
-
-          while (i.hasNext()) {
-            key = i.next();
-
-            if (!key.isValid()) {
-              continue;
-            }
-
-            if (key.isAcceptable()) {
-              doAccept(key, i);
-              continue;
-            }
-
-            if (key.isReadable() && !doRead(key, i)) {
-              continue;
-            }
-
-            if (key.isWritable()) {
-              doWrite(key);
-            }
-          }
-          doAdditionalRead();
-        } catch (CancelledKeyException e) {
-          // an other thread may cancel the key
-        } catch (ClosedByInterruptException e) {
-          return; // do the same stuff as when InterruptedException is thrown
-        } catch (WrappedIOException ex) {
-          handleIOException(key, ex.getConnection(), ex.getIOException());
-        } catch (IOException ex) {
-          handleIOException(key, null, ex);
-        } catch (InterruptedException e) {
-          // FIXME controlled shutdown (e.g. take care of buffermanagement)
-          Thread.currentThread().interrupt();
-        }
-      }
-    } catch (RuntimeException e) {
-      // should hopefully never occur
-      handleFatal(null, e);
-    } finally {
-      doServerShutdown();
-    }
   }
 
   /**
@@ -559,20 +503,17 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
   private boolean doSetupSelectorAndServerThread() {
     selectorthread.setName("WebSocketSelector-" + selectorthread.getId());
     try {
-      server = ServerSocketChannel.open();
-      server.configureBlocking(false);
-      ServerSocket socket = server.socket();
-      socket.setReceiveBufferSize(WebSocketImpl.RCVBUF);
-      socket.setReuseAddress(isReuseAddr());
-      socket.bind(address, getMaxPendingConnections());
-      selector = Selector.open();
-      server.register(selector, server.validOps());
-      startConnectionLostTimer();
-      for (WebSocketWorker ex : decoders) {
-        ex.start();
-      }
-      onStart();
-    } catch (IOException ex) {
+        server = ServerSocketChannel.open();
+        server.configureBlocking(false);
+        ServerSocket socket = server.socket();
+        socket.setReceiveBufferSize(WebSocketImpl.RCVBUF);
+        socket.setReuseAddress(this.isReuseAddr());
+        socket.bind(address, this.getMaxPendingConnections());
+        selector = Selector.open();
+        TCPReactor reactor = new TCPReactor(address, server, this, selector);
+        Thread thread = new Thread(reactor);
+        thread.start();
+    } catch (Exception ex) {
       handleFatal(null, ex);
       return false;
     }
@@ -642,7 +583,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
     return ByteBuffer.allocate(WebSocketImpl.RCVBUF);
   }
 
-  protected void queue(WebSocketImpl ws) throws InterruptedException {
+  public void queue(WebSocketImpl ws) throws InterruptedException {
     if (ws.getWorkerThread() == null) {
       ws.setWorkerThread(decoders.get(queueinvokes % decoders.size()));
       queueinvokes++;
@@ -650,11 +591,11 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
     ws.getWorkerThread().put(ws);
   }
 
-  private ByteBuffer takeBuffer() throws InterruptedException {
+  public ByteBuffer takeBuffer() throws InterruptedException {
     return buffers.take();
   }
 
-  private void pushBuffer(ByteBuffer buf) throws InterruptedException {
+  public void pushBuffer(ByteBuffer buf) throws InterruptedException {
     if (buffers.size() > queuesize.intValue()) {
       return;
     }
@@ -802,7 +743,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
       // the thread which cancels key is responsible for possible cleanup
       conn.outQueue.clear();
     }
-    selector.wakeup();
+    conn.getSelectionKey().selector().wakeup();
   }
 
   @Override
@@ -1118,5 +1059,29 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
         pushBuffer(buf);
       }
     }
+  }
+  
+  public WebSocketServerFactory getWsf() {
+      return wsf;
+  }
+
+  public List<WebSocketImpl> getIqueue() {
+      return iqueue;
+  }
+
+  public List<WebSocketWorker> getDecoders() {
+      return decoders;
+  }
+
+  public List<Draft> getDrafts() {
+      return drafts;
+  }
+
+  public BlockingQueue<ByteBuffer> getBuffers() {
+      return buffers;
+  }
+  
+  public AtomicInteger getQueuesize() {
+      return queuesize;
   }
 }
