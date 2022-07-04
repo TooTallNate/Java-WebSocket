@@ -90,13 +90,13 @@ public class AutobahnServerTest extends WebSocketServer {
   public static void main(String[] args) throws UnknownHostException {
     int port, limit;
     try {
-      port = new Integer(args[0]);
+      port = Integer.parseInt(args[0]);
     } catch (Exception e) {
       System.out.println("No port specified. Defaulting to 9003");
       port = 9003;
     }
     try {
-      limit = new Integer(args[1]);
+      limit = Integer.parseInt(args[1]);
     } catch (Exception e) {
       System.out.println("No limit specified. Defaulting to MaxInteger");
       limit = Integer.MAX_VALUE;

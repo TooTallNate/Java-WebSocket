@@ -331,7 +331,7 @@ public abstract class Draft {
     if (vers.length() > 0) {
       int v;
       try {
-        v = new Integer(vers.trim());
+        v = Integer.parseInt(vers.trim());
         return v;
       } catch (NumberFormatException e) {
         return -1;
