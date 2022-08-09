@@ -90,7 +90,7 @@ public class AutobahnSSLServerTest extends WebSocketServer {
   public static void main(String[] args) throws UnknownHostException {
     int port;
     try {
-      port = new Integer(args[0]);
+      port = Integer.parseInt(args[0]);
     } catch (Exception e) {
       System.out.println("No port specified. Defaulting to 9003");
       port = 9003;

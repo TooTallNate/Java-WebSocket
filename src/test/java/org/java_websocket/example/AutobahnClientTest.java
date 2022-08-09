@@ -91,8 +91,8 @@ public class AutobahnClientTest extends WebSocketClient {
           String[] spl = line.split(" ");
           if (line.startsWith("r")) {
             if (spl.length == 3) {
-              start = new Integer(spl[1]);
-              end = new Integer(spl[2]);
+              start = Integer.parseInt(spl[1]);
+              end = Integer.parseInt(spl[2]);
             }
             if (start != null && end != null) {
               if (start > end) {
