@@ -220,7 +220,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
     this.address = address;
     this.connections = connectionscontainer;
     setTcpNoDelay(false);
-    setReuseAddr(false);
+    setReuseAddr(true);
     iqueue = new LinkedList<>();
 
     decoders = new ArrayList<>(decodercount);
