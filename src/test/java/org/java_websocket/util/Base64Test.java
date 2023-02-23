@@ -41,14 +41,20 @@ public class Base64Test {
     Assert.assertEquals("", Base64.encodeBytes(new byte[0]));
     Assert.assertEquals("QHE=",
         Base64.encodeBytes(new byte[]{49, 121, 64, 113, -63, 43, -24, 62, 4, 48}, 2, 2, 0));
-    Assert.assertEquals("H4sIAAAAAAAAADMEALfv3IMBAAAA",
+    assertGzipEncodedBytes("H4sIAAAAAAAA", "MEALfv3IMBAAAA",
         Base64.encodeBytes(new byte[]{49, 121, 64, 113, -63, 43, -24, 62, 4, 48}, 0, 1, 6));
-    Assert.assertEquals("H4sIAAAAAAAAAHMoBABQHKKWAgAAAA==",
+    assertGzipEncodedBytes("H4sIAAAAAAAA", "MoBABQHKKWAgAAAA==",
         Base64.encodeBytes(new byte[]{49, 121, 64, 113, -63, 43, -24, 62, 4, 48}, 2, 2, 18));
     Assert.assertEquals("F63=",
         Base64.encodeBytes(new byte[]{49, 121, 64, 113, 63, 43, -24, 62, 4, 48}, 2, 2, 32));
-    Assert.assertEquals("6sg7---------6Bc0-0F699L-V----==",
+    assertGzipEncodedBytes("6sg7--------", "Bc0-0F699L-V----==",
         Base64.encodeBytes(new byte[]{49, 121, 64, 113, 63, 43, -24, 62, 4, 48}, 2, 2, 34));
+  }
+
+  // see https://bugs.openjdk.org/browse/JDK-8253142
+  private void assertGzipEncodedBytes(String expectedPrefix, String expectedSuffix, String actual) {
+    Assert.assertTrue(actual.startsWith(expectedPrefix));
+    Assert.assertTrue(actual.endsWith(expectedSuffix));
   }
 
   @Test
