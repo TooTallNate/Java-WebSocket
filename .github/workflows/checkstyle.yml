@@ -16,5 +16,6 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: '17'
+          distribution: 'temurin'
       - name: Code Style Check
         run: mvn -B checkstyle:check --file pom.xml
