@@ -895,6 +895,11 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 
   @Override
   public boolean isClosed() {
+    try {
+      Thread.sleep(100);
+    } catch (InterruptedException e) { 
+      System.out.println("Exception");
+    } 
     return engine.isClosed();
   }
 

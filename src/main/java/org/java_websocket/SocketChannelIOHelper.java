@@ -83,6 +83,11 @@ public class SocketChannelIOHelper {
     if (ws == null) {
       return false;
     }
+    try {
+      Thread.sleep(100);
+    } catch (InterruptedException es) {
+      System.out.println("Exception");
+    }
     ByteBuffer buffer = ws.outQueue.peek();
     WrappedByteChannel c = null;
 
