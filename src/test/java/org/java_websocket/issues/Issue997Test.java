@@ -100,6 +100,11 @@ public class Issue997Test {
     SSLWebSocketClient client = testIssueWithLocalServer("localhost", SocketUtil.getAvailablePort(),
         SSLContextUtil.getLocalhostOnlyContext(), SSLContextUtil.getLocalhostOnlyContext(), "");
     assertTrue(client.onOpen);
+    try {
+        Thread.sleep(500);
+    } catch (InterruptedException ie) {
+        System.out.println(ie);
+    }
     assertFalse(client.onSSLError);
   }
 
