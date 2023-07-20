@@ -1,5 +1,22 @@
 # Change log
 
+###############################################################################
+
+## Version Release 1.5.4 (2023/07/20)
+
+#### New Features
+
+* [Issue 1308](https://github.com/TooTallNate/Java-WebSocket/issues/1308) - Add support for Java modules ([PR 1309](https://github.com/TooTallNate/Java-WebSocket/pull/1309))
+* [PR 1309](https://github.com/TooTallNate/Java-WebSocket/pull/1309) - Add support for Java modules
+
+#### Refactoring
+
+* [PR 1259](https://github.com/TooTallNate/Java-WebSocket/pull/1259) - Replace usages of deprecated constructor Integer(String) with Integer.parseInt
+
+In this release 1 issue and 2 pull requests were closed.
+
+###############################################################################
+
 ## Version Release 1.5.3 (2022/04/09)
 
 #### Bugs Fixed
