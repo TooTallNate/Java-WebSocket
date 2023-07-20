@@ -5,7 +5,7 @@
     <groupId>org.java-websocket</groupId>
     <artifactId>Java-WebSocket</artifactId>
     <packaging>jar</packaging>
-    <version>1.5.4-SNAPSHOT</version>
+    <version>1.5.5-SNAPSHOT</version>
     <name>Java-WebSocket</name>
     <description>A barebones WebSocket client and server implementation written 100% in Java</description>
     <url>https://github.com/TooTallNate/Java-WebSocket</url>
@@ -26,7 +26,7 @@
         <maven.javadoc.plugin.version>3.5.0</maven.javadoc.plugin.version>
         <maven.shade.plugin.version>3.4.1</maven.shade.plugin.version>
         <maven.source.plugin.version>3.2.1</maven.source.plugin.version>
-        <nexus.staging.maven.plugin.version>1.6.8</nexus.staging.maven.plugin.version>
+        <nexus.staging.maven.plugin.version>1.6.13</nexus.staging.maven.plugin.version>
         <sonar.projectKey>org.java-websocket:Java-WebSocket</sonar.projectKey>
         <sonar.organization>marci4-github</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
@@ -156,6 +156,10 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>${maven.javadoc.plugin.version}</version>
+                    <configuration>
+                        <sourcepath>src/main/java</sourcepath>
+                        <additionalOptions>-Xdoclint:none</additionalOptions>
+                    </configuration>
                     <executions>
                         <execution>
                             <id>attach-javadocs</id>
@@ -182,6 +186,7 @@
                             </goals>
                         </execution>
                     </executions>
+
                 </plugin>
                 <plugin>
                     <groupId>org.sonatype.plugins</groupId>
@@ -250,7 +255,7 @@
                         <extensions>true</extensions>
                         <configuration>
                             <serverId>ossrh</serverId>
-                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                            <autoReleaseAfterClose>false</autoReleaseAfterClose>
                             <nexusUrl>https://oss.sonatype.org/</nexusUrl>
                         </configuration>
                     </plugin>
@@ -261,72 +266,9 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>full</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-simple</artifactId>
-                </dependency>
-            </dependencies>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>biz.aQute.bnd</groupId>
-                        <artifactId>bnd-maven-plugin</artifactId>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-shade-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>shade</goal>
-                                </goals>
-                                <configuration>
-                                    <shadedArtifactAttached>true</shadedArtifactAttached>
-                                    <shadedClassifierName>with-dependencies</shadedClassifierName>
-                                    <transformers>
-                                        <transformer
-                                                implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
-                                            <resource>simplelogger.properties</resource>
-                                            <file>src\main\example\simplelogger.properties</file>
-                                        </transformer>
-                                    </transformers>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-source-plugin</artifactId>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-jar-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <goal>test-jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
+                        <configuration>
+                            <additionalOptions>-Xdoclint:none</additionalOptions>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>
