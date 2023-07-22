@@ -116,6 +116,9 @@ public class Issue677Test {
     assertTrue("webSocket.isOpen()", webSocket0.isOpen());
     webSocket0.close();
     countDownLatch0.await();
+    while (org.java_websocket.WebSocketImpl.getExecutionCounter() < 2) {
+      Thread.yield();
+    }
     assertTrue("webSocket.isClosed()", webSocket0.isClosed());
     webSocket1.connectBlocking();
     assertTrue("webSocket.isOpen()", webSocket1.isOpen());

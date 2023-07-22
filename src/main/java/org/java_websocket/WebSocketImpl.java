@@ -78,6 +78,7 @@ public class WebSocketImpl implements WebSocket {
    */
   public static final int DEFAULT_PORT = 80;
 
+  private static volatile int executionCounter = 0;
   /**
    * The default wss port of WebSockets, as defined in the spec. If the nullary constructor is used,
    * DEFAULT_WSS_PORT will be the port the WebSocketServer is binded to. Note that ports under 1024
@@ -569,6 +570,11 @@ public class WebSocketImpl implements WebSocket {
     }
     handshakerequest = null;
     readyState = ReadyState.CLOSED;
+    executionCounter += 1;
+  }
+
+  public static int getExecutionCounter() {
+    return executionCounter;
   }
 
   protected void closeConnection(int code, boolean remote) {
