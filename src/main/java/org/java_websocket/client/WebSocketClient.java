@@ -343,10 +343,12 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
       closeBlocking();
       if (writeThread != null) {
         this.writeThread.interrupt();
+        this.writeThread.join();
         this.writeThread = null;
       }
       if (connectReadThread != null) {
         this.connectReadThread.interrupt();
+        this.connectReadThread.join();
         this.connectReadThread = null;
       }
       this.draft.reset();
@@ -505,6 +507,14 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
       throw e;
     }
 
+    if (writeThread != null) {
+      writeThread.interrupt();
+      try {
+        writeThread.join();
+      } catch (InterruptedException e) {
+        /* ignore */
+      }
+    }
     writeThread = new Thread(new WebsocketWriteThread(this));
     writeThread.start();
 
@@ -523,7 +533,6 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
       onError(e);
       engine.closeConnection(CloseFrame.ABNORMAL_CLOSE, e.getMessage());
     }
-    connectReadThread = null;
   }
 
   private void upgradeSocketToSSL()
@@ -801,7 +810,6 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
         handleIOException(e);
       } finally {
         closeSocket();
-        writeThread = null;
       }
     }
 
