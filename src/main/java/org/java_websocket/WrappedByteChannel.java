@@ -39,13 +39,6 @@ public interface WrappedByteChannel extends ByteChannel {
   boolean isNeedWrite();
 
   /**
-   * Gets called when {@link #isNeedWrite()} ()} requires a additional rite
-   *
-   * @throws IOException may be thrown due to an error while writing
-   */
-  void writeMore() throws IOException;
-
-  /**
    * returns whether readMore should be called to fetch data which has been decoded but not yet been
    * returned.
    *

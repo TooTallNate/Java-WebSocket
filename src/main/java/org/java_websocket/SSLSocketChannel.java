@@ -502,11 +502,6 @@ public class SSLSocketChannel implements WrappedByteChannel, ByteChannel, ISSLCh
   }
 
   @Override
-  public void writeMore() throws IOException {
-    //Nothing to do since we write out all the data in a while loop
-  }
-
-  @Override
   public boolean isNeedRead() {
     return peerNetData.hasRemaining() || peerAppData.hasRemaining();
   }

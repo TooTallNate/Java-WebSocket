@@ -53,7 +53,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Implements the relevant portions of the SocketChannel interface with the SSLEngine wrapper.
  */
-public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel, ISSLChannel {
+public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel, WrappedMoreWrittenChannel, ISSLChannel {
 
   /**
    * This object is used to feed the {@link SSLEngine}'s wrap and unwrap methods during the
