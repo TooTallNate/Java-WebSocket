@@ -40,6 +40,8 @@ public class InvalidDataException extends Exception {
    */
   private final int closecode;
 
+  private Integer httpErrorCode;
+
   /**
    * constructor for a InvalidDataException
    *
@@ -47,6 +49,17 @@ public class InvalidDataException extends Exception {
    */
   public InvalidDataException(int closecode) {
     this.closecode = closecode;
+  }
+
+  /**
+   * constructor for a InvalidDataException
+   *
+   * @param closecode the closecode which will be returned
+   * @param httpErrorCode the httpErrorCode which will be returned.
+   */
+  public InvalidDataException(int closecode, int httpErrorCode) {
+    this.closecode = closecode;
+    this.httpErrorCode = httpErrorCode;
   }
 
   /**
@@ -58,6 +71,19 @@ public class InvalidDataException extends Exception {
   public InvalidDataException(int closecode, String s) {
     super(s);
     this.closecode = closecode;
+  }
+
+  /**
+   * constructor for a InvalidDataException.
+   *
+   * @param closecode the closecode which will be returned.
+   * @param s         the detail message.
+   * @param httpErrorCode the httpErrorCode which will be returned.
+   */
+  public InvalidDataException(int closecode, String s, int httpErrorCode) {
+    super(s);
+    this.closecode = closecode;
+    this.httpErrorCode = httpErrorCode;
   }
 
   /**
@@ -90,6 +116,15 @@ public class InvalidDataException extends Exception {
    */
   public int getCloseCode() {
     return closecode;
+  }
+
+  /**
+   * Getter httpErrorCode
+   *
+   * @return the httpErrorCode
+   */
+  public Integer getHttpErrorCode() {
+    return httpErrorCode;
   }
 
 }
