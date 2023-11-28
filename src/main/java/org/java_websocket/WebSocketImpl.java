@@ -456,7 +456,7 @@ public class WebSocketImpl implements WebSocket {
     String errorCodeDescription;
     switch (errorCode) {
       case 401:
-        errorCodeDescription = "401 WebSocket Authentication Failure";
+        errorCodeDescription = "401 Authorization Required";
         break;
       case 404:
         errorCodeDescription = "404 WebSocket Upgrade Failure";
