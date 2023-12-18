@@ -1,6 +1,17 @@
 # Change log
 
 ###############################################################################
+## Version Release 1.5.5 (2023/12/18)
+
+#### Bugs Fixed
+
+* [Issue 1365](https://github.com/TooTallNate/Java-WebSocket/issues/1365) - Hang on reconnectBlocking
+* [Issue 1364](https://github.com/TooTallNate/Java-WebSocket/issues/1364) - NPE during reconnect ([PR 1367](https://github.com/TooTallNate/Java-WebSocket/pull/1367))
+* [PR 1367](https://github.com/TooTallNate/Java-WebSocket/pull/1367) - Fix multiple issues related to reconnect
+
+In this release 2 issues and 1 pull request were closed.
+
+###############################################################################
 
 ## Version Release 1.5.4 (2023/07/20)
 
