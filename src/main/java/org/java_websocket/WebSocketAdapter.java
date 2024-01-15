@@ -99,7 +99,7 @@ public abstract class WebSocketAdapter implements WebSocketListener {
    * Default implementation for onPreparePing, returns a (cached) PingFrame that has no application
    * data.
    *
-   * @param conn The <tt>WebSocket</tt> connection from which the ping frame will be sent.
+   * @param conn The <code>WebSocket</code> connection from which the ping frame will be sent.
    * @return PingFrame to be sent.
    * @see org.java_websocket.WebSocketListener#onPreparePing(WebSocket)
    */

@@ -35,7 +35,7 @@ package org.java_websocket.util;
  * <br>
  * <code>byte[] myByteArray = Base64.decode( encoded );</code>
  *
- * <p>The <tt>options</tt> parameter, which appears in a few places, is used to pass
+ * <p>The <code>options</code> parameter, which appears in a few places, is used to pass
  * several pieces of information to the encoder. In the "higher level" methods such as encodeBytes(
  * bytes, options ) the options parameter can be used to indicate such things as first gzipping the
  * bytes before encoding them, not inserting linefeeds, and encoding using the URL-safe and Ordered
@@ -140,9 +140,9 @@ package org.java_websocket.util;
  *   when data that's being decoded is gzip-compressed and will decompress it
  *   automatically. Generally things are cleaner. You'll probably have to
  *   change some method calls that you were making to support the new
- *   options format (<tt>int</tt>s that you "OR" together).</li>
+ *   options format (<code>int</code>s that you "OR" together).</li>
  *  <li>v1.5.1 - Fixed bug when decompressing and decoding to a
- *   byte[] using <tt>decode( String s, boolean gzipCompressed )</tt>.
+ *   byte[] using <code>decode( String s, boolean gzipCompressed )</code>.
  *   Added the ability to "suspend" encoding in the Output Stream so
  *   you can turn on and off the encoding if you need to embed base64
  *   data in an otherwise "normal" stream (like an XML file).</li>
@@ -873,7 +873,7 @@ public class Base64 {
 
   /**
    * A {@link Base64.OutputStream} will write data to another
-   * <tt>java.io.OutputStream</tt>, given in the constructor,
+   * <code>java.io.OutputStream</code>, given in the constructor,
    * and encode/decode to/from Base64 notation on the fly.
    *
    * @see Base64
@@ -895,7 +895,7 @@ public class Base64 {
     /**
      * Constructs a {@link Base64.OutputStream} in ENCODE mode.
      *
-     * @param out the <tt>java.io.OutputStream</tt> to which data will be written.
+     * @param out the <code>java.io.OutputStream</code> to which data will be written.
      * @since 1.3
      */
     public OutputStream(java.io.OutputStream out) {
@@ -914,7 +914,7 @@ public class Base64 {
      * <p>
      * Example: <code>new Base64.OutputStream( out, Base64.ENCODE )</code>
      *
-     * @param out     the <tt>java.io.OutputStream</tt> to which data will be written.
+     * @param out     the <code>java.io.OutputStream</code> to which data will be written.
      * @param options Specified options.
      * @see Base64#ENCODE
      * @see Base64#DO_BREAK_LINES
