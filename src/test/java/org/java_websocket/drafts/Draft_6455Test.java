@@ -522,16 +522,14 @@ public class Draft_6455Test {
     ByteBuffer test0 = ByteBuffer.wrap("Test0".getBytes());
     curframe.setPayload(test0);
     curframe.setTransferemasked(false);
-    List<Framedata> createdFrame = draft_6455.createFrames(test0, false);
-    assertEquals(1, createdFrame.size());
-    assertEquals(curframe, createdFrame.get(0));
+    Framedata createdFrame = draft_6455.createFrame(test0, false);
+    assertEquals(curframe, createdFrame);
     curframe = new BinaryFrame();
     ByteBuffer test1 = ByteBuffer.wrap("Test1".getBytes());
     curframe.setPayload(test1);
     curframe.setTransferemasked(true);
-    createdFrame = draft_6455.createFrames(test1, true);
-    assertEquals(1, createdFrame.size());
-    assertEquals(curframe, createdFrame.get(0));
+    createdFrame = draft_6455.createFrame(test1, true);
+    assertEquals(curframe, createdFrame);
   }
 
   @Test
@@ -540,15 +538,13 @@ public class Draft_6455Test {
     TextFrame curframe = new TextFrame();
     curframe.setPayload(ByteBuffer.wrap(Charsetfunctions.utf8Bytes("Test0")));
     curframe.setTransferemasked(false);
-    List<Framedata> createdFrame = draft_6455.createFrames("Test0", false);
-    assertEquals(1, createdFrame.size());
-    assertEquals(curframe, createdFrame.get(0));
+    Framedata createdFrame = draft_6455.createFrame("Test0", false);
+    assertEquals(curframe, createdFrame);
     curframe = new TextFrame();
     curframe.setPayload(ByteBuffer.wrap(Charsetfunctions.utf8Bytes("Test0")));
     curframe.setTransferemasked(true);
-    createdFrame = draft_6455.createFrames("Test0", true);
-    assertEquals(1, createdFrame.size());
-    assertEquals(curframe, createdFrame.get(0));
+    createdFrame = draft_6455.createFrame("Test0", true);
+    assertEquals(curframe, createdFrame);
   }
 
 

@@ -407,16 +407,19 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
         } catch (CancelledKeyException e) {
           // an other thread may cancel the key
         } catch (ClosedByInterruptException e) {
+          log.warn("ClosedByInterruptException occured", e);
           return; // do the same stuff as when InterruptedException is thrown
         } catch (WrappedIOException ex) {
           handleIOException(key, ex.getConnection(), ex.getIOException());
         } catch (IOException ex) {
           handleIOException(key, null, ex);
         } catch (InterruptedException e) {
+          log.warn("Server thread interrupted", e);
           // FIXME controlled shutdown (e.g. take care of buffermanagement)
           Thread.currentThread().interrupt();
         }
       }
+      log.warn("Server loop has terminated");
     } catch (RuntimeException e) {
       // should hopefully never occur
       handleFatal(null, e);
@@ -1010,7 +1013,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
     if (strData == null && byteData == null) {
       return;
     }
-    Map<Draft, List<Framedata>> draftFrames = new HashMap<>();
+    Map<Draft, Framedata> draftFrames = new HashMap<>();
     List<WebSocket> clientCopy;
     synchronized (clients) {
       clientCopy = new ArrayList<>(clients);
@@ -1036,18 +1039,18 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
    * @param strData       the string data, can be null
    * @param byteData       the byte buffer data, can be null
    */
-  private void fillFrames(Draft draft, Map<Draft, List<Framedata>> draftFrames, String strData,
+  private void fillFrames(Draft draft, Map<Draft, Framedata> draftFrames, String strData,
       ByteBuffer byteData) {
     if (!draftFrames.containsKey(draft)) {
-      List<Framedata> frames = null;
+      Framedata frame = null;
       if (strData != null) {
-        frames = draft.createFrames(strData, false);
+        frame = draft.createFrame(strData, false);
       }
       if (byteData != null) {
-        frames = draft.createFrames(byteData, false);
+        frame = draft.createFrame(byteData, false);
       }
-      if (frames != null) {
-        draftFrames.put(draft, frames);
+      if (frame != null) {
+        draftFrames.put(draft, frame);
       }
     }
   }
@@ -1087,6 +1090,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
           ws = null;
         }
       } catch (InterruptedException e) {
+        log.warn("WebSocketWorker interrupted");
         Thread.currentThread().interrupt();
       } catch (VirtualMachineError | ThreadDeath | LinkageError e) {
         log.error("Got fatal error in worker thread {}", getName());

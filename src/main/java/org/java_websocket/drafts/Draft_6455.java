@@ -775,7 +775,7 @@ public class Draft_6455 extends Draft {
   }
 
   @Override
-  public List<Framedata> createFrames(ByteBuffer binary, boolean mask) {
+  public Framedata createFrame(ByteBuffer binary, boolean mask) {
     BinaryFrame curframe = new BinaryFrame();
     curframe.setPayload(binary);
     curframe.setTransferemasked(mask);
@@ -784,11 +784,11 @@ public class Draft_6455 extends Draft {
     } catch (InvalidDataException e) {
       throw new NotSendableException(e);
     }
-    return Collections.singletonList((Framedata) curframe);
+    return curframe;
   }
 
   @Override
-  public List<Framedata> createFrames(String text, boolean mask) {
+  public Framedata createFrame(String text, boolean mask) {
     TextFrame curframe = new TextFrame();
     curframe.setPayload(ByteBuffer.wrap(Charsetfunctions.utf8Bytes(text)));
     curframe.setTransferemasked(mask);
@@ -797,7 +797,7 @@ public class Draft_6455 extends Draft {
     } catch (InvalidDataException e) {
       throw new NotSendableException(e);
     }
-    return Collections.singletonList((Framedata) curframe);
+    return curframe;
   }
 
   @Override

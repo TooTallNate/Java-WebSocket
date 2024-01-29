@@ -102,13 +102,6 @@ public interface WebSocket {
   void sendFrame(Framedata framedata);
 
   /**
-   * Send a collection of frames to the other end
-   *
-   * @param frames the frames to send to the other end
-   */
-  void sendFrame(Collection<Framedata> frames);
-
-  /**
    * Send a ping to the other end
    *
    * @throws WebsocketNotConnectedException websocket is not yet connected

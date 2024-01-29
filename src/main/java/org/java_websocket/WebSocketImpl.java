@@ -31,8 +31,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
 import java.nio.channels.SelectionKey;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -647,7 +645,7 @@ public class WebSocketImpl implements WebSocket {
     if (text == null) {
       throw new IllegalArgumentException("Cannot send 'null' data to a WebSocketImpl.");
     }
-    send(draft.createFrames(text, role == Role.CLIENT));
+    send(draft.createFrame(text, role == Role.CLIENT));
   }
 
   /**
@@ -661,7 +659,7 @@ public class WebSocketImpl implements WebSocket {
     if (bytes == null) {
       throw new IllegalArgumentException("Cannot send 'null' data to a WebSocketImpl.");
     }
-    send(draft.createFrames(bytes, role == Role.CLIENT));
+    send(draft.createFrame(bytes, role == Role.CLIENT));
   }
 
   @Override
@@ -669,19 +667,15 @@ public class WebSocketImpl implements WebSocket {
     send(ByteBuffer.wrap(bytes));
   }
 
-  private void send(Collection<Framedata> frames) {
+  private void send(Framedata frame) {
     if (!isOpen()) {
       throw new WebsocketNotConnectedException();
     }
-    if (frames == null) {
+    if (frame == null) {
       throw new IllegalArgumentException();
     }
-    ArrayList<ByteBuffer> outgoingFrames = new ArrayList<>();
-    for (Framedata f : frames) {
-      log.trace("send frame: {}", f);
-      outgoingFrames.add(draft.createBinaryFrame(f));
-    }
-    write(outgoingFrames);
+    log.trace("send frame: {}", frame);
+    write(draft.createBinaryFrame(frame));
   }
 
   @Override
@@ -690,13 +684,8 @@ public class WebSocketImpl implements WebSocket {
   }
 
   @Override
-  public void sendFrame(Collection<Framedata> frames) {
-    send(frames);
-  }
-
-  @Override
   public void sendFrame(Framedata framedata) {
-    send(Collections.singletonList(framedata));
+    send(framedata);
   }
 
   public void sendPing() throws NullPointerException {
@@ -744,19 +733,6 @@ public class WebSocketImpl implements WebSocket {
 
     outQueue.add(buf);
     wsl.onWriteDemand(this);
-  }
-
-  /**
-   * Write a list of bytebuffer (frames in binary form) into the outgoing queue
-   *
-   * @param bufs the list of bytebuffer
-   */
-  private void write(List<ByteBuffer> bufs) {
-    synchronized (synchronizeWriteObject) {
-      for (ByteBuffer b : bufs) {
-        write(b);
-      }
-    }
   }
 
   private void open(Handshakedata d) {
@@ -915,6 +891,4 @@ public class WebSocketImpl implements WebSocket {
   public void setWorkerThread(WebSocketWorker workerThread) {
     this.workerThread = workerThread;
   }
-
-
 }

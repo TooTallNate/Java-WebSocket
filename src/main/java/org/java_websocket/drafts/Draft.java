@@ -26,7 +26,6 @@
 package org.java_websocket.drafts;
 
 import java.nio.ByteBuffer;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -192,9 +191,9 @@ public abstract class Draft {
 
   public abstract ByteBuffer createBinaryFrame(Framedata framedata);
 
-  public abstract List<Framedata> createFrames(ByteBuffer binary, boolean mask);
+  public abstract Framedata createFrame(ByteBuffer binary, boolean mask);
 
-  public abstract List<Framedata> createFrames(String text, boolean mask);
+  public abstract Framedata createFrame(String text, boolean mask);
 
 
   /**
@@ -207,7 +206,7 @@ public abstract class Draft {
   public abstract void processFrame(WebSocketImpl webSocketImpl, Framedata frame)
       throws InvalidDataException;
 
-  public List<Framedata> continuousFrame(Opcode op, ByteBuffer buffer, boolean fin) {
+  public Framedata continuousFrame(Opcode op, ByteBuffer buffer, boolean fin) {
     if (op != Opcode.BINARY && op != Opcode.TEXT) {
       throw new IllegalArgumentException("Only Opcode.BINARY or  Opcode.TEXT are allowed");
     }
@@ -235,7 +234,7 @@ public abstract class Draft {
     } else {
       continuousFrameType = op;
     }
-    return Collections.singletonList((Framedata) bui);
+    return bui;
   }
 
   public abstract void reset();
@@ -244,11 +243,11 @@ public abstract class Draft {
    * @deprecated use createHandshake without the role
    */
   @Deprecated
-  public List<ByteBuffer> createHandshake(Handshakedata handshakedata, Role ownrole) {
+  public ByteBuffer createHandshake(Handshakedata handshakedata, Role ownrole) {
     return createHandshake(handshakedata);
   }
 
-  public List<ByteBuffer> createHandshake(Handshakedata handshakedata) {
+  public ByteBuffer createHandshake(Handshakedata handshakedata) {
     return createHandshake(handshakedata, true);
   }
 
@@ -256,12 +255,11 @@ public abstract class Draft {
    * @deprecated use createHandshake without the role since it does not have any effect
    */
   @Deprecated
-  public List<ByteBuffer> createHandshake(Handshakedata handshakedata, Role ownrole,
-      boolean withcontent) {
+  public ByteBuffer createHandshake(Handshakedata handshakedata, Role ownrole, boolean withcontent) {
     return createHandshake(handshakedata, withcontent);
   }
 
-  public List<ByteBuffer> createHandshake(Handshakedata handshakedata, boolean withcontent) {
+  public ByteBuffer createHandshake(Handshakedata handshakedata, boolean withcontent) {
     StringBuilder bui = new StringBuilder(100);
     if (handshakedata instanceof ClientHandshake) {
       bui.append("GET ").append(((ClientHandshake) handshakedata).getResourceDescriptor())
@@ -292,7 +290,7 @@ public abstract class Draft {
       bytebuffer.put(content);
     }
     bytebuffer.flip();
-    return Collections.singletonList(bytebuffer);
+    return bytebuffer;
   }
 
   public abstract ClientHandshakeBuilder postProcessHandshakeRequestAsClient(
