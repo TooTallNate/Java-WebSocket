@@ -32,6 +32,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import org.java_websocket.framing.CloseFrame;
+import org.java_websocket.framing.Framedata;
 import org.java_websocket.util.NamedThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,6 +85,13 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
   private long connectionLostTimeout = TimeUnit.SECONDS.toNanos(60);
 
   /**
+   * Attribute for the passive lost connection check
+   *
+   * @since 1.5.5
+   */
+  private boolean connectionLostCheckPassive = false;
+
+  /**
    * Attribute to keep track if the WebSocket Server/Client is running/connected
    *
    * @since 1.3.9
@@ -108,6 +116,16 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
   }
 
   /**
+   * Tests if connection lost check is passive
+   *
+   * @return a boolean indicating whether or not the connection lost check is passive
+   * @since 1.5.5
+   */
+  public boolean isConnectionLostCheckPassive() {
+    return connectionLostCheckPassive;
+  }
+
+  /**
    * Setter for the interval checking for lost connections A value lower or equal 0 results in the
    * check to be deactivated
    *
@@ -115,8 +133,21 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
    * @since 1.3.4
    */
   public void setConnectionLostTimeout(int connectionLostTimeout) {
+    setConnectionLostTimeout(connectionLostTimeout, false);
+  }
+
+  /**
+   * Setter for the interval checking for lost connections A value lower or equal 0 results in the
+   * check to be deactivated
+   *
+   * @param connectionLostTimeout the interval in seconds
+   * @param passive true for passive lost connection checks, false for active checks
+   * @since 1.5.5
+   */
+  public void setConnectionLostTimeout(int connectionLostTimeout, boolean passive) {
     synchronized (syncConnectionLost) {
       this.connectionLostTimeout = TimeUnit.SECONDS.toNanos(connectionLostTimeout);
+      this.connectionLostCheckPassive = passive;
       if (this.connectionLostTimeout <= 0) {
         log.trace("Connection lost timer stopped");
         cancelConnectionLostTimer();
@@ -228,11 +259,12 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
     }
     WebSocketImpl webSocketImpl = (WebSocketImpl) webSocket;
     if (webSocketImpl.getLastPong() < minimumPongTime) {
-      log.trace("Closing connection due to no pong received: {}", webSocketImpl);
+      log.trace("Closing connection due to no {} received: {}", connectionLostCheckPassive ? "ping" : "pong", webSocketImpl);
       webSocketImpl.closeConnection(CloseFrame.ABNORMAL_CLOSE,
-          "The connection was closed because the other endpoint did not respond with a pong in time. For more information check: https://github.com/TooTallNate/Java-WebSocket/wiki/Lost-connection-detection");
+          "The connection was closed because the other endpoint did not " + (connectionLostCheckPassive ? "send a ping" : "respond with a pong") + " in time. " +
+          "For more information check: https://github.com/TooTallNate/Java-WebSocket/wiki/Lost-connection-detection");
     } else {
-      if (webSocketImpl.isOpen()) {
+      if (webSocketImpl.isOpen() && !connectionLostCheckPassive) {
         webSocketImpl.sendPing();
       } else {
         log.trace("Trying to ping a non open connection: {}", webSocketImpl);
@@ -306,6 +338,21 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
    */
   public void setReuseAddr(boolean reuseAddr) {
     this.reuseAddr = reuseAddr;
+  }
+
+  /**
+   * This overriden implementation will additionally update the last pong time in case
+   * connection lost checks are passive.
+   *
+   * @see org.java_websocket.WebSocketListener#onWebsocketPing(WebSocket, Framedata)
+   */
+  @Override
+  public void onWebsocketPing(WebSocket conn, Framedata f) {
+    super.onWebsocketPing(conn, f);
+    if (connectionLostCheckPassive && conn instanceof WebSocketImpl) {
+      WebSocketImpl webSocketImpl = (WebSocketImpl) conn;
+      webSocketImpl.updateLastPong();
+    }
   }
 
 }
