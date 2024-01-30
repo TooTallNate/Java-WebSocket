@@ -45,7 +45,6 @@ import java.util.TreeMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import javax.net.SocketFactory;
-import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSession;
@@ -543,9 +542,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
     if (socketFactory instanceof SSLSocketFactory) {
       factory = (SSLSocketFactory) socketFactory;
     } else {
-      SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
-      sslContext.init(null, null, null);
-      factory = sslContext.getSocketFactory();
+      factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
     }
     socket = factory.createSocket(socket, uri.getHost(), getPort(), true);
   }
