@@ -35,6 +35,8 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import javax.net.ssl.SSLSession;
+
+import estar.util.concurrent.BlockingMpscLinkedQueue;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.enums.CloseHandshakeType;
@@ -206,7 +208,7 @@ public class WebSocketImpl implements WebSocket {
     if (listener == null || (draft == null && role == Role.SERVER)) {
       throw new IllegalArgumentException("parameters must not be null");
     }
-    this.outQueue = new LinkedBlockingQueue<>();
+    this.outQueue = new BlockingMpscLinkedQueue<>();
     inQueue = new LinkedBlockingQueue<>();
     this.wsl = listener;
     this.role = Role.CLIENT;

@@ -36,6 +36,7 @@ publishing {
 
 dependencies {
     implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.6'
+    implementation group: 'org.jctools', name: 'jctools-core', version: '4.0.1'
     testImplementation group: 'org.slf4j', name: 'slf4j-simple', version: '2.0.6'
     testImplementation group: 'junit', name: 'junit', version: '4.12'
     testImplementation group: 'org.json', name: 'json', version: '20180813'
