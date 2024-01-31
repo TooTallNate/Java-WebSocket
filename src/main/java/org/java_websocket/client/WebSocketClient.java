@@ -38,10 +38,7 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import javax.net.SocketFactory;
@@ -823,7 +820,8 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
           ostream.flush();
         }
       } catch (InterruptedException e) {
-        for (ByteBuffer buffer : engine.outQueue) {
+        ByteBuffer buffer;
+        while ((buffer = engine.outQueue.poll()) != null) {
           ostream.write(buffer.array(), 0, buffer.limit());
           ostream.flush();
         }
