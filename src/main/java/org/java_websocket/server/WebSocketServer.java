@@ -245,7 +245,9 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
     if (selectorthread != null) {
       throw new IllegalStateException(getClass().getName() + " can only be started once.");
     }
-    new Thread(this).start();
+    Thread t = new Thread(this);
+    t.setDaemon(isDaemon());
+    t.start();
   }
 
   public void stop(int timeout) throws InterruptedException {
@@ -324,6 +326,20 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
       port = server.socket().getLocalPort();
     }
     return port;
+  }
+
+  @Override
+  public void setDaemon(boolean daemon) {
+    // pass it to the AbstractWebSocket too, to use it on the connectionLostChecker thread factory
+    super.setDaemon(daemon);
+    // we need to apply this to the decoders as well since they were created during the constructor
+    for (WebSocketWorker w : decoders) {
+      if (w.isAlive()) {
+        throw new IllegalStateException("Cannot call setDaemon after server is already started!");
+      } else {
+        w.setDaemon(daemon);
+      }
+    }
   }
 
   /**
