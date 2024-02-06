@@ -1,6 +1,22 @@
 # Change log
 
 ###############################################################################
+## Version Release 1.5.6 (2024/02/06)
+
+#### Bugs Fixed
+
+* [Issue 1382](https://github.com/TooTallNate/Java-WebSocket/issues/1382) - WebSocketClient.upgradeSocketToSSL is enforcing TLS 1.2 ([PR 1387](https://github.com/TooTallNate/Java-WebSocket/pull/1387))
+* [PR 1387](https://github.com/TooTallNate/Java-WebSocket/pull/1387) - Retrieve default SSL socket factory
+
+#### New Features
+
+* [Issue 1390](https://github.com/TooTallNate/Java-WebSocket/issues/1390) - Thread created by NamedThreadFactory should be a daemon ([PR 1391](https://github.com/TooTallNate/Java-WebSocket/pull/1391))
+* [PR 1391](https://github.com/TooTallNate/Java-WebSocket/pull/1391) - Provide way to start the client/server as daemons
+
+In this release 2 issues and 2 pull requests were closed.
+
+###############################################################################
+
 ## Version Release 1.5.5 (2023/12/18)
 
 #### Bugs Fixed
