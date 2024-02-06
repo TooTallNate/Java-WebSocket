@@ -30,7 +30,7 @@ To use maven add this dependency to your pom.xml:
 <dependency>
   <groupId>org.java-websocket</groupId>
   <artifactId>Java-WebSocket</artifactId>
-  <version>1.5.4</version>
+  <version>1.5.6</version>
 </dependency>
 ```
 
@@ -41,11 +41,11 @@ mavenCentral()
 ```
 Then you can just add the latest version to your build.
 ```xml
-compile "org.java-websocket:Java-WebSocket:1.5.4"
+compile "org.java-websocket:Java-WebSocket:1.5.6"
 ```
 Or this option if you use gradle 7.0 and above.
 ```xml
-implementation 'org.java-websocket:Java-WebSocket:1.5.4'
+implementation 'org.java-websocket:Java-WebSocket:1.5.6'
 ```
 
 #### Logging
