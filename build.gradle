@@ -5,12 +5,11 @@ plugins {
 }
 
 repositories {
-    mavenLocal()
     mavenCentral()
 }
 
-group = 'org.java-websocket'
-version = '1.5.6-ESTAR'
+group = 'estar'
+version = '1.5.7-ESTAR'
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
@@ -26,10 +25,23 @@ publishing {
     publications {
         maven(MavenPublication) {
             groupId = project.group
-            artifactId = 'Java-WebSocket'
+            artifactId = 'java-websocket'
             version = project.version
 
             from components.java
+        }
+    }
+    repositories {
+        maven {
+            url 'https://pkgs.dev.azure.com/e-star-trading/_packaging/Externals/maven/v1'
+            name 'e-star-trading'
+            credentials {
+                username "e-star-trading"
+                password "$System.env.AZURE_PERSONAL_ACCESS_TOKEN"
+            }
+            authentication {
+                basic(BasicAuthentication)
+            }
         }
     }
 }
