@@ -339,7 +339,11 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
           "You cannot initialize a reconnect out of the websocket thread. Use reconnect in another thread to ensure a successful cleanup.");
     }
     try {
+      if (engine.getReadyState() == ReadyState.NOT_YET_CONNECTED) {
+        socket.close();
+      }
       closeBlocking();
+
       if (writeThread != null) {
         this.writeThread.interrupt();
         this.writeThread.join();
@@ -401,7 +405,13 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
    */
   public boolean connectBlocking(long timeout, TimeUnit timeUnit) throws InterruptedException {
     connect();
-    return connectLatch.await(timeout, timeUnit) && engine.isOpen();
+
+    boolean connected = connectLatch.await(timeout, timeUnit);
+    if (!connected) {
+      reset();
+    }
+
+    return connected && engine.isOpen();
   }
 
   /**
