@@ -339,7 +339,9 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
           "You cannot initialize a reconnect out of the websocket thread. Use reconnect in another thread to ensure a successful cleanup.");
     }
     try {
-      if (engine.getReadyState() == ReadyState.NOT_YET_CONNECTED) {
+      // This socket null check ensures we can reconnect a socket that failed to connect. It's an uncommon edge case, but we want to make sure we support it
+      if (engine.getReadyState() == ReadyState.NOT_YET_CONNECTED && socket != null) {
+        // Closing the socket when we have not connected prevents the writeThread from hanging on a write indefinitely during connection teardown
         socket.close();
       }
       closeBlocking();
