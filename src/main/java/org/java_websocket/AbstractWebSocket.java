@@ -103,6 +103,11 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
   private final Object syncConnectionLost = new Object();
 
   /**
+   * Attribute to disable default buffer size
+   */
+  private boolean disableReceiveBufferSize = false;
+
+  /**
    * Get the interval checking for lost connections Default is 60 seconds
    *
    * @return the interval in seconds
@@ -336,4 +341,13 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
   public void setDaemon(boolean daemon) {
     this.daemon = daemon;
   }
+
+  public boolean isReceiveBufferSizeDisabled() {
+    return disableReceiveBufferSize;
+  }
+
+  public void setDisableReceiveBufferSize(boolean disableReceiveBufferSize) {
+    this.disableReceiveBufferSize = disableReceiveBufferSize;
+  }
+
 }
