@@ -578,7 +578,10 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
       server = ServerSocketChannel.open();
       server.configureBlocking(false);
       ServerSocket socket = server.socket();
-      socket.setReceiveBufferSize(WebSocketImpl.RCVBUF);
+      int receiveBufferSize = getReceiveBufferSize();
+      if (receiveBufferSize > 0) {
+        socket.setReceiveBufferSize(receiveBufferSize);
+      }
       socket.setReuseAddress(isReuseAddr());
       socket.bind(address, getMaxPendingConnections());
       selector = Selector.open();
@@ -655,7 +658,8 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
   }
 
   public ByteBuffer createBuffer() {
-    return ByteBuffer.allocate(WebSocketImpl.RCVBUF);
+    int receiveBufferSize = getReceiveBufferSize();
+    return ByteBuffer.allocate(receiveBufferSize > 0 ? receiveBufferSize : DEFAULT_READ_BUFFER_SIZE);
   }
 
   protected void queue(WebSocketImpl ws) throws InterruptedException {

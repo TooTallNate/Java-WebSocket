@@ -86,11 +86,6 @@ public class WebSocketImpl implements WebSocket {
   public static final int DEFAULT_WSS_PORT = 443;
 
   /**
-   * Initial buffer size
-   */
-  public static final int RCVBUF = 16384;
-
-  /**
    * Logger instance
    *
    * @since 1.4.0
