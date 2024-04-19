@@ -169,7 +169,7 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
    *
    * @since 1.3.4
    */
-  protected void startConnectionLostTimer() {
+  public void startConnectionLostTimer() {
     synchronized (syncConnectionLost) {
       if (this.connectionLostTimeout <= 0) {
         log.trace("Connection lost timer deactivated");
