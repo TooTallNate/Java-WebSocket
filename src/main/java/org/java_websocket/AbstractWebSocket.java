@@ -103,6 +103,18 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
   private final Object syncConnectionLost = new Object();
 
   /**
+   * TCP receive buffer size that will be used for sockets (zero means use system default)
+   *
+   * @since 1.5.7
+   */
+  private int receiveBufferSize = 0;
+
+  /**
+   * Used for internal buffer allocations when the socket buffer size is not specified.
+   */
+  protected static int DEFAULT_READ_BUFFER_SIZE = 65536;
+
+  /**
    * Get the interval checking for lost connections Default is 60 seconds
    *
    * @return the interval in seconds
@@ -336,4 +348,29 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
   public void setDaemon(boolean daemon) {
     this.daemon = daemon;
   }
+
+  /**
+   * Returns the TCP receive buffer size that will be used for sockets (or zero, if not explicitly set).
+   * @see java.net.Socket#setReceiveBufferSize(int)
+   *
+   * @since 1.5.7
+   */
+  public int getReceiveBufferSize() {
+    return receiveBufferSize;
+  }
+
+  /**
+   * Sets the TCP receive buffer size that will be used for sockets.
+   * If this is not explicitly set (or set to zero), the system default is used.
+   * @see java.net.Socket#setReceiveBufferSize(int)
+   *
+   * @since 1.5.7
+   */
+  public void setReceiveBufferSize(int receiveBufferSize) {
+    if (receiveBufferSize < 0) {
+      throw new IllegalArgumentException("buffer size < 0");
+    }
+    this.receiveBufferSize = receiveBufferSize;
+  }
+
 }
