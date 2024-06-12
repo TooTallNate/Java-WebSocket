@@ -1192,7 +1192,7 @@ public class Draft_6455 extends Draft {
     return totalSize;
   }
 
-  private class TranslatedPayloadMetaData {
+  private static class TranslatedPayloadMetaData {
 
     private int payloadLength;
     private int realPackageSize;
