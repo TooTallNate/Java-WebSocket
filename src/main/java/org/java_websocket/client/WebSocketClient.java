@@ -389,7 +389,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
   }
 
   protected String writeThreadName (long threadId) {
-	  return "WebSocketWriteThread-" + threadId;
+    return "WebSocketWriteThread-" + threadId;
   }
 
   /**
