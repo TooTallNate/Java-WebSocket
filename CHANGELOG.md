@@ -1,6 +1,24 @@
 # Change log
 
 ###############################################################################
+## Version Release 1.5.7 (2024/07/08)
+
+#### Breaking Changes
+
+* [PR 1399](https://github.com/TooTallNate/Java-WebSocket/pull/1399) - Have connectBlocking clean up after a timeout
+
+#### Bugs Fixed
+
+* [PR 1419](https://github.com/TooTallNate/Java-WebSocket/pull/1419) - Fix issue #1418: WebSocketServer sometimes misses GET request after SSL handshake
+
+#### New Features
+
+* [PR 1407](https://github.com/TooTallNate/Java-WebSocket/pull/1407) - Allow setting custom TCP receive buffer size
+* [PR 1399](https://github.com/TooTallNate/Java-WebSocket/pull/1399) - Have connectBlocking clean up after a timeout
+
+In this release 0 issues and 4 pull requests were closed.
+
+###############################################################################
 ## Version Release 1.5.6 (2024/02/06)
 
 #### Bugs Fixed
