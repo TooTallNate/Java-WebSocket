@@ -114,7 +114,7 @@ Minimum Required JDK
 
 `Java-WebSocket` is known to work with:
 
- * Java 1.7 and higher
+ * Java 8 and higher
 
 Other JRE implementations may work as well, but haven't been tested.
 
