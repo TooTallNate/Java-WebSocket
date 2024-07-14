@@ -10,9 +10,9 @@ repositories {
 }
 
 group = 'org.java-websocket'
-version = '1.5.8-SNAPSHOT'
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+version = '1.6.0-SNAPSHOT'
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 compileJava {
     options.compilerArgs += ['-encoding', 'UTF-8']
@@ -35,8 +35,7 @@ publishing {
 }
 
 dependencies {
-    implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.6'
-    testImplementation group: 'org.slf4j', name: 'slf4j-simple', version: '2.0.6'
-    testImplementation group: 'junit', name: 'junit', version: '4.12'
-    testImplementation group: 'org.json', name: 'json', version: '20180813'
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.13'
+    testImplementation group: 'org.slf4j', name: 'slf4j-simple', version: '2.0.13'
+    testImplementation group: 'junit', name: 'junit', version: '4.13.1'
 }

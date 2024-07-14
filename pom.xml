@@ -5,17 +5,16 @@
     <groupId>org.java-websocket</groupId>
     <artifactId>Java-WebSocket</artifactId>
     <packaging>jar</packaging>
-    <version>1.5.8-SNAPSHOT</version>
+    <version>1.6.0-SNAPSHOT</version>
     <name>Java-WebSocket</name>
     <description>A barebones WebSocket client and server implementation written 100% in Java</description>
     <url>https://github.com/TooTallNate/Java-WebSocket</url>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <slf4j.version>2.0.6</slf4j.version>
+        <slf4j.version>2.0.13</slf4j.version>
 
         <!-- Test dependencies versions -->
-        <junit.version>4.12</junit.version>
-        <org.json.version>20180813</org.json.version>
+        <junit.version>4.13.1</junit.version>
 
         <!-- Maven plugin versions -->
         <bnd.maven.plugin.version>6.4.0</bnd.maven.plugin.version>
@@ -61,12 +60,6 @@
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
                 <version>${junit.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.json</groupId>
-                <artifactId>json</artifactId>
-                <version>${org.json.version}</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>
@@ -297,11 +290,6 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
