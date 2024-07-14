@@ -201,7 +201,7 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
   private void restartConnectionLostTimer() {
     cancelConnectionLostTimer();
     connectionLostCheckerService = Executors
-        .newSingleThreadScheduledExecutor(new NamedThreadFactory("connectionLostChecker", daemon));
+        .newSingleThreadScheduledExecutor(new NamedThreadFactory(connectionLostThreadPrefix(), daemon));
     Runnable connectionLostChecker = new Runnable() {
 
       /**
@@ -231,6 +231,10 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
     connectionLostCheckerFuture = connectionLostCheckerService
         .scheduleAtFixedRate(connectionLostChecker, connectionLostTimeout, connectionLostTimeout,
             TimeUnit.NANOSECONDS);
+  }
+
+  protected String connectionLostThreadPrefix () {
+    return "connectionLostChecker";
   }
 
   /**
