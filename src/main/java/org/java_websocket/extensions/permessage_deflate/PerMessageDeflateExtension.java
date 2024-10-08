@@ -166,7 +166,7 @@ public class PerMessageDeflateExtension extends CompressionExtension {
           Note that this behavior doesn't occur if the message is "first compressed and then fragmented".
        */
       if (inflater.getRemaining() > 0) {
-        inflater = new Inflater(true);
+        inflater.reset();
         decompress(inputFrame.getPayloadData().array(), output);
       }
 
@@ -174,7 +174,7 @@ public class PerMessageDeflateExtension extends CompressionExtension {
         decompress(TAIL_BYTES, output);
         // If context takeover is disabled, inflater can be reset.
         if (clientNoContextTakeover) {
-          inflater = new Inflater(true);
+          inflater.reset();
         }
       }
     } catch (DataFormatException e) {
@@ -244,8 +244,7 @@ public class PerMessageDeflateExtension extends CompressionExtension {
       }
 
       if (serverNoContextTakeover) {
-        deflater.end();
-        deflater = new Deflater(Deflater.DEFAULT_COMPRESSION, true);
+        deflater.reset();
       }
     }
 
