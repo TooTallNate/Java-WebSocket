@@ -330,7 +330,11 @@ public class PerMessageDeflateExtension extends CompressionExtension {
 
   @Override
   public IExtension copyInstance() {
-    return new PerMessageDeflateExtension();
+    PerMessageDeflateExtension clone = new PerMessageDeflateExtension();
+    clone.setThreshold(this.getThreshold());
+    clone.setClientNoContextTakeover(this.isClientNoContextTakeover());
+    clone.setServerNoContextTakeover(this.isServerNoContextTakeover());
+    return clone;
   }
 
   /**
