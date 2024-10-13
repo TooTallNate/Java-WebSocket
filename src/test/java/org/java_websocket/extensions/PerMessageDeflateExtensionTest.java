@@ -1,5 +1,6 @@
 package org.java_websocket.extensions;
 
+import static java.util.zip.GZIPInputStream.GZIP_MAGIC;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -7,6 +8,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 import org.java_websocket.exceptions.InvalidDataException;
@@ -49,6 +51,111 @@ public class PerMessageDeflateExtensionTest {
     deflateExtension.decodeFrame(frame);
     assertArrayEquals(message, frame.getPayloadData().array());
     assertFalse(frame.isRSV1());
+  }
+
+  @Test
+  public void testDecodeFrameNoCompression() throws InvalidDataException {
+    PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
+    deflateExtension.setDeflaterLevel(Deflater.NO_COMPRESSION);
+    deflateExtension.setThreshold(0);
+    String str = "This is a highly compressable text"
+            + "This is a highly compressable text"
+            + "This is a highly compressable text"
+            + "This is a highly compressable text"
+            + "This is a highly compressable text";
+    byte[] message = str.getBytes();
+    TextFrame frame = new TextFrame();
+    frame.setPayload(ByteBuffer.wrap(message));
+    deflateExtension.encodeFrame(frame);
+    byte[] payloadArray = frame.getPayloadData().array();
+    assertArrayEquals(message, Arrays.copyOfRange(payloadArray, 5,payloadArray.length-5));
+    assertTrue(frame.isRSV1());
+    deflateExtension.decodeFrame(frame);
+    assertArrayEquals(message, frame.getPayloadData().array());
+  }
+
+  @Test
+  public void testDecodeFrameBestSpeedCompression() throws InvalidDataException {
+    PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
+    deflateExtension.setDeflaterLevel(Deflater.BEST_SPEED);
+    deflateExtension.setThreshold(0);
+    String str = "This is a highly compressable text"
+            + "This is a highly compressable text"
+            + "This is a highly compressable text"
+            + "This is a highly compressable text"
+            + "This is a highly compressable text";
+    byte[] message = str.getBytes();
+    TextFrame frame = new TextFrame();
+    frame.setPayload(ByteBuffer.wrap(message));
+
+    Deflater localDeflater = new Deflater(Deflater.BEST_SPEED,true);
+    localDeflater.setInput(ByteBuffer.wrap(message).array());
+    byte[] buffer = new byte[1024];
+    int bytesCompressed = localDeflater.deflate(buffer, 0, buffer.length, Deflater.SYNC_FLUSH);
+
+    deflateExtension.encodeFrame(frame);
+    byte[] payloadArray = frame.getPayloadData().array();
+    assertArrayEquals(Arrays.copyOfRange(buffer,0, bytesCompressed), Arrays.copyOfRange(payloadArray,0,payloadArray.length));
+    assertTrue(frame.isRSV1());
+    deflateExtension.decodeFrame(frame);
+    assertArrayEquals(message, frame.getPayloadData().array());
+  }
+
+  @Test
+  public void testDecodeFrameBestCompression() throws InvalidDataException {
+    PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
+    deflateExtension.setDeflaterLevel(Deflater.BEST_COMPRESSION);
+    deflateExtension.setThreshold(0);
+    String str = "This is a highly compressable text"
+            + "This is a highly compressable text"
+            + "This is a highly compressable text"
+            + "This is a highly compressable text"
+            + "This is a highly compressable text";
+    byte[] message = str.getBytes();
+    TextFrame frame = new TextFrame();
+    frame.setPayload(ByteBuffer.wrap(message));
+
+    Deflater localDeflater = new Deflater(Deflater.BEST_COMPRESSION,true);
+    localDeflater.setInput(ByteBuffer.wrap(message).array());
+    byte[] buffer = new byte[1024];
+    int bytesCompressed = localDeflater.deflate(buffer, 0, buffer.length, Deflater.SYNC_FLUSH);
+
+    deflateExtension.encodeFrame(frame);
+    byte[] payloadArray = frame.getPayloadData().array();
+    assertArrayEquals(Arrays.copyOfRange(buffer,0, bytesCompressed), Arrays.copyOfRange(payloadArray,0,payloadArray.length));
+    assertTrue(frame.isRSV1());
+    deflateExtension.decodeFrame(frame);
+    assertArrayEquals(message, frame.getPayloadData().array());
+  }
+
+  @Test
+  public void testDecodeFrameSwitchCompression() throws InvalidDataException {
+    PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
+    deflateExtension.setDeflaterLevel(Deflater.NO_COMPRESSION);
+    deflateExtension.setThreshold(0);
+    String str = "This is a highly compressable text"
+            + "This is a highly compressable text"
+            + "This is a highly compressable text"
+            + "This is a highly compressable text"
+            + "This is a highly compressable text";
+    byte[] message = str.getBytes();
+    TextFrame frame = new TextFrame();
+    frame.setPayload(ByteBuffer.wrap(message));
+
+    Deflater localDeflater = new Deflater(Deflater.BEST_COMPRESSION,true);
+    localDeflater.setInput(ByteBuffer.wrap(message).array());
+    byte[] buffer = new byte[1024];
+    int bytesCompressed = localDeflater.deflate(buffer, 0, buffer.length, Deflater.SYNC_FLUSH);
+
+    // Change the deflater level after the creation and switch to a new deflater level
+    // Compression strategy should be applied instantly since we call .deflate manually
+    deflateExtension.setDeflaterLevel(Deflater.BEST_COMPRESSION);
+    deflateExtension.encodeFrame(frame);
+    byte[] payloadArray = frame.getPayloadData().array();
+    assertArrayEquals(Arrays.copyOfRange(buffer,0, bytesCompressed), Arrays.copyOfRange(payloadArray,0,payloadArray.length));
+    assertTrue(frame.isRSV1());
+    deflateExtension.decodeFrame(frame);
+    assertArrayEquals(message, frame.getPayloadData().array());
   }
 
   @Test
