@@ -53,23 +53,28 @@ public class PerMessageDeflateExtension extends CompressionExtension {
   // For WebSocketClients, this variable holds the extension parameters that client himself has requested.
   private Map<String, String> requestedParameters = new LinkedHashMap<>();
 
+  private int deflaterLevel = Deflater.DEFAULT_COMPRESSION;
+
   private Inflater inflater = new Inflater(true);
-  private Deflater deflater = new Deflater(Deflater.DEFAULT_COMPRESSION, true);
+  private Deflater deflater = new Deflater(this.deflaterLevel, true);
 
-  public Inflater getInflater() {
-    return inflater;
+  /**
+   * Get the compression level used for the compressor.
+   * @return the compression level (0-9)
+   */
+  public int getDeflaterLevel() {
+    return this.deflaterLevel;
   }
 
-  public void setInflater(Inflater inflater) {
-    this.inflater = inflater;
-  }
-
-  public Deflater getDeflater() {
-    return deflater;
-  }
-
-  public void setDeflater(Deflater deflater) {
-    this.deflater = deflater;
+  /**
+   * Set the compression level used for the compressor.
+   * @param level the compression level (0-9)
+   */
+  public void setDeflaterLevel(int level) {
+    this.deflater.setLevel(level);
+    this.deflaterLevel = level;
+    //If the compression level is changed, the next invocation of deflate will compress the input available so far with the old level (and may be flushed); the new level will take effect only after that invocation.
+    this.deflater.deflate(new byte[0]);
   }
 
   /**
@@ -333,6 +338,7 @@ public class PerMessageDeflateExtension extends CompressionExtension {
     clone.setThreshold(this.getThreshold());
     clone.setClientNoContextTakeover(this.isClientNoContextTakeover());
     clone.setServerNoContextTakeover(this.isServerNoContextTakeover());
+    clone.setDeflaterLevel(this.getDeflaterLevel());
     return clone;
   }
 

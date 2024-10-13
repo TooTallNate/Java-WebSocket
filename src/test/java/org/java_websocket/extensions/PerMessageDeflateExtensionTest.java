@@ -197,64 +197,49 @@ public class PerMessageDeflateExtensionTest {
     assertEquals(deflateExtension.getThreshold(), newDeflateExtension.getThreshold());
     assertEquals(deflateExtension.isClientNoContextTakeover(), newDeflateExtension.isClientNoContextTakeover());
     assertEquals(deflateExtension.isServerNoContextTakeover(), newDeflateExtension.isServerNoContextTakeover());
-    // Adjust this to the factory
-    //assertEquals(deflateExtension.getDeflater(), newDeflateExtension.getDeflater());
-    //assertEquals(deflateExtension.getInflater(), newDeflateExtension.getInflater());
+    assertEquals(deflateExtension.getDeflaterLevel(), newDeflateExtension.getDeflaterLevel());
+
 
     deflateExtension = new PerMessageDeflateExtension();
     deflateExtension.setThreshold(512);
     deflateExtension.setServerNoContextTakeover(false);
     deflateExtension.setClientNoContextTakeover(true);
+    deflateExtension.setDeflaterLevel(Deflater.BEST_COMPRESSION);
     newDeflateExtension = (PerMessageDeflateExtension)deflateExtension.copyInstance();
 
     assertEquals(deflateExtension.getThreshold(), newDeflateExtension.getThreshold());
     assertEquals(deflateExtension.isClientNoContextTakeover(), newDeflateExtension.isClientNoContextTakeover());
     assertEquals(deflateExtension.isServerNoContextTakeover(), newDeflateExtension.isServerNoContextTakeover());
+    assertEquals(deflateExtension.getDeflaterLevel(), newDeflateExtension.getDeflaterLevel());
 
 
     deflateExtension = new PerMessageDeflateExtension();
     deflateExtension.setThreshold(64);
     deflateExtension.setServerNoContextTakeover(true);
     deflateExtension.setClientNoContextTakeover(false);
+    deflateExtension.setDeflaterLevel(Deflater.NO_COMPRESSION);
     newDeflateExtension = (PerMessageDeflateExtension)deflateExtension.copyInstance();
 
     assertEquals(deflateExtension.getThreshold(), newDeflateExtension.getThreshold());
     assertEquals(deflateExtension.isClientNoContextTakeover(), newDeflateExtension.isClientNoContextTakeover());
     assertEquals(deflateExtension.isServerNoContextTakeover(), newDeflateExtension.isServerNoContextTakeover());
+    assertEquals(deflateExtension.getDeflaterLevel(), newDeflateExtension.getDeflaterLevel());
   }
 
   @Test
-  public void testGetInflater() {
+  public void testDeflaterLevel() {
     PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
-    assertEquals(deflateExtension.getInflater().getRemaining(), new Inflater(true).getRemaining());
+    assertEquals(Deflater.DEFAULT_COMPRESSION, deflateExtension.getDeflaterLevel());
+    deflateExtension.setDeflaterLevel(Deflater.BEST_SPEED);
+    assertEquals(Deflater.BEST_SPEED, deflateExtension.getDeflaterLevel());
   }
 
-  @Test
-  public void testSetInflater() {
-    PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
-    deflateExtension.setInflater(new Inflater(false));
-    assertEquals(deflateExtension.getInflater().getRemaining(), new Inflater(false).getRemaining());
-  }
-
-  @Test
-  public void testGetDeflater() {
-    PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
-    assertEquals(deflateExtension.getDeflater().finished(),
-        new Deflater(Deflater.DEFAULT_COMPRESSION, true).finished());
-  }
-
-  @Test
-  public void testSetDeflater() {
-    PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
-    deflateExtension.setDeflater(new Deflater(Deflater.DEFAULT_COMPRESSION, false));
-    assertEquals(deflateExtension.getDeflater().finished(),
-        new Deflater(Deflater.DEFAULT_COMPRESSION, false).finished());
-  }
   @Test
   public void testDefaults() {
     PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
     assertFalse(deflateExtension.isClientNoContextTakeover());
     assertTrue(deflateExtension.isServerNoContextTakeover());
     assertEquals(1024, deflateExtension.getThreshold());
+    assertEquals(Deflater.DEFAULT_COMPRESSION, deflateExtension.getDeflaterLevel());
   }
 }
