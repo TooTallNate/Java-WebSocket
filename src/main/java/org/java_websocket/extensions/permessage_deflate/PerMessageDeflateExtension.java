@@ -13,13 +13,11 @@ import org.java_websocket.exceptions.InvalidFrameException;
 import org.java_websocket.extensions.CompressionExtension;
 import org.java_websocket.extensions.ExtensionRequestData;
 import org.java_websocket.extensions.IExtension;
-import org.java_websocket.framing.BinaryFrame;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.ContinuousFrame;
 import org.java_websocket.framing.DataFrame;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.framing.FramedataImpl1;
-import org.java_websocket.framing.TextFrame;
 
 /**
  * PerMessage Deflate Extension (<a href="https://tools.ietf.org/html/rfc7692#section-7">7&#46; The
@@ -53,28 +51,37 @@ public class PerMessageDeflateExtension extends CompressionExtension {
   // For WebSocketClients, this variable holds the extension parameters that client himself has requested.
   private Map<String, String> requestedParameters = new LinkedHashMap<>();
 
-  private int deflaterLevel = Deflater.DEFAULT_COMPRESSION;
+  private final int compressionLevel;
 
-  private Inflater inflater = new Inflater(true);
-  private Deflater deflater = new Deflater(this.deflaterLevel, true);
+  private final Inflater inflater;
+  private final Deflater deflater;
 
   /**
-   * Get the compression level used for the compressor.
-   * @return the compression level (0-9)
+   * Constructor for the PerMessage Deflate Extension (<a href="https://tools.ietf.org/html/rfc7692#section-7">7&#46; Thepermessage-deflate" Extension</a>)
+   *
+   * Uses {@link java.util.zip.Deflater#DEFAULT_COMPRESSION} as the compression level for the {@link java.util.zip.Deflater#Deflater(int)}
    */
-  public int getDeflaterLevel() {
-    return this.deflaterLevel;
+  public PerMessageDeflateExtension() {
+    this(Deflater.DEFAULT_COMPRESSION);
   }
 
   /**
-   * Set the compression level used for the compressor.
-   * @param level the compression level (0-9)
+   * Constructor for the PerMessage Deflate Extension (<a href="https://tools.ietf.org/html/rfc7692#section-7">7&#46; Thepermessage-deflate" Extension</a>)
+   *
+   * @param compressionLevel The compression level passed to the {@link java.util.zip.Deflater#Deflater(int)}
    */
-  public void setDeflaterLevel(int level) {
-    this.deflater.setLevel(level);
-    this.deflaterLevel = level;
-    //If the compression level is changed, the next invocation of deflate will compress the input available so far with the old level (and may be flushed); the new level will take effect only after that invocation.
-    this.deflater.deflate(new byte[0]);
+  public PerMessageDeflateExtension(int compressionLevel) {
+    this.compressionLevel = compressionLevel;
+    this.deflater = new Deflater(this.compressionLevel, true);
+    this.inflater = new Inflater(true);
+  }
+
+  /**
+   * Get the compression level used for the compressor.
+   * @return the compression level
+   */
+  public int getCompressionLevel() {
+    return this.compressionLevel;
   }
 
   /**
@@ -334,11 +341,10 @@ public class PerMessageDeflateExtension extends CompressionExtension {
 
   @Override
   public IExtension copyInstance() {
-    PerMessageDeflateExtension clone = new PerMessageDeflateExtension();
+    PerMessageDeflateExtension clone = new PerMessageDeflateExtension(this.getCompressionLevel());
     clone.setThreshold(this.getThreshold());
     clone.setClientNoContextTakeover(this.isClientNoContextTakeover());
     clone.setServerNoContextTakeover(this.isServerNoContextTakeover());
-    clone.setDeflaterLevel(this.getDeflaterLevel());
     return clone;
   }
 

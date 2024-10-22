@@ -1,6 +1,5 @@
 package org.java_websocket.extensions;
 
-import static java.util.zip.GZIPInputStream.GZIP_MAGIC;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -10,10 +9,9 @@ import static org.junit.Assert.fail;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.zip.Deflater;
-import java.util.zip.Inflater;
+
 import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.extensions.permessage_deflate.PerMessageDeflateExtension;
-import org.java_websocket.framing.BinaryFrame;
 import org.java_websocket.framing.ContinuousFrame;
 import org.java_websocket.framing.TextFrame;
 import org.junit.Test;
@@ -55,8 +53,7 @@ public class PerMessageDeflateExtensionTest {
 
   @Test
   public void testDecodeFrameNoCompression() throws InvalidDataException {
-    PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
-    deflateExtension.setDeflaterLevel(Deflater.NO_COMPRESSION);
+    PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension(Deflater.NO_COMPRESSION);
     deflateExtension.setThreshold(0);
     String str = "This is a highly compressable text"
             + "This is a highly compressable text"
@@ -76,8 +73,7 @@ public class PerMessageDeflateExtensionTest {
 
   @Test
   public void testDecodeFrameBestSpeedCompression() throws InvalidDataException {
-    PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
-    deflateExtension.setDeflaterLevel(Deflater.BEST_SPEED);
+    PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension(Deflater.BEST_SPEED);
     deflateExtension.setThreshold(0);
     String str = "This is a highly compressable text"
             + "This is a highly compressable text"
@@ -103,8 +99,7 @@ public class PerMessageDeflateExtensionTest {
 
   @Test
   public void testDecodeFrameBestCompression() throws InvalidDataException {
-    PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
-    deflateExtension.setDeflaterLevel(Deflater.BEST_COMPRESSION);
+    PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension(Deflater.BEST_COMPRESSION);
     deflateExtension.setThreshold(0);
     String str = "This is a highly compressable text"
             + "This is a highly compressable text"
@@ -128,35 +123,6 @@ public class PerMessageDeflateExtensionTest {
     assertArrayEquals(message, frame.getPayloadData().array());
   }
 
-  @Test
-  public void testDecodeFrameSwitchCompression() throws InvalidDataException {
-    PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
-    deflateExtension.setDeflaterLevel(Deflater.NO_COMPRESSION);
-    deflateExtension.setThreshold(0);
-    String str = "This is a highly compressable text"
-            + "This is a highly compressable text"
-            + "This is a highly compressable text"
-            + "This is a highly compressable text"
-            + "This is a highly compressable text";
-    byte[] message = str.getBytes();
-    TextFrame frame = new TextFrame();
-    frame.setPayload(ByteBuffer.wrap(message));
-
-    Deflater localDeflater = new Deflater(Deflater.BEST_COMPRESSION,true);
-    localDeflater.setInput(ByteBuffer.wrap(message).array());
-    byte[] buffer = new byte[1024];
-    int bytesCompressed = localDeflater.deflate(buffer, 0, buffer.length, Deflater.SYNC_FLUSH);
-
-    // Change the deflater level after the creation and switch to a new deflater level
-    // Compression strategy should be applied instantly since we call .deflate manually
-    deflateExtension.setDeflaterLevel(Deflater.BEST_COMPRESSION);
-    deflateExtension.encodeFrame(frame);
-    byte[] payloadArray = frame.getPayloadData().array();
-    assertArrayEquals(Arrays.copyOfRange(buffer,0, bytesCompressed), Arrays.copyOfRange(payloadArray,0,payloadArray.length));
-    assertTrue(frame.isRSV1());
-    deflateExtension.decodeFrame(frame);
-    assertArrayEquals(message, frame.getPayloadData().array());
-  }
 
   @Test
   public void testEncodeFrame() {
@@ -304,41 +270,31 @@ public class PerMessageDeflateExtensionTest {
     assertEquals(deflateExtension.getThreshold(), newDeflateExtension.getThreshold());
     assertEquals(deflateExtension.isClientNoContextTakeover(), newDeflateExtension.isClientNoContextTakeover());
     assertEquals(deflateExtension.isServerNoContextTakeover(), newDeflateExtension.isServerNoContextTakeover());
-    assertEquals(deflateExtension.getDeflaterLevel(), newDeflateExtension.getDeflaterLevel());
+    assertEquals(deflateExtension.getCompressionLevel(), newDeflateExtension.getCompressionLevel());
 
 
-    deflateExtension = new PerMessageDeflateExtension();
+    deflateExtension = new PerMessageDeflateExtension(Deflater.BEST_COMPRESSION);
     deflateExtension.setThreshold(512);
     deflateExtension.setServerNoContextTakeover(false);
     deflateExtension.setClientNoContextTakeover(true);
-    deflateExtension.setDeflaterLevel(Deflater.BEST_COMPRESSION);
     newDeflateExtension = (PerMessageDeflateExtension)deflateExtension.copyInstance();
 
     assertEquals(deflateExtension.getThreshold(), newDeflateExtension.getThreshold());
     assertEquals(deflateExtension.isClientNoContextTakeover(), newDeflateExtension.isClientNoContextTakeover());
     assertEquals(deflateExtension.isServerNoContextTakeover(), newDeflateExtension.isServerNoContextTakeover());
-    assertEquals(deflateExtension.getDeflaterLevel(), newDeflateExtension.getDeflaterLevel());
+    assertEquals(deflateExtension.getCompressionLevel(), newDeflateExtension.getCompressionLevel());
 
 
-    deflateExtension = new PerMessageDeflateExtension();
+    deflateExtension = new PerMessageDeflateExtension(Deflater.NO_COMPRESSION);
     deflateExtension.setThreshold(64);
     deflateExtension.setServerNoContextTakeover(true);
     deflateExtension.setClientNoContextTakeover(false);
-    deflateExtension.setDeflaterLevel(Deflater.NO_COMPRESSION);
     newDeflateExtension = (PerMessageDeflateExtension)deflateExtension.copyInstance();
 
     assertEquals(deflateExtension.getThreshold(), newDeflateExtension.getThreshold());
     assertEquals(deflateExtension.isClientNoContextTakeover(), newDeflateExtension.isClientNoContextTakeover());
     assertEquals(deflateExtension.isServerNoContextTakeover(), newDeflateExtension.isServerNoContextTakeover());
-    assertEquals(deflateExtension.getDeflaterLevel(), newDeflateExtension.getDeflaterLevel());
-  }
-
-  @Test
-  public void testDeflaterLevel() {
-    PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
-    assertEquals(Deflater.DEFAULT_COMPRESSION, deflateExtension.getDeflaterLevel());
-    deflateExtension.setDeflaterLevel(Deflater.BEST_SPEED);
-    assertEquals(Deflater.BEST_SPEED, deflateExtension.getDeflaterLevel());
+    assertEquals(deflateExtension.getCompressionLevel(), newDeflateExtension.getCompressionLevel());
   }
 
   @Test
@@ -347,6 +303,6 @@ public class PerMessageDeflateExtensionTest {
     assertFalse(deflateExtension.isClientNoContextTakeover());
     assertTrue(deflateExtension.isServerNoContextTakeover());
     assertEquals(1024, deflateExtension.getThreshold());
-    assertEquals(Deflater.DEFAULT_COMPRESSION, deflateExtension.getDeflaterLevel());
+    assertEquals(Deflater.DEFAULT_COMPRESSION, deflateExtension.getCompressionLevel());
   }
 }
