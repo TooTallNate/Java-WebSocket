@@ -13,13 +13,11 @@ import org.java_websocket.exceptions.InvalidFrameException;
 import org.java_websocket.extensions.CompressionExtension;
 import org.java_websocket.extensions.ExtensionRequestData;
 import org.java_websocket.extensions.IExtension;
-import org.java_websocket.framing.BinaryFrame;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.ContinuousFrame;
 import org.java_websocket.framing.DataFrame;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.framing.FramedataImpl1;
-import org.java_websocket.framing.TextFrame;
 
 /**
  * PerMessage Deflate Extension (<a href="https://tools.ietf.org/html/rfc7692#section-7">7&#46; The
@@ -53,23 +51,37 @@ public class PerMessageDeflateExtension extends CompressionExtension {
   // For WebSocketClients, this variable holds the extension parameters that client himself has requested.
   private Map<String, String> requestedParameters = new LinkedHashMap<>();
 
-  private Inflater inflater = new Inflater(true);
-  private Deflater deflater = new Deflater(Deflater.DEFAULT_COMPRESSION, true);
+  private final int compressionLevel;
 
-  public Inflater getInflater() {
-    return inflater;
+  private final Inflater inflater;
+  private final Deflater deflater;
+
+  /**
+   * Constructor for the PerMessage Deflate Extension (<a href="https://tools.ietf.org/html/rfc7692#section-7">7&#46; Thepermessage-deflate" Extension</a>)
+   *
+   * Uses {@link java.util.zip.Deflater#DEFAULT_COMPRESSION} as the compression level for the {@link java.util.zip.Deflater#Deflater(int)}
+   */
+  public PerMessageDeflateExtension() {
+    this(Deflater.DEFAULT_COMPRESSION);
   }
 
-  public void setInflater(Inflater inflater) {
-    this.inflater = inflater;
+  /**
+   * Constructor for the PerMessage Deflate Extension (<a href="https://tools.ietf.org/html/rfc7692#section-7">7&#46; Thepermessage-deflate" Extension</a>)
+   *
+   * @param compressionLevel The compression level passed to the {@link java.util.zip.Deflater#Deflater(int)}
+   */
+  public PerMessageDeflateExtension(int compressionLevel) {
+    this.compressionLevel = compressionLevel;
+    this.deflater = new Deflater(this.compressionLevel, true);
+    this.inflater = new Inflater(true);
   }
 
-  public Deflater getDeflater() {
-    return deflater;
-  }
-
-  public void setDeflater(Deflater deflater) {
-    this.deflater = deflater;
+  /**
+   * Get the compression level used for the compressor.
+   * @return the compression level
+   */
+  public int getCompressionLevel() {
+    return this.compressionLevel;
   }
 
   /**
@@ -166,7 +178,7 @@ public class PerMessageDeflateExtension extends CompressionExtension {
           Note that this behavior doesn't occur if the message is "first compressed and then fragmented".
        */
       if (inflater.getRemaining() > 0) {
-        inflater = new Inflater(true);
+        inflater.reset();
         decompress(inputFrame.getPayloadData().array(), output);
       }
 
@@ -174,7 +186,7 @@ public class PerMessageDeflateExtension extends CompressionExtension {
         decompress(TAIL_BYTES, output);
         // If context takeover is disabled, inflater can be reset.
         if (clientNoContextTakeover) {
-          inflater = new Inflater(true);
+          inflater.reset();
         }
       }
     } catch (DataFormatException e) {
@@ -244,8 +256,7 @@ public class PerMessageDeflateExtension extends CompressionExtension {
       }
 
       if (serverNoContextTakeover) {
-        deflater.end();
-        deflater = new Deflater(Deflater.DEFAULT_COMPRESSION, true);
+        deflater.reset();
       }
     }
 
@@ -330,7 +341,11 @@ public class PerMessageDeflateExtension extends CompressionExtension {
 
   @Override
   public IExtension copyInstance() {
-    return new PerMessageDeflateExtension();
+    PerMessageDeflateExtension clone = new PerMessageDeflateExtension(this.getCompressionLevel());
+    clone.setThreshold(this.getThreshold());
+    clone.setClientNoContextTakeover(this.isClientNoContextTakeover());
+    clone.setServerNoContextTakeover(this.isServerNoContextTakeover());
+    return clone;
   }
 
   /**
