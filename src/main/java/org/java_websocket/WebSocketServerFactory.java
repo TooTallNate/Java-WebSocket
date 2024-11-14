@@ -54,8 +54,4 @@ public interface WebSocketServerFactory extends WebSocketFactory {
    */
   ByteChannel wrapChannel(SocketChannel channel, SelectionKey key) throws IOException;
 
-  /**
-   * Allows to shutdown the websocket factory for a clean shutdown
-   */
-  void close();
 }
