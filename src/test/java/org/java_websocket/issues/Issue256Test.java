@@ -118,7 +118,6 @@ public class Issue256Test {
     countDownLatch0.await();
     clt.reconnectBlocking();
     clt.closeBlocking();
-
     if (ws != null) {
       ws.stop(1000); // Wait up to 1 second for the server to stop
       ws = null;
