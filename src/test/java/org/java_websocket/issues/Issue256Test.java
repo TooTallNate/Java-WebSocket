@@ -44,6 +44,7 @@ import org.junit.Test;
 
 public class Issue256Test {
 
+  private static final int NUMBER_OF_TESTS = 10;
   @Rule
   public ThreadCheck zombies = new ThreadCheck();
 
@@ -127,18 +128,19 @@ public class Issue256Test {
     Thread.sleep(100);
   }
 
-  @Test(timeout = 5000 * 10)
+  @Test(timeout = 5000 * NUMBER_OF_TESTS)
   public void runReconnectSocketClose() throws Exception {
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < NUMBER_OF_TESTS; i++) {
       runTestScenarioReconnect(false);
     }
   }
 
-  @Test(timeout = 5000 * 10)
+  @Test(timeout = 5000 * NUMBER_OF_TESTS)
   public void runReconnectCloseBlocking() throws Exception {
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < NUMBER_OF_TESTS; i++) {
       runTestScenarioReconnect(true);
     }
   }
+
 }
 
