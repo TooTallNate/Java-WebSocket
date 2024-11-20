@@ -119,13 +119,11 @@ public class Issue256Test {
     clt.reconnectBlocking();
     clt.closeBlocking();
 
-    // **Teardown Phase**
     if (ws != null) {
       ws.stop(1000); // Wait up to 1 second for the server to stop
       ws = null;
     }
-    // Allow time for resources to be released
-    Thread.sleep(100);
+    Thread.sleep(100); // Allow time for resources to be released
   }
 
   @Test(timeout = 5000 * NUMBER_OF_TESTS)
