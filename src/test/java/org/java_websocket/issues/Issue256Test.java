@@ -31,9 +31,6 @@ import static org.junit.Assume.assumeThat;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import org.java_websocket.WebSocket;
 import org.java_websocket.client.WebSocketClient;
@@ -42,124 +39,107 @@ import org.java_websocket.handshake.ServerHandshake;
 import org.java_websocket.server.WebSocketServer;
 import org.java_websocket.util.SocketUtil;
 import org.java_websocket.util.ThreadCheck;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
-@RunWith(Parameterized.class)
 public class Issue256Test {
 
-  private static final int NUMBER_OF_TESTS = 10;
-  private static WebSocketServer ws;
+    @Rule
+    public ThreadCheck zombies = new ThreadCheck();
 
-  private static int port;
-  static CountDownLatch countServerDownLatch = new CountDownLatch(1);
-  @Rule
-  public ThreadCheck zombies = new ThreadCheck();
+    private void runTestScenarioReconnect(boolean closeBlocking) throws Exception {
+        final CountDownLatch countServerDownLatch = new CountDownLatch(1);
+        int port = SocketUtil.getAvailablePort();
+        WebSocketServer ws = new WebSocketServer(new InetSocketAddress(port), 16) {
+            @Override
+            public void onOpen(WebSocket conn, ClientHandshake handshake) {
 
-  @Parameterized.Parameter
-  public int count;
+            }
 
-  @BeforeClass
-  public static void startServer() throws Exception {
-    port = SocketUtil.getAvailablePort();
-    ws = new WebSocketServer(new InetSocketAddress(port), 16) {
-      @Override
-      public void onOpen(WebSocket conn, ClientHandshake handshake) {
+            @Override
+            public void onClose(WebSocket conn, int code, String reason, boolean remote) {
 
-      }
+            }
 
-      @Override
-      public void onClose(WebSocket conn, int code, String reason, boolean remote) {
+            @Override
+            public void onMessage(WebSocket conn, String message) {
+                conn.send(message);
+            }
 
-      }
+            @Override
+            public void onError(WebSocket conn, Exception ex) {
 
-      @Override
-      public void onMessage(WebSocket conn, String message) {
-        conn.send(message);
-      }
+                ex.printStackTrace();
+                assumeThat(true, is(false));
+                System.out.println("There should be no exception!");
+            }
 
-      @Override
-      public void onError(WebSocket conn, Exception ex) {
+            @Override
+            public void onStart() {
+              countServerDownLatch.countDown();
+            }
+        };
+        ws.setConnectionLostTimeout(0);
+        ws.start();
+        countServerDownLatch.await();
+    
+        final CountDownLatch countDownLatch0 = new CountDownLatch(1);
+        final CountDownLatch countDownLatch1 = new CountDownLatch(2);
+        WebSocketClient clt = new WebSocketClient(new URI("ws://localhost:" + port)) {
+            @Override
+            public void onOpen(ServerHandshake handshakedata) {
+              countDownLatch1.countDown();
+            }
 
-        ex.printStackTrace();
-        assumeThat(true, is(false));
-        System.out.println("There should be no exception!");
-      }
+            @Override
+            public void onMessage(String message) {
 
-      @Override
-      public void onStart() {
-        countServerDownLatch.countDown();
-      }
-    };
-    ws.setConnectionLostTimeout(0);
-    ws.start();
-    countServerDownLatch.await();
-  }
+            }
 
-  private void runTestScenarioReconnect(boolean closeBlocking) throws Exception {
-    final CountDownLatch countDownLatch0 = new CountDownLatch(1);
-    final CountDownLatch countDownLatch1 = new CountDownLatch(2);
-    WebSocketClient clt = new WebSocketClient(new URI("ws://localhost:" + port)) {
-      @Override
-      public void onOpen(ServerHandshake handshakedata) {
-        countDownLatch1.countDown();
-      }
+            @Override
+            public void onClose(int code, String reason, boolean remote) {
+                countDownLatch0.countDown();
+            }
 
-      @Override
-      public void onMessage(String message) {
+            @Override
+            public void onError(Exception ex) {
+                ex.printStackTrace();
+                assumeThat(true, is(false));
+                System.out.println("There should be no exception!");
+            }
+        };
+        clt.connectBlocking();
+        if (closeBlocking) {
+            clt.closeBlocking();
+        } else {
+            clt.getSocket().close();
+        }
+        countDownLatch0.await();
+        clt.reconnectBlocking();
+        clt.closeBlocking();
 
-      }
-
-      @Override
-      public void onClose(int code, String reason, boolean remote) {
-        countDownLatch0.countDown();
-      }
-
-      @Override
-      public void onError(Exception ex) {
-        ex.printStackTrace();
-        assumeThat(true, is(false));
-        System.out.println("There should be no exception!");
-      }
-    };
-    clt.connectBlocking();
-    if (closeBlocking) {
-      clt.closeBlocking();
-    } else {
-      clt.getSocket().close();
+        // **Teardown Phase**
+        if (ws != null) {
+            ws.stop(1000); // Wait up to 1 second for the server to stop
+            ws = null;
+        }
+        // Allow time for resources to be released
+        Thread.sleep(100);
     }
-    countDownLatch0.await();
-    clt.reconnectBlocking();
-    clt.closeBlocking();
-  }
 
-  @AfterClass
-  public static void successTests() throws InterruptedException, IOException {
-    ws.stop();
-  }
-
-  @Parameterized.Parameters
-  public static Collection<Integer[]> data() {
-    List<Integer[]> ret = new ArrayList<Integer[]>(NUMBER_OF_TESTS);
-    for (int i = 0; i < NUMBER_OF_TESTS; i++) {
-      ret.add(new Integer[]{i});
+    @Test(timeout = 5000 * 10)
+    public void runReconnectSocketClose() throws Exception {
+        for (int i = 0; i < 10; i++) {
+          runTestScenarioReconnect(false);
+        }
     }
-    return ret;
-  }
 
-  @Test(timeout = 5000)
-  public void runReconnectSocketClose() throws Exception {
-    runTestScenarioReconnect(false);
-  }
-
-  @Test(timeout = 5000)
-  public void runReconnectCloseBlocking() throws Exception {
-    runTestScenarioReconnect(true);
-  }
+    @Test(timeout = 5000 * 10)
+    public void runReconnectCloseBlocking() throws Exception {
+        for (int i = 0; i < 10; i++) {
+          runTestScenarioReconnect(true);
+        }
+    }
 
 }
 
