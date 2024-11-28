@@ -39,19 +39,24 @@ import org.java_websocket.handshake.ServerHandshake;
 import org.java_websocket.server.WebSocketServer;
 import org.java_websocket.util.SocketUtil;
 import org.java_websocket.util.ThreadCheck;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 
 public class Issue256Test {
 
   private static final int NUMBER_OF_TESTS = 10;
+  private WebSocketServer ws;
+  private int port;
+  CountDownLatch countServerDownLatch = new CountDownLatch(1);
   @Rule
   public ThreadCheck zombies = new ThreadCheck();
 
-  private void runTestScenarioReconnect(boolean closeBlocking) throws Exception {
-    final CountDownLatch countServerDownLatch = new CountDownLatch(1);
-    int port = SocketUtil.getAvailablePort();
-    WebSocketServer ws = new WebSocketServer(new InetSocketAddress(port), 16) {
+  @BeforeClass
+  public void startServer() throws Exception {
+    port = SocketUtil.getAvailablePort();
+    ws = new WebSocketServer(new InetSocketAddress(port), 16) {
       @Override
       public void onOpen(WebSocket conn, ClientHandshake handshake) {
 
@@ -83,7 +88,9 @@ public class Issue256Test {
     ws.setConnectionLostTimeout(0);
     ws.start();
     countServerDownLatch.await();
+  }
 
+  private void runTestScenarioReconnect(boolean closeBlocking) throws Exception {
     final CountDownLatch countDownLatch0 = new CountDownLatch(1);
     final CountDownLatch countDownLatch1 = new CountDownLatch(2);
     WebSocketClient clt = new WebSocketClient(new URI("ws://localhost:" + port)) {
@@ -118,11 +125,11 @@ public class Issue256Test {
     countDownLatch0.await();
     clt.reconnectBlocking();
     clt.closeBlocking();
-    if (ws != null) {
-      ws.stop(1000); // Wait up to 1 second for the server to stop
-      ws = null;
-    }
-    Thread.sleep(100); // Allow time for resources to be released
+  }
+
+  @AfterClass
+  public void successTests() throws InterruptedException, IOException {
+    ws.stop();
   }
 
   @Test(timeout = 5000 * NUMBER_OF_TESTS)
