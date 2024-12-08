@@ -1,0 +1,17 @@
+[Unit]
+Description=Java-WebSocket systemd activation demo service
+After=network.target jws-activation.socket
+Requires=jws-activation.socket
+
+[Service]
+Type=simple
+# Place the command for running SocketActivation.java in file "$HOME"/jws_activation_command:
+ExecStart=/bin/sh %h/jws_activation_run
+TimeoutStopSec=5
+StandardError=journal
+StandardOutput=journal
+# This is very important - systemd will pass the socket as file descriptor zero, which is what Java expects
+StandardInput=socket
+
+[Install]
+WantedBy=default.target

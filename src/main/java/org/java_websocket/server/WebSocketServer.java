@@ -181,6 +181,30 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
     this(address, decodercount, drafts, new HashSet<WebSocket>());
   }
 
+  // Small internal helper function to get around limitations of Java constructors.
+  private static InetSocketAddress checkAddressOfExistingChannel(ServerSocketChannel existingChannel) {
+    assert existingChannel.isOpen();
+    SocketAddress addr;
+    try {
+      addr = existingChannel.getLocalAddress();
+    } catch (IOException e) {
+      throw new IllegalArgumentException("Could not get address of channel passed to WebSocketServer, make sure it is bound", e);
+    }
+    if (addr == null) {
+      throw new IllegalArgumentException("Could not get address of channel passed to WebSocketServer, make sure it is bound");
+    }
+    return (InetSocketAddress)addr;
+  }
+
+  /**
+   * @param existingChannel An already open and bound server socket channel, which this server will use.
+   * For example, it can be System.inheritedChannel() to implement socket activation.
+   */
+  public WebSocketServer(ServerSocketChannel existingChannel) {
+    this(checkAddressOfExistingChannel(existingChannel));
+    this.server = existingChannel;
+  }
+
   /**
    * Creates a WebSocketServer that will attempt to bind/listen on the given <var>address</var>, and
    * comply with <code>Draft</code> version <var>draft</var>.
@@ -575,7 +599,10 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
   private boolean doSetupSelectorAndServerThread() {
     selectorthread.setName("WebSocketSelector-" + selectorthread.getId());
     try {
-      server = ServerSocketChannel.open();
+      if (server == null) {
+        server = ServerSocketChannel.open();
+        // If 'server' is not null, that means WebSocketServer was created from existing channel.
+      }
       server.configureBlocking(false);
       ServerSocket socket = server.socket();
       int receiveBufferSize = getReceiveBufferSize();
@@ -583,7 +610,11 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
         socket.setReceiveBufferSize(receiveBufferSize);
       }
       socket.setReuseAddress(isReuseAddr());
-      socket.bind(address, getMaxPendingConnections());
+      // Socket may be already bound, if an existing channel was passed to constructor.
+      // In this case we cannot modify backlog size from pure Java code, so leave it as is.
+      if (!socket.isBound()) {
+        socket.bind(address, getMaxPendingConnections());
+      }
       selector = Selector.open();
       server.register(selector, server.validOps());
       startConnectionLostTimer();
