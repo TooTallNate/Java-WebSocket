@@ -10,7 +10,7 @@ repositories {
 }
 
 group = 'org.java-websocket'
-version = '1.6.0'
+version = '1.6.1-SNAPSHOT'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
