@@ -1,6 +1,27 @@
 # Change log
 
 ###############################################################################
+## Version Release 1.6.0 (2024/12/15)
+
+#### Breaking Changes
+
+* [Issue 1434](https://github.com/TooTallNate/Java-WebSocket/issues/1434) - Drop Java 1.7 support ([PR 1435](https://github.com/TooTallNate/Java-WebSocket/pull/1435))
+* [PR 1435](https://github.com/TooTallNate/Java-WebSocket/pull/1435) - Drop support for Java 1.7
+
+#### Bugs Fixed
+
+* [Issue 1437](https://github.com/TooTallNate/Java-WebSocket/issues/1437) - Question: How can the compression threshold be set for the PerMessageDeflateExtension in a Deflate Client? ([PR 1439](https://github.com/TooTallNate/Java-WebSocket/pull/1439))
+* [Issue 1400](https://github.com/TooTallNate/Java-WebSocket/issues/1400) - PerMessageDeflateExtension#setDeflater()/#setInflater() is overwritten in case of no_context_takeover ([PR 1439](https://github.com/TooTallNate/Java-WebSocket/pull/1439))
+* [PR 1439](https://github.com/TooTallNate/Java-WebSocket/pull/1439) - Clone PerMessageDeflateExtension values correctly
+
+#### New Features
+
+* [Issue 1440](https://github.com/TooTallNate/Java-WebSocket/issues/1440) - Support for inherited sockets ([PR 1442](https://github.com/TooTallNate/Java-WebSocket/pull/1442))
+* [PR 1442](https://github.com/TooTallNate/Java-WebSocket/pull/1442) - Socket activation
+
+In this release 4 issues and 3 pull requests were closed.
+
+###############################################################################
 ## Version Release 1.5.7 (2024/07/08)
 
 #### Breaking Changes
