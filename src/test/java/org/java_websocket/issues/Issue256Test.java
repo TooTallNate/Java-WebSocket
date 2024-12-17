@@ -31,9 +31,6 @@ import static org.junit.Assume.assumeThat;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import org.java_websocket.WebSocket;
 import org.java_websocket.client.WebSocketClient;
@@ -46,25 +43,18 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
-@RunWith(Parameterized.class)
 public class Issue256Test {
 
   private static final int NUMBER_OF_TESTS = 10;
-  private static WebSocketServer ws;
-
-  private static int port;
-  static CountDownLatch countServerDownLatch = new CountDownLatch(1);
+  private WebSocketServer ws;
+  private int port;
+  CountDownLatch countServerDownLatch = new CountDownLatch(1);
   @Rule
   public ThreadCheck zombies = new ThreadCheck();
 
-  @Parameterized.Parameter
-  public int count;
-
   @BeforeClass
-  public static void startServer() throws Exception {
+  public void startServer() throws Exception {
     port = SocketUtil.getAvailablePort();
     ws = new WebSocketServer(new InetSocketAddress(port), 16) {
       @Override
@@ -138,27 +128,22 @@ public class Issue256Test {
   }
 
   @AfterClass
-  public static void successTests() throws InterruptedException, IOException {
+  public void successTests() throws InterruptedException, IOException {
     ws.stop();
   }
 
-  @Parameterized.Parameters
-  public static Collection<Integer[]> data() {
-    List<Integer[]> ret = new ArrayList<Integer[]>(NUMBER_OF_TESTS);
-    for (int i = 0; i < NUMBER_OF_TESTS; i++) {
-      ret.add(new Integer[]{i});
-    }
-    return ret;
-  }
-
-  @Test(timeout = 5000)
+  @Test(timeout = 5000 * NUMBER_OF_TESTS)
   public void runReconnectSocketClose() throws Exception {
-    runTestScenarioReconnect(false);
+    for (int i = 0; i < NUMBER_OF_TESTS; i++) {
+      runTestScenarioReconnect(false);
+    }
   }
 
-  @Test(timeout = 5000)
+  @Test(timeout = 5000 * NUMBER_OF_TESTS)
   public void runReconnectCloseBlocking() throws Exception {
-    runTestScenarioReconnect(true);
+    for (int i = 0; i < NUMBER_OF_TESTS; i++) {
+      runTestScenarioReconnect(true);
+    }
   }
 
 }
