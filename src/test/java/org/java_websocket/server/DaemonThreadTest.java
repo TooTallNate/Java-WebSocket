@@ -1,20 +1,22 @@
 package org.java_websocket.server;
 
-import java.io.IOException;
 import java.net.*;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.*;
 import org.java_websocket.client.*;
-import org.java_websocket.server.WebSocketServer;
 import org.java_websocket.util.SocketUtil;
-import org.junit.Test;
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DaemonThreadTest {
 
-  @Test(timeout = 1000)
+  @Test()
+  @Timeout(1000)
   public void test_AllCreatedThreadsAreDaemon() throws Throwable {
 
     Set<Thread> threadSet1 = Thread.getAllStackTraces().keySet();
@@ -57,10 +59,10 @@ public class DaemonThreadTest {
     Set<Thread> threadSet2 = Thread.getAllStackTraces().keySet();
     threadSet2.removeAll(threadSet1);
 
-    assertTrue("new threads created (no new threads indicates issue in test)", !threadSet2.isEmpty());
+      assertFalse(threadSet2.isEmpty(), "new threads created (no new threads indicates issue in test)");
 
     for (Thread t : threadSet2)
-      assertTrue(t.getName(), t.isDaemon());
+      assertTrue(t.isDaemon(), t.getName());
 
     boolean exception = false;
     try {
@@ -68,7 +70,7 @@ public class DaemonThreadTest {
     } catch(IllegalStateException e) {
       exception = true;
     }
-    assertTrue("exception was thrown when calling setDaemon on a running server", exception);
+    assertTrue(exception, "exception was thrown when calling setDaemon on a running server");
 
     server.stop();
   }

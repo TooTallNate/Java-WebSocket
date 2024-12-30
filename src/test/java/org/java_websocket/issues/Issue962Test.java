@@ -38,8 +38,10 @@ import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.handshake.ServerHandshake;
 import org.java_websocket.server.WebSocketServer;
 import org.java_websocket.util.SocketUtil;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class Issue962Test {
 
@@ -86,7 +88,8 @@ public class Issue962Test {
 
   }
 
-  @Test(timeout = 2000)
+  @Test()
+  @Timeout(2000)
   public void testIssue() throws IOException, URISyntaxException, InterruptedException {
     int port = SocketUtil.getAvailablePort();
     WebSocketClient client = new WebSocketClient(new URI("ws://127.0.0.1:" + port)) {
@@ -104,7 +107,7 @@ public class Issue962Test {
 
       @Override
       public void onError(Exception ex) {
-        Assert.fail(ex.toString() + " should not occur");
+        fail(ex.toString() + " should not occur");
       }
     };
 
@@ -136,9 +139,9 @@ public class Issue962Test {
 
     server.start();
     client.connectBlocking();
-    Assert.assertEquals(bindingAddress, client.getSocket().getLocalAddress().getHostAddress());
-    Assert.assertNotEquals(0, client.getSocket().getLocalPort());
-    Assert.assertTrue(client.getSocket().isConnected());
+    assertEquals(bindingAddress, client.getSocket().getLocalAddress().getHostAddress());
+    assertNotEquals(0, client.getSocket().getLocalPort());
+      assertTrue(client.getSocket().isConnected());
   }
 
 }

@@ -25,8 +25,6 @@
 
 package org.java_websocket.misc;
 
-import static org.junit.Assert.fail;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.ServerSocket;
@@ -38,9 +36,12 @@ import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.handshake.ServerHandshake;
 import org.java_websocket.util.Charsetfunctions;
 import org.java_websocket.util.SocketUtil;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class OpeningHandshakeRejectionTest {
 
@@ -53,7 +54,7 @@ public class OpeningHandshakeRejectionTest {
 
   private static int port;
 
-  @BeforeClass
+  @BeforeAll
   public static void startServer() throws Exception {
     port = SocketUtil.getAvailablePort();
     thread = new Thread(
@@ -142,7 +143,7 @@ public class OpeningHandshakeRejectionTest {
     thread.start();
   }
 
-  @AfterClass
+  @AfterAll
   public static void successTests() throws InterruptedException, IOException {
     serverSocket.close();
     thread.interrupt();
@@ -151,62 +152,74 @@ public class OpeningHandshakeRejectionTest {
     }
   }
 
-  @Test(timeout = 5000)
+  @Test()
+  @Timeout(5000)
   public void testHandshakeRejectionTestCase0() throws Exception {
     testHandshakeRejection(0);
   }
 
-  @Test(timeout = 5000)
+  @Test()
+  @Timeout(5000)
   public void testHandshakeRejectionTestCase1() throws Exception {
     testHandshakeRejection(1);
   }
 
-  @Test(timeout = 5000)
+  @Test()
+  @Timeout(5000)
   public void testHandshakeRejectionTestCase2() throws Exception {
     testHandshakeRejection(2);
   }
 
-  @Test(timeout = 5000)
+  @Test()
+  @Timeout(5000)
   public void testHandshakeRejectionTestCase3() throws Exception {
     testHandshakeRejection(3);
   }
 
-  @Test(timeout = 5000)
+  @Test()
+  @Timeout(5000)
   public void testHandshakeRejectionTestCase4() throws Exception {
     testHandshakeRejection(4);
   }
 
-  @Test(timeout = 5000)
+  @Test()
+  @Timeout(5000)
   public void testHandshakeRejectionTestCase5() throws Exception {
     testHandshakeRejection(5);
   }
 
-  @Test(timeout = 5000)
+  @Test()
+  @Timeout(5000)
   public void testHandshakeRejectionTestCase6() throws Exception {
     testHandshakeRejection(6);
   }
 
-  @Test(timeout = 5000)
+  @Test()
+  @Timeout(5000)
   public void testHandshakeRejectionTestCase7() throws Exception {
     testHandshakeRejection(7);
   }
 
-  @Test(timeout = 5000)
+  @Test()
+  @Timeout(5000)
   public void testHandshakeRejectionTestCase8() throws Exception {
     testHandshakeRejection(8);
   }
 
-  @Test(timeout = 5000)
+  @Test()
+  @Timeout(5000)
   public void testHandshakeRejectionTestCase9() throws Exception {
     testHandshakeRejection(9);
   }
 
-  @Test(timeout = 5000)
+  @Test()
+  @Timeout(5000)
   public void testHandshakeRejectionTestCase10() throws Exception {
     testHandshakeRejection(10);
   }
 
-  @Test(timeout = 5000)
+  @Test()
+  @Timeout(5000)
   public void testHandshakeRejectionTestCase11() throws Exception {
     testHandshakeRejection(11);
   }

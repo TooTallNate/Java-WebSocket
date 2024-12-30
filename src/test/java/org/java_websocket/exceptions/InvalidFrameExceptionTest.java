@@ -25,10 +25,11 @@
 
 package org.java_websocket.exceptions;
 
-import static org.junit.Assert.assertEquals;
 
 import org.java_websocket.framing.CloseFrame;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * JUnit Test for the InvalidFrameException class
@@ -38,30 +39,29 @@ public class InvalidFrameExceptionTest {
   @Test
   public void testConstructor() {
     InvalidFrameException invalidFrameException = new InvalidFrameException();
-    assertEquals("The close code has to be PROTOCOL_ERROR", CloseFrame.PROTOCOL_ERROR,
-        invalidFrameException.getCloseCode());
+    assertEquals( CloseFrame.PROTOCOL_ERROR,
+        invalidFrameException.getCloseCode(), "The close code has to be PROTOCOL_ERROR");
     invalidFrameException = new InvalidFrameException("Message");
-    assertEquals("The close code has to be PROTOCOL_ERROR", CloseFrame.PROTOCOL_ERROR,
-        invalidFrameException.getCloseCode());
-    assertEquals("The message has to be the argument", "Message",
-        invalidFrameException.getMessage());
+    assertEquals(CloseFrame.PROTOCOL_ERROR,
+        invalidFrameException.getCloseCode(), "The close code has to be PROTOCOL_ERROR");
+    assertEquals("Message",
+        invalidFrameException.getMessage(), "The message has to be the argument");
     Exception e = new Exception();
     invalidFrameException = new InvalidFrameException("Message", e);
-    assertEquals("The close code has to be PROTOCOL_ERROR", CloseFrame.PROTOCOL_ERROR,
-        invalidFrameException.getCloseCode());
-    assertEquals("The message has to be the argument", "Message",
-        invalidFrameException.getMessage());
-    assertEquals("The throwable has to be the argument", e, invalidFrameException.getCause());
+    assertEquals(CloseFrame.PROTOCOL_ERROR,
+        invalidFrameException.getCloseCode(), "The close code has to be PROTOCOL_ERROR");
+    assertEquals("Message",
+        invalidFrameException.getMessage(), "The message has to be the argument");
+    assertEquals(e, invalidFrameException.getCause(), "The throwable has to be the argument");
     invalidFrameException = new InvalidFrameException(e);
-    assertEquals("The close code has to be PROTOCOL_ERROR", CloseFrame.PROTOCOL_ERROR,
-        invalidFrameException.getCloseCode());
-    assertEquals("The throwable has to be the argument", e, invalidFrameException.getCause());
+    assertEquals(CloseFrame.PROTOCOL_ERROR,
+        invalidFrameException.getCloseCode(), "The close code has to be PROTOCOL_ERROR");
+    assertEquals(e, invalidFrameException.getCause(), "The throwable has to be the argument");
   }
 
   @Test
   public void testExtends() {
     InvalidFrameException invalidFrameException = new InvalidFrameException();
-    assertEquals("InvalidFrameException must extend InvalidDataException", true,
-        invalidFrameException instanceof InvalidDataException);
+      assertInstanceOf(InvalidDataException.class, invalidFrameException, "InvalidFrameException must extend InvalidDataException");
   }
 }

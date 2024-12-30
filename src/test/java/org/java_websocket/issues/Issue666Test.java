@@ -36,8 +36,9 @@ import org.java_websocket.handshake.ServerHandshake;
 import org.java_websocket.server.WebSocketServer;
 import org.java_websocket.util.SocketUtil;
 import org.java_websocket.util.ThreadCheck;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class Issue666Test {
 
@@ -81,8 +82,8 @@ public class Issue666Test {
     for (Thread thread : mapAfter.values()) {
       String name = thread.getName();
       if (!name.startsWith("WebSocketSelector-") && !name.startsWith("WebSocketWorker-") && !name
-          .startsWith("connectionLostChecker-")) {
-        Assert.fail("Thread not correctly named! Is: " + name);
+          .startsWith("WebSocketConnectionLostChecker-")) {
+        fail("Thread not correctly named! Is: " + name);
       }
     }
     server.stop();
@@ -146,9 +147,9 @@ public class Issue666Test {
     }
     for (Thread thread : mapAfter.values()) {
       String name = thread.getName();
-      if (!name.startsWith("connectionLostChecker-") && !name.startsWith("WebSocketWriteThread-")
+      if (!name.startsWith("WebSocketConnectionLostChecker-") && !name.startsWith("WebSocketWriteThread-")
           && !name.startsWith("WebSocketConnectReadThread-")) {
-        Assert.fail("Thread not correctly named! Is: " + name);
+        fail("Thread not correctly named! Is: " + name);
       }
     }
     client.close();

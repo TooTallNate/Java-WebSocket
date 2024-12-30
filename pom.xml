@@ -11,10 +11,10 @@
     <url>https://github.com/TooTallNate/Java-WebSocket</url>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <slf4j.version>2.0.13</slf4j.version>
+        <slf4j.version>2.0.16</slf4j.version>
 
         <!-- Test dependencies versions -->
-        <junit.version>4.13.1</junit.version>
+        <junit.version>5.11.4</junit.version>
 
         <!-- Maven plugin versions -->
         <bnd.maven.plugin.version>6.4.0</bnd.maven.plugin.version>
@@ -57,10 +57,11 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
                 <version>${junit.version}</version>
-                <scope>test</scope>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -101,7 +102,7 @@
                                 <goal>compile</goal>
                             </goals>
                             <configuration>
-                                <release>7</release>
+                                <release>8</release>
                             </configuration>
                         </execution>
 
@@ -288,8 +289,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

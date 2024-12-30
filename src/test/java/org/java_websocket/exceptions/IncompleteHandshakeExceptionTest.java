@@ -25,9 +25,10 @@
 
 package org.java_websocket.exceptions;
 
-import static org.junit.Assert.assertEquals;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * JUnit Test for the IncompleteHandshakeException class
@@ -38,8 +39,8 @@ public class IncompleteHandshakeExceptionTest {
   public void testConstructor() {
     IncompleteHandshakeException incompleteHandshakeException = new IncompleteHandshakeException(
         42);
-    assertEquals("The argument should be set", 42, incompleteHandshakeException.getPreferredSize());
+    assertEquals( 42, incompleteHandshakeException.getPreferredSize(), "The argument should be set");
     incompleteHandshakeException = new IncompleteHandshakeException();
-    assertEquals("The default has to be 0", 0, incompleteHandshakeException.getPreferredSize());
+    assertEquals(0, incompleteHandshakeException.getPreferredSize(), "The default has to be 0");
   }
 }

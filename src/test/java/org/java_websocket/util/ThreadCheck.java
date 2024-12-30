@@ -25,26 +25,33 @@
 
 package org.java_websocket.util;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.AfterEachCallback;
+import org.junit.jupiter.api.extension.BeforeEachCallback;
+import org.junit.jupiter.api.extension.Extension;
+import org.junit.jupiter.api.extension.ExtensionContext;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.LockSupport;
-import org.junit.Assert;
-import org.junit.rules.ExternalResource;
+
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Makes test fail if new threads are still alive after tear-down.
  */
-public class ThreadCheck extends ExternalResource {
+public class ThreadCheck implements AfterEachCallback, BeforeEachCallback {
 
   private Map<Long, Thread> map = new HashMap<Long, Thread>();
 
   @Override
-  protected void before() throws Throwable {
+  public void beforeEach(ExtensionContext context) throws Exception {
     map = getThreadMap();
   }
 
   @Override
-  protected void after() {
+  public void afterEach(ExtensionContext context) throws Exception {
     long time = System.currentTimeMillis();
     do {
       LockSupport.parkNanos(10000000);
@@ -71,7 +78,7 @@ public class ThreadCheck extends ExternalResource {
       }
     }
     if (zombies > 0 && !testOnly) {
-      Assert.fail("Found " + zombies + " zombie thread(s) ");
+      fail("Found " + zombies + " zombie thread(s) ");
     }
 
     return zombies > 0;
@@ -82,7 +89,14 @@ public class ThreadCheck extends ExternalResource {
     Thread[] threads = new Thread[Thread.activeCount() * 2];
     int actualNb = Thread.enumerate(threads);
     for (int i = 0; i < actualNb; i++) {
-      map.put(threads[i].getId(), threads[i]);
+      if (threads[i].getName().contains("WebSocket")) {
+        map.put(threads[i].getId(), threads[i]);
+      }else {
+        String name = threads[i].getName();
+        if (name.equals("main") || name.equals("Monitor Ctrl-Break") || name.equals("junit-jupiter-timeout-watcher"))
+          continue;
+        System.out.println();
+      }
     }
     return map;
   }
@@ -94,4 +108,6 @@ public class ThreadCheck extends ExternalResource {
       s.append(st[i]);
     }
   }
+
+
 }

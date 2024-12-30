@@ -25,8 +25,6 @@
 
 package org.java_websocket.issues;
 
-import static org.junit.Assert.assertTrue;
-
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.concurrent.CountDownLatch;
@@ -36,7 +34,10 @@ import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.handshake.ServerHandshake;
 import org.java_websocket.server.WebSocketServer;
 import org.java_websocket.util.SocketUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class Issue609Test {
 
@@ -99,12 +100,12 @@ public class Issue609Test {
     server.start();
     countServerDownLatch.await();
     webSocket.connectBlocking();
-    assertTrue("webSocket.isOpen()", webSocket.isOpen());
+    assertTrue(webSocket.isOpen(), "webSocket.isOpen()");
     webSocket.getSocket().close();
     countDownLatch.await();
-    assertTrue("!webSocket.isOpen()", !webSocket.isOpen());
-    assertTrue("!wasOpenClient", !wasOpenClient);
-    assertTrue("!wasOpenServer", !wasOpenServer);
+      assertFalse(webSocket.isOpen(), "!webSocket.isOpen()");
+      assertFalse(wasOpenClient, "!wasOpenClient");
+      assertFalse(wasOpenServer, "!wasOpenServer");
     server.stop();
   }
 }

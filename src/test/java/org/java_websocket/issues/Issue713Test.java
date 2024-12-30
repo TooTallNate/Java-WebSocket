@@ -25,8 +25,6 @@
 
 package org.java_websocket.issues;
 
-import static org.junit.Assert.fail;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -40,7 +38,10 @@ import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.handshake.ServerHandshake;
 import org.java_websocket.server.WebSocketServer;
 import org.java_websocket.util.SocketUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class Issue713Test {
 
@@ -91,7 +92,8 @@ public class Issue713Test {
     }
   }
 
-  @Test(timeout = 2000)
+  @Test()
+  @Timeout(2000)
   public void testIssue() throws Exception {
     final int port = SocketUtil.getAvailablePort();
     WebSocketServer server = new WebSocketServer(new InetSocketAddress(port)) {

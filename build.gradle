@@ -35,7 +35,7 @@ publishing {
 }
 
 dependencies {
-    implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.13'
-    testImplementation group: 'org.slf4j', name: 'slf4j-simple', version: '2.0.13'
-    testImplementation group: 'junit', name: 'junit', version: '4.13.1'
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.15'
+    testImplementation group: 'org.slf4j', name: 'slf4j-simple', version: '2.0.15'
+    testImplementation group: 'org.junit', name: 'junit-bom', version: '5.11.4', ext: 'pom'
 }

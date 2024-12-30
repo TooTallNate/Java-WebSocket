@@ -27,9 +27,6 @@ package org.java_websocket.issues;
  */
 
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -52,11 +49,16 @@ import org.java_websocket.server.DefaultSSLWebSocketServerFactory;
 import org.java_websocket.server.WebSocketServer;
 import org.java_websocket.util.SSLContextUtil;
 import org.java_websocket.util.SocketUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class Issue997Test {
 
-  @Test(timeout = 2000)
+  @Test()
+  @Timeout(2000)
   public void test_localServer_ServerLocalhost_Client127_CheckActive()
       throws CertificateException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyManagementException, KeyStoreException, IOException, URISyntaxException, InterruptedException {
     SSLWebSocketClient client = testIssueWithLocalServer("127.0.0.1", SocketUtil.getAvailablePort(),
@@ -66,7 +68,8 @@ public class Issue997Test {
     assertTrue(client.onSSLError);
   }
 
-  @Test(timeout = 2000)
+  @Test()
+  @Timeout(2000)
   public void test_localServer_ServerLocalhost_Client127_CheckInactive()
       throws CertificateException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyManagementException, KeyStoreException, IOException, URISyntaxException, InterruptedException {
     SSLWebSocketClient client = testIssueWithLocalServer("127.0.0.1", SocketUtil.getAvailablePort(),
@@ -75,7 +78,8 @@ public class Issue997Test {
     assertFalse(client.onSSLError);
   }
 
-  @Test(timeout = 2000)
+  @Test()
+  @Timeout(2000)
   public void test_localServer_ServerLocalhost_Client127_CheckDefault()
       throws CertificateException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyManagementException, KeyStoreException, IOException, URISyntaxException, InterruptedException {
     SSLWebSocketClient client = testIssueWithLocalServer("127.0.0.1", SocketUtil.getAvailablePort(),
@@ -84,7 +88,8 @@ public class Issue997Test {
     assertTrue(client.onSSLError);
   }
 
-  @Test(timeout = 2000)
+  @Test()
+  @Timeout(2000)
   public void test_localServer_ServerLocalhost_ClientLocalhost_CheckActive()
       throws CertificateException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyManagementException, KeyStoreException, IOException, URISyntaxException, InterruptedException {
     SSLWebSocketClient client = testIssueWithLocalServer("localhost", SocketUtil.getAvailablePort(),
@@ -94,7 +99,8 @@ public class Issue997Test {
     assertFalse(client.onSSLError);
   }
 
-  @Test(timeout = 2000)
+  @Test()
+  @Timeout(2000)
   public void test_localServer_ServerLocalhost_ClientLocalhost_CheckInactive()
       throws CertificateException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyManagementException, KeyStoreException, IOException, URISyntaxException, InterruptedException {
     SSLWebSocketClient client = testIssueWithLocalServer("localhost", SocketUtil.getAvailablePort(),
@@ -103,7 +109,8 @@ public class Issue997Test {
     assertFalse(client.onSSLError);
   }
 
-  @Test(timeout = 2000)
+  @Test()
+  @Timeout(2000)
   public void test_localServer_ServerLocalhost_ClientLocalhost_CheckDefault()
       throws CertificateException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyManagementException, KeyStoreException, IOException, URISyntaxException, InterruptedException {
     SSLWebSocketClient client = testIssueWithLocalServer("localhost", SocketUtil.getAvailablePort(),
