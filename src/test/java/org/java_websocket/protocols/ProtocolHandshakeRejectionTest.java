@@ -45,23 +45,20 @@ import org.java_websocket.handshake.ServerHandshake;
 import org.java_websocket.util.Base64;
 import org.java_websocket.util.Charsetfunctions;
 import org.java_websocket.util.SocketUtil;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ProtocolHandshakeRejectionTest {
 
   private static final String additionalHandshake = "HTTP/1.1 101 Websocket Connection Upgrade\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n";
-  private static Thread thread;
-  private static ServerSocket serverSocket;
+  private Thread thread;
+  private ServerSocket serverSocket;
 
-  private static int port;
+  private int port;
 
-  @BeforeAll
-  public static void startServer() throws Exception {
+  @BeforeEach
+  public void startServer() throws Exception {
     port = SocketUtil.getAvailablePort();
     thread = new Thread(
         new Runnable() {
@@ -267,8 +264,8 @@ public class ProtocolHandshakeRejectionTest {
     return "Sec-WebSocket-Accept: " + generateFinalKey(seckey) + "\r\n";
   }
 
-  @AfterAll
-  public static void successTests() throws IOException {
+  @AfterEach
+  public void successTests() throws IOException {
     serverSocket.close();
     thread.interrupt();
   }

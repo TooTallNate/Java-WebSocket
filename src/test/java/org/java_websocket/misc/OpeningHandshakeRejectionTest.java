@@ -38,25 +38,20 @@ import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.handshake.ServerHandshake;
 import org.java_websocket.util.Charsetfunctions;
 import org.java_websocket.util.SocketUtil;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.*;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class OpeningHandshakeRejectionTest {
 
+  private int port;
+  private Thread thread;
+  private ServerSocket serverSocket;
+
   private static final String additionalHandshake = "Upgrade: websocket\r\nConnection: Upgrade\r\n\r\n";
-  private static Thread thread;
-  private static ServerSocket serverSocket;
 
-  private static boolean debugPrintouts = false;
-
-  private static int port;
-
-  @BeforeAll
-  public static void startServer() throws Exception {
+  @BeforeEach
+  public void startServer() throws IOException {
     port = SocketUtil.getAvailablePort();
     thread = new Thread(
         new Runnable() {
@@ -144,8 +139,8 @@ public class OpeningHandshakeRejectionTest {
     thread.start();
   }
 
-  @AfterAll
-  public static void successTests() throws  IOException {
+  @AfterEach
+  public void cleanUp() throws  IOException {
     serverSocket.close();
     thread.interrupt();
   }
@@ -244,9 +239,6 @@ public class OpeningHandshakeRejectionTest {
             fail("There should be a protocol error!");
           } else if (reason.startsWith("Invalid status code received:") || reason
               .startsWith("Invalid status line received:")) {
-            if (debugPrintouts) {
-              System.out.println("Protocol error for test case: " + finalI);
-            }
             countDownLatch.countDown();
           } else {
             fail("The reason should be included!");
@@ -256,9 +248,6 @@ public class OpeningHandshakeRejectionTest {
           if (!reason.endsWith("refuses handshake")) {
             fail("onClose should not be called!");
           } else {
-            if (debugPrintouts) {
-              System.out.println("Refuses handshake error for test case: " + finalI);
-            }
             countDownLatch.countDown();
           }
         }
