@@ -110,7 +110,7 @@ public class WebSocketServerTest {
 
 
   @Test
-  public void testGetAddress() throws IOException {
+  public void testGetAddress() throws  InterruptedException {
     int port = SocketUtil.getAvailablePort();
     InetSocketAddress inetSocketAddress = new InetSocketAddress(port);
     MyWebSocketServer server = new MyWebSocketServer(port);

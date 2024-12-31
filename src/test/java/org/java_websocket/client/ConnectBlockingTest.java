@@ -34,6 +34,7 @@ public class ConnectBlockingTest {
             public void run() {
                 try {
                     ServerSocket serverSocket = new ServerSocket(port);
+                    serverSocket.setReuseAddress(true);
                     ready.countDown();
                     Socket clientSocket = serverSocket.accept();
                     accepted.countDown();

@@ -17,7 +17,7 @@ public class Issue834Test {
 
   @Test()
   @Timeout(1000)
-  public void testNoNewThreads() throws IOException {
+  public void testNoNewThreads() throws InterruptedException {
 
     Set<Thread> threadSet1 = Thread.getAllStackTraces().keySet();
 

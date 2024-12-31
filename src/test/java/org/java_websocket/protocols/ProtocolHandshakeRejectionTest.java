@@ -58,7 +58,7 @@ public class ProtocolHandshakeRejectionTest {
   private int port;
 
   @BeforeEach
-  public void startServer() {
+  public void startServer() throws InterruptedException {
     port = SocketUtil.getAvailablePort();
     thread = new Thread(
         new Runnable() {
@@ -489,7 +489,7 @@ public class ProtocolHandshakeRejectionTest {
 
   private void testProtocolRejection(int i, Draft_6455 draft) throws Exception {
     do {
-      Thread.sleep(10);
+      Thread.sleep(100);
     }  while(serverSocket == null || !serverSocket.isBound());
     final int finalI = i;
     final CountDownLatch countDownLatch = new CountDownLatch(1);

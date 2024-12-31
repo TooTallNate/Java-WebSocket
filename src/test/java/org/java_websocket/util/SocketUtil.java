@@ -30,12 +30,13 @@ import java.net.ServerSocket;
 
 public class SocketUtil {
 
-    public static int getAvailablePort() {
+    public static int getAvailablePort() throws InterruptedException {
         while (true) {
             try (ServerSocket srv = new ServerSocket(0)) {
                 return srv.getLocalPort();
             } catch (IOException e) {
-                // Ignore
+                // Retry
+                Thread.sleep(50);
             }
         }
     }

@@ -50,7 +50,7 @@ public class Issue713Test {
   CountDownLatch countDownLatchBytebuffer = new CountDownLatch(10);
 
   @Test
-  public void testIllegalArgument() throws IOException {
+  public void testIllegalArgument() throws  InterruptedException {
     WebSocketServer server = new WebSocketServer(
         new InetSocketAddress(SocketUtil.getAvailablePort())) {
       @Override

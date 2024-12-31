@@ -17,7 +17,7 @@ public class DaemonThreadTest {
 
   @Test()
   @Timeout(1000)
-  public void test_AllCreatedThreadsAreDaemon() throws Throwable {
+  public void test_AllCreatedThreadsAreDaemon() throws InterruptedException {
 
     Set<Thread> threadSet1 = Thread.getAllStackTraces().keySet();
     final CountDownLatch ready = new CountDownLatch(1);
