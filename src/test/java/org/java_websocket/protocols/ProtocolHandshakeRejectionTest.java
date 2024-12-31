@@ -615,7 +615,7 @@ public class ProtocolHandshakeRejectionTest {
 
       @Override
       public void onError(Exception ex) {
-        fail("There should not be an exception");
+        fail("There should not be an exception: " + ex.getMessage());
       }
     };
     final AssertionError[] exc = new AssertionError[1];
@@ -627,6 +627,7 @@ public class ProtocolHandshakeRejectionTest {
           webSocketClient.run();
         }catch(AssertionError e){
           exc[0] = e;
+          countDownLatch.countDown();
         }
       }
 

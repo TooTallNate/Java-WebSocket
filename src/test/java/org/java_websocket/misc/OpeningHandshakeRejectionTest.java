@@ -266,12 +266,28 @@ public class OpeningHandshakeRejectionTest {
 
       @Override
       public void onError(Exception ex) {
-        fail("There should not be an exception");
+        fail("There should not be an exception: " + ex.getMessage());
       }
     };
-    Thread finalThread = new Thread(webSocketClient);
+    final AssertionError[] exc = new AssertionError[1];
+    exc[0] = null;
+    Thread finalThread = new Thread(new Runnable() {
+      @Override
+      public void run() {
+        try {
+          webSocketClient.run();
+        }catch(AssertionError e){
+          exc[0] = e;
+          countDownLatch.countDown();
+        }
+      }
+
+    });
     finalThread.start();
     finalThread.join();
+    if (exc[0] != null) {
+      throw exc[0];
+    }
     countDownLatch.await();
   }
 }
