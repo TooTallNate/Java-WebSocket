@@ -57,7 +57,7 @@ public class Issue879Test {
   @Timeout(10000)
   @ParameterizedTest()
   @MethodSource("data")
-  public void QuickStopTest(int numberOfConnections) throws IOException, InterruptedException, URISyntaxException {
+  public void QuickStopTest(int numberOfConnections) throws InterruptedException, URISyntaxException {
     final boolean[] wasBindException = {false};
     final boolean[] wasConcurrentException = new boolean[1];
     final CountDownLatch countDownLatch = new CountDownLatch(1);
