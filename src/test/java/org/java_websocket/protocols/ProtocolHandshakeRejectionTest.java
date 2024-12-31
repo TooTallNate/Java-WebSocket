@@ -35,6 +35,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Scanner;
+import java.util.concurrent.CountDownLatch;
+
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.extensions.IExtension;
@@ -490,7 +492,7 @@ public class ProtocolHandshakeRejectionTest {
 
   private void testProtocolRejection(int i, Draft_6455 draft) throws Exception {
     final int finalI = i;
-    final boolean[] threadReturned = {false};
+    final CountDownLatch countDownLatch = new CountDownLatch(1);
     final WebSocketClient webSocketClient = new WebSocketClient(
         new URI("ws://localhost:" + port + "/" + finalI), draft) {
       @Override
@@ -516,7 +518,7 @@ public class ProtocolHandshakeRejectionTest {
           case 24:
           case 25:
           case 26:
-            threadReturned[0] = true;
+            countDownLatch.countDown();
             closeConnection(CloseFrame.ABNORMAL_CLOSE, "Bye");
             break;
           default:
@@ -605,7 +607,7 @@ public class ProtocolHandshakeRejectionTest {
         if (code != CloseFrame.PROTOCOL_ERROR) {
           fail("There should be a protocol error! " + finalI + " " + code);
         } else if (reason.endsWith("refuses handshake")) {
-          threadReturned[0] = true;
+          countDownLatch.countDown();
         } else {
           fail("The reason should be included!");
         }
@@ -635,9 +637,7 @@ public class ProtocolHandshakeRejectionTest {
       throw exc[0];
     }
 
-    if (!threadReturned[0]) {
-      fail("Error");
-    }
+    countDownLatch.await();
 
   }
 

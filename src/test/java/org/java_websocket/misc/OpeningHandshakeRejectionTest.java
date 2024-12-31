@@ -31,6 +31,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URI;
 import java.util.Scanner;
+import java.util.concurrent.CountDownLatch;
+
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.handshake.ServerHandshake;
@@ -46,7 +48,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 public class OpeningHandshakeRejectionTest {
 
   private static final String additionalHandshake = "Upgrade: websocket\r\nConnection: Upgrade\r\n\r\n";
-  private static int counter = 0;
   private static Thread thread;
   private static ServerSocket serverSocket;
 
@@ -144,12 +145,9 @@ public class OpeningHandshakeRejectionTest {
   }
 
   @AfterAll
-  public static void successTests() throws InterruptedException, IOException {
+  public static void successTests() throws  IOException {
     serverSocket.close();
     thread.interrupt();
-    if (debugPrintouts) {
-      System.out.println(counter + " successful tests");
-    }
   }
 
   @Test()
@@ -226,7 +224,7 @@ public class OpeningHandshakeRejectionTest {
 
   private void testHandshakeRejection(int i) throws Exception {
     final int finalI = i;
-    final boolean[] threadReturned = {false};
+    final CountDownLatch countDownLatch = new CountDownLatch(1);
     WebSocketClient webSocketClient = new WebSocketClient(
         new URI("ws://localhost:" + port + "/" + finalI)) {
       @Override
@@ -249,8 +247,7 @@ public class OpeningHandshakeRejectionTest {
             if (debugPrintouts) {
               System.out.println("Protocol error for test case: " + finalI);
             }
-            threadReturned[0] = true;
-            counter++;
+            countDownLatch.countDown();
           } else {
             fail("The reason should be included!");
           }
@@ -262,8 +259,7 @@ public class OpeningHandshakeRejectionTest {
             if (debugPrintouts) {
               System.out.println("Refuses handshake error for test case: " + finalI);
             }
-            counter++;
-            threadReturned[0] = true;
+            countDownLatch.countDown();
           }
         }
       }
@@ -276,9 +272,6 @@ public class OpeningHandshakeRejectionTest {
     Thread finalThread = new Thread(webSocketClient);
     finalThread.start();
     finalThread.join();
-
-    if (!threadReturned[0]) {
-      fail("Error. Thread did not yet return");
-    }
+    countDownLatch.await();
   }
 }
