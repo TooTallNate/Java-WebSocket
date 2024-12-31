@@ -136,7 +136,7 @@ public class OpeningHandshakeRejectionTest {
                 }
               }
             } catch (Exception e) {
-              fail("There should be no exception");
+              fail("There should be no exception", e);
             }
           }
         });
@@ -278,7 +278,7 @@ public class OpeningHandshakeRejectionTest {
     finalThread.join();
 
     if (!threadReturned[0]) {
-      fail("Error");
+      fail("Error. Thread did not yet return");
     }
   }
 }

@@ -254,8 +254,7 @@ public class ProtocolHandshakeRejectionTest {
                 }
               }
             } catch (Exception e) {
-              e.printStackTrace();
-              fail("There should be no exception");
+              fail("There should be no exception", e);
             }
           }
         });
