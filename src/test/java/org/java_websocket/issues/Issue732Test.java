@@ -48,7 +48,7 @@ public class Issue732Test {
 
   private CountDownLatch countServerDownLatch = new CountDownLatch(1);
 
-  @Test()
+  @Test
   @Timeout(2000)
   public void testIssue() throws Exception {
     int port = SocketUtil.getAvailablePort();

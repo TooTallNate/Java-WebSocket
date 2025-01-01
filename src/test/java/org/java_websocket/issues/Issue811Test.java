@@ -40,7 +40,7 @@ public class Issue811Test {
 
   private CountDownLatch countServerDownLatch = new CountDownLatch(1);
 
-  @Test()
+  @Test
   @Timeout(2000)
   public void testSetConnectionLostTimeout() throws IOException, InterruptedException {
     final MyWebSocketServer server = new MyWebSocketServer(

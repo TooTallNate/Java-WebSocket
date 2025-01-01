@@ -58,7 +58,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class Issue997Test {
 
-    @Test()
+    @Test
     @Timeout(2000)
     public void test_localServer_ServerLocalhost_Client127_CheckActive()
             throws CertificateException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyManagementException, KeyStoreException, IOException, URISyntaxException, InterruptedException {
@@ -69,7 +69,7 @@ public class Issue997Test {
         assertTrue(client.onSSLError, "client has caught a SSLHandshakeException");
     }
 
-    @Test()
+    @Test
     @Timeout(2000)
     public void test_localServer_ServerLocalhost_Client127_CheckInactive()
             throws CertificateException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyManagementException, KeyStoreException, IOException, URISyntaxException, InterruptedException {
@@ -79,7 +79,7 @@ public class Issue997Test {
         assertFalse(client.onSSLError, "client has not caught a SSLHandshakeException");
     }
 
-    @Test()
+    @Test
     @Timeout(2000)
     public void test_localServer_ServerLocalhost_Client127_CheckDefault()
             throws CertificateException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyManagementException, KeyStoreException, IOException, URISyntaxException, InterruptedException {
@@ -89,7 +89,7 @@ public class Issue997Test {
         assertTrue(client.onSSLError, "client has caught a SSLHandshakeException");
     }
 
-    @Test()
+    @Test
     @Timeout(2000)
     public void test_localServer_ServerLocalhost_ClientLocalhost_CheckActive()
             throws CertificateException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyManagementException, KeyStoreException, IOException, URISyntaxException, InterruptedException {
@@ -100,7 +100,7 @@ public class Issue997Test {
         assertFalse(client.onSSLError, "client has not caught a SSLHandshakeException");
     }
 
-    @Test()
+    @Test
     @Timeout(2000)
     public void test_localServer_ServerLocalhost_ClientLocalhost_CheckInactive()
             throws CertificateException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyManagementException, KeyStoreException, IOException, URISyntaxException, InterruptedException {
@@ -110,7 +110,7 @@ public class Issue997Test {
         assertFalse(client.onSSLError, "client has not caught a SSLHandshakeException");
     }
 
-    @Test()
+    @Test
     @Timeout(2000)
     public void test_localServer_ServerLocalhost_ClientLocalhost_CheckDefault()
             throws CertificateException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyManagementException, KeyStoreException, IOException, URISyntaxException, InterruptedException {

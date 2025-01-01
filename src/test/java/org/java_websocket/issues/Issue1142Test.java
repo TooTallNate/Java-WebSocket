@@ -28,7 +28,7 @@ public class Issue1142Test {
 
 
 
-  @Test()
+  @Test
   @Timeout(4000)
   public void testWithoutSSLSession()
       throws IOException, URISyntaxException, InterruptedException {
@@ -66,7 +66,7 @@ public class Issue1142Test {
     server.stop();
   }
 
-  @Test()
+  @Test
   @Timeout(4000)
   public void testWithSSLSession()
       throws IOException, URISyntaxException, KeyStoreException, NoSuchAlgorithmException, KeyManagementException, UnrecoverableKeyException, CertificateException, InterruptedException {

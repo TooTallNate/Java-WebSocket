@@ -22,7 +22,7 @@ public class Issue1203Test {
   private final CountDownLatch countServerDownLatch = new CountDownLatch(1);
   private final CountDownLatch countClientDownLatch = new CountDownLatch(1);
   boolean isClosedCalled = false;
-  @Test()
+  @Test
   @Timeout(50000)
   public void testIssue() throws Exception {
     int port = SocketUtil.getAvailablePort();

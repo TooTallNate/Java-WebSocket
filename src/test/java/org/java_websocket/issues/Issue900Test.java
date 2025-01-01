@@ -48,7 +48,7 @@ public class Issue900Test {
   CountDownLatch serverStartLatch = new CountDownLatch(1);
   CountDownLatch closeCalledLatch = new CountDownLatch(1);
 
-  @Test()
+  @Test
   @Timeout(2000)
   public void testIssue() throws Exception {
     int port = SocketUtil.getAvailablePort();

@@ -55,7 +55,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class Issue890Test {
 
 
-  @Test()
+  @Test
   @Timeout(4000)
   public void testWithSSLSession()
       throws IOException, URISyntaxException, KeyStoreException, NoSuchAlgorithmException, KeyManagementException, UnrecoverableKeyException, CertificateException, InterruptedException {
@@ -92,7 +92,7 @@ public class Issue890Test {
     assertNotNull(testResult.sslSession);
   }
 
-  @Test()
+  @Test
   @Timeout(4000)
   public void testWithOutSSLSession()
       throws IOException, URISyntaxException, KeyStoreException, NoSuchAlgorithmException, KeyManagementException, UnrecoverableKeyException, CertificateException, InterruptedException {

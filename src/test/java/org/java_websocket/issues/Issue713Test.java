@@ -92,7 +92,7 @@ public class Issue713Test {
     }
   }
 
-  @Test()
+  @Test
   @Timeout(2000)
   public void testIssue() throws Exception {
     final int port = SocketUtil.getAvailablePort();

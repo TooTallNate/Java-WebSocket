@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class Issue834Test {
 
-  @Test()
+  @Test
   @Timeout(1000)
   public void testNoNewThreads() throws InterruptedException {
 

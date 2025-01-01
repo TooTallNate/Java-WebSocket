@@ -150,73 +150,73 @@ public class OpeningHandshakeRejectionTest {
         }
     }
 
-    @Test()
+    @Test
     @Timeout(5000)
     public void testHandshakeRejectionTestCase0() throws Exception {
         testHandshakeRejection(0);
     }
 
-    @Test()
+    @Test
     @Timeout(5000)
     public void testHandshakeRejectionTestCase1() throws Exception {
         testHandshakeRejection(1);
     }
 
-    @Test()
+    @Test
     @Timeout(5000)
     public void testHandshakeRejectionTestCase2() throws Exception {
         testHandshakeRejection(2);
     }
 
-    @Test()
+    @Test
     @Timeout(5000)
     public void testHandshakeRejectionTestCase3() throws Exception {
         testHandshakeRejection(3);
     }
 
-    @Test()
+    @Test
     @Timeout(5000)
     public void testHandshakeRejectionTestCase4() throws Exception {
         testHandshakeRejection(4);
     }
 
-    @Test()
+    @Test
     @Timeout(5000)
     public void testHandshakeRejectionTestCase5() throws Exception {
         testHandshakeRejection(5);
     }
 
-    @Test()
+    @Test
     @Timeout(5000)
     public void testHandshakeRejectionTestCase6() throws Exception {
         testHandshakeRejection(6);
     }
 
-    @Test()
+    @Test
     @Timeout(5000)
     public void testHandshakeRejectionTestCase7() throws Exception {
         testHandshakeRejection(7);
     }
 
-    @Test()
+    @Test
     @Timeout(5000)
     public void testHandshakeRejectionTestCase8() throws Exception {
         testHandshakeRejection(8);
     }
 
-    @Test()
+    @Test
     @Timeout(5000)
     public void testHandshakeRejectionTestCase9() throws Exception {
         testHandshakeRejection(9);
     }
 
-    @Test()
+    @Test
     @Timeout(5000)
     public void testHandshakeRejectionTestCase10() throws Exception {
         testHandshakeRejection(10);
     }
 
-    @Test()
+    @Test
     @Timeout(5000)
     public void testHandshakeRejectionTestCase11() throws Exception {
         testHandshakeRejection(11);

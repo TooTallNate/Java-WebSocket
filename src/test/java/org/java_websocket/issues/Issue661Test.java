@@ -48,7 +48,7 @@ public class Issue661Test {
   private boolean wasError = false;
   private boolean wasBindException = false;
 
-  @Test()
+  @Test
   @Timeout(2000)
   public void testIssue() throws Exception {
     int port = SocketUtil.getAvailablePort();

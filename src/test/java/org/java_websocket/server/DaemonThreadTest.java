@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DaemonThreadTest {
 
-  @Test()
+  @Test
   @Timeout(1000)
   public void test_AllCreatedThreadsAreDaemon() throws InterruptedException {
 

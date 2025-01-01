@@ -51,7 +51,7 @@ import org.junit.jupiter.api.Timeout;
 public class Issue825Test {
 
 
-  @Test()
+  @Test
   @Timeout(15000)
   public void testIssue()
       throws IOException, URISyntaxException, KeyStoreException, NoSuchAlgorithmException, KeyManagementException, UnrecoverableKeyException, CertificateException, InterruptedException {

@@ -274,101 +274,101 @@ public class ProtocolHandshakeRejectionTest {
         }
     }
 
-    @Test()
+    @Test
     @Timeout(5000)
     public void testProtocolRejectionTestCase0() throws Exception {
         testProtocolRejection(0, new Draft_6455(Collections.<IExtension>emptyList(),
                 Collections.<IProtocol>singletonList(new Protocol(""))));
     }
 
-    @Test()
+    @Test
     @Timeout(5000)
     public void testHandshakeRejectionTestCase1() throws Exception {
         testProtocolRejection(1, new Draft_6455());
     }
 
-    @Test()
+    @Test
     @Timeout(5000)
     public void testHandshakeRejectionTestCase2() throws Exception {
         testProtocolRejection(2, new Draft_6455());
     }
 
-    @Test()
+    @Test
     @Timeout(5000)
     public void testHandshakeRejectionTestCase3() throws Exception {
         testProtocolRejection(3, new Draft_6455());
     }
 
-    @Test()
+    @Test
     @Timeout(5000)
     public void testHandshakeRejectionTestCase4() throws Exception {
         testProtocolRejection(4, new Draft_6455());
     }
 
-    @Test()
+    @Test
     @Timeout(5000)
     public void testHandshakeRejectionTestCase5() throws Exception {
         testProtocolRejection(5, new Draft_6455(Collections.<IExtension>emptyList(),
                 Collections.<IProtocol>singletonList(new Protocol("chat"))));
     }
 
-    @Test()
+    @Test
     @Timeout(5000)
     public void testHandshakeRejectionTestCase6() throws Exception {
         testProtocolRejection(6, new Draft_6455(Collections.<IExtension>emptyList(),
                 Collections.<IProtocol>singletonList(new Protocol("chat"))));
     }
 
-    @Test()
+    @Test
     @Timeout(5000)
     public void testHandshakeRejectionTestCase7() throws Exception {
         testProtocolRejection(7, new Draft_6455(Collections.<IExtension>emptyList(),
                 Collections.<IProtocol>singletonList(new Protocol("chat"))));
     }
 
-    @Test()
+    @Test
     @Timeout(5000)
     public void testHandshakeRejectionTestCase8() throws Exception {
         testProtocolRejection(8, new Draft_6455(Collections.<IExtension>emptyList(),
                 Collections.<IProtocol>singletonList(new Protocol("chat"))));
     }
 
-    @Test()
+    @Test
     @Timeout(5000)
     public void testHandshakeRejectionTestCase9() throws Exception {
         testProtocolRejection(9, new Draft_6455(Collections.<IExtension>emptyList(),
                 Collections.<IProtocol>singletonList(new Protocol("chat"))));
     }
 
-    @Test()
+    @Test
     @Timeout(5000)
     public void testHandshakeRejectionTestCase10() throws Exception {
         testProtocolRejection(10, new Draft_6455(Collections.<IExtension>emptyList(),
                 Collections.<IProtocol>singletonList(new Protocol("chat"))));
     }
 
-    @Test()
+    @Test
     @Timeout(5000)
     public void testHandshakeRejectionTestCase11() throws Exception {
         testProtocolRejection(11, new Draft_6455(Collections.<IExtension>emptyList(),
                 Collections.<IProtocol>singletonList(new Protocol("chat"))));
     }
 
-    @Test()
+    @Test
     @Timeout(5000)
     public void testHandshakeRejectionTestCase12() throws Exception {
         testProtocolRejection(12, new Draft_6455(Collections.<IExtension>emptyList(),
                 Collections.<IProtocol>singletonList(new Protocol("chat"))));
     }
 
-    @Test()
+    @Test
     @Timeout(5000)
     public void testHandshakeRejectionTestCase13() throws Exception {
         testProtocolRejection(13, new Draft_6455(Collections.<IExtension>emptyList(),
                 Collections.<IProtocol>singletonList(new Protocol("chat"))));
     }
 
-    @Test()
+    @Test
     @Timeout(5000)
     public void testHandshakeRejectionTestCase14() throws Exception {
         ArrayList<IProtocol> protocols = new ArrayList<>();
@@ -377,7 +377,7 @@ public class ProtocolHandshakeRejectionTest {
         testProtocolRejection(14, new Draft_6455(Collections.<IExtension>emptyList(), protocols));
     }
 
-    @Test()
+    @Test
     @Timeout(5000)
     public void testHandshakeRejectionTestCase15() throws Exception {
         ArrayList<IProtocol> protocols = new ArrayList<>();
@@ -386,7 +386,7 @@ public class ProtocolHandshakeRejectionTest {
         testProtocolRejection(15, new Draft_6455(Collections.<IExtension>emptyList(), protocols));
     }
 
-    @Test()
+    @Test
     @Timeout(5000)
     public void testHandshakeRejectionTestCase16() throws Exception {
         ArrayList<IProtocol> protocols = new ArrayList<>();
@@ -395,7 +395,7 @@ public class ProtocolHandshakeRejectionTest {
         testProtocolRejection(16, new Draft_6455(Collections.<IExtension>emptyList(), protocols));
     }
 
-    @Test()
+    @Test
     @Timeout(5000)
     public void testHandshakeRejectionTestCase17() throws Exception {
         ArrayList<IProtocol> protocols = new ArrayList<>();
@@ -404,25 +404,25 @@ public class ProtocolHandshakeRejectionTest {
         testProtocolRejection(17, new Draft_6455(Collections.<IExtension>emptyList(), protocols));
     }
 
-    @Test()
+    @Test
     @Timeout(5000)
     public void testHandshakeRejectionTestCase18() throws Exception {
         testProtocolRejection(18, new Draft_6455());
     }
 
-    @Test()
+    @Test
     @Timeout(5000)
     public void testHandshakeRejectionTestCase19() throws Exception {
         testProtocolRejection(19, new Draft_6455());
     }
 
-    @Test()
+    @Test
     @Timeout(5000)
     public void testHandshakeRejectionTestCase20() throws Exception {
         testProtocolRejection(20, new Draft_6455());
     }
 
-    @Test()
+    @Test
     @Timeout(5000)
     public void testHandshakeRejectionTestCase21() throws Exception {
         ArrayList<IProtocol> protocols = new ArrayList<>();
@@ -432,7 +432,7 @@ public class ProtocolHandshakeRejectionTest {
         testProtocolRejection(21, new Draft_6455(Collections.<IExtension>emptyList(), protocols));
     }
 
-    @Test()
+    @Test
     @Timeout(5000)
     public void testHandshakeRejectionTestCase22() throws Exception {
         ArrayList<IProtocol> protocols = new ArrayList<>();
@@ -442,7 +442,7 @@ public class ProtocolHandshakeRejectionTest {
         testProtocolRejection(22, new Draft_6455(Collections.<IExtension>emptyList(), protocols));
     }
 
-    @Test()
+    @Test
     @Timeout(5000)
     public void testHandshakeRejectionTestCase23() throws Exception {
         ArrayList<IProtocol> protocols = new ArrayList<>();
@@ -452,39 +452,39 @@ public class ProtocolHandshakeRejectionTest {
         testProtocolRejection(23, new Draft_6455(Collections.<IExtension>emptyList(), protocols));
     }
 
-    @Test()
+    @Test
     @Timeout(5000)
     public void testHandshakeRejectionTestCase24() throws Exception {
         testProtocolRejection(24, new Draft_6455());
     }
 
-    @Test()
+    @Test
     @Timeout(5000)
     public void testHandshakeRejectionTestCase25() throws Exception {
         testProtocolRejection(25, new Draft_6455());
     }
 
-    @Test()
+    @Test
     @Timeout(5000)
     public void testHandshakeRejectionTestCase26() throws Exception {
         testProtocolRejection(26, new Draft_6455());
     }
 
-    @Test()
+    @Test
     @Timeout(5000)
     public void testHandshakeRejectionTestCase27() throws Exception {
         testProtocolRejection(27, new Draft_6455(Collections.<IExtension>emptyList(),
                 Collections.<IProtocol>singletonList(new Protocol("opc"))));
     }
 
-    @Test()
+    @Test
     @Timeout(5000)
     public void testHandshakeRejectionTestCase28() throws Exception {
         testProtocolRejection(28, new Draft_6455(Collections.<IExtension>emptyList(),
                 Collections.<IProtocol>singletonList(new Protocol("opc"))));
     }
 
-    @Test()
+    @Test
     @Timeout(5000)
     public void testHandshakeRejectionTestCase29() throws Exception {
         testProtocolRejection(29, new Draft_6455(Collections.<IExtension>emptyList(),

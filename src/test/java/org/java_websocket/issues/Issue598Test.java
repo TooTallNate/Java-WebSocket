@@ -190,25 +190,25 @@ public class Issue598Test {
     server.stop();
   }
 
-  @Test()
+  @Test
   @Timeout(2000)
   public void runBelowLimitBytebuffer() throws Exception {
     runTestScenario(0);
   }
 
-  @Test()
+  @Test
   @Timeout(2000)
   public void runBelowSplitLimitBytebuffer() throws Exception {
     runTestScenario(1);
   }
 
-  @Test()
+  @Test
   @Timeout(2000)
   public void runBelowLimitString() throws Exception {
     runTestScenario(2);
   }
 
-  @Test()
+  @Test
   @Timeout(2000)
   public void runBelowSplitLimitString() throws Exception {
     runTestScenario(3);
@@ -220,19 +220,19 @@ public class Issue598Test {
     runTestScenario(4);
   }
 
-  @Test()
+  @Test
   @Timeout(2000)
   public void runAboveSplitLimitBytebuffer() throws Exception {
     runTestScenario(5);
   }
 
-  @Test()
+  @Test
   @Timeout(2000)
   public void runAboveLimitString() throws Exception {
     runTestScenario(6);
   }
 
-  @Test()
+  @Test
   @Timeout(2000)
   public void runAboveSplitLimitString() throws Exception {
     runTestScenario(7);

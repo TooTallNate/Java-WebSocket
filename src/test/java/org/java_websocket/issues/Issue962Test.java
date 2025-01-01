@@ -89,7 +89,7 @@ public class Issue962Test {
 
   }
 
-  @Test()
+  @Test
   @Timeout(2000)
   public void testIssue() throws IOException, URISyntaxException, InterruptedException {
     int port = SocketUtil.getAvailablePort();

@@ -48,7 +48,7 @@ public class Issue1160Test {
   }
 
 
-  @Test()
+  @Test
   @Timeout(5000)
   public void nonFatalErrorShallBeHandledByServer() throws Exception {
     final AtomicInteger isServerOnErrorCalledCounter = new AtomicInteger(0);
@@ -108,7 +108,7 @@ public class Issue1160Test {
     server.stop();
   }
 
-  @Test()
+  @Test
   @Timeout(5000)
   public void fatalErrorShallNotBeHandledByServer() throws Exception {
     int port = SocketUtil.getAvailablePort();

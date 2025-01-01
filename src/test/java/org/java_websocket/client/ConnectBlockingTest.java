@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ConnectBlockingTest {
 
-    @Test()
+    @Test
     @Timeout(1000)
     public void test_ConnectBlockingCleanup() throws Throwable {
 

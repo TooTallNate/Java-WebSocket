@@ -53,7 +53,7 @@ public class Issue764Test {
   private CountDownLatch countClientDownLatch = new CountDownLatch(2);
   private CountDownLatch countServerDownLatch = new CountDownLatch(1);
 
-  @Test()
+  @Test
   @Timeout(2000)
   public void testIssue()
       throws IOException, URISyntaxException, KeyStoreException, NoSuchAlgorithmException, KeyManagementException, UnrecoverableKeyException, CertificateException, InterruptedException {
