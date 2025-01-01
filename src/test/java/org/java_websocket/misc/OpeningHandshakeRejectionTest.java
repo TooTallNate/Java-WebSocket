@@ -52,7 +52,6 @@ public class OpeningHandshakeRejectionTest {
 
     private static final String additionalHandshake = "Upgrade: websocket\r\nConnection: Upgrade\r\n\r\n";
 
-    @BeforeEach
     public void startServer() throws InterruptedException {
         this.port = SocketUtil.getAvailablePort();
         this.thread = new Thread(
@@ -221,6 +220,7 @@ public class OpeningHandshakeRejectionTest {
         testHandshakeRejection(11);
     }
     private void testHandshakeRejection(int i) throws Exception {
+        startServer();
         this.serverStartCountDownLatch.await();
         final int finalI = i;
         final CountDownLatch countDownLatch = new CountDownLatch(1);
