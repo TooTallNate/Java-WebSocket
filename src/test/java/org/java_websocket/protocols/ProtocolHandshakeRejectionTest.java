@@ -55,7 +55,7 @@ public class ProtocolHandshakeRejectionTest {
   private Thread thread;
   private ServerSocket serverSocket;
 
-  private int port;
+  private int port = -1;
 
   @BeforeEach
   public void startServer() throws InterruptedException {

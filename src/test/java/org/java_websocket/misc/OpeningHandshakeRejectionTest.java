@@ -44,7 +44,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 public class OpeningHandshakeRejectionTest {
 
-  private int port;
+  private int port = -1;
   private Thread thread;
   private ServerSocket serverSocket;
 
@@ -54,88 +54,86 @@ public class OpeningHandshakeRejectionTest {
   public void startServer() throws IOException, InterruptedException {
     port = SocketUtil.getAvailablePort();
     thread = new Thread(
-        new Runnable() {
-          public void run() {
-            try {
-              serverSocket = new ServerSocket(port);
-              serverSocket.setReuseAddress(true);
-              while (true) {
-                Socket client = null;
-                try {
-                  client = serverSocket.accept();
-                  Scanner in = new Scanner(client.getInputStream());
-                  String input = in.nextLine();
-                  String testCase = input.split(" ")[1];
-                  OutputStream os = client.getOutputStream();
-                  if ("/0".equals(testCase)) {
-                    os.write(Charsetfunctions
-                        .asciiBytes("HTTP/1.1 100 Switching Protocols\r\n" + additionalHandshake));
-                    os.flush();
+            () -> {
+              try {
+                serverSocket = new ServerSocket(port);
+                serverSocket.setReuseAddress(true);
+                while (true) {
+                  Socket client = null;
+                  try {
+                    client = serverSocket.accept();
+                    Scanner in = new Scanner(client.getInputStream());
+                    String input = in.nextLine();
+                    String testCase = input.split(" ")[1];
+                    OutputStream os = client.getOutputStream();
+                    if ("/0".equals(testCase)) {
+                      os.write(Charsetfunctions
+                          .asciiBytes("HTTP/1.1 100 Switching Protocols\r\n" + additionalHandshake));
+                      os.flush();
+                    }
+                    if ("/1".equals(testCase)) {
+                      os.write(Charsetfunctions
+                          .asciiBytes("HTTP/1.0 100 Switching Protocols\r\n" + additionalHandshake));
+                      os.flush();
+                    }
+                    if ("/2".equals(testCase)) {
+                      os.write(Charsetfunctions
+                          .asciiBytes("HTTP 100 Switching Protocols\r\n" + additionalHandshake));
+                      os.flush();
+                    }
+                    if ("/3".equals(testCase)) {
+                      os.write(Charsetfunctions
+                          .asciiBytes("HTTP/1.1 200 Switching Protocols\r\n" + additionalHandshake));
+                      os.flush();
+                    }
+                    if ("/4".equals(testCase)) {
+                      os.write(Charsetfunctions
+                          .asciiBytes("HTTP 101 Switching Protocols\r\n" + additionalHandshake));
+                      os.flush();
+                    }
+                    if ("/5".equals(testCase)) {
+                      os.write(Charsetfunctions
+                          .asciiBytes("HTTP/1.1 404 Switching Protocols\r\n" + additionalHandshake));
+                      os.flush();
+                    }
+                    if ("/6".equals(testCase)) {
+                      os.write(Charsetfunctions
+                          .asciiBytes("HTTP/2.0 404 Switching Protocols\r\n" + additionalHandshake));
+                      os.flush();
+                    }
+                    if ("/7".equals(testCase)) {
+                      os.write(Charsetfunctions
+                          .asciiBytes("HTTP/1.1 500 Switching Protocols\r\n" + additionalHandshake));
+                      os.flush();
+                    }
+                    if ("/8".equals(testCase)) {
+                      os.write(Charsetfunctions
+                          .asciiBytes("GET 302 Switching Protocols\r\n" + additionalHandshake));
+                      os.flush();
+                    }
+                    if ("/9".equals(testCase)) {
+                      os.write(Charsetfunctions.asciiBytes(
+                          "GET HTTP/1.1 101 Switching Protocols\r\n" + additionalHandshake));
+                      os.flush();
+                    }
+                    if ("/10".equals(testCase)) {
+                      os.write(Charsetfunctions
+                          .asciiBytes("HTTP/1.1 101 Switching Protocols\r\n" + additionalHandshake));
+                      os.flush();
+                    }
+                    if ("/11".equals(testCase)) {
+                      os.write(Charsetfunctions.asciiBytes(
+                          "HTTP/1.1 101 Websocket Connection Upgrade\r\n" + additionalHandshake));
+                      os.flush();
+                    }
+                  } catch (IOException e) {
+                    //
                   }
-                  if ("/1".equals(testCase)) {
-                    os.write(Charsetfunctions
-                        .asciiBytes("HTTP/1.0 100 Switching Protocols\r\n" + additionalHandshake));
-                    os.flush();
-                  }
-                  if ("/2".equals(testCase)) {
-                    os.write(Charsetfunctions
-                        .asciiBytes("HTTP 100 Switching Protocols\r\n" + additionalHandshake));
-                    os.flush();
-                  }
-                  if ("/3".equals(testCase)) {
-                    os.write(Charsetfunctions
-                        .asciiBytes("HTTP/1.1 200 Switching Protocols\r\n" + additionalHandshake));
-                    os.flush();
-                  }
-                  if ("/4".equals(testCase)) {
-                    os.write(Charsetfunctions
-                        .asciiBytes("HTTP 101 Switching Protocols\r\n" + additionalHandshake));
-                    os.flush();
-                  }
-                  if ("/5".equals(testCase)) {
-                    os.write(Charsetfunctions
-                        .asciiBytes("HTTP/1.1 404 Switching Protocols\r\n" + additionalHandshake));
-                    os.flush();
-                  }
-                  if ("/6".equals(testCase)) {
-                    os.write(Charsetfunctions
-                        .asciiBytes("HTTP/2.0 404 Switching Protocols\r\n" + additionalHandshake));
-                    os.flush();
-                  }
-                  if ("/7".equals(testCase)) {
-                    os.write(Charsetfunctions
-                        .asciiBytes("HTTP/1.1 500 Switching Protocols\r\n" + additionalHandshake));
-                    os.flush();
-                  }
-                  if ("/8".equals(testCase)) {
-                    os.write(Charsetfunctions
-                        .asciiBytes("GET 302 Switching Protocols\r\n" + additionalHandshake));
-                    os.flush();
-                  }
-                  if ("/9".equals(testCase)) {
-                    os.write(Charsetfunctions.asciiBytes(
-                        "GET HTTP/1.1 101 Switching Protocols\r\n" + additionalHandshake));
-                    os.flush();
-                  }
-                  if ("/10".equals(testCase)) {
-                    os.write(Charsetfunctions
-                        .asciiBytes("HTTP/1.1 101 Switching Protocols\r\n" + additionalHandshake));
-                    os.flush();
-                  }
-                  if ("/11".equals(testCase)) {
-                    os.write(Charsetfunctions.asciiBytes(
-                        "HTTP/1.1 101 Websocket Connection Upgrade\r\n" + additionalHandshake));
-                    os.flush();
-                  }
-                } catch (IOException e) {
-                  //
                 }
+              } catch (Exception e) {
+                fail("There should not be an exception: " + e.getMessage() + " Port: " + port);
               }
-            } catch (Exception e) {
-              fail("There should not be an exception: " + e.getMessage() + " Port: " + port);
-            }
-          }
-        });
+            });
     thread.start();
   }
 
@@ -255,7 +253,7 @@ public class OpeningHandshakeRejectionTest {
 
       @Override
       public void onError(Exception ex) {
-        fail("There should not be an exception: " + ex.getMessage());
+        fail("There should not be an exception: " + ex.getMessage() + " Port: " + port);
       }
     };
     final AssertionError[] exc = new AssertionError[1];
