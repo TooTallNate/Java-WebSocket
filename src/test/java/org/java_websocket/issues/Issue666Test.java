@@ -39,6 +39,7 @@ import org.java_websocket.util.SocketUtil;
 import org.java_websocket.util.ThreadCheck;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class Issue666Test {
@@ -141,6 +142,7 @@ public class Issue666Test {
         };
         server.start();
         countServerDownLatch.await();
+        assertTrue(SocketUtil.waitForServerToStart(port), "Server Start Status");
         Map<Long, Thread> mapBefore = ThreadCheck.getThreadMap();
         client.connectBlocking();
         Map<Long, Thread> mapAfter = ThreadCheck.getThreadMap();
