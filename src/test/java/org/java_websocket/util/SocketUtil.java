@@ -27,6 +27,7 @@ package org.java_websocket.util;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.Socket;
 
 public class SocketUtil {
 
@@ -37,6 +38,29 @@ public class SocketUtil {
             } catch (IOException e) {
                 // Retry
             }
+            Thread.sleep(5);
         }
+    }
+    public static boolean waitForServerToStart(int port) throws InterruptedException {
+        Socket socket = null;
+        for (int i = 0; i < 10; i++) {
+            try {
+                socket = new Socket("localhost", port);
+                if (socket.isConnected()) {
+                    return true;
+                }
+            } catch (IOException ignore) {
+                // Ignore
+            } finally {
+                if (socket != null) {
+                    try {
+                        socket.close();
+                    } catch (IOException ignore) {
+                    }
+                }
+            }
+            Thread.sleep(10);
+        }
+        return false;
     }
 }

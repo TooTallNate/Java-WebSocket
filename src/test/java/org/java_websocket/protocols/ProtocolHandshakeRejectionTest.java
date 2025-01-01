@@ -48,13 +48,13 @@ import org.java_websocket.util.SocketUtil;
 import org.junit.jupiter.api.*;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 public class ProtocolHandshakeRejectionTest {
 
     private static final String additionalHandshake = "HTTP/1.1 101 Websocket Connection Upgrade\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n";
     private Thread thread;
     private ServerSocket serverSocket;
-    private final CountDownLatch serverStartCountDownLatch = new CountDownLatch(1);
 
     private int port = -1;
 
@@ -65,7 +65,6 @@ public class ProtocolHandshakeRejectionTest {
                     try {
                         serverSocket = new ServerSocket(port);
                         serverSocket.setReuseAddress(true);
-                        serverStartCountDownLatch.countDown();
                         while (true) {
                             Socket client = null;
                             try {
@@ -268,8 +267,12 @@ public class ProtocolHandshakeRejectionTest {
 
     @AfterEach
     public void successTests() throws IOException {
-        serverSocket.close();
-        thread.interrupt();
+        if (serverSocket != null) {
+            serverSocket.close();
+        }
+        if (thread != null) {
+            thread.interrupt();
+        }
     }
 
     @Test()
@@ -491,7 +494,7 @@ public class ProtocolHandshakeRejectionTest {
 
     private void testProtocolRejection(int i, Draft_6455 draft) throws Exception {
         startServer();
-        serverStartCountDownLatch.await();
+        assumeTrue(SocketUtil.waitForServerToStart(this.port));
         final int finalI = i;
         final CountDownLatch countDownLatch = new CountDownLatch(1);
         final WebSocketClient webSocketClient = new WebSocketClient(
