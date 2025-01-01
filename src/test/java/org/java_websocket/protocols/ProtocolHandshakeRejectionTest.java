@@ -48,7 +48,6 @@ import org.java_websocket.util.SocketUtil;
 import org.junit.jupiter.api.*;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 public class ProtocolHandshakeRejectionTest {
 
@@ -494,7 +493,7 @@ public class ProtocolHandshakeRejectionTest {
 
     private void testProtocolRejection(int i, Draft_6455 draft) throws Exception {
         startServer();
-        assumeTrue(SocketUtil.waitForServerToStart(this.port));
+        assertTrue(SocketUtil.waitForServerToStart(this.port), "Server Start Status");
         final int finalI = i;
         final CountDownLatch countDownLatch = new CountDownLatch(1);
         final WebSocketClient webSocketClient = new WebSocketClient(

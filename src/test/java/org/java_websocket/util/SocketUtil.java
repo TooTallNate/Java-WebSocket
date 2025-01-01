@@ -43,7 +43,7 @@ public class SocketUtil {
     }
     public static boolean waitForServerToStart(int port) throws InterruptedException {
         Socket socket = null;
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 50; i++) {
             try {
                 socket = new Socket("localhost", port);
                 if (socket.isConnected()) {

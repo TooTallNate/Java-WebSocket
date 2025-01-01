@@ -21,6 +21,7 @@ public class DaemonThreadTest {
 
     Set<Thread> threadSet1 = Thread.getAllStackTraces().keySet();
     final CountDownLatch ready = new CountDownLatch(1);
+    final CountDownLatch serverStarted = new CountDownLatch(1);
 
     WebSocketServer server = new WebSocketServer(new InetSocketAddress(SocketUtil.getAvailablePort())) {
       @Override
@@ -32,12 +33,13 @@ public class DaemonThreadTest {
       @Override
       public void onError(WebSocket conn, Exception ex) {}
       @Override
-      public void onStart() {}
+      public void onStart() {serverStarted.countDown();}
     };
     server.setDaemon(true);
     server.setDaemon(false);
     server.setDaemon(true);
     server.start();
+    serverStarted.await();
 
     WebSocketClient client = new WebSocketClient(URI.create("ws://localhost:" + server.getPort())) {
       @Override
@@ -59,7 +61,7 @@ public class DaemonThreadTest {
     Set<Thread> threadSet2 = Thread.getAllStackTraces().keySet();
     threadSet2.removeAll(threadSet1);
 
-      assertFalse(threadSet2.isEmpty(), "new threads created (no new threads indicates issue in test)");
+    assertFalse(threadSet2.isEmpty(), "new threads created (no new threads indicates issue in test)");
 
     for (Thread t : threadSet2)
       assertTrue(t.isDaemon(), t.getName());

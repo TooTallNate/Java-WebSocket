@@ -40,8 +40,8 @@ import org.java_websocket.util.Charsetfunctions;
 import org.java_websocket.util.SocketUtil;
 import org.junit.jupiter.api.*;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 public class OpeningHandshakeRejectionTest {
 
@@ -224,7 +224,7 @@ public class OpeningHandshakeRejectionTest {
 
     private void testHandshakeRejection(int i) throws Exception {
         startServer();
-        assumeTrue(SocketUtil.waitForServerToStart(this.port));
+        assertTrue(SocketUtil.waitForServerToStart(this.port), "Server Start Status");
         final int finalI = i;
         final CountDownLatch countDownLatch = new CountDownLatch(1);
         WebSocketClient webSocketClient = new WebSocketClient(

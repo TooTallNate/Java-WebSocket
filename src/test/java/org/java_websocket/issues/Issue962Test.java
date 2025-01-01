@@ -31,6 +31,7 @@ import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.util.concurrent.CountDownLatch;
 import javax.net.SocketFactory;
 import org.java_websocket.WebSocket;
 import org.java_websocket.client.WebSocketClient;
@@ -112,6 +113,7 @@ public class Issue962Test {
     };
 
     String bindingAddress = "127.0.0.1";
+    CountDownLatch serverStartedLatch = new CountDownLatch(1);
 
     client.setSocketFactory(new TestSocketFactory(bindingAddress));
 
@@ -134,10 +136,12 @@ public class Issue962Test {
 
       @Override
       public void onStart() {
+        serverStartedLatch.countDown();
       }
     };
 
     server.start();
+    serverStartedLatch.await();
     client.connectBlocking();
     assertEquals(bindingAddress, client.getSocket().getLocalAddress().getHostAddress());
     assertNotEquals(0, client.getSocket().getLocalPort());
