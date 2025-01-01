@@ -40,7 +40,6 @@ import org.java_websocket.util.Charsetfunctions;
 import org.java_websocket.util.SocketUtil;
 import org.junit.jupiter.api.*;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class OpeningHandshakeRejectionTest {
@@ -49,28 +48,27 @@ public class OpeningHandshakeRejectionTest {
     private Thread thread;
     private ServerSocket serverSocket;
 
-    private boolean beforeeach_called;
+    private final CountDownLatch serverStartCountDownLatch = new CountDownLatch(1);
 
     private static final String additionalHandshake = "Upgrade: websocket\r\nConnection: Upgrade\r\n\r\n";
 
     @BeforeEach
-    public void startServer() {
-
-        try {
-            port = SocketUtil.getAvailablePort();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        thread = new Thread(
+    public void startServer() throws InterruptedException {
+        this.port = SocketUtil.getAvailablePort();
+        this.thread = new Thread(
                 () -> {
                     try {
                         serverSocket = new ServerSocket(port);
                         serverSocket.setReuseAddress(true);
+                        serverStartCountDownLatch.countDown();
                         while (true) {
                             Socket client = null;
                             try {
                                 client = serverSocket.accept();
                                 Scanner in = new Scanner(client.getInputStream());
+                                if (!in.hasNextLine()) {
+                                    continue;
+                                }
                                 String input = in.nextLine();
                                 String testCase = input.split(" ")[1];
                                 OutputStream os = client.getOutputStream();
@@ -142,8 +140,7 @@ public class OpeningHandshakeRejectionTest {
                         fail("There should not be an exception: " + e.getMessage() + " Port: " + port);
                     }
                 });
-        thread.start();
-        beforeeach_called = true;
+        this.thread.start();
     }
 
     @AfterEach
@@ -223,13 +220,12 @@ public class OpeningHandshakeRejectionTest {
     public void testHandshakeRejectionTestCase11() throws Exception {
         testHandshakeRejection(11);
     }
-
     private void testHandshakeRejection(int i) throws Exception {
-        assertTrue(beforeeach_called, "BeforeEach is called");
+        this.serverStartCountDownLatch.await();
         final int finalI = i;
         final CountDownLatch countDownLatch = new CountDownLatch(1);
         WebSocketClient webSocketClient = new WebSocketClient(
-                new URI("ws://localhost:" + port + "/" + finalI)) {
+                new URI("ws://localhost:" + this.port + "/" + finalI)) {
             @Override
             public void onOpen(ServerHandshake handshakedata) {
                 fail("There should not be a connection!");

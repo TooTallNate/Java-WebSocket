@@ -54,26 +54,27 @@ public class ProtocolHandshakeRejectionTest {
     private static final String additionalHandshake = "HTTP/1.1 101 Websocket Connection Upgrade\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n";
     private Thread thread;
     private ServerSocket serverSocket;
+    private final CountDownLatch serverStartCountDownLatch = new CountDownLatch(1);
 
     private int port = -1;
 
     @BeforeEach
-    public void startServer()  {
-        try {
-            port = SocketUtil.getAvailablePort();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+    public void startServer() throws InterruptedException {
+        port = SocketUtil.getAvailablePort();
         thread = new Thread(
                 () -> {
                     try {
                         serverSocket = new ServerSocket(port);
                         serverSocket.setReuseAddress(true);
+                        serverStartCountDownLatch.countDown();
                         while (true) {
                             Socket client = null;
                             try {
                                 client = serverSocket.accept();
                                 Scanner in = new Scanner(client.getInputStream());
+                                if (!in.hasNextLine()) {
+                                    continue;
+                                }
                                 String input = in.nextLine();
                                 String testCase = input.split(" ")[1];
                                 String seckey = "";
@@ -490,6 +491,7 @@ public class ProtocolHandshakeRejectionTest {
     }
 
     private void testProtocolRejection(int i, Draft_6455 draft) throws Exception {
+        serverStartCountDownLatch.await();
         final int finalI = i;
         final CountDownLatch countDownLatch = new CountDownLatch(1);
         final WebSocketClient webSocketClient = new WebSocketClient(
