@@ -91,11 +91,6 @@ public class ThreadCheck implements AfterEachCallback, BeforeEachCallback {
     for (int i = 0; i < actualNb; i++) {
       if (threads[i].getName().contains("WebSocket")) {
         map.put(threads[i].getId(), threads[i]);
-      }else {
-        String name = threads[i].getName();
-        if (name.equals("main") || name.equals("Monitor Ctrl-Break") || name.equals("junit-jupiter-timeout-watcher"))
-          continue;
-        System.out.println();
       }
     }
     return map;
