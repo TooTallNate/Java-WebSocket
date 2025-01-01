@@ -49,7 +49,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import static org.junit.jupiter.api.Assertions.fail;
 
 @ExtendWith(ThreadCheck.class)
-public class Issue256Test extends ThreadCheck{
+public class Issue256Test {
 
   private static final int NUMBER_OF_TESTS = 10;
   private static WebSocketServer ws;
@@ -78,8 +78,6 @@ public class Issue256Test extends ThreadCheck{
 
       @Override
       public void onError(WebSocket conn, Exception ex) {
-
-        ex.printStackTrace();
         fail("There should be no exception!");
       }
 
@@ -141,14 +139,14 @@ public class Issue256Test extends ThreadCheck{
     return ret;
   }
 
-  @ParameterizedTest()
+  @ParameterizedTest
   @Timeout(5000)
   @MethodSource("data")
   public void runReconnectSocketClose() throws Exception {
     runTestScenarioReconnect(false);
   }
 
-  @ParameterizedTest()
+  @ParameterizedTest
   @Timeout(5000)
   @MethodSource("data")
   public void runReconnectCloseBlocking() throws Exception {
