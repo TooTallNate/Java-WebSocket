@@ -44,241 +44,237 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 public class OpeningHandshakeRejectionTest {
 
-  private int port = -1;
-  private Thread thread;
-  private ServerSocket serverSocket;
+    private int port = -1;
+    private Thread thread;
+    private ServerSocket serverSocket;
 
-  private static final String additionalHandshake = "Upgrade: websocket\r\nConnection: Upgrade\r\n\r\n";
+    private static final String additionalHandshake = "Upgrade: websocket\r\nConnection: Upgrade\r\n\r\n";
 
-  @BeforeEach
-  public void startServer()  {
-    try {
-      port = SocketUtil.getAvailablePort();
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
+    @BeforeEach()
+    public void startServer() throws InterruptedException {
+        port = SocketUtil.getAvailablePort();
+        thread = new Thread(
+                () -> {
+                    try {
+                        serverSocket = new ServerSocket(port);
+                        serverSocket.setReuseAddress(true);
+                        while (true) {
+                            Socket client = null;
+                            try {
+                                client = serverSocket.accept();
+                                Scanner in = new Scanner(client.getInputStream());
+                                String input = in.nextLine();
+                                String testCase = input.split(" ")[1];
+                                OutputStream os = client.getOutputStream();
+                                if ("/0".equals(testCase)) {
+                                    os.write(Charsetfunctions
+                                            .asciiBytes("HTTP/1.1 100 Switching Protocols\r\n" + additionalHandshake));
+                                    os.flush();
+                                }
+                                if ("/1".equals(testCase)) {
+                                    os.write(Charsetfunctions
+                                            .asciiBytes("HTTP/1.0 100 Switching Protocols\r\n" + additionalHandshake));
+                                    os.flush();
+                                }
+                                if ("/2".equals(testCase)) {
+                                    os.write(Charsetfunctions
+                                            .asciiBytes("HTTP 100 Switching Protocols\r\n" + additionalHandshake));
+                                    os.flush();
+                                }
+                                if ("/3".equals(testCase)) {
+                                    os.write(Charsetfunctions
+                                            .asciiBytes("HTTP/1.1 200 Switching Protocols\r\n" + additionalHandshake));
+                                    os.flush();
+                                }
+                                if ("/4".equals(testCase)) {
+                                    os.write(Charsetfunctions
+                                            .asciiBytes("HTTP 101 Switching Protocols\r\n" + additionalHandshake));
+                                    os.flush();
+                                }
+                                if ("/5".equals(testCase)) {
+                                    os.write(Charsetfunctions
+                                            .asciiBytes("HTTP/1.1 404 Switching Protocols\r\n" + additionalHandshake));
+                                    os.flush();
+                                }
+                                if ("/6".equals(testCase)) {
+                                    os.write(Charsetfunctions
+                                            .asciiBytes("HTTP/2.0 404 Switching Protocols\r\n" + additionalHandshake));
+                                    os.flush();
+                                }
+                                if ("/7".equals(testCase)) {
+                                    os.write(Charsetfunctions
+                                            .asciiBytes("HTTP/1.1 500 Switching Protocols\r\n" + additionalHandshake));
+                                    os.flush();
+                                }
+                                if ("/8".equals(testCase)) {
+                                    os.write(Charsetfunctions
+                                            .asciiBytes("GET 302 Switching Protocols\r\n" + additionalHandshake));
+                                    os.flush();
+                                }
+                                if ("/9".equals(testCase)) {
+                                    os.write(Charsetfunctions.asciiBytes(
+                                            "GET HTTP/1.1 101 Switching Protocols\r\n" + additionalHandshake));
+                                    os.flush();
+                                }
+                                if ("/10".equals(testCase)) {
+                                    os.write(Charsetfunctions
+                                            .asciiBytes("HTTP/1.1 101 Switching Protocols\r\n" + additionalHandshake));
+                                    os.flush();
+                                }
+                                if ("/11".equals(testCase)) {
+                                    os.write(Charsetfunctions.asciiBytes(
+                                            "HTTP/1.1 101 Websocket Connection Upgrade\r\n" + additionalHandshake));
+                                    os.flush();
+                                }
+                            } catch (IOException e) {
+                                //
+                            }
+                        }
+                    } catch (Exception e) {
+                        fail("There should not be an exception: " + e.getMessage() + " Port: " + port);
+                    }
+                });
+        thread.start();
     }
-    thread = new Thread(
-            () -> {
-              try {
-                serverSocket = new ServerSocket(port);
-                serverSocket.setReuseAddress(true);
-                while (true) {
-                  Socket client = null;
-                  try {
-                    client = serverSocket.accept();
-                    Scanner in = new Scanner(client.getInputStream());
-                    String input = in.nextLine();
-                    String testCase = input.split(" ")[1];
-                    OutputStream os = client.getOutputStream();
-                    if ("/0".equals(testCase)) {
-                      os.write(Charsetfunctions
-                          .asciiBytes("HTTP/1.1 100 Switching Protocols\r\n" + additionalHandshake));
-                      os.flush();
+
+    @AfterEach
+    public void cleanUp() throws IOException {
+        serverSocket.close();
+        thread.interrupt();
+    }
+
+    @Test()
+    @Timeout(5000)
+    public void testHandshakeRejectionTestCase0() throws Exception {
+        testHandshakeRejection(0);
+    }
+
+    @Test()
+    @Timeout(5000)
+    public void testHandshakeRejectionTestCase1() throws Exception {
+        testHandshakeRejection(1);
+    }
+
+    @Test()
+    @Timeout(5000)
+    public void testHandshakeRejectionTestCase2() throws Exception {
+        testHandshakeRejection(2);
+    }
+
+    @Test()
+    @Timeout(5000)
+    public void testHandshakeRejectionTestCase3() throws Exception {
+        testHandshakeRejection(3);
+    }
+
+    @Test()
+    @Timeout(5000)
+    public void testHandshakeRejectionTestCase4() throws Exception {
+        testHandshakeRejection(4);
+    }
+
+    @Test()
+    @Timeout(5000)
+    public void testHandshakeRejectionTestCase5() throws Exception {
+        testHandshakeRejection(5);
+    }
+
+    @Test()
+    @Timeout(5000)
+    public void testHandshakeRejectionTestCase6() throws Exception {
+        testHandshakeRejection(6);
+    }
+
+    @Test()
+    @Timeout(5000)
+    public void testHandshakeRejectionTestCase7() throws Exception {
+        testHandshakeRejection(7);
+    }
+
+    @Test()
+    @Timeout(5000)
+    public void testHandshakeRejectionTestCase8() throws Exception {
+        testHandshakeRejection(8);
+    }
+
+    @Test()
+    @Timeout(5000)
+    public void testHandshakeRejectionTestCase9() throws Exception {
+        testHandshakeRejection(9);
+    }
+
+    @Test()
+    @Timeout(5000)
+    public void testHandshakeRejectionTestCase10() throws Exception {
+        testHandshakeRejection(10);
+    }
+
+    @Test()
+    @Timeout(5000)
+    public void testHandshakeRejectionTestCase11() throws Exception {
+        testHandshakeRejection(11);
+    }
+
+    private void testHandshakeRejection(int i) throws Exception {
+        final int finalI = i;
+        final CountDownLatch countDownLatch = new CountDownLatch(1);
+        WebSocketClient webSocketClient = new WebSocketClient(
+                new URI("ws://localhost:" + port + "/" + finalI)) {
+            @Override
+            public void onOpen(ServerHandshake handshakedata) {
+                fail("There should not be a connection!");
+            }
+
+            @Override
+            public void onMessage(String message) {
+                fail("There should not be a message!");
+            }
+
+            @Override
+            public void onClose(int code, String reason, boolean remote) {
+                if (finalI != 10 && finalI != 11) {
+                    if (code != CloseFrame.PROTOCOL_ERROR) {
+                        fail("There should be a protocol error!");
+                    } else if (reason.startsWith("Invalid status code received:") || reason
+                            .startsWith("Invalid status line received:")) {
+                        countDownLatch.countDown();
+                    } else {
+                        fail("The reason should be included!");
                     }
-                    if ("/1".equals(testCase)) {
-                      os.write(Charsetfunctions
-                          .asciiBytes("HTTP/1.0 100 Switching Protocols\r\n" + additionalHandshake));
-                      os.flush();
+                } else {
+                    //Since we do not include a correct Sec-WebSocket-Accept, onClose will be called with reason 'Draft refuses handshake'
+                    if (!reason.endsWith("refuses handshake")) {
+                        fail("onClose should not be called!");
+                    } else {
+                        countDownLatch.countDown();
                     }
-                    if ("/2".equals(testCase)) {
-                      os.write(Charsetfunctions
-                          .asciiBytes("HTTP 100 Switching Protocols\r\n" + additionalHandshake));
-                      os.flush();
-                    }
-                    if ("/3".equals(testCase)) {
-                      os.write(Charsetfunctions
-                          .asciiBytes("HTTP/1.1 200 Switching Protocols\r\n" + additionalHandshake));
-                      os.flush();
-                    }
-                    if ("/4".equals(testCase)) {
-                      os.write(Charsetfunctions
-                          .asciiBytes("HTTP 101 Switching Protocols\r\n" + additionalHandshake));
-                      os.flush();
-                    }
-                    if ("/5".equals(testCase)) {
-                      os.write(Charsetfunctions
-                          .asciiBytes("HTTP/1.1 404 Switching Protocols\r\n" + additionalHandshake));
-                      os.flush();
-                    }
-                    if ("/6".equals(testCase)) {
-                      os.write(Charsetfunctions
-                          .asciiBytes("HTTP/2.0 404 Switching Protocols\r\n" + additionalHandshake));
-                      os.flush();
-                    }
-                    if ("/7".equals(testCase)) {
-                      os.write(Charsetfunctions
-                          .asciiBytes("HTTP/1.1 500 Switching Protocols\r\n" + additionalHandshake));
-                      os.flush();
-                    }
-                    if ("/8".equals(testCase)) {
-                      os.write(Charsetfunctions
-                          .asciiBytes("GET 302 Switching Protocols\r\n" + additionalHandshake));
-                      os.flush();
-                    }
-                    if ("/9".equals(testCase)) {
-                      os.write(Charsetfunctions.asciiBytes(
-                          "GET HTTP/1.1 101 Switching Protocols\r\n" + additionalHandshake));
-                      os.flush();
-                    }
-                    if ("/10".equals(testCase)) {
-                      os.write(Charsetfunctions
-                          .asciiBytes("HTTP/1.1 101 Switching Protocols\r\n" + additionalHandshake));
-                      os.flush();
-                    }
-                    if ("/11".equals(testCase)) {
-                      os.write(Charsetfunctions.asciiBytes(
-                          "HTTP/1.1 101 Websocket Connection Upgrade\r\n" + additionalHandshake));
-                      os.flush();
-                    }
-                  } catch (IOException e) {
-                    //
-                  }
                 }
-              } catch (Exception e) {
-                fail("There should not be an exception: " + e.getMessage() + " Port: " + port);
-              }
-            });
-    thread.start();
-  }
+            }
 
-  @AfterEach
-  public void cleanUp() throws  IOException {
-    serverSocket.close();
-    thread.interrupt();
-  }
+            @Override
+            public void onError(Exception ex) {
+                fail("There should not be an exception: " + ex.getMessage() + " Port: " + port);
+            }
+        };
+        final AssertionError[] exc = new AssertionError[1];
+        exc[0] = null;
+        Thread finalThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    webSocketClient.run();
+                } catch (AssertionError e) {
+                    exc[0] = e;
+                    countDownLatch.countDown();
+                }
+            }
 
-  @Test()
-  @Timeout(5000)
-  public void testHandshakeRejectionTestCase0() throws Exception {
-    testHandshakeRejection(0);
-  }
-
-  @Test()
-  @Timeout(5000)
-  public void testHandshakeRejectionTestCase1() throws Exception {
-    testHandshakeRejection(1);
-  }
-
-  @Test()
-  @Timeout(5000)
-  public void testHandshakeRejectionTestCase2() throws Exception {
-    testHandshakeRejection(2);
-  }
-
-  @Test()
-  @Timeout(5000)
-  public void testHandshakeRejectionTestCase3() throws Exception {
-    testHandshakeRejection(3);
-  }
-
-  @Test()
-  @Timeout(5000)
-  public void testHandshakeRejectionTestCase4() throws Exception {
-    testHandshakeRejection(4);
-  }
-
-  @Test()
-  @Timeout(5000)
-  public void testHandshakeRejectionTestCase5() throws Exception {
-    testHandshakeRejection(5);
-  }
-
-  @Test()
-  @Timeout(5000)
-  public void testHandshakeRejectionTestCase6() throws Exception {
-    testHandshakeRejection(6);
-  }
-
-  @Test()
-  @Timeout(5000)
-  public void testHandshakeRejectionTestCase7() throws Exception {
-    testHandshakeRejection(7);
-  }
-
-  @Test()
-  @Timeout(5000)
-  public void testHandshakeRejectionTestCase8() throws Exception {
-    testHandshakeRejection(8);
-  }
-
-  @Test()
-  @Timeout(5000)
-  public void testHandshakeRejectionTestCase9() throws Exception {
-    testHandshakeRejection(9);
-  }
-
-  @Test()
-  @Timeout(5000)
-  public void testHandshakeRejectionTestCase10() throws Exception {
-    testHandshakeRejection(10);
-  }
-
-  @Test()
-  @Timeout(5000)
-  public void testHandshakeRejectionTestCase11() throws Exception {
-    testHandshakeRejection(11);
-  }
-
-  private void testHandshakeRejection(int i) throws Exception {
-    final int finalI = i;
-    final CountDownLatch countDownLatch = new CountDownLatch(1);
-    WebSocketClient webSocketClient = new WebSocketClient(
-        new URI("ws://localhost:" + port + "/" + finalI)) {
-      @Override
-      public void onOpen(ServerHandshake handshakedata) {
-        fail("There should not be a connection!");
-      }
-
-      @Override
-      public void onMessage(String message) {
-        fail("There should not be a message!");
-      }
-
-      @Override
-      public void onClose(int code, String reason, boolean remote) {
-        if (finalI != 10 && finalI != 11) {
-          if (code != CloseFrame.PROTOCOL_ERROR) {
-            fail("There should be a protocol error!");
-          } else if (reason.startsWith("Invalid status code received:") || reason
-              .startsWith("Invalid status line received:")) {
-            countDownLatch.countDown();
-          } else {
-            fail("The reason should be included!");
-          }
-        } else {
-          //Since we do not include a correct Sec-WebSocket-Accept, onClose will be called with reason 'Draft refuses handshake'
-          if (!reason.endsWith("refuses handshake")) {
-            fail("onClose should not be called!");
-          } else {
-            countDownLatch.countDown();
-          }
+        });
+        finalThread.start();
+        finalThread.join();
+        if (exc[0] != null) {
+            throw exc[0];
         }
-      }
-
-      @Override
-      public void onError(Exception ex) {
-        fail("There should not be an exception: " + ex.getMessage() + " Port: " + port);
-      }
-    };
-    final AssertionError[] exc = new AssertionError[1];
-    exc[0] = null;
-    Thread finalThread = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          webSocketClient.run();
-        }catch(AssertionError e){
-          exc[0] = e;
-          countDownLatch.countDown();
-        }
-      }
-
-    });
-    finalThread.start();
-    finalThread.join();
-    if (exc[0] != null) {
-      throw exc[0];
+        countDownLatch.await();
     }
-    countDownLatch.await();
-  }
 }
