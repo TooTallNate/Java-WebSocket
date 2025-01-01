@@ -36,7 +36,6 @@ public class SocketUtil {
                 return srv.getLocalPort();
             } catch (IOException e) {
                 // Retry
-                Thread.sleep(50);
             }
         }
     }

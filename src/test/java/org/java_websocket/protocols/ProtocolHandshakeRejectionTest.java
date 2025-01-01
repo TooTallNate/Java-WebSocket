@@ -488,9 +488,6 @@ public class ProtocolHandshakeRejectionTest {
   }
 
   private void testProtocolRejection(int i, Draft_6455 draft) throws Exception {
-    do {
-      Thread.sleep(100);
-    }  while(serverSocket == null || !serverSocket.isBound());
     final int finalI = i;
     final CountDownLatch countDownLatch = new CountDownLatch(1);
     final WebSocketClient webSocketClient = new WebSocketClient(
@@ -615,7 +612,7 @@ public class ProtocolHandshakeRejectionTest {
 
       @Override
       public void onError(Exception ex) {
-        fail("There should not be an exception: " + ex.getMessage());
+        fail("There should not be an exception: " + ex.getMessage() + " Port: " + port);
       }
     };
     final AssertionError[] exc = new AssertionError[1];

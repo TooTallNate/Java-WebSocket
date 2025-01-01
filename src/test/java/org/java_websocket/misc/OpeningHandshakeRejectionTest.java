@@ -132,7 +132,7 @@ public class OpeningHandshakeRejectionTest {
                 }
               }
             } catch (Exception e) {
-              fail("There should be no exception", e);
+              fail("There should not be an exception: " + e.getMessage() + " Port: " + port);
             }
           }
         });
@@ -218,9 +218,6 @@ public class OpeningHandshakeRejectionTest {
   }
 
   private void testHandshakeRejection(int i) throws Exception {
-    do {
-      Thread.sleep(100);
-    }  while(serverSocket == null || !serverSocket.isBound());
     final int finalI = i;
     final CountDownLatch countDownLatch = new CountDownLatch(1);
     WebSocketClient webSocketClient = new WebSocketClient(
