@@ -40,6 +40,7 @@ import org.java_websocket.util.Charsetfunctions;
 import org.java_websocket.util.SocketUtil;
 import org.junit.jupiter.api.*;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class OpeningHandshakeRejectionTest {
@@ -48,10 +49,13 @@ public class OpeningHandshakeRejectionTest {
     private Thread thread;
     private ServerSocket serverSocket;
 
+    private boolean beforeeach_called;
+
     private static final String additionalHandshake = "Upgrade: websocket\r\nConnection: Upgrade\r\n\r\n";
 
     @BeforeEach()
     public void startServer() throws InterruptedException {
+
         port = SocketUtil.getAvailablePort();
         thread = new Thread(
                 () -> {
@@ -135,6 +139,7 @@ public class OpeningHandshakeRejectionTest {
                     }
                 });
         thread.start();
+        beforeeach_called = true;
     }
 
     @AfterEach
@@ -216,6 +221,7 @@ public class OpeningHandshakeRejectionTest {
     }
 
     private void testHandshakeRejection(int i) throws Exception {
+        assertTrue(beforeeach_called, "BeforeEach is called");
         final int finalI = i;
         final CountDownLatch countDownLatch = new CountDownLatch(1);
         WebSocketClient webSocketClient = new WebSocketClient(
