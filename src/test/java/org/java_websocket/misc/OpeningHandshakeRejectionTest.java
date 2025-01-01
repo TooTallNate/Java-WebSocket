@@ -53,7 +53,7 @@ public class OpeningHandshakeRejectionTest {
 
     private static final String additionalHandshake = "Upgrade: websocket\r\nConnection: Upgrade\r\n\r\n";
 
-    @BeforeEach()
+    @BeforeEach
     public void startServer() {
 
         try {

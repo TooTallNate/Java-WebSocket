@@ -57,9 +57,13 @@ public class ProtocolHandshakeRejectionTest {
 
     private int port = -1;
 
-    @BeforeEach()
-    public void startServer() throws InterruptedException {
-        port = SocketUtil.getAvailablePort();
+    @BeforeEach
+    public void startServer()  {
+        try {
+            port = SocketUtil.getAvailablePort();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         thread = new Thread(
                 () -> {
                     try {
