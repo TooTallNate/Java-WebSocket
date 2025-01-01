@@ -117,6 +117,13 @@ public class Issue677Test {
     assertTrue(webSocket0.isOpen(), "webSocket.isOpen()");
     webSocket0.close();
     countDownLatch0.await();
+    // Add some delay is since the latch will be decreased in the onClose before the state is reset
+    for (int i = 0; i < 5; i++) {
+      if (webSocket0.isClosed()) {
+        break;
+      }
+      Thread.sleep(5);
+    }
     assertTrue(webSocket0.isClosed(), "webSocket.isClosed()");
     webSocket1.connectBlocking();
     assertTrue(webSocket1.isOpen(), "webSocket.isOpen()");
