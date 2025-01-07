@@ -380,8 +380,16 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
     }
     connectReadThread = new Thread(this);
     connectReadThread.setDaemon(isDaemon());
-    connectReadThread.setName("WebSocketConnectReadThread-" + connectReadThread.getId());
+    connectReadThread.setName(connectReadThreadName(connectReadThread.getId()));
     connectReadThread.start();
+  }
+
+  protected String connectReadThreadName (long threadId) {
+    return "WebSocketConnectReadThread-" + threadId;
+  }
+
+  protected String writeThreadName (long threadId) {
+    return "WebSocketWriteThread-" + threadId;
   }
 
   /**
@@ -819,7 +827,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 
     @Override
     public void run() {
-      Thread.currentThread().setName("WebSocketWriteThread-" + Thread.currentThread().getId());
+      Thread.currentThread().setName(writeThreadName(Thread.currentThread().getId()));
       try {
         runWriteData();
       } catch (IOException e) {
