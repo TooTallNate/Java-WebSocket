@@ -27,5 +27,7 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+      - name: Maven Version
+        run: mvn --version
       - name: Test
         run: mvn test --file pom.xml
