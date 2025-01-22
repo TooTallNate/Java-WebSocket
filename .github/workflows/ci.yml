@@ -12,6 +12,8 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+      - name: Maven Version
+        run: mvn --version
       - name: Build
         run: mvn -DskipTests package --file pom.xml
 
