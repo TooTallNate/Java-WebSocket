@@ -25,9 +25,6 @@
 
 package org.java_websocket.issues;
 
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assume.assumeThat;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -42,14 +39,16 @@ import org.java_websocket.handshake.ServerHandshake;
 import org.java_websocket.server.WebSocketServer;
 import org.java_websocket.util.SocketUtil;
 import org.java_websocket.util.ThreadCheck;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
+import static org.junit.jupiter.api.Assertions.fail;
+
+@ExtendWith(ThreadCheck.class)
 public class Issue256Test {
 
   private static final int NUMBER_OF_TESTS = 10;
@@ -57,13 +56,8 @@ public class Issue256Test {
 
   private static int port;
   static CountDownLatch countServerDownLatch = new CountDownLatch(1);
-  @Rule
-  public ThreadCheck zombies = new ThreadCheck();
 
-  @Parameterized.Parameter
-  public int count;
-
-  @BeforeClass
+  @BeforeAll
   public static void startServer() throws Exception {
     port = SocketUtil.getAvailablePort();
     ws = new WebSocketServer(new InetSocketAddress(port), 16) {
@@ -84,10 +78,7 @@ public class Issue256Test {
 
       @Override
       public void onError(WebSocket conn, Exception ex) {
-
-        ex.printStackTrace();
-        assumeThat(true, is(false));
-        System.out.println("There should be no exception!");
+        fail("There should be no exception!");
       }
 
       @Override
@@ -121,9 +112,7 @@ public class Issue256Test {
 
       @Override
       public void onError(Exception ex) {
-        ex.printStackTrace();
-        assumeThat(true, is(false));
-        System.out.println("There should be no exception!");
+        fail("There should be no exception!");
       }
     };
     clt.connectBlocking();
@@ -137,12 +126,11 @@ public class Issue256Test {
     clt.closeBlocking();
   }
 
-  @AfterClass
+  @AfterAll
   public static void successTests() throws InterruptedException, IOException {
     ws.stop();
   }
 
-  @Parameterized.Parameters
   public static Collection<Integer[]> data() {
     List<Integer[]> ret = new ArrayList<Integer[]>(NUMBER_OF_TESTS);
     for (int i = 0; i < NUMBER_OF_TESTS; i++) {
@@ -151,12 +139,16 @@ public class Issue256Test {
     return ret;
   }
 
-  @Test(timeout = 5000)
+  @ParameterizedTest
+  @Timeout(5000)
+  @MethodSource("data")
   public void runReconnectSocketClose() throws Exception {
     runTestScenarioReconnect(false);
   }
 
-  @Test(timeout = 5000)
+  @ParameterizedTest
+  @Timeout(5000)
+  @MethodSource("data")
   public void runReconnectCloseBlocking() throws Exception {
     runTestScenarioReconnect(true);
   }

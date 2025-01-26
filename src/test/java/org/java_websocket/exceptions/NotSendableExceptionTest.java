@@ -25,9 +25,9 @@
 
 package org.java_websocket.exceptions;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * JUnit Test for the NotSendableException class
@@ -37,14 +37,14 @@ public class NotSendableExceptionTest {
   @Test
   public void testConstructor() {
     NotSendableException notSendableException = new NotSendableException("Message");
-    assertEquals("The message has to be the argument", "Message",
-        notSendableException.getMessage());
+    assertEquals("Message",
+        notSendableException.getMessage(), "The message has to be the argument");
     Exception e = new Exception();
     notSendableException = new NotSendableException(e);
-    assertEquals("The throwable has to be the argument", e, notSendableException.getCause());
+    assertEquals( e, notSendableException.getCause(), "The throwable has to be the argument");
     notSendableException = new NotSendableException("Message", e);
-    assertEquals("The message has to be the argument", "Message",
-        notSendableException.getMessage());
-    assertEquals("The throwable has to be the argument", e, notSendableException.getCause());
+    assertEquals("Message",
+        notSendableException.getMessage(), "The message has to be the argument");
+    assertEquals(e, notSendableException.getCause(), "The throwable has to be the argument");
   }
 }

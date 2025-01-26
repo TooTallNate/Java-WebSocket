@@ -25,9 +25,9 @@
 
 package org.java_websocket.exceptions;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * JUnit Test for the IncompleteException class
@@ -37,6 +37,6 @@ public class IncompleteExceptionTest {
   @Test
   public void testConstructor() {
     IncompleteException incompleteException = new IncompleteException(42);
-    assertEquals("The argument should be set", 42, incompleteException.getPreferredSize());
+    assertEquals(42, incompleteException.getPreferredSize(), "The argument should be set");
   }
 }

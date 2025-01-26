@@ -29,6 +29,7 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+
 import org.java_websocket.WebSocket;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ClientHandshake;
@@ -36,122 +37,127 @@ import org.java_websocket.handshake.ServerHandshake;
 import org.java_websocket.server.WebSocketServer;
 import org.java_websocket.util.SocketUtil;
 import org.java_websocket.util.ThreadCheck;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class Issue666Test {
 
-  private CountDownLatch countServerDownLatch = new CountDownLatch(1);
+    private CountDownLatch countServerDownLatch = new CountDownLatch(1);
 
-  @Test
-  public void testServer() throws Exception {
-    Map<Long, Thread> mapBefore = ThreadCheck.getThreadMap();
-    int port = SocketUtil.getAvailablePort();
-    WebSocketServer server = new WebSocketServer(new InetSocketAddress(port)) {
-      @Override
-      public void onOpen(WebSocket conn, ClientHandshake handshake) {
-      }
+    @Test
+    public void testServer() throws Exception {
+        Map<Long, Thread> mapBefore = ThreadCheck.getThreadMap();
+        int port = SocketUtil.getAvailablePort();
+        WebSocketServer server = new WebSocketServer(new InetSocketAddress(port)) {
+            @Override
+            public void onOpen(WebSocket conn, ClientHandshake handshake) {
+            }
 
-      @Override
-      public void onClose(WebSocket conn, int code, String reason, boolean remote) {
+            @Override
+            public void onClose(WebSocket conn, int code, String reason, boolean remote) {
 
-      }
+            }
 
-      @Override
-      public void onMessage(WebSocket conn, String message) {
+            @Override
+            public void onMessage(WebSocket conn, String message) {
 
-      }
+            }
 
-      @Override
-      public void onError(WebSocket conn, Exception ex) {
+            @Override
+            public void onError(WebSocket conn, Exception ex) {
 
-      }
+            }
 
-      @Override
-      public void onStart() {
-        countServerDownLatch.countDown();
-      }
-    };
-    server.start();
-    countServerDownLatch.await();
-    Map<Long, Thread> mapAfter = ThreadCheck.getThreadMap();
-    for (long key : mapBefore.keySet()) {
-      mapAfter.remove(key);
+            @Override
+            public void onStart() {
+                countServerDownLatch.countDown();
+            }
+        };
+        server.start();
+        countServerDownLatch.await();
+        Map<Long, Thread> mapAfter = ThreadCheck.getThreadMap();
+        for (long key : mapBefore.keySet()) {
+            mapAfter.remove(key);
+        }
+        for (Thread thread : mapAfter.values()) {
+            String name = thread.getName();
+            if (!name.startsWith("WebSocketSelector-") && !name.startsWith("WebSocketWorker-") && !name
+                    .startsWith("WebSocketConnectionLostChecker-")
+                    && !name.startsWith("WebSocketConnectReadThread-")) {
+                fail("Thread not correctly named! Is: " + name);
+            }
+        }
+        server.stop();
     }
-    for (Thread thread : mapAfter.values()) {
-      String name = thread.getName();
-      if (!name.startsWith("WebSocketSelector-") && !name.startsWith("WebSocketWorker-") && !name
-          .startsWith("connectionLostChecker-")) {
-        Assert.fail("Thread not correctly named! Is: " + name);
-      }
+
+    @Test
+    public void testClient() throws Exception {
+        int port = SocketUtil.getAvailablePort();
+        WebSocketClient client = new WebSocketClient(new URI("ws://localhost:" + port)) {
+            @Override
+            public void onOpen(ServerHandshake handshakedata) {
+
+            }
+
+            @Override
+            public void onMessage(String message) {
+
+            }
+
+            @Override
+            public void onClose(int code, String reason, boolean remote) {
+            }
+
+            @Override
+            public void onError(Exception ex) {
+
+            }
+        };
+        WebSocketServer server = new WebSocketServer(new InetSocketAddress(port)) {
+            @Override
+            public void onOpen(WebSocket conn, ClientHandshake handshake) {
+            }
+
+            @Override
+            public void onClose(WebSocket conn, int code, String reason, boolean remote) {
+
+            }
+
+            @Override
+            public void onMessage(WebSocket conn, String message) {
+
+            }
+
+            @Override
+            public void onError(WebSocket conn, Exception ex) {
+
+            }
+
+            @Override
+            public void onStart() {
+                countServerDownLatch.countDown();
+            }
+        };
+        server.start();
+        countServerDownLatch.await();
+        assertTrue(SocketUtil.waitForServerToStart(port), "Server Start Status");
+        Map<Long, Thread> mapBefore = ThreadCheck.getThreadMap();
+        client.connectBlocking();
+        Map<Long, Thread> mapAfter = ThreadCheck.getThreadMap();
+        for (long key : mapBefore.keySet()) {
+            mapAfter.remove(key);
+        }
+        for (Thread thread : mapAfter.values()) {
+            String name = thread.getName();
+            if (!name.startsWith("WebSocketConnectionLostChecker-") && !name.startsWith("WebSocketWriteThread-")
+                    && !name.startsWith("WebSocketConnectReadThread-")
+                    && !name.startsWith("WebSocketWorker-")) {
+                fail("Thread not correctly named! Is: " + name);
+            }
+        }
+        client.close();
+        server.stop();
     }
-    server.stop();
-  }
-
-  @Test
-  public void testClient() throws Exception {
-    int port = SocketUtil.getAvailablePort();
-    WebSocketClient client = new WebSocketClient(new URI("ws://localhost:" + port)) {
-      @Override
-      public void onOpen(ServerHandshake handshakedata) {
-
-      }
-
-      @Override
-      public void onMessage(String message) {
-
-      }
-
-      @Override
-      public void onClose(int code, String reason, boolean remote) {
-      }
-
-      @Override
-      public void onError(Exception ex) {
-
-      }
-    };
-    WebSocketServer server = new WebSocketServer(new InetSocketAddress(port)) {
-      @Override
-      public void onOpen(WebSocket conn, ClientHandshake handshake) {
-      }
-
-      @Override
-      public void onClose(WebSocket conn, int code, String reason, boolean remote) {
-
-      }
-
-      @Override
-      public void onMessage(WebSocket conn, String message) {
-
-      }
-
-      @Override
-      public void onError(WebSocket conn, Exception ex) {
-
-      }
-
-      @Override
-      public void onStart() {
-        countServerDownLatch.countDown();
-      }
-    };
-    server.start();
-    countServerDownLatch.await();
-    Map<Long, Thread> mapBefore = ThreadCheck.getThreadMap();
-    client.connectBlocking();
-    Map<Long, Thread> mapAfter = ThreadCheck.getThreadMap();
-    for (long key : mapBefore.keySet()) {
-      mapAfter.remove(key);
-    }
-    for (Thread thread : mapAfter.values()) {
-      String name = thread.getName();
-      if (!name.startsWith("connectionLostChecker-") && !name.startsWith("WebSocketWriteThread-")
-          && !name.startsWith("WebSocketConnectReadThread-")) {
-        Assert.fail("Thread not correctly named! Is: " + name);
-      }
-    }
-    client.close();
-    server.stop();
-  }
 }

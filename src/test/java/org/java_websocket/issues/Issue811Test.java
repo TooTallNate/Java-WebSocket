@@ -33,13 +33,15 @@ import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 import org.java_websocket.util.SocketUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 public class Issue811Test {
 
   private CountDownLatch countServerDownLatch = new CountDownLatch(1);
 
-  @Test(timeout = 2000)
+  @Test
+  @Timeout(2000)
   public void testSetConnectionLostTimeout() throws IOException, InterruptedException {
     final MyWebSocketServer server = new MyWebSocketServer(
         new InetSocketAddress(SocketUtil.getAvailablePort()));

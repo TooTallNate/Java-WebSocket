@@ -26,8 +26,6 @@
 
 package org.java_websocket.issues;
 
-import static org.junit.Assert.fail;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.ServerSocket;
@@ -45,13 +43,14 @@ import org.java_websocket.handshake.ServerHandshake;
 import org.java_websocket.util.Charsetfunctions;
 import org.java_websocket.util.KeyUtils;
 import org.java_websocket.util.SocketUtil;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
+import static org.junit.jupiter.api.Assertions.fail;
+
 public class Issue847Test {
 
   private static Thread thread;
@@ -60,10 +59,6 @@ public class Issue847Test {
   private static int port;
   private static final int NUMBER_OF_TESTS = 20;
 
-  @Parameterized.Parameter
-  public int size;
-
-  @Parameterized.Parameters
   public static Collection<Integer[]> data() {
     List<Integer[]> ret = new ArrayList<Integer[]>(NUMBER_OF_TESTS);
     for (int i = 1; i <= NUMBER_OF_TESTS + 1; i++) {
@@ -72,7 +67,7 @@ public class Issue847Test {
     return ret;
   }
 
-  @BeforeClass
+  @BeforeAll
   public static void startServer() throws Exception {
     port = SocketUtil.getAvailablePort();
     thread = new Thread(
@@ -138,19 +133,23 @@ public class Issue847Test {
     thread.start();
   }
 
-  @AfterClass
+  @AfterAll
   public static void successTests() throws IOException {
     serverSocket.close();
     thread.interrupt();
   }
 
-  @Test(timeout = 5000)
-  public void testIncrementalFrameUnmasked() throws Exception {
+  @ParameterizedTest()
+  @Timeout(5000)
+  @MethodSource("data")
+  public void testIncrementalFrameUnmasked(int size) throws Exception {
     testIncrementalFrame(false, size);
   }
 
-  @Test(timeout = 5000)
-  public void testIncrementalFrameMsked() throws Exception {
+  @ParameterizedTest()
+  @Timeout(5000)
+  @MethodSource("data")
+  public void testIncrementalFrameMsked(int size) throws Exception {
     testIncrementalFrame(true, size);
   }
 

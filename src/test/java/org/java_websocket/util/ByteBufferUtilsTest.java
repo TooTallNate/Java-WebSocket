@@ -25,13 +25,11 @@
 
 package org.java_websocket.util;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
-import org.junit.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * JUnit Test for the new ByteBufferUtils class
@@ -51,14 +49,14 @@ public class ByteBufferUtilsTest {
   @Test
   public void testEmptyByteBufferCapacity() {
     ByteBuffer byteBuffer = ByteBufferUtils.getEmptyByteBuffer();
-    assertEquals("capacity must be 0", 0, byteBuffer.capacity());
+    assertEquals( 0, byteBuffer.capacity(), "capacity must be 0");
   }
 
   @Test
   public void testEmptyByteBufferNewObject() {
     ByteBuffer byteBuffer0 = ByteBufferUtils.getEmptyByteBuffer();
     ByteBuffer byteBuffer1 = ByteBufferUtils.getEmptyByteBuffer();
-    assertTrue("Allocated new object", byteBuffer0 != byteBuffer1);
+      assertNotSame(byteBuffer0, byteBuffer1, "Allocated new object");
   }
 
   @Test
@@ -66,8 +64,8 @@ public class ByteBufferUtilsTest {
     ByteBuffer small = ByteBuffer.wrap(smallArray);
     ByteBuffer empty = ByteBufferUtils.getEmptyByteBuffer();
     ByteBufferUtils.transferByteBuffer(small, empty);
-    assertArrayEquals("Small bytebuffer should not change", smallArray, small.array());
-    assertEquals("Capacity of the empty bytebuffer should still be 0", 0, empty.capacity());
+    assertArrayEquals( smallArray, small.array(), "Small bytebuffer should not change");
+    assertEquals( 0, empty.capacity(), "Capacity of the empty bytebuffer should still be 0");
   }
 
   @Test
@@ -75,16 +73,16 @@ public class ByteBufferUtilsTest {
     ByteBuffer small = ByteBuffer.wrap(smallArray);
     ByteBuffer big = ByteBuffer.wrap(bigArray);
     ByteBufferUtils.transferByteBuffer(small, big);
-    assertArrayEquals("Small bytebuffer should not change", smallArray, small.array());
-    assertEquals("Big bytebuffer not same to source 0", smallArray[0], big.get(0));
-    assertEquals("Big bytebuffer not same to source 1", smallArray[1], big.get(1));
-    assertEquals("Big bytebuffer not same to source 2", smallArray[2], big.get(2));
-    assertEquals("Big bytebuffer not same to source 3", smallArray[3], big.get(3));
-    assertEquals("Big bytebuffer not same to source 4", smallArray[4], big.get(4));
-    assertEquals("Big bytebuffer not same to source 5", bigArray[5], big.get(5));
-    assertEquals("Big bytebuffer not same to source 6", bigArray[6], big.get(6));
-    assertEquals("Big bytebuffer not same to source 7", bigArray[7], big.get(7));
-    assertEquals("Big bytebuffer not same to source 8", bigArray[8], big.get(8));
+    assertArrayEquals( smallArray, small.array(), "Small bytebuffer should not change");
+    assertEquals( smallArray[0], big.get(0), "Big bytebuffer not same to source 0");
+    assertEquals( smallArray[1], big.get(1), "Big bytebuffer not same to source 1");
+    assertEquals( smallArray[2], big.get(2), "Big bytebuffer not same to source 2");
+    assertEquals( smallArray[3], big.get(3), "Big bytebuffer not same to source 3");
+    assertEquals( smallArray[4], big.get(4), "Big bytebuffer not same to source 4");
+    assertEquals( bigArray[5], big.get(5), "Big bytebuffer not same to source 5");
+    assertEquals( bigArray[6], big.get(6), "Big bytebuffer not same to source 6");
+    assertEquals( bigArray[7], big.get(7), "Big bytebuffer not same to source 7");
+    assertEquals( bigArray[8], big.get(8), "Big bytebuffer not same to source 8");
   }
 
   @Test
@@ -92,12 +90,12 @@ public class ByteBufferUtilsTest {
     ByteBuffer small = ByteBuffer.wrap(smallArray);
     ByteBuffer big = ByteBuffer.wrap(bigArray);
     ByteBufferUtils.transferByteBuffer(big, small);
-    assertArrayEquals("Big bytebuffer should not change", bigArray, big.array());
-    assertEquals("Small bytebuffer not same to source 0", bigArray[0], small.get(0));
-    assertEquals("Small bytebuffer not same to source 1", bigArray[1], small.get(1));
-    assertEquals("Small bytebuffer not same to source 2", bigArray[2], small.get(2));
-    assertEquals("Small bytebuffer not same to source 3", bigArray[3], small.get(3));
-    assertEquals("Small bytebuffer not same to source 4", bigArray[4], small.get(4));
+    assertArrayEquals( bigArray, big.array(), "Big bytebuffer should not change");
+    assertEquals( bigArray[0], small.get(0), "Small bytebuffer not same to source 0");
+    assertEquals( bigArray[1], small.get(1), "Small bytebuffer not same to source 1");
+    assertEquals( bigArray[2], small.get(2), "Small bytebuffer not same to source 2");
+    assertEquals( bigArray[3], small.get(3), "Small bytebuffer not same to source 3");
+    assertEquals( bigArray[4], small.get(4), "Small bytebuffer not same to source 4");
   }
 
   @Test

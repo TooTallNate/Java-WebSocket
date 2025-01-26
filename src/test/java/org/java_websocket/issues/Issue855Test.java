@@ -35,14 +35,16 @@ import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.handshake.ServerHandshake;
 import org.java_websocket.server.WebSocketServer;
 import org.java_websocket.util.SocketUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 public class Issue855Test {
 
   CountDownLatch countServerDownLatch = new CountDownLatch(1);
   CountDownLatch countDownLatch = new CountDownLatch(1);
 
-  @Test(timeout = 2000)
+  @Test
+  @Timeout(2000)
   public void testIssue() throws Exception {
     int port = SocketUtil.getAvailablePort();
     WebSocketClient webSocket = new WebSocketClient(new URI("ws://localhost:" + port)) {

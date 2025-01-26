@@ -201,7 +201,7 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
   private void restartConnectionLostTimer() {
     cancelConnectionLostTimer();
     connectionLostCheckerService = Executors
-        .newSingleThreadScheduledExecutor(new NamedThreadFactory("connectionLostChecker", daemon));
+        .newSingleThreadScheduledExecutor(new NamedThreadFactory("WebSocketConnectionLostChecker", daemon));
     Runnable connectionLostChecker = new Runnable() {
 
       /**

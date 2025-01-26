@@ -27,18 +27,40 @@ package org.java_websocket.util;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.Socket;
 
 public class SocketUtil {
 
-  public static int getAvailablePort() throws IOException {
-    ServerSocket srv = null;
-    try {
-      srv = new ServerSocket(0);
-      return srv.getLocalPort();
-    } finally {
-      if (srv != null) {
-        srv.close();
-      }
+    public static int getAvailablePort() throws InterruptedException {
+        while (true) {
+            try (ServerSocket srv = new ServerSocket(0)) {
+                return srv.getLocalPort();
+            } catch (IOException e) {
+                // Retry
+            }
+            Thread.sleep(5);
+        }
     }
-  }
+    public static boolean waitForServerToStart(int port) throws InterruptedException {
+        Socket socket = null;
+        for (int i = 0; i < 50; i++) {
+            try {
+                socket = new Socket("localhost", port);
+                if (socket.isConnected()) {
+                    return true;
+                }
+            } catch (IOException ignore) {
+                // Ignore
+            } finally {
+                if (socket != null) {
+                    try {
+                        socket.close();
+                    } catch (IOException ignore) {
+                    }
+                }
+            }
+            Thread.sleep(10);
+        }
+        return false;
+    }
 }

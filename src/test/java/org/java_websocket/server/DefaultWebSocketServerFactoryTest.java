@@ -1,7 +1,5 @@
 package org.java_websocket.server;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
 
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -14,7 +12,10 @@ import org.java_websocket.WebSocketImpl;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.handshake.Handshakedata;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 public class DefaultWebSocketServerFactoryTest {
 
@@ -24,10 +25,10 @@ public class DefaultWebSocketServerFactoryTest {
     CustomWebSocketAdapter webSocketAdapter = new CustomWebSocketAdapter();
     WebSocketImpl webSocketImpl = webSocketServerFactory
         .createWebSocket(webSocketAdapter, new Draft_6455());
-    assertNotNull("webSocketImpl != null", webSocketImpl);
+    assertNotNull(webSocketImpl, "webSocketImpl != null");
     webSocketImpl = webSocketServerFactory
         .createWebSocket(webSocketAdapter, Collections.<Draft>singletonList(new Draft_6455()));
-    assertNotNull("webSocketImpl != null", webSocketImpl);
+    assertNotNull(webSocketImpl, "webSocketImpl != null");
   }
 
   @Test
@@ -35,7 +36,7 @@ public class DefaultWebSocketServerFactoryTest {
     DefaultWebSocketServerFactory webSocketServerFactory = new DefaultWebSocketServerFactory();
     SocketChannel channel = (new Socket()).getChannel();
     SocketChannel result = webSocketServerFactory.wrapChannel(channel, null);
-    assertSame("channel == result", channel, result);
+    assertSame(channel, result, "channel == result");
   }
 
   @Test
