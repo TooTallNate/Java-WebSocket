@@ -35,6 +35,7 @@ import java.util.concurrent.CountDownLatch;
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketImpl;
 import org.java_websocket.WrappedByteChannel;
+import org.java_websocket.WrappedMoreWrittenChannel;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.handshake.ServerHandshake;
@@ -106,7 +107,7 @@ public class Issue900Test {
     closeCalledLatch.await();
   }
 
-  class ExceptionThrowingByteChannel implements WrappedByteChannel {
+  class ExceptionThrowingByteChannel implements WrappedByteChannel, WrappedMoreWrittenChannel {
 
     @Override
     public boolean isNeedWrite() {
