@@ -40,9 +40,10 @@ import org.java_websocket.SSLSocketChannel2;
 import org.java_websocket.WebSocketAdapter;
 import org.java_websocket.WebSocketImpl;
 import org.java_websocket.WebSocketServerFactory;
+import org.java_websocket.WebSocketServerFactoryClosing;
 import org.java_websocket.drafts.Draft;
 
-public class DefaultSSLWebSocketServerFactory implements WebSocketServerFactory {
+public class DefaultSSLWebSocketServerFactory implements WebSocketServerFactory, WebSocketServerFactoryClosing {
 
   protected SSLContext sslcontext;
   protected ExecutorService exec;

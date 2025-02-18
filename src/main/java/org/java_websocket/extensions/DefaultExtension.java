@@ -39,16 +39,6 @@ import org.java_websocket.framing.Framedata;
 public class DefaultExtension implements IExtension {
 
   @Override
-  public void decodeFrame(Framedata inputFrame) throws InvalidDataException {
-    //Nothing to do here
-  }
-
-  @Override
-  public void encodeFrame(Framedata inputFrame) {
-    //Nothing to do here
-  }
-
-  @Override
   public boolean acceptProvidedExtensionAsServer(String inputExtension) {
     return true;
   }
@@ -80,10 +70,6 @@ public class DefaultExtension implements IExtension {
   @Override
   public IExtension copyInstance() {
     return new DefaultExtension();
-  }
-
-  public void reset() {
-    //Nothing to do here. No internal stats.
   }
 
   @Override

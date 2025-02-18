@@ -49,9 +49,5 @@ public class DefaultWebSocketServerFactory implements WebSocketServerFactory {
   public SocketChannel wrapChannel(SocketChannel channel, SelectionKey key) {
     return channel;
   }
-
-  @Override
-  public void close() {
-    //Nothing to do for a normal ws factory
-  }
+  
 }
