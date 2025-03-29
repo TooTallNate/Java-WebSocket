@@ -92,6 +92,7 @@ public abstract class Draft {
     return b == null ? null : Charsetfunctions.stringAscii(b.array(), 0, b.limit());
   }
 
+
   public static HandshakeBuilder translateHandshakeHttp(ByteBuffer buf, Role role)
       throws InvalidHandshakeException {
     HandshakeBuilder handshake;
