@@ -31,6 +31,7 @@ import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.exceptions.InvalidFrameException;
 import org.java_websocket.util.ByteBufferUtils;
 import org.java_websocket.util.Charsetfunctions;
+import org.java_websocket.util.ValidationUtils;
 
 /**
  * Class to represent a close frame
@@ -135,22 +136,29 @@ public class CloseFrame extends ControlFrame {
     code = CloseCodeConstants.NOCODE;
     reason = "";
     payload.mark();
+
     if (payload.remaining() == 0) {
       code = CloseCodeConstants.NORMAL;
     } else if (payload.remaining() == 1) {
       code = CloseCodeConstants.PROTOCOL_ERROR;
     } else {
       if (payload.remaining() >= 2) {
+        // Read close code
         ByteBuffer bb = ByteBuffer.allocate(4);
         bb.position(2);
         bb.putShort(payload.getShort());
         bb.position(0);
         code = bb.getInt();
       }
+
       payload.reset();
       try {
-        int mark = payload.position();// because stringUtf8 also creates a mark
-        validateUtf8(payload, mark);
+        int mark = payload.position();
+        reason = ValidationUtils.decodeUtf8(
+                payload,
+                mark + 2,  // Skip 2-byte close code
+                mark
+        );
       } catch (InvalidDataException e) {
         code = CloseCodeConstants.NO_UTF8;
         reason = null;
@@ -158,23 +166,7 @@ public class CloseFrame extends ControlFrame {
     }
   }
 
-  /**
-   * Validate the payload to valid utf8
-   *
-   * @param mark    the current mark
-   * @param payload the current payload
-   * @throws InvalidDataException the current payload is not a valid utf8
-   */
-  private void validateUtf8(ByteBuffer payload, int mark) throws InvalidDataException {
-    try {
-      payload.position(payload.position() + 2);
-      reason = Charsetfunctions.stringUtf8(payload);
-    } catch (IllegalArgumentException e) {
-      throw new InvalidDataException(CloseCodeConstants.NO_UTF8);
-    } finally {
-      payload.position(mark);
-    }
-  }
+
 
   /**
    * Update the payload to represent the close code and the reason
