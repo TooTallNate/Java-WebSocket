@@ -150,6 +150,7 @@ public class CloseFrame extends ControlFrame {
   public static final int FLASHPOLICY = -3;
 
 
+
   /**
    * The close code used in this close frame
    */
