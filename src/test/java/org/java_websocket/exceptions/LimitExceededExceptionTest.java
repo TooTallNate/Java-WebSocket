@@ -25,6 +25,7 @@
 
 package org.java_websocket.exceptions;
 
+import org.java_websocket.framing.CloseCodeConstants;
 import org.java_websocket.framing.CloseFrame;
 import org.junit.jupiter.api.Test;
 
@@ -38,11 +39,11 @@ public class LimitExceededExceptionTest {
   @Test
   public void testConstructor() {
     LimitExceededException limitExceededException = new LimitExceededException();
-    assertEquals(CloseFrame.TOOBIG,
+    assertEquals(CloseCodeConstants.TOOBIG,
         limitExceededException.getCloseCode(), "The close code has to be TOOBIG");
       assertNull(limitExceededException.getMessage(), "The message has to be empty");
     limitExceededException = new LimitExceededException("Message");
-    assertEquals(CloseFrame.TOOBIG,
+    assertEquals(CloseCodeConstants.TOOBIG,
         limitExceededException.getCloseCode(), "The close code has to be TOOBIG");
     assertEquals( "Message",
         limitExceededException.getMessage(), "The message has to be the argument");

@@ -25,6 +25,7 @@
 
 package org.java_websocket.exceptions;
 
+import org.java_websocket.framing.CloseCodeConstants;
 import org.java_websocket.framing.CloseFrame;
 
 /**
@@ -58,7 +59,7 @@ public class LimitExceededException extends InvalidDataException {
    * @param limit the allowed size which was not enough
    */
   public LimitExceededException(int limit) {
-    super(CloseFrame.TOOBIG);
+    super(CloseCodeConstants.TOOBIG);
     this.limit = limit;
   }
 
@@ -70,7 +71,7 @@ public class LimitExceededException extends InvalidDataException {
    * @param limit the allowed size which was not enough
    */
   public LimitExceededException(String s, int limit) {
-    super(CloseFrame.TOOBIG, s);
+    super(CloseCodeConstants.TOOBIG, s);
     this.limit = limit;
   }
 

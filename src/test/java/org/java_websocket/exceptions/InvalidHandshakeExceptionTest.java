@@ -25,6 +25,7 @@
 
 package org.java_websocket.exceptions;
 
+import org.java_websocket.framing.CloseCodeConstants;
 import org.java_websocket.framing.CloseFrame;
 import org.junit.jupiter.api.Test;
 
@@ -38,22 +39,22 @@ public class InvalidHandshakeExceptionTest {
   @Test
   public void testConstructor() {
     InvalidHandshakeException invalidHandshakeException = new InvalidHandshakeException();
-    assertEquals( CloseFrame.PROTOCOL_ERROR,
+    assertEquals( CloseCodeConstants.PROTOCOL_ERROR,
         invalidHandshakeException.getCloseCode(), "The close code has to be PROTOCOL_ERROR");
     invalidHandshakeException = new InvalidHandshakeException("Message");
-    assertEquals( CloseFrame.PROTOCOL_ERROR,
+    assertEquals( CloseCodeConstants.PROTOCOL_ERROR,
         invalidHandshakeException.getCloseCode(), "The close code has to be PROTOCOL_ERROR");
     assertEquals( "Message",
         invalidHandshakeException.getMessage(), "The message has to be the argument");
     Exception e = new Exception();
     invalidHandshakeException = new InvalidHandshakeException("Message", e);
-    assertEquals(CloseFrame.PROTOCOL_ERROR,
+    assertEquals(CloseCodeConstants.PROTOCOL_ERROR,
         invalidHandshakeException.getCloseCode(), "The close code has to be PROTOCOL_ERROR");
     assertEquals( "Message",
         invalidHandshakeException.getMessage(), "The message has to be the argument");
     assertEquals(e, invalidHandshakeException.getCause(), "The throwable has to be the argument");
     invalidHandshakeException = new InvalidHandshakeException(e);
-    assertEquals(CloseFrame.PROTOCOL_ERROR,
+    assertEquals(CloseCodeConstants.PROTOCOL_ERROR,
         invalidHandshakeException.getCloseCode(), "The close code has to be PROTOCOL_ERROR");
     assertEquals(e, invalidHandshakeException.getCause(), "The throwable has to be the argument");
 

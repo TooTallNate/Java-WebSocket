@@ -25,6 +25,7 @@
 
 package org.java_websocket.exceptions;
 
+import org.java_websocket.framing.CloseCodeConstants;
 import org.java_websocket.framing.CloseFrame;
 
 /**
@@ -43,7 +44,7 @@ public class InvalidHandshakeException extends InvalidDataException {
    * calling InvalidDataException with closecode PROTOCOL_ERROR
    */
   public InvalidHandshakeException() {
-    super(CloseFrame.PROTOCOL_ERROR);
+    super(CloseCodeConstants.PROTOCOL_ERROR);
   }
 
   /**
@@ -55,7 +56,7 @@ public class InvalidHandshakeException extends InvalidDataException {
    * @param t the throwable causing this exception.
    */
   public InvalidHandshakeException(String s, Throwable t) {
-    super(CloseFrame.PROTOCOL_ERROR, s, t);
+    super(CloseCodeConstants.PROTOCOL_ERROR, s, t);
   }
 
   /**
@@ -66,7 +67,7 @@ public class InvalidHandshakeException extends InvalidDataException {
    * @param s the detail message.
    */
   public InvalidHandshakeException(String s) {
-    super(CloseFrame.PROTOCOL_ERROR, s);
+    super(CloseCodeConstants.PROTOCOL_ERROR, s);
   }
 
   /**
@@ -77,7 +78,7 @@ public class InvalidHandshakeException extends InvalidDataException {
    * @param t the throwable causing this exception.
    */
   public InvalidHandshakeException(Throwable t) {
-    super(CloseFrame.PROTOCOL_ERROR, t);
+    super(CloseCodeConstants.PROTOCOL_ERROR, t);
   }
 
 }

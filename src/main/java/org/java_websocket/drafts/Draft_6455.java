@@ -52,11 +52,7 @@ import org.java_websocket.exceptions.LimitExceededException;
 import org.java_websocket.exceptions.NotSendableException;
 import org.java_websocket.extensions.DefaultExtension;
 import org.java_websocket.extensions.IExtension;
-import org.java_websocket.framing.BinaryFrame;
-import org.java_websocket.framing.CloseFrame;
-import org.java_websocket.framing.Framedata;
-import org.java_websocket.framing.FramedataImpl1;
-import org.java_websocket.framing.TextFrame;
+import org.java_websocket.framing.*;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.handshake.ClientHandshakeBuilder;
 import org.java_websocket.handshake.HandshakeBuilder;
@@ -903,7 +899,7 @@ public class Draft_6455 extends Draft {
         webSocketImpl.getWebSocketListener().onWebsocketPong(webSocketImpl, frame);
         break;
       default:
-        throw new InvalidDataException(CloseFrame.PROTOCOL_ERROR, "Invalid control frame");
+        throw new InvalidDataException(CloseCodeConstants.PROTOCOL_ERROR, "Invalid control frame");
     }
   }
 
@@ -914,7 +910,7 @@ public class Draft_6455 extends Draft {
     } else if (curop == Opcode.BINARY) {
       processFrameBinary(webSocketImpl, frame);
     } else {
-      throw new InvalidDataException(CloseFrame.PROTOCOL_ERROR, "Invalid data frame");
+      throw new InvalidDataException(CloseCodeConstants.PROTOCOL_ERROR, "Invalid data frame");
     }
   }
 
@@ -935,7 +931,7 @@ public class Draft_6455 extends Draft {
     }
 
     if (currentContinuousFrame != null) {
-      throw new InvalidDataException(CloseFrame.PROTOCOL_ERROR,
+      throw new InvalidDataException(CloseCodeConstants.PROTOCOL_ERROR,
               "Continuous frame sequence not completed.");
     }
 
@@ -958,13 +954,13 @@ public class Draft_6455 extends Draft {
       processFrameIsFin(webSocketImpl, frame);
     } else if (currentContinuousFrame == null) {
       log.error("Protocol error: Continuous frame sequence was not started.");
-      throw new InvalidDataException(CloseFrame.PROTOCOL_ERROR,
+      throw new InvalidDataException(CloseCodeConstants.PROTOCOL_ERROR,
           "Continuous frame sequence was not started.");
     }
     //Check if the whole payload is valid utf8, when the opcode indicates a text
     if (curop == Opcode.TEXT && !Charsetfunctions.isValidUTF8(frame.getPayloadData())) {
       log.error("Protocol error: Payload is not UTF8");
-      throw new InvalidDataException(CloseFrame.NO_UTF8);
+      throw new InvalidDataException(CloseCodeConstants.NO_UTF8);
     }
     //Checking if the current continuous frame contains a correct payload with the other frames combined
     if (curop == Opcode.CONTINUOUS && currentContinuousFrame != null) {
@@ -1025,7 +1021,7 @@ public class Draft_6455 extends Draft {
       throws InvalidDataException {
     if (currentContinuousFrame == null) {
       log.trace("Protocol error: Previous continuous frame sequence not completed.");
-      throw new InvalidDataException(CloseFrame.PROTOCOL_ERROR,
+      throw new InvalidDataException(CloseCodeConstants.PROTOCOL_ERROR,
           "Continuous frame sequence was not started.");
     }
     addToBufferList(frame.getPayloadData());
@@ -1062,7 +1058,7 @@ public class Draft_6455 extends Draft {
   private void processFrameIsNotFin(Framedata frame) throws InvalidDataException {
     if (currentContinuousFrame != null) {
       log.trace("Protocol error: Previous continuous frame sequence not completed.");
-      throw new InvalidDataException(CloseFrame.PROTOCOL_ERROR,
+      throw new InvalidDataException(CloseCodeConstants.PROTOCOL_ERROR,
           "Previous continuous frame sequence not completed.");
     }
     currentContinuousFrame = frame;
@@ -1077,7 +1073,7 @@ public class Draft_6455 extends Draft {
    * @param frame         the frame
    */
   private void processFrameClosing(WebSocketImpl webSocketImpl, Framedata frame) {
-    int code = CloseFrame.NOCODE;
+    int code = CloseCodeConstants.NOCODE;
     String reason = "";
     if (frame instanceof CloseFrame) {
       CloseFrame cf = (CloseFrame) frame;

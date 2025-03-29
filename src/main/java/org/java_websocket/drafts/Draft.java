@@ -38,12 +38,7 @@ import org.java_websocket.enums.Role;
 import org.java_websocket.exceptions.IncompleteHandshakeException;
 import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.exceptions.InvalidHandshakeException;
-import org.java_websocket.framing.BinaryFrame;
-import org.java_websocket.framing.CloseFrame;
-import org.java_websocket.framing.ContinuousFrame;
-import org.java_websocket.framing.DataFrame;
-import org.java_websocket.framing.Framedata;
-import org.java_websocket.framing.TextFrame;
+import org.java_websocket.framing.*;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.handshake.ClientHandshakeBuilder;
 import org.java_websocket.handshake.HandshakeBuilder;
@@ -322,7 +317,7 @@ public abstract class Draft {
 
   public int checkAlloc(int bytecount) throws InvalidDataException {
     if (bytecount < 0) {
-      throw new InvalidDataException(CloseFrame.PROTOCOL_ERROR, "Negative count");
+      throw new InvalidDataException(CloseCodeConstants.PROTOCOL_ERROR, "Negative count");
     }
     return bytecount;
   }

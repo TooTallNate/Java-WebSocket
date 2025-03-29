@@ -31,6 +31,7 @@ import java.net.URI;
 import java.util.concurrent.CountDownLatch;
 import org.java_websocket.WebSocket;
 import org.java_websocket.client.WebSocketClient;
+import org.java_websocket.framing.CloseCodeConstants;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.handshake.ServerHandshake;
@@ -127,7 +128,7 @@ public class Issue677Test {
     assertTrue(webSocket0.isClosed(), "webSocket.isClosed()");
     webSocket1.connectBlocking();
     assertTrue(webSocket1.isOpen(), "webSocket.isOpen()");
-    webSocket1.closeConnection(CloseFrame.ABNORMAL_CLOSE, "Abnormal close!");
+    webSocket1.closeConnection(CloseCodeConstants.ABNORMAL_CLOSE, "Abnormal close!");
     assertTrue(webSocket1.isClosed(), "webSocket.isClosed()");
     server.stop();
   }

@@ -26,6 +26,7 @@
 package org.java_websocket.exceptions;
 
 
+import org.java_websocket.framing.CloseCodeConstants;
 import org.java_websocket.framing.CloseFrame;
 import org.junit.jupiter.api.Test;
 
@@ -39,22 +40,22 @@ public class InvalidFrameExceptionTest {
   @Test
   public void testConstructor() {
     InvalidFrameException invalidFrameException = new InvalidFrameException();
-    assertEquals( CloseFrame.PROTOCOL_ERROR,
+    assertEquals( CloseCodeConstants.PROTOCOL_ERROR,
         invalidFrameException.getCloseCode(), "The close code has to be PROTOCOL_ERROR");
     invalidFrameException = new InvalidFrameException("Message");
-    assertEquals(CloseFrame.PROTOCOL_ERROR,
+    assertEquals(CloseCodeConstants.PROTOCOL_ERROR,
         invalidFrameException.getCloseCode(), "The close code has to be PROTOCOL_ERROR");
     assertEquals("Message",
         invalidFrameException.getMessage(), "The message has to be the argument");
     Exception e = new Exception();
     invalidFrameException = new InvalidFrameException("Message", e);
-    assertEquals(CloseFrame.PROTOCOL_ERROR,
+    assertEquals(CloseCodeConstants.PROTOCOL_ERROR,
         invalidFrameException.getCloseCode(), "The close code has to be PROTOCOL_ERROR");
     assertEquals("Message",
         invalidFrameException.getMessage(), "The message has to be the argument");
     assertEquals(e, invalidFrameException.getCause(), "The throwable has to be the argument");
     invalidFrameException = new InvalidFrameException(e);
-    assertEquals(CloseFrame.PROTOCOL_ERROR,
+    assertEquals(CloseCodeConstants.PROTOCOL_ERROR,
         invalidFrameException.getCloseCode(), "The close code has to be PROTOCOL_ERROR");
     assertEquals(e, invalidFrameException.getCause(), "The throwable has to be the argument");
   }

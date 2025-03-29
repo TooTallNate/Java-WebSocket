@@ -13,11 +13,7 @@ import org.java_websocket.exceptions.InvalidFrameException;
 import org.java_websocket.extensions.CompressionExtension;
 import org.java_websocket.extensions.ExtensionRequestData;
 import org.java_websocket.extensions.IExtension;
-import org.java_websocket.framing.CloseFrame;
-import org.java_websocket.framing.ContinuousFrame;
-import org.java_websocket.framing.DataFrame;
-import org.java_websocket.framing.Framedata;
-import org.java_websocket.framing.FramedataImpl1;
+import org.java_websocket.framing.*;
 
 /**
  * PerMessage Deflate Extension (<a href="https://tools.ietf.org/html/rfc7692#section-7">7&#46; The
@@ -160,7 +156,7 @@ public class PerMessageDeflateExtension extends CompressionExtension {
 
     // RSV1 bit must be set only for the first frame.
     if (inputFrame.getOpcode() == Opcode.CONTINUOUS && inputFrame.isRSV1()) {
-      throw new InvalidDataException(CloseFrame.POLICY_VALIDATION,
+      throw new InvalidDataException(CloseCodeConstants.POLICY_VALIDATION,
           "RSV1 bit can only be set for the first frame.");
     }
 
@@ -190,7 +186,7 @@ public class PerMessageDeflateExtension extends CompressionExtension {
         }
       }
     } catch (DataFormatException e) {
-      throw new InvalidDataException(CloseFrame.POLICY_VALIDATION, e.getMessage());
+      throw new InvalidDataException(CloseCodeConstants.POLICY_VALIDATION, e.getMessage());
     }
 
     // Set frames payload to the new decompressed data.

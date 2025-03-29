@@ -63,6 +63,7 @@ import org.java_websocket.WrappedByteChannel;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.exceptions.WebsocketNotConnectedException;
 import org.java_websocket.exceptions.WrappedIOException;
+import org.java_websocket.framing.CloseCodeConstants;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.handshake.ClientHandshake;
@@ -305,7 +306,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
     }
 
     for (WebSocket ws : socketsToClose) {
-      ws.close(CloseFrame.GOING_AWAY, closeMessage);
+      ws.close(CloseCodeConstants.GOING_AWAY, closeMessage);
     }
 
     wsf.close();
@@ -718,7 +719,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
       key.cancel();
     }
     if (conn != null) {
-      conn.closeConnection(CloseFrame.ABNORMAL_CLOSE, ex.getMessage());
+      conn.closeConnection(CloseCodeConstants.ABNORMAL_CLOSE, ex.getMessage());
     } else if (key != null) {
       SelectableChannel channel = key.channel();
       if (channel != null && channel
@@ -834,7 +835,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
       }
     } else {
       // This case will happen when a new connection gets ready while the server is already stopping.
-      ws.close(CloseFrame.GOING_AWAY);
+      ws.close(CloseCodeConstants.GOING_AWAY);
       return true;// for consistency sake we will make sure that both onOpen will be called
     }
   }

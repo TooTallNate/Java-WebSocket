@@ -31,6 +31,7 @@ import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import org.java_websocket.exceptions.InvalidDataException;
+import org.java_websocket.framing.CloseCodeConstants;
 import org.java_websocket.framing.CloseFrame;
 
 public class Charsetfunctions {
@@ -79,7 +80,7 @@ public class Charsetfunctions {
       s = decode.decode(bytes).toString();
       bytes.reset();
     } catch (CharacterCodingException e) {
-      throw new InvalidDataException(CloseFrame.NO_UTF8, e);
+      throw new InvalidDataException(CloseCodeConstants.NO_UTF8, e);
     }
     return s;
   }

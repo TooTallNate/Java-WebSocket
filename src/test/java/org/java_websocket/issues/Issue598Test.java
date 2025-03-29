@@ -37,6 +37,7 @@ import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.enums.Opcode;
 import org.java_websocket.extensions.IExtension;
+import org.java_websocket.framing.CloseCodeConstants;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.handshake.ServerHandshake;
@@ -102,7 +103,7 @@ public class Issue598Test {
 
       @Override
       public void onClose(WebSocket conn, int code, String reason, boolean remote) {
-        if (code == CloseFrame.TOOBIG) {
+        if (code == CloseCodeConstants.TOOBIG) {
           countCloseDownLatch.countDown();
         }
       }

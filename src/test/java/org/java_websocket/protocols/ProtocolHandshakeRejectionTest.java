@@ -40,6 +40,7 @@ import java.util.concurrent.CountDownLatch;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.extensions.IExtension;
+import org.java_websocket.framing.CloseCodeConstants;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.handshake.ServerHandshake;
 import org.java_websocket.util.Base64;
@@ -522,7 +523,7 @@ public class ProtocolHandshakeRejectionTest {
                     case 25:
                     case 26:
                         countDownLatch.countDown();
-                        closeConnection(CloseFrame.ABNORMAL_CLOSE, "Bye");
+                        closeConnection(CloseCodeConstants.ABNORMAL_CLOSE, "Bye");
                         break;
                     default:
                         fail("There should not be a connection!");
@@ -582,7 +583,7 @@ public class ProtocolHandshakeRejectionTest {
                     default:
                         fail();
                 }
-                if (code == CloseFrame.ABNORMAL_CLOSE) {
+                if (code == CloseCodeConstants.ABNORMAL_CLOSE) {
                     switch (finalI) {
                         case 0:
                         case 1:
@@ -607,7 +608,7 @@ public class ProtocolHandshakeRejectionTest {
                             return;
                     }
                 }
-                if (code != CloseFrame.PROTOCOL_ERROR) {
+                if (code != CloseCodeConstants.PROTOCOL_ERROR) {
                     fail("There should be a protocol error! " + finalI + " " + code);
                 } else if (reason.endsWith("refuses handshake")) {
                     countDownLatch.countDown();

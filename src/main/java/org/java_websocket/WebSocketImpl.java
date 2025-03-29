@@ -49,6 +49,7 @@ import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.exceptions.InvalidHandshakeException;
 import org.java_websocket.exceptions.LimitExceededException;
 import org.java_websocket.exceptions.WebsocketNotConnectedException;
+import org.java_websocket.framing.CloseCodeConstants;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.framing.PingFrame;
@@ -277,7 +278,7 @@ public class WebSocketImpl implements WebSocket {
                 if (!(tmphandshake instanceof ClientHandshake)) {
                   log.trace("Closing due to wrong handshake");
                   closeConnectionDueToWrongHandshake(
-                      new InvalidDataException(CloseFrame.PROTOCOL_ERROR, "wrong http function"));
+                      new InvalidDataException(CloseCodeConstants.PROTOCOL_ERROR, "wrong http function"));
                   return false;
                 }
                 ClientHandshake handshake = (ClientHandshake) tmphandshake;
@@ -310,7 +311,7 @@ public class WebSocketImpl implements WebSocket {
             if (draft == null) {
               log.trace("Closing due to protocol error: no draft matches");
               closeConnectionDueToWrongHandshake(
-                  new InvalidDataException(CloseFrame.PROTOCOL_ERROR, "no draft matches"));
+                  new InvalidDataException(CloseCodeConstants.PROTOCOL_ERROR, "no draft matches"));
             }
             return false;
           } else {
@@ -318,7 +319,7 @@ public class WebSocketImpl implements WebSocket {
             Handshakedata tmphandshake = draft.translateHandshake(socketBuffer);
             if (!(tmphandshake instanceof ClientHandshake)) {
               log.trace("Closing due to protocol error: wrong http function");
-              flushAndClose(CloseFrame.PROTOCOL_ERROR, "wrong http function", false);
+              flushAndClose(CloseCodeConstants.PROTOCOL_ERROR, "wrong http function", false);
               return false;
             }
             ClientHandshake handshake = (ClientHandshake) tmphandshake;
@@ -329,7 +330,7 @@ public class WebSocketImpl implements WebSocket {
               return true;
             } else {
               log.trace("Closing due to protocol error: the handshake did finally not match");
-              close(CloseFrame.PROTOCOL_ERROR, "the handshake did finally not match");
+              close(CloseCodeConstants.PROTOCOL_ERROR, "the handshake did finally not match");
             }
             return false;
           }
@@ -338,7 +339,7 @@ public class WebSocketImpl implements WebSocket {
           Handshakedata tmphandshake = draft.translateHandshake(socketBuffer);
           if (!(tmphandshake instanceof ServerHandshake)) {
             log.trace("Closing due to protocol error: wrong http function");
-            flushAndClose(CloseFrame.PROTOCOL_ERROR, "wrong http function", false);
+            flushAndClose(CloseCodeConstants.PROTOCOL_ERROR, "wrong http function", false);
             return false;
           }
           ServerHandshake handshake = (ServerHandshake) tmphandshake;
@@ -353,14 +354,14 @@ public class WebSocketImpl implements WebSocket {
             } catch (RuntimeException e) {
               log.error("Closing since client was never connected", e);
               wsl.onWebsocketError(this, e);
-              flushAndClose(CloseFrame.NEVER_CONNECTED, e.getMessage(), false);
+              flushAndClose(CloseCodeConstants.NEVER_CONNECTED, e.getMessage(), false);
               return false;
             }
             open(handshake);
             return true;
           } else {
             log.trace("Closing due to protocol error: draft {} refuses handshake", draft);
-            close(CloseFrame.PROTOCOL_ERROR, "draft " + draft + " refuses handshake");
+            close(CloseCodeConstants.PROTOCOL_ERROR, "draft " + draft + " refuses handshake");
           }
         }
       } catch (InvalidHandshakeException e) {
@@ -414,7 +415,7 @@ public class WebSocketImpl implements WebSocket {
       Exception exception = new Exception(e);
       wsl.onWebsocketError(this, exception);
       String errorMessage = "Got error " + e.getClass().getName();
-      close(CloseFrame.UNEXPECTED_CONDITION, errorMessage);
+      close(CloseCodeConstants.UNEXPECTED_CONDITION, errorMessage);
     }
   }
 
@@ -435,7 +436,7 @@ public class WebSocketImpl implements WebSocket {
    */
   private void closeConnectionDueToInternalServerError(RuntimeException exception) {
     write(generateHttpResponseDueToError(500));
-    flushAndClose(CloseFrame.NEVER_CONNECTED, exception.getMessage(), false);
+    flushAndClose(CloseCodeConstants.NEVER_CONNECTED, exception.getMessage(), false);
   }
 
   /**
@@ -463,7 +464,7 @@ public class WebSocketImpl implements WebSocket {
   public synchronized void close(int code, String message, boolean remote) {
     if (readyState != ReadyState.CLOSING && readyState != ReadyState.CLOSED) {
       if (readyState == ReadyState.OPEN) {
-        if (code == CloseFrame.ABNORMAL_CLOSE) {
+        if (code == CloseCodeConstants.ABNORMAL_CLOSE) {
           assert (!remote);
           readyState = ReadyState.CLOSING;
           flushAndClose(code, message, false);
@@ -488,17 +489,17 @@ public class WebSocketImpl implements WebSocket {
           } catch (InvalidDataException e) {
             log.error("generated frame is invalid", e);
             wsl.onWebsocketError(this, e);
-            flushAndClose(CloseFrame.ABNORMAL_CLOSE, "generated frame is invalid", false);
+            flushAndClose(CloseCodeConstants.ABNORMAL_CLOSE, "generated frame is invalid", false);
           }
         }
         flushAndClose(code, message, remote);
-      } else if (code == CloseFrame.FLASHPOLICY) {
+      } else if (code == CloseCodeConstants.FLASHPOLICY) {
         assert (remote);
-        flushAndClose(CloseFrame.FLASHPOLICY, message, true);
-      } else if (code == CloseFrame.PROTOCOL_ERROR) { // this endpoint found a PROTOCOL_ERROR
+        flushAndClose(CloseCodeConstants.FLASHPOLICY, message, true);
+      } else if (code == CloseCodeConstants.PROTOCOL_ERROR) { // this endpoint found a PROTOCOL_ERROR
         flushAndClose(code, message, remote);
       } else {
-        flushAndClose(CloseFrame.NEVER_CONNECTED, message, false);
+        flushAndClose(CloseCodeConstants.NEVER_CONNECTED, message, false);
       }
       readyState = ReadyState.CLOSING;
       tmpHandshakeBytes = null;
@@ -533,7 +534,7 @@ public class WebSocketImpl implements WebSocket {
     }
     //Methods like eot() call this method without calling onClose(). Due to that reason we have to adjust the ReadyState manually
     if (readyState == ReadyState.OPEN) {
-      if (code == CloseFrame.ABNORMAL_CLOSE) {
+      if (code == CloseCodeConstants.ABNORMAL_CLOSE) {
         readyState = ReadyState.CLOSING;
       }
     }
@@ -607,19 +608,19 @@ public class WebSocketImpl implements WebSocket {
 
   public void eot() {
     if (readyState == ReadyState.NOT_YET_CONNECTED) {
-      closeConnection(CloseFrame.NEVER_CONNECTED, true);
+      closeConnection(CloseCodeConstants.NEVER_CONNECTED, true);
     } else if (flushandclosestate) {
       closeConnection(closecode, closemessage, closedremotely);
     } else if (draft.getCloseHandshakeType() == CloseHandshakeType.NONE) {
-      closeConnection(CloseFrame.NORMAL, true);
+      closeConnection(CloseCodeConstants.NORMAL, true);
     } else if (draft.getCloseHandshakeType() == CloseHandshakeType.ONEWAY) {
       if (role == Role.SERVER) {
-        closeConnection(CloseFrame.ABNORMAL_CLOSE, true);
+        closeConnection(CloseCodeConstants.ABNORMAL_CLOSE, true);
       } else {
-        closeConnection(CloseFrame.NORMAL, true);
+        closeConnection(CloseCodeConstants.NORMAL, true);
       }
     } else {
-      closeConnection(CloseFrame.ABNORMAL_CLOSE, true);
+      closeConnection(CloseCodeConstants.ABNORMAL_CLOSE, true);
     }
   }
 
@@ -826,7 +827,7 @@ public class WebSocketImpl implements WebSocket {
 
   @Override
   public void close() {
-    close(CloseFrame.NORMAL);
+    close(CloseCodeConstants.NORMAL);
   }
 
   @Override

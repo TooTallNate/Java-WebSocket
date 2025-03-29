@@ -110,31 +110,31 @@ public class CloseFrameTest {
             //Fine
         }
         frame.setRSV3(false);
-        frame.setCode(CloseFrame.NORMAL);
+        frame.setCode(CloseCodeConstants.NORMAL);
         try {
             frame.isValid();
         } catch (InvalidDataException e) {
             fail("InvalidDataException should not be thrown");
         }
-        frame.setCode(CloseFrame.GOING_AWAY);
+        frame.setCode(CloseCodeConstants.GOING_AWAY);
         try {
             frame.isValid();
         } catch (InvalidDataException e) {
             fail("InvalidDataException should not be thrown");
         }
-        frame.setCode(CloseFrame.PROTOCOL_ERROR);
+        frame.setCode(CloseCodeConstants.PROTOCOL_ERROR);
         try {
             frame.isValid();
         } catch (InvalidDataException e) {
             fail("InvalidDataException should not be thrown");
         }
-        frame.setCode(CloseFrame.REFUSE);
+        frame.setCode(CloseCodeConstants.REFUSE);
         try {
             frame.isValid();
         } catch (InvalidDataException e) {
             fail("InvalidDataException should not be thrown");
         }
-        frame.setCode(CloseFrame.NOCODE);
+        frame.setCode(CloseCodeConstants.NOCODE);
         assertEquals(0, frame.getPayloadData().capacity());
         try {
             frame.isValid();
@@ -142,91 +142,91 @@ public class CloseFrameTest {
         } catch (InvalidDataException e) {
             //fine
         }
-        frame.setCode(CloseFrame.ABNORMAL_CLOSE);
+        frame.setCode(CloseCodeConstants.ABNORMAL_CLOSE);
         try {
             frame.isValid();
             fail("InvalidDataException should be thrown");
         } catch (InvalidDataException e) {
             //fine
         }
-        frame.setCode(CloseFrame.POLICY_VALIDATION);
+        frame.setCode(CloseCodeConstants.POLICY_VALIDATION);
         try {
             frame.isValid();
         } catch (InvalidDataException e) {
             fail("InvalidDataException should not be thrown");
         }
-        frame.setCode(CloseFrame.TOOBIG);
+        frame.setCode(CloseCodeConstants.TOOBIG);
         try {
             frame.isValid();
         } catch (InvalidDataException e) {
             fail("InvalidDataException should not be thrown");
         }
-        frame.setCode(CloseFrame.EXTENSION);
+        frame.setCode(CloseCodeConstants.EXTENSION);
         try {
             frame.isValid();
         } catch (InvalidDataException e) {
             fail("InvalidDataException should not be thrown");
         }
-        frame.setCode(CloseFrame.UNEXPECTED_CONDITION);
+        frame.setCode(CloseCodeConstants.UNEXPECTED_CONDITION);
         try {
             frame.isValid();
         } catch (InvalidDataException e) {
             fail("InvalidDataException should not be thrown");
         }
-        frame.setCode(CloseFrame.SERVICE_RESTART);
+        frame.setCode(CloseCodeConstants.SERVICE_RESTART);
         try {
             frame.isValid();
         } catch (InvalidDataException e) {
             fail("InvalidDataException should not be thrown");
         }
-        frame.setCode(CloseFrame.TRY_AGAIN_LATER);
+        frame.setCode(CloseCodeConstants.TRY_AGAIN_LATER);
         try {
             frame.isValid();
         } catch (InvalidDataException e) {
             fail("InvalidDataException should not be thrown");
         }
-        frame.setCode(CloseFrame.BAD_GATEWAY);
+        frame.setCode(CloseCodeConstants.BAD_GATEWAY);
         try {
             frame.isValid();
         } catch (InvalidDataException e) {
             fail("InvalidDataException should not be thrown");
         }
-        frame.setCode(CloseFrame.TLS_ERROR);
+        frame.setCode(CloseCodeConstants.TLS_ERROR);
         try {
             frame.isValid();
             fail("InvalidDataException should be thrown");
         } catch (InvalidDataException e) {
             //fine
         }
-        frame.setCode(CloseFrame.NEVER_CONNECTED);
+        frame.setCode(CloseCodeConstants.NEVER_CONNECTED);
         try {
             frame.isValid();
             fail("InvalidDataException should be thrown");
         } catch (InvalidDataException e) {
             //fine
         }
-        frame.setCode(CloseFrame.BUGGYCLOSE);
+        frame.setCode(CloseCodeConstants.BUGGYCLOSE);
         try {
             frame.isValid();
             fail("InvalidDataException should be thrown");
         } catch (InvalidDataException e) {
             //fine
         }
-        frame.setCode(CloseFrame.FLASHPOLICY);
+        frame.setCode(CloseCodeConstants.FLASHPOLICY);
         try {
             frame.isValid();
             fail("InvalidDataException should be thrown");
         } catch (InvalidDataException e) {
             //fine
         }
-        frame.setCode(CloseFrame.NOCODE);
+        frame.setCode(CloseCodeConstants.NOCODE);
         try {
             frame.isValid();
             fail("InvalidDataException should be thrown");
         } catch (InvalidDataException e) {
             //fine
         }
-        frame.setCode(CloseFrame.NO_UTF8);
+        frame.setCode(CloseCodeConstants.NO_UTF8);
         frame.setReason(null);
         try {
             frame.isValid();
@@ -234,7 +234,7 @@ public class CloseFrameTest {
         } catch (InvalidDataException e) {
             //fine
         }
-        frame.setCode(CloseFrame.NOCODE);
+        frame.setCode(CloseCodeConstants.NOCODE);
         frame.setReason("Close");
         try {
             frame.isValid();

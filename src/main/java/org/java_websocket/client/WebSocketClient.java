@@ -58,6 +58,7 @@ import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.enums.Opcode;
 import org.java_websocket.enums.ReadyState;
 import org.java_websocket.exceptions.InvalidHandshakeException;
+import org.java_websocket.framing.CloseCodeConstants;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.handshake.HandshakeImpl1Client;
@@ -363,7 +364,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
       }
     } catch (Exception e) {
       onError(e);
-      engine.closeConnection(CloseFrame.ABNORMAL_CLOSE, e.getMessage());
+      engine.closeConnection(CloseCodeConstants.ABNORMAL_CLOSE, e.getMessage());
       return;
     }
     connectLatch = new CountDownLatch(1);
@@ -422,7 +423,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
    */
   public void close() {
     if (writeThread != null) {
-      engine.close(CloseFrame.NORMAL);
+      engine.close(CloseCodeConstants.NORMAL);
     }
   }
 
@@ -509,7 +510,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
       sendHandshake();
     } catch (/*IOException | SecurityException | UnresolvedAddressException | InvalidHandshakeException | ClosedByInterruptException | SocketTimeoutException */Exception e) {
       onWebsocketError(engine, e);
-      engine.closeConnection(CloseFrame.NEVER_CONNECTED, e.getMessage());
+      engine.closeConnection(CloseCodeConstants.NEVER_CONNECTED, e.getMessage());
       return;
     } catch (InternalError e) {
       // https://bugs.openjdk.java.net/browse/JDK-8173620
@@ -517,7 +518,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
           .getCause() instanceof IOException) {
         IOException cause = (IOException) e.getCause().getCause();
         onWebsocketError(engine, cause);
-        engine.closeConnection(CloseFrame.NEVER_CONNECTED, cause.getMessage());
+        engine.closeConnection(CloseCodeConstants.NEVER_CONNECTED, cause.getMessage());
         return;
       }
       throw e;
@@ -549,7 +550,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
     } catch (RuntimeException e) {
       // this catch case covers internal errors only and indicates a bug in this websocket implementation
       onError(e);
-      engine.closeConnection(CloseFrame.ABNORMAL_CLOSE, e.getMessage());
+      engine.closeConnection(CloseCodeConstants.ABNORMAL_CLOSE, e.getMessage());
     }
   }
 

@@ -34,6 +34,7 @@ import java.util.Scanner;
 import java.util.concurrent.CountDownLatch;
 
 import org.java_websocket.client.WebSocketClient;
+import org.java_websocket.framing.CloseCodeConstants;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.handshake.ServerHandshake;
 import org.java_websocket.util.Charsetfunctions;
@@ -242,7 +243,7 @@ public class OpeningHandshakeRejectionTest {
             @Override
             public void onClose(int code, String reason, boolean remote) {
                 if (finalI != 10 && finalI != 11) {
-                    if (code != CloseFrame.PROTOCOL_ERROR) {
+                    if (code != CloseCodeConstants.PROTOCOL_ERROR) {
                         fail("There should be a protocol error!");
                     } else if (reason.startsWith("Invalid status code received:") || reason
                             .startsWith("Invalid status line received:")) {
