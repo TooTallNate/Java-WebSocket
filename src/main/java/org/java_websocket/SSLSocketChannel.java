@@ -426,6 +426,7 @@ public class SSLSocketChannel implements WrappedByteChannel, ByteChannel, ISSLCh
    *                                SSLSession}.
    * @return A new buffer with a larger capacity.
    */
+
   private ByteBuffer enlargeBuffer(ByteBuffer buffer, int sessionProposedCapacity) {
     if (sessionProposedCapacity > buffer.capacity()) {
       buffer = ByteBuffer.allocate(sessionProposedCapacity);
