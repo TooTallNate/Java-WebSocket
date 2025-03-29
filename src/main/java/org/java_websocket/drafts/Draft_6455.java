@@ -889,33 +889,57 @@ public class Draft_6455 extends Draft {
     }
   }
 
-  @Override
-  public void processFrame(WebSocketImpl webSocketImpl, Framedata frame)
-      throws InvalidDataException {
+  private void handleControlFrame(WebSocketImpl webSocketImpl, Framedata frame, Opcode curop)
+          throws InvalidDataException {
+    switch (curop) {
+      case CLOSING:
+        processFrameClosing(webSocketImpl, frame);
+        break;
+      case PING:
+        webSocketImpl.getWebSocketListener().onWebsocketPing(webSocketImpl, frame);
+        break;
+      case PONG:
+        webSocketImpl.updateLastPong();
+        webSocketImpl.getWebSocketListener().onWebsocketPong(webSocketImpl, frame);
+        break;
+      default:
+        throw new InvalidDataException(CloseFrame.PROTOCOL_ERROR, "Invalid control frame");
+    }
+  }
 
-    Opcode curop = frame.getOpcode();
-    if (curop == Opcode.CLOSING) {
-      processFrameClosing(webSocketImpl, frame);
-    } else if (curop == Opcode.PING) {
-      webSocketImpl.getWebSocketListener().onWebsocketPing(webSocketImpl, frame);
-    } else if (curop == Opcode.PONG) {
-      webSocketImpl.updateLastPong();
-      webSocketImpl.getWebSocketListener().onWebsocketPong(webSocketImpl, frame);
-    } else if (!frame.isFin() || curop == Opcode.CONTINUOUS) {
-      processFrameContinuousAndNonFin(webSocketImpl, frame, curop);
-    } else if (currentContinuousFrame != null) {
-      log.error("Protocol error: Continuous frame sequence not completed.");
-      throw new InvalidDataException(CloseFrame.PROTOCOL_ERROR,
-          "Continuous frame sequence not completed.");
-    } else if (curop == Opcode.TEXT) {
+  private void handleDataFrame(WebSocketImpl webSocketImpl, Framedata frame, Opcode curop)
+          throws InvalidDataException {
+    if (curop == Opcode.TEXT) {
       processFrameText(webSocketImpl, frame);
     } else if (curop == Opcode.BINARY) {
       processFrameBinary(webSocketImpl, frame);
     } else {
-      log.error("non control or continious frame expected");
-      throw new InvalidDataException(CloseFrame.PROTOCOL_ERROR,
-          "non control or continious frame expected");
+      throw new InvalidDataException(CloseFrame.PROTOCOL_ERROR, "Invalid data frame");
     }
+  }
+
+
+  @Override
+  public void processFrame(WebSocketImpl webSocketImpl, Framedata frame)
+          throws InvalidDataException {
+    Opcode curop = frame.getOpcode();
+
+    if (curop == Opcode.CLOSING || curop == Opcode.PING || curop == Opcode.PONG) {
+      handleControlFrame(webSocketImpl, frame, curop);
+      return;
+    }
+
+    if (!frame.isFin() || curop == Opcode.CONTINUOUS) {
+      processFrameContinuousAndNonFin(webSocketImpl, frame, curop);
+      return;
+    }
+
+    if (currentContinuousFrame != null) {
+      throw new InvalidDataException(CloseFrame.PROTOCOL_ERROR,
+              "Continuous frame sequence not completed.");
+    }
+
+    handleDataFrame(webSocketImpl, frame, curop);
   }
 
   /**
