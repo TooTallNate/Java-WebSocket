@@ -428,10 +428,11 @@ public class SSLSocketChannel implements WrappedByteChannel, ByteChannel, ISSLCh
    */
 
   private ByteBuffer enlargeBuffer(ByteBuffer buffer, int sessionProposedCapacity) {
+    final int BUFFER_GROWTH_FACTOR = 2; // Introducing Explaining variable
     if (sessionProposedCapacity > buffer.capacity()) {
       buffer = ByteBuffer.allocate(sessionProposedCapacity);
     } else {
-      buffer = ByteBuffer.allocate(buffer.capacity() * 2);
+      buffer = ByteBuffer.allocate(buffer.capacity() * BUFFER_GROWTH_FACTOR);
     }
     return buffer;
   }
