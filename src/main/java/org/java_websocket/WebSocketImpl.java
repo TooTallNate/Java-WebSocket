@@ -161,6 +161,7 @@ public class WebSocketImpl implements WebSocket {
   /**
    * Attribute, when the last pong was received
    */
+
   private long lastPong = System.nanoTime();
 
   /**
