@@ -248,4 +248,12 @@ public interface WebSocket {
    * @since 1.5.2
    */
   IProtocol getProtocol();
+
+  /**
+   * Updates the timestamp of the last received pong frame.
+   * Default implementation does nothing for test compatibility.
+   */
+  default void updateLastPong() {
+    // Default empty implementation
+  }
 }
