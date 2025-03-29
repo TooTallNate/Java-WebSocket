@@ -93,7 +93,7 @@ public abstract class Draft {
   }
 
 
-  public static HandshakeBuilder translateHandshakeHttp(ByteBuffer buf, Role role)
+  public static HandshakeBuilder parseHttpHandshake(ByteBuffer buf, Role role)
       throws InvalidHandshakeException {
     HandshakeBuilder handshake;
 
@@ -317,7 +317,7 @@ public abstract class Draft {
   public abstract Draft copyInstance();
 
   public Handshakedata translateHandshake(ByteBuffer buf) throws InvalidHandshakeException {
-    return translateHandshakeHttp(buf, role);
+    return parseHttpHandshake(buf, role);
   }
 
   public int checkAlloc(int bytecount) throws InvalidDataException {
