@@ -892,6 +892,7 @@ public class Draft_6455 extends Draft {
   @Override
   public void processFrame(WebSocketImpl webSocketImpl, Framedata frame)
       throws InvalidDataException {
+
     Opcode curop = frame.getOpcode();
     if (curop == Opcode.CLOSING) {
       processFrameClosing(webSocketImpl, frame);
