@@ -9,9 +9,9 @@ repositories {
 }
 
 group = 'estar'
-version = '1.5.7-ESTAR'
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+version = '1.6.1-ESTAR'
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 compileJava {
     options.compilerArgs += ['-encoding', 'UTF-8']
@@ -47,9 +47,12 @@ publishing {
 }
 
 dependencies {
-    implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.6'
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.15'
     implementation group: 'org.jctools', name: 'jctools-core', version: '4.0.1'
-    testImplementation group: 'org.slf4j', name: 'slf4j-simple', version: '2.0.6'
-    testImplementation group: 'junit', name: 'junit', version: '4.12'
-    testImplementation group: 'org.json', name: 'json', version: '20180813'
+    testImplementation group: 'org.slf4j', name: 'slf4j-simple', version: '2.0.15'
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter', version: '5.11.4'
+}
+
+test {
+    useJUnitPlatform()  // This is required for JUnit 5
 }

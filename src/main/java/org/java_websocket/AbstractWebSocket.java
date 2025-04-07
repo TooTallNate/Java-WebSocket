@@ -91,9 +91,28 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
   private boolean websocketRunning = false;
 
   /**
+   * Attribute to start internal threads as daemon
+   *
+   * @since 1.5.6
+   */
+  private boolean daemon = false;
+
+  /**
    * Attribute to sync on
    */
   private final Object syncConnectionLost = new Object();
+
+  /**
+   * TCP receive buffer size that will be used for sockets (zero means use system default)
+   *
+   * @since 1.5.7
+   */
+  private int receiveBufferSize = 0;
+
+  /**
+   * Used for internal buffer allocations when the socket buffer size is not specified.
+   */
+  protected static int DEFAULT_READ_BUFFER_SIZE = 65536;
 
   /**
    * Get the interval checking for lost connections Default is 60 seconds
@@ -182,7 +201,7 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
   private void restartConnectionLostTimer() {
     cancelConnectionLostTimer();
     connectionLostCheckerService = Executors
-        .newSingleThreadScheduledExecutor(new NamedThreadFactory("connectionLostChecker"));
+        .newSingleThreadScheduledExecutor(new NamedThreadFactory("WebSocketConnectionLostChecker", daemon));
     Runnable connectionLostChecker = new Runnable() {
 
       /**
@@ -306,6 +325,52 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
    */
   public void setReuseAddr(boolean reuseAddr) {
     this.reuseAddr = reuseAddr;
+  }
+
+ 
+  /**
+   * Getter for daemon
+   *
+   * @return whether internal threads are spawned in daemon mode
+   * @since 1.5.6
+   */
+  public boolean isDaemon() {
+    return daemon;
+  }
+
+  /**
+   * Setter for daemon
+   * <p>
+   * Controls whether or not internal threads are spawned in daemon mode
+   *
+   * @since 1.5.6
+   */
+  public void setDaemon(boolean daemon) {
+    this.daemon = daemon;
+  }
+
+  /**
+   * Returns the TCP receive buffer size that will be used for sockets (or zero, if not explicitly set).
+   * @see java.net.Socket#setReceiveBufferSize(int)
+   *
+   * @since 1.5.7
+   */
+  public int getReceiveBufferSize() {
+    return receiveBufferSize;
+  }
+
+  /**
+   * Sets the TCP receive buffer size that will be used for sockets.
+   * If this is not explicitly set (or set to zero), the system default is used.
+   * @see java.net.Socket#setReceiveBufferSize(int)
+   *
+   * @since 1.5.7
+   */
+  public void setReceiveBufferSize(int receiveBufferSize) {
+    if (receiveBufferSize < 0) {
+      throw new IllegalArgumentException("buffer size < 0");
+    }
+    this.receiveBufferSize = receiveBufferSize;
   }
 
 }

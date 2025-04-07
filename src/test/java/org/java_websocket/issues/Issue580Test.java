@@ -38,22 +38,15 @@ import org.java_websocket.handshake.ServerHandshake;
 import org.java_websocket.server.WebSocketServer;
 import org.java_websocket.util.SocketUtil;
 import org.java_websocket.util.ThreadCheck;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
+@ExtendWith(ThreadCheck.class)
 public class Issue580Test {
 
   private static final int NUMBER_OF_TESTS = 10;
 
-  @Parameterized.Parameter
-  public int count;
-
-
-  @Rule
-  public ThreadCheck zombies = new ThreadCheck();
 
   private void runTestScenario(boolean closeBlocking) throws Exception {
     final CountDownLatch countServerDownLatch = new CountDownLatch(1);
@@ -116,7 +109,6 @@ public class Issue580Test {
     Thread.sleep(100);
   }
 
-  @Parameterized.Parameters
   public static Collection<Integer[]> data() {
     List<Integer[]> ret = new ArrayList<Integer[]>(NUMBER_OF_TESTS);
     for (int i = 0; i < NUMBER_OF_TESTS; i++) {
@@ -125,12 +117,15 @@ public class Issue580Test {
     return ret;
   }
 
-  @Test
+
+  @ParameterizedTest
+  @MethodSource("data")
   public void runNoCloseBlockingTestScenario() throws Exception {
     runTestScenario(false);
   }
 
-  @Test
+  @ParameterizedTest
+  @MethodSource("data")
   public void runCloseBlockingTestScenario() throws Exception {
     runTestScenario(true);
   }

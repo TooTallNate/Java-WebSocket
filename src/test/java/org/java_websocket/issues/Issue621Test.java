@@ -25,8 +25,6 @@
 
 package org.java_websocket.issues;
 
-import static org.junit.Assert.assertTrue;
-
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.InetSocketAddress;
@@ -38,7 +36,9 @@ import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.handshake.ServerHandshake;
 import org.java_websocket.server.WebSocketServer;
 import org.java_websocket.util.SocketUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class Issue621Test {
 
@@ -114,7 +114,7 @@ public class Issue621Test {
     countServerDownLatch.await();
     webSocket.connectBlocking();
     countDownLatch.await();
-    assertTrue("There was an error using System.err", !wasError);
+      assertFalse(wasError, "There was an error using System.err");
     server.stop();
   }
 }

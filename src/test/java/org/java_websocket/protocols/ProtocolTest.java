@@ -25,13 +25,9 @@
 
 package org.java_websocket.protocols;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ProtocolTest {
 
@@ -94,11 +90,11 @@ public class ProtocolTest {
     Protocol protocol0 = new Protocol("");
     Protocol protocol1 = new Protocol("protocol");
     Protocol protocol2 = new Protocol("protocol");
-    assertTrue(!protocol0.equals(protocol1));
-    assertTrue(!protocol0.equals(protocol2));
-    assertTrue(protocol1.equals(protocol2));
-    assertTrue(!protocol1.equals(null));
-    assertTrue(!protocol1.equals(new Object()));
+      assertNotEquals(protocol0, protocol1);
+      assertNotEquals(protocol0, protocol2);
+      assertEquals(protocol1, protocol2);
+      assertNotEquals(null, protocol1);
+      assertNotEquals(new Object(), protocol1);
   }
 
   @Test

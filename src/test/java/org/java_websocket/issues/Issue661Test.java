@@ -25,9 +25,6 @@
 
 package org.java_websocket.issues;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.net.BindException;
 import java.net.InetSocketAddress;
@@ -37,20 +34,22 @@ import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 import org.java_websocket.util.SocketUtil;
 import org.java_websocket.util.ThreadCheck;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.extension.ExtendWith;
 
+import static org.junit.jupiter.api.Assertions.*;
+
+@ExtendWith(ThreadCheck.class)
 public class Issue661Test {
-
-  @Rule
-  public ThreadCheck zombies = new ThreadCheck();
 
   private CountDownLatch countServerDownLatch = new CountDownLatch(1);
 
   private boolean wasError = false;
   private boolean wasBindException = false;
 
-  @Test(timeout = 2000)
+  @Test
+  @Timeout(2000)
   public void testIssue() throws Exception {
     int port = SocketUtil.getAvailablePort();
     WebSocketServer server0 = new WebSocketServer(new InetSocketAddress(port)) {
@@ -120,7 +119,7 @@ public class Issue661Test {
     server1.stop();
     server0.stop();
     Thread.sleep(100);
-    assertFalse("There was an unexpected exception!", wasError);
-    assertTrue("There was no bind exception!", wasBindException);
+    assertFalse(wasError, "There was an unexpected exception!");
+    assertTrue(wasBindException, "There was no bind exception!");
   }
 }

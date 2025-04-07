@@ -44,7 +44,8 @@ import org.java_websocket.protocols.IProtocol;
 import org.java_websocket.protocols.Protocol;
 import org.java_websocket.server.WebSocketServer;
 import org.java_websocket.util.SocketUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 public class Issue598Test {
 
@@ -189,43 +190,50 @@ public class Issue598Test {
     server.stop();
   }
 
-  @Test(timeout = 2000)
+  @Test
+  @Timeout(2000)
   public void runBelowLimitBytebuffer() throws Exception {
     runTestScenario(0);
   }
 
-  @Test(timeout = 2000)
+  @Test
+  @Timeout(2000)
   public void runBelowSplitLimitBytebuffer() throws Exception {
     runTestScenario(1);
   }
 
-  @Test(timeout = 2000)
+  @Test
+  @Timeout(2000)
   public void runBelowLimitString() throws Exception {
     runTestScenario(2);
   }
 
-  @Test(timeout = 2000)
+  @Test
+  @Timeout(2000)
   public void runBelowSplitLimitString() throws Exception {
     runTestScenario(3);
   }
 
   @Test
-  //(timeout = 2000)
+  @Timeout(2000)
   public void runAboveLimitBytebuffer() throws Exception {
     runTestScenario(4);
   }
 
-  @Test(timeout = 2000)
+  @Test
+  @Timeout(2000)
   public void runAboveSplitLimitBytebuffer() throws Exception {
     runTestScenario(5);
   }
 
-  @Test(timeout = 2000)
+  @Test
+  @Timeout(2000)
   public void runAboveLimitString() throws Exception {
     runTestScenario(6);
   }
 
-  @Test(timeout = 2000)
+  @Test
+  @Timeout(2000)
   public void runAboveSplitLimitString() throws Exception {
     runTestScenario(7);
   }

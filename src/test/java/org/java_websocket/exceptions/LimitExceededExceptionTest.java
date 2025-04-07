@@ -25,10 +25,10 @@
 
 package org.java_websocket.exceptions;
 
-import static org.junit.Assert.assertEquals;
-
 import org.java_websocket.framing.CloseFrame;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * JUnit Test for the InvalidEncodingException class
@@ -38,20 +38,19 @@ public class LimitExceededExceptionTest {
   @Test
   public void testConstructor() {
     LimitExceededException limitExceededException = new LimitExceededException();
-    assertEquals("The close code has to be TOOBIG", CloseFrame.TOOBIG,
-        limitExceededException.getCloseCode());
-    assertEquals("The message has to be empty", null, limitExceededException.getMessage());
+    assertEquals(CloseFrame.TOOBIG,
+        limitExceededException.getCloseCode(), "The close code has to be TOOBIG");
+      assertNull(limitExceededException.getMessage(), "The message has to be empty");
     limitExceededException = new LimitExceededException("Message");
-    assertEquals("The close code has to be TOOBIG", CloseFrame.TOOBIG,
-        limitExceededException.getCloseCode());
-    assertEquals("The message has to be the argument", "Message",
-        limitExceededException.getMessage());
+    assertEquals(CloseFrame.TOOBIG,
+        limitExceededException.getCloseCode(), "The close code has to be TOOBIG");
+    assertEquals( "Message",
+        limitExceededException.getMessage(), "The message has to be the argument");
   }
 
   @Test
   public void testExtends() {
     LimitExceededException limitExceededException = new LimitExceededException();
-    assertEquals("LimitExceededException must extend InvalidDataException", true,
-        limitExceededException instanceof InvalidDataException);
+      assertInstanceOf(InvalidDataException.class, limitExceededException, "LimitExceededException must extend InvalidDataException");
   }
 }

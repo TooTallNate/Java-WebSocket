@@ -6,14 +6,17 @@ import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.handshake.ServerHandshake;
 import org.java_websocket.server.WebSocketServer;
 import org.java_websocket.util.SocketUtil;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class Issue1160Test {
   private final CountDownLatch countServerStart = new CountDownLatch(1);
@@ -45,7 +48,8 @@ public class Issue1160Test {
   }
 
 
-  @Test(timeout = 5000)
+  @Test
+  @Timeout(5000)
   public void nonFatalErrorShallBeHandledByServer() throws Exception {
     final AtomicInteger isServerOnErrorCalledCounter = new AtomicInteger(0);
 
@@ -99,12 +103,13 @@ public class Issue1160Test {
       client.closeBlocking();
     }
 
-    Assert.assertEquals(CONNECTION_COUNT, isServerOnErrorCalledCounter.get());
+    assertEquals(CONNECTION_COUNT, isServerOnErrorCalledCounter.get());
 
     server.stop();
   }
 
-  @Test(timeout = 5000)
+  @Test
+  @Timeout(5000)
   public void fatalErrorShallNotBeHandledByServer() throws Exception {
     int port = SocketUtil.getAvailablePort();
 
@@ -121,7 +126,7 @@ public class Issue1160Test {
 
       @Override
       public void onMessage(WebSocket conn, ByteBuffer message) {
-        throw new OutOfMemoryError("Some error");
+        throw new OutOfMemoryError("Some intentional error");
       }
 
       @Override
@@ -154,6 +159,7 @@ public class Issue1160Test {
     client.send(new byte[100]);
     countClientDownLatch.await();
     countServerDownLatch.await();
-    Assert.assertTrue(countClientDownLatch.getCount() == 0 && countServerDownLatch.getCount() == 0);
+    assertEquals(0,countClientDownLatch.getCount());
+    assertEquals(0, countServerDownLatch.getCount());
   }
 }

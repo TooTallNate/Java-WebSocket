@@ -25,7 +25,6 @@
 
 package org.java_websocket.issues;
 
-import static org.junit.Assert.fail;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -37,18 +36,20 @@ import org.java_websocket.handshake.ServerHandshake;
 import org.java_websocket.server.WebSocketServer;
 import org.java_websocket.util.SocketUtil;
 import org.java_websocket.util.ThreadCheck;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.extension.ExtendWith;
 
+import static org.junit.jupiter.api.Assertions.fail;
+
+@ExtendWith(ThreadCheck.class)
 public class Issue732Test {
 
-  @Rule
-  public ThreadCheck zombies = new ThreadCheck();
 
   private CountDownLatch countServerDownLatch = new CountDownLatch(1);
 
-  @Test(timeout = 2000)
+  @Test
+  @Timeout(2000)
   public void testIssue() throws Exception {
     int port = SocketUtil.getAvailablePort();
     final WebSocketClient webSocket = new WebSocketClient(new URI("ws://localhost:" + port)) {
@@ -56,7 +57,7 @@ public class Issue732Test {
       public void onOpen(ServerHandshake handshakedata) {
         try {
           this.reconnect();
-          Assert.fail("Exception should be thrown");
+          fail("Exception should be thrown");
         } catch (IllegalStateException e) {
           //
         }
@@ -66,7 +67,7 @@ public class Issue732Test {
       public void onMessage(String message) {
         try {
           this.reconnect();
-          Assert.fail("Exception should be thrown");
+          fail("Exception should be thrown");
         } catch (IllegalStateException e) {
           send("hi");
         }
@@ -76,7 +77,7 @@ public class Issue732Test {
       public void onClose(int code, String reason, boolean remote) {
         try {
           this.reconnect();
-          Assert.fail("Exception should be thrown");
+          fail("Exception should be thrown");
         } catch (IllegalStateException e) {
           //
         }
@@ -86,7 +87,7 @@ public class Issue732Test {
       public void onError(Exception ex) {
         try {
           this.reconnect();
-          Assert.fail("Exception should be thrown");
+          fail("Exception should be thrown");
         } catch (IllegalStateException e) {
           //
         }

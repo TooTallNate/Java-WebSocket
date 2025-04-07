@@ -7,13 +7,17 @@ import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 import org.java_websocket.util.SocketUtil;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 
 public class Issue834Test {
 
-  @Test(timeout = 1000)
-  public void testNoNewThreads() throws IOException {
+  @Test
+  @Timeout(1000)
+  public void testNoNewThreads() throws InterruptedException {
 
     Set<Thread> threadSet1 = Thread.getAllStackTraces().keySet();
 
@@ -42,7 +46,7 @@ public class Issue834Test {
     Set<Thread> threadSet2 = Thread.getAllStackTraces().keySet();
 
     //checks that no threads are started in the constructor
-    Assert.assertEquals(threadSet1, threadSet2);
+    assertEquals(threadSet1, threadSet2);
 
   }
 

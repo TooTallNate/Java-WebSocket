@@ -25,7 +25,6 @@
 
 package org.java_websocket.issues;
 
-import static org.junit.Assert.assertTrue;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -37,7 +36,9 @@ import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.handshake.ServerHandshake;
 import org.java_websocket.server.WebSocketServer;
 import org.java_websocket.util.SocketUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class Issue677Test {
 
@@ -113,14 +114,21 @@ public class Issue677Test {
     server.start();
     countServerDownLatch.await();
     webSocket0.connectBlocking();
-    assertTrue("webSocket.isOpen()", webSocket0.isOpen());
+    assertTrue(webSocket0.isOpen(), "webSocket.isOpen()");
     webSocket0.close();
     countDownLatch0.await();
-    assertTrue("webSocket.isClosed()", webSocket0.isClosed());
+    // Add some delay is since the latch will be decreased in the onClose before the state is reset
+    for (int i = 0; i < 5; i++) {
+      if (webSocket0.isClosed()) {
+        break;
+      }
+      Thread.sleep(5);
+    }
+    assertTrue(webSocket0.isClosed(), "webSocket.isClosed()");
     webSocket1.connectBlocking();
-    assertTrue("webSocket.isOpen()", webSocket1.isOpen());
+    assertTrue(webSocket1.isOpen(), "webSocket.isOpen()");
     webSocket1.closeConnection(CloseFrame.ABNORMAL_CLOSE, "Abnormal close!");
-    assertTrue("webSocket.isClosed()", webSocket1.isClosed());
+    assertTrue(webSocket1.isClosed(), "webSocket.isClosed()");
     server.stop();
   }
 }

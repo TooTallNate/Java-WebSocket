@@ -26,10 +26,6 @@
 
 package org.java_websocket.issues;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -51,12 +47,16 @@ import org.java_websocket.server.DefaultSSLWebSocketServerFactory;
 import org.java_websocket.server.WebSocketServer;
 import org.java_websocket.util.SSLContextUtil;
 import org.java_websocket.util.SocketUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class Issue890Test {
 
 
-  @Test(timeout = 4000)
+  @Test
+  @Timeout(4000)
   public void testWithSSLSession()
       throws IOException, URISyntaxException, KeyStoreException, NoSuchAlgorithmException, KeyManagementException, UnrecoverableKeyException, CertificateException, InterruptedException {
     int port = SocketUtil.getAvailablePort();
@@ -92,7 +92,8 @@ public class Issue890Test {
     assertNotNull(testResult.sslSession);
   }
 
-  @Test(timeout = 4000)
+  @Test
+  @Timeout(4000)
   public void testWithOutSSLSession()
       throws IOException, URISyntaxException, KeyStoreException, NoSuchAlgorithmException, KeyManagementException, UnrecoverableKeyException, CertificateException, InterruptedException {
     int port = SocketUtil.getAvailablePort();

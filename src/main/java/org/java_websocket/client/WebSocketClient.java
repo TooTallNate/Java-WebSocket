@@ -336,7 +336,13 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
           "You cannot initialize a reconnect out of the websocket thread. Use reconnect in another thread to ensure a successful cleanup.");
     }
     try {
+      // This socket null check ensures we can reconnect a socket that failed to connect. It's an uncommon edge case, but we want to make sure we support it
+      if (engine.getReadyState() == ReadyState.NOT_YET_CONNECTED && socket != null) {
+        // Closing the socket when we have not connected prevents the writeThread from hanging on a write indefinitely during connection teardown
+        socket.close();
+      }
       closeBlocking();
+
       if (writeThread != null) {
         this.writeThread.interrupt();
         this.writeThread.join();
@@ -370,6 +376,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
       throw new IllegalStateException("WebSocketClient objects are not reuseable");
     }
     connectReadThread = new Thread(this);
+    connectReadThread.setDaemon(isDaemon());
     connectReadThread.setName("WebSocketConnectReadThread-" + connectReadThread.getId());
     connectReadThread.start();
   }
@@ -397,7 +404,13 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
    */
   public boolean connectBlocking(long timeout, TimeUnit timeUnit) throws InterruptedException {
     connect();
-    return connectLatch.await(timeout, timeUnit) && engine.isOpen();
+
+    boolean connected = connectLatch.await(timeout, timeUnit);
+    if (!connected) {
+      reset();
+    }
+
+    return connected && engine.isOpen();
   }
 
   /**
@@ -465,6 +478,10 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
 
       socket.setTcpNoDelay(isTcpNoDelay());
       socket.setReuseAddress(isReuseAddr());
+      int receiveBufferSize = getReceiveBufferSize();
+      if (receiveBufferSize > 0) {
+        socket.setReceiveBufferSize(receiveBufferSize);
+      }
 
       if (!socket.isConnected()) {
         InetSocketAddress addr = dnsResolver == null ? InetSocketAddress.createUnresolved(uri.getHost(), getPort()) : new InetSocketAddress(dnsResolver.resolve(uri), this.getPort());
@@ -512,9 +529,11 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
       }
     }
     writeThread = new Thread(new WebsocketWriteThread(this));
+    writeThread.setDaemon(isDaemon());
     writeThread.start();
 
-    byte[] rawbuffer = new byte[WebSocketImpl.RCVBUF];
+    int receiveBufferSize = getReceiveBufferSize();
+    byte[] rawbuffer = new byte[receiveBufferSize > 0 ? receiveBufferSize : DEFAULT_READ_BUFFER_SIZE];
     int readBytes;
 
     try {

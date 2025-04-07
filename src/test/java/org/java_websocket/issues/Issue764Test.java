@@ -45,14 +45,16 @@ import org.java_websocket.server.DefaultSSLWebSocketServerFactory;
 import org.java_websocket.server.WebSocketServer;
 import org.java_websocket.util.SSLContextUtil;
 import org.java_websocket.util.SocketUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 public class Issue764Test {
 
   private CountDownLatch countClientDownLatch = new CountDownLatch(2);
   private CountDownLatch countServerDownLatch = new CountDownLatch(1);
 
-  @Test(timeout = 2000)
+  @Test
+  @Timeout(2000)
   public void testIssue()
       throws IOException, URISyntaxException, KeyStoreException, NoSuchAlgorithmException, KeyManagementException, UnrecoverableKeyException, CertificateException, InterruptedException {
     int port = SocketUtil.getAvailablePort();

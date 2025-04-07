@@ -1,10 +1,11 @@
 package org.java_websocket.extensions;
 
-import static org.junit.Assert.fail;
 
 import org.java_websocket.framing.PingFrame;
 import org.java_websocket.framing.TextFrame;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class CompressionExtensionTest {
 

@@ -40,7 +40,6 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
-import javax.xml.bind.DatatypeConverter;
 import org.java_websocket.server.DefaultSSLWebSocketServerFactory;
 
 
@@ -98,7 +97,8 @@ public class SSLServerLetsEncryptExample {
     String data = new String(pem);
     String[] tokens = data.split(beginDelimiter);
     tokens = tokens[1].split(endDelimiter);
-    return DatatypeConverter.parseBase64Binary(tokens[0]);
+   // return DatatypeConverter.parseBase64Binary(tokens[0]);
+    return null;
   }
 
   private static RSAPrivateKey generatePrivateKeyFromDER(byte[] keyBytes)

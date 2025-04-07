@@ -1,8 +1,5 @@
 package org.java_websocket.issues;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -15,14 +12,18 @@ import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.handshake.ServerHandshake;
 import org.java_websocket.server.WebSocketServer;
 import org.java_websocket.util.SocketUtil;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
 
 public class Issue1203Test {
   private final CountDownLatch countServerDownLatch = new CountDownLatch(1);
   private final CountDownLatch countClientDownLatch = new CountDownLatch(1);
   boolean isClosedCalled = false;
-  @Test(timeout = 50000)
+  @Test
+  @Timeout(50000)
   public void testIssue() throws Exception {
     int port = SocketUtil.getAvailablePort();
     WebSocketServer server = new WebSocketServer(new InetSocketAddress(port)) {
@@ -88,7 +89,7 @@ public class Issue1203Test {
     timer.schedule(task, 15000);
     countClientDownLatch.await();
     Thread.sleep(30000);
-    Assert.assertFalse(isClosedCalled);
+    assertFalse(isClosedCalled);
     client.closeBlocking();
     server.stop();
   }

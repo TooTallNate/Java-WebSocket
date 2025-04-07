@@ -38,8 +38,10 @@ import org.java_websocket.WebSocketServerFactory;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class Issue765Test {
 
@@ -49,9 +51,9 @@ public class Issue765Test {
   public void testIssue() {
     WebSocketServer webSocketServer = new MyWebSocketServer();
     webSocketServer.setWebSocketFactory(new LocalWebSocketFactory());
-    Assert.assertFalse("Close should not have been called yet", isClosedCalled);
+    assertFalse(isClosedCalled, "Close should not have been called yet");
     webSocketServer.setWebSocketFactory(new LocalWebSocketFactory());
-    Assert.assertTrue("Close has been called", isClosedCalled);
+    assertTrue(isClosedCalled, "Close has been called");
   }
 
   private static class MyWebSocketServer extends WebSocketServer {

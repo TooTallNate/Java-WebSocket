@@ -25,27 +25,24 @@
 
 package org.java_websocket.util;
 
+import org.junit.jupiter.api.Test;
+
 import java.io.IOException;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class Base64Test {
 
-  @Rule
-  public final ExpectedException thrown = ExpectedException.none();
-
   @Test
   public void testEncodeBytes() throws IOException {
-    Assert.assertEquals("", Base64.encodeBytes(new byte[0]));
-    Assert.assertEquals("QHE=",
+    assertEquals("", Base64.encodeBytes(new byte[0]));
+    assertEquals("QHE=",
         Base64.encodeBytes(new byte[]{49, 121, 64, 113, -63, 43, -24, 62, 4, 48}, 2, 2, 0));
     assertGzipEncodedBytes("H4sIAAAAAAAA", "MEALfv3IMBAAAA",
         Base64.encodeBytes(new byte[]{49, 121, 64, 113, -63, 43, -24, 62, 4, 48}, 0, 1, 6));
     assertGzipEncodedBytes("H4sIAAAAAAAA", "MoBABQHKKWAgAAAA==",
         Base64.encodeBytes(new byte[]{49, 121, 64, 113, -63, 43, -24, 62, 4, 48}, 2, 2, 18));
-    Assert.assertEquals("F63=",
+    assertEquals("F63=",
         Base64.encodeBytes(new byte[]{49, 121, 64, 113, 63, 43, -24, 62, 4, 48}, 2, 2, 32));
     assertGzipEncodedBytes("6sg7--------", "Bc0-0F699L-V----==",
         Base64.encodeBytes(new byte[]{49, 121, 64, 113, 63, 43, -24, 62, 4, 48}, 2, 2, 34));
@@ -53,57 +50,56 @@ public class Base64Test {
 
   // see https://bugs.openjdk.org/browse/JDK-8253142
   private void assertGzipEncodedBytes(String expectedPrefix, String expectedSuffix, String actual) {
-    Assert.assertTrue(actual.startsWith(expectedPrefix));
-    Assert.assertTrue(actual.endsWith(expectedSuffix));
+    assertTrue(actual.startsWith(expectedPrefix));
+    assertTrue(actual.endsWith(expectedSuffix));
   }
 
   @Test
-  public void testEncodeBytes2() throws IOException {
-    thrown.expect(IllegalArgumentException.class);
-    Base64.encodeBytes(new byte[0], -2, -2, -56);
+  public void testEncodeBytes2() {
+   assertThrows(IllegalArgumentException.class, () ->
+    Base64.encodeBytes(new byte[0], -2, -2, -56));
   }
 
   @Test
-  public void testEncodeBytes3() throws IOException {
-    thrown.expect(IllegalArgumentException.class);
+  public void testEncodeBytes3() {
+    assertThrows(IllegalArgumentException.class, () ->
     Base64.encodeBytes(new byte[]{64, -128, 32, 18, 16, 16, 0, 18, 16},
-        2064072977, -2064007440, 10);
+        2064072977, -2064007440, 10));
   }
 
   @Test
   public void testEncodeBytes4() {
-    thrown.expect(NullPointerException.class);
-    Base64.encodeBytes(null);
+    assertThrows(NullPointerException.class, () -> Base64.encodeBytes(null));
   }
 
   @Test
-  public void testEncodeBytes5() throws IOException {
-    thrown.expect(IllegalArgumentException.class);
-    Base64.encodeBytes(null, 32766, 0, 8);
+  public void testEncodeBytes5() {
+    assertThrows(IllegalArgumentException.class, () ->
+    Base64.encodeBytes(null, 32766, 0, 8));
   }
 
   @Test
   public void testEncodeBytesToBytes1() throws IOException {
-    Assert.assertArrayEquals(new byte[]{95, 68, 111, 78, 55, 45, 61, 61},
+    assertArrayEquals(new byte[]{95, 68, 111, 78, 55, 45, 61, 61},
         Base64.encodeBytesToBytes(new byte[]{-108, -19, 24, 32}, 0, 4, 32));
-    Assert.assertArrayEquals(new byte[]{95, 68, 111, 78, 55, 67, 111, 61},
+    assertArrayEquals(new byte[]{95, 68, 111, 78, 55, 67, 111, 61},
         Base64.encodeBytesToBytes(new byte[]{-108, -19, 24, 32, -35}, 0, 5, 40));
-    Assert.assertArrayEquals(new byte[]{95, 68, 111, 78, 55, 67, 111, 61},
+    assertArrayEquals(new byte[]{95, 68, 111, 78, 55, 67, 111, 61},
         Base64.encodeBytesToBytes(new byte[]{-108, -19, 24, 32, -35}, 0, 5, 32));
-    Assert.assertArrayEquals(new byte[]{87, 50, 77, 61},
+    assertArrayEquals(new byte[]{87, 50, 77, 61},
         Base64.encodeBytesToBytes(new byte[]{115, 42, 123, 99, 10, -33, 75, 30, 91, 99}, 8, 2, 48));
-    Assert.assertArrayEquals(new byte[]{87, 50, 77, 61},
+    assertArrayEquals(new byte[]{87, 50, 77, 61},
         Base64.encodeBytesToBytes(new byte[]{115, 42, 123, 99, 10, -33, 75, 30, 91, 99}, 8, 2, 56));
-    Assert.assertArrayEquals(new byte[]{76, 53, 66, 61},
+    assertArrayEquals(new byte[]{76, 53, 66, 61},
         Base64.encodeBytesToBytes(new byte[]{113, 42, 123, 99, 10, -33, 75, 30, 88, 99}, 8, 2, 36));
-    Assert.assertArrayEquals(new byte[]{87, 71, 77, 61},
+    assertArrayEquals(new byte[]{87, 71, 77, 61},
         Base64.encodeBytesToBytes(new byte[]{113, 42, 123, 99, 10, -33, 75, 30, 88, 99}, 8, 2, 4));
   }
 
   @Test
-  public void testEncodeBytesToBytes2() throws IOException {
-    thrown.expect(IllegalArgumentException.class);
-    Base64.encodeBytesToBytes(new byte[]{83, 10, 91, 67, 42, -1, 107, 62, 91, 67}, 8, 6, 26);
+  public void testEncodeBytesToBytes2() {
+   assertThrows(IllegalArgumentException.class, () ->
+    Base64.encodeBytesToBytes(new byte[]{83, 10, 91, 67, 42, -1, 107, 62, 91, 67}, 8, 6, 26));
   }
 
   @Test
@@ -129,6 +125,6 @@ public class Base64Test {
         119, 61
     };
 
-    Assert.assertArrayEquals(excepted, Base64.encodeBytesToBytes(src, 0, 62, 8));
+    assertArrayEquals(excepted, Base64.encodeBytesToBytes(src, 0, 62, 8));
   }
 }

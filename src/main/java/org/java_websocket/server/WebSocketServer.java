@@ -181,6 +181,30 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
     this(address, decodercount, drafts, new HashSet<WebSocket>());
   }
 
+  // Small internal helper function to get around limitations of Java constructors.
+  private static InetSocketAddress checkAddressOfExistingChannel(ServerSocketChannel existingChannel) {
+    assert existingChannel.isOpen();
+    SocketAddress addr;
+    try {
+      addr = existingChannel.getLocalAddress();
+    } catch (IOException e) {
+      throw new IllegalArgumentException("Could not get address of channel passed to WebSocketServer, make sure it is bound", e);
+    }
+    if (addr == null) {
+      throw new IllegalArgumentException("Could not get address of channel passed to WebSocketServer, make sure it is bound");
+    }
+    return (InetSocketAddress)addr;
+  }
+
+  /**
+   * @param existingChannel An already open and bound server socket channel, which this server will use.
+   * For example, it can be System.inheritedChannel() to implement socket activation.
+   */
+  public WebSocketServer(ServerSocketChannel existingChannel) {
+    this(checkAddressOfExistingChannel(existingChannel));
+    this.server = existingChannel;
+  }
+
   /**
    * Creates a WebSocketServer that will attempt to bind/listen on the given <var>address</var>, and
    * comply with <code>Draft</code> version <var>draft</var>.
@@ -245,7 +269,9 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
     if (selectorthread != null) {
       throw new IllegalStateException(getClass().getName() + " can only be started once.");
     }
-    new Thread(this).start();
+    Thread t = new Thread(this);
+    t.setDaemon(isDaemon());
+    t.start();
   }
 
   public void stop(int timeout) throws InterruptedException {
@@ -324,6 +350,20 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
       port = server.socket().getLocalPort();
     }
     return port;
+  }
+
+  @Override
+  public void setDaemon(boolean daemon) {
+    // pass it to the AbstractWebSocket too, to use it on the connectionLostChecker thread factory
+    super.setDaemon(daemon);
+    // we need to apply this to the decoders as well since they were created during the constructor
+    for (WebSocketWorker w : decoders) {
+      if (w.isAlive()) {
+        throw new IllegalStateException("Cannot call setDaemon after server is already started!");
+      } else {
+        w.setDaemon(daemon);
+      }
+    }
   }
 
   /**
@@ -562,12 +602,22 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
   private boolean doSetupSelectorAndServerThread() {
     selectorthread.setName("WebSocketSelector-" + selectorthread.getId());
     try {
-      server = ServerSocketChannel.open();
+      if (server == null) {
+        server = ServerSocketChannel.open();
+        // If 'server' is not null, that means WebSocketServer was created from existing channel.
+      }
       server.configureBlocking(false);
       ServerSocket socket = server.socket();
-      socket.setReceiveBufferSize(WebSocketImpl.RCVBUF);
+      int receiveBufferSize = getReceiveBufferSize();
+      if (receiveBufferSize > 0) {
+        socket.setReceiveBufferSize(receiveBufferSize);
+      }
       socket.setReuseAddress(isReuseAddr());
-      socket.bind(address, getMaxPendingConnections());
+      // Socket may be already bound, if an existing channel was passed to constructor.
+      // In this case we cannot modify backlog size from pure Java code, so leave it as is.
+      if (!socket.isBound()) {
+        socket.bind(address, getMaxPendingConnections());
+      }
       selector = Selector.open();
       server.register(selector, server.validOps());
       startConnectionLostTimer();
@@ -642,7 +692,8 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
   }
 
   public ByteBuffer createBuffer() {
-    return ByteBuffer.allocate(WebSocketImpl.RCVBUF);
+    int receiveBufferSize = getReceiveBufferSize();
+    return ByteBuffer.allocate(receiveBufferSize > 0 ? receiveBufferSize : DEFAULT_READ_BUFFER_SIZE);
   }
 
   protected void queue(WebSocketImpl ws) throws InterruptedException {

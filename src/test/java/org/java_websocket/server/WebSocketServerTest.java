@@ -26,9 +26,6 @@
 
 package org.java_websocket.server;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -43,7 +40,9 @@ import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.util.SocketUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class WebSocketServerTest {
 
@@ -111,7 +110,7 @@ public class WebSocketServerTest {
 
 
   @Test
-  public void testGetAddress() throws IOException {
+  public void testGetAddress() throws  InterruptedException {
     int port = SocketUtil.getAvailablePort();
     InetSocketAddress inetSocketAddress = new InetSocketAddress(port);
     MyWebSocketServer server = new MyWebSocketServer(port);
@@ -145,9 +144,9 @@ public class WebSocketServerTest {
   @Test
   public void testMaxPendingConnections() {
     MyWebSocketServer server = new MyWebSocketServer(1337);
-    assertEquals(server.getMaxPendingConnections(), -1);
+    assertEquals(-1, server.getMaxPendingConnections());
     server.setMaxPendingConnections(10);
-    assertEquals(server.getMaxPendingConnections(), 10);
+    assertEquals(10, server.getMaxPendingConnections());
   }
 
   @Test

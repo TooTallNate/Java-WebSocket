@@ -31,6 +31,7 @@ import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.util.concurrent.CountDownLatch;
 import javax.net.SocketFactory;
 import org.java_websocket.WebSocket;
 import org.java_websocket.client.WebSocketClient;
@@ -38,8 +39,10 @@ import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.handshake.ServerHandshake;
 import org.java_websocket.server.WebSocketServer;
 import org.java_websocket.util.SocketUtil;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class Issue962Test {
 
@@ -86,7 +89,8 @@ public class Issue962Test {
 
   }
 
-  @Test(timeout = 2000)
+  @Test
+  @Timeout(2000)
   public void testIssue() throws IOException, URISyntaxException, InterruptedException {
     int port = SocketUtil.getAvailablePort();
     WebSocketClient client = new WebSocketClient(new URI("ws://127.0.0.1:" + port)) {
@@ -104,11 +108,12 @@ public class Issue962Test {
 
       @Override
       public void onError(Exception ex) {
-        Assert.fail(ex.toString() + " should not occur");
+        fail(ex.toString() + " should not occur");
       }
     };
 
     String bindingAddress = "127.0.0.1";
+    CountDownLatch serverStartedLatch = new CountDownLatch(1);
 
     client.setSocketFactory(new TestSocketFactory(bindingAddress));
 
@@ -131,14 +136,16 @@ public class Issue962Test {
 
       @Override
       public void onStart() {
+        serverStartedLatch.countDown();
       }
     };
 
     server.start();
+    serverStartedLatch.await();
     client.connectBlocking();
-    Assert.assertEquals(bindingAddress, client.getSocket().getLocalAddress().getHostAddress());
-    Assert.assertNotEquals(0, client.getSocket().getLocalPort());
-    Assert.assertTrue(client.getSocket().isConnected());
+    assertEquals(bindingAddress, client.getSocket().getLocalAddress().getHostAddress());
+    assertNotEquals(0, client.getSocket().getLocalPort());
+      assertTrue(client.getSocket().isConnected());
   }
 
 }

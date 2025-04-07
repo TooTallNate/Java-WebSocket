@@ -26,8 +26,6 @@
 
 package org.java_websocket.issues;
 
-import static org.junit.Assert.assertFalse;
-
 import java.io.IOException;
 import java.net.BindException;
 import java.net.InetSocketAddress;
@@ -45,21 +43,21 @@ import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.handshake.ServerHandshake;
 import org.java_websocket.server.WebSocketServer;
 import org.java_websocket.util.SocketUtil;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
 public class Issue879Test {
 
   private static final int NUMBER_OF_TESTS = 20;
 
-  @Parameterized.Parameter
-  public int numberOfConnections;
-
-
-  @Test(timeout = 10000)
-  public void QuickStopTest() throws IOException, InterruptedException, URISyntaxException {
+  @Timeout(10000)
+  @ParameterizedTest()
+  @MethodSource("data")
+  public void QuickStopTest(int numberOfConnections) throws InterruptedException, URISyntaxException {
     final boolean[] wasBindException = {false};
     final boolean[] wasConcurrentException = new boolean[1];
     final CountDownLatch countDownLatch = new CountDownLatch(1);
@@ -122,11 +120,10 @@ public class Issue879Test {
     serverA.stop();
     serverB.start();
     clients.clear();
-    assertFalse("There was a BindException", wasBindException[0]);
-    assertFalse("There was a ConcurrentModificationException", wasConcurrentException[0]);
+    assertFalse(wasBindException[0], "There was a BindException");
+    assertFalse(wasConcurrentException[0], "There was a ConcurrentModificationException");
   }
 
-  @Parameterized.Parameters
   public static Collection<Integer[]> data() {
     List<Integer[]> ret = new ArrayList<Integer[]>(NUMBER_OF_TESTS);
     for (int i = 0; i < NUMBER_OF_TESTS; i++) {

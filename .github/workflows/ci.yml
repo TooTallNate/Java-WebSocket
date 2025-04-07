@@ -1,6 +1,6 @@
 name: Continuous Integration
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   Build:
@@ -12,11 +12,14 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+      - name: Maven Version
+        run: mvn --version
       - name: Build
         run: mvn -DskipTests package --file pom.xml
 
   Test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK 17
@@ -24,5 +27,7 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+      - name: Maven Version
+        run: mvn --version
       - name: Test
         run: mvn test --file pom.xml

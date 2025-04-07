@@ -25,11 +25,12 @@
 
 package org.java_websocket.exceptions;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import org.junit.jupiter.api.Test;
 
 import java.io.UnsupportedEncodingException;
-import org.junit.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * JUnit Test for the InvalidEncodingException class
@@ -41,8 +42,8 @@ public class InvalidEncodingExceptionTest {
     UnsupportedEncodingException unsupportedEncodingException = new UnsupportedEncodingException();
     InvalidEncodingException invalidEncodingException = new InvalidEncodingException(
         unsupportedEncodingException);
-    assertEquals("The argument has to be the provided exception", unsupportedEncodingException,
-        invalidEncodingException.getEncodingException());
+    assertEquals(unsupportedEncodingException,
+        invalidEncodingException.getEncodingException(), "The argument has to be the provided exception");
     try {
       invalidEncodingException = new InvalidEncodingException(null);
       fail("IllegalArgumentException should be thrown");

@@ -34,14 +34,22 @@ public class NamedThreadFactory implements ThreadFactory {
   private final ThreadFactory defaultThreadFactory = Executors.defaultThreadFactory();
   private final AtomicInteger threadNumber = new AtomicInteger(1);
   private final String threadPrefix;
+  private final boolean daemon;
 
   public NamedThreadFactory(String threadPrefix) {
     this.threadPrefix = threadPrefix;
+    this.daemon = false;
+  }
+
+  public NamedThreadFactory(String threadPrefix, boolean daemon) {
+    this.threadPrefix = threadPrefix;
+    this.daemon = daemon;
   }
 
   @Override
   public Thread newThread(Runnable runnable) {
     Thread thread = defaultThreadFactory.newThread(runnable);
+    thread.setDaemon(daemon);
     thread.setName(threadPrefix + "-" + threadNumber);
     return thread;
   }
