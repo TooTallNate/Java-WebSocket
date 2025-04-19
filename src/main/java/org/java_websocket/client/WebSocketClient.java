@@ -335,6 +335,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
    * @param timeUnit The timeout time unit
    * @return Returns whether it succeeded or not.
    * @throws InterruptedException Thrown when the threads get interrupted
+   * @since 1.6.1
    */
   public boolean reconnectBlocking(long timeout, TimeUnit timeUnit) throws InterruptedException {
     reset();
