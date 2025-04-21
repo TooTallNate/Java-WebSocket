@@ -424,8 +424,10 @@ public class WebSocketImpl implements WebSocket {
    * @param exception the InvalidDataException causing this problem
    */
   private void closeConnectionDueToWrongHandshake(InvalidDataException exception) {
-    write(generateHttpResponseDueToError(404));
-    flushAndClose(exception.getCloseCode(), exception.getMessage(), false);
+    int closeCode = exception.getCloseCode();
+    String message = exception.getMessage();
+    write(generateHttpResponseDueToError(closeCode, message));
+    flushAndClose(closeCode, message, false);
   }
 
   /**
@@ -434,25 +436,34 @@ public class WebSocketImpl implements WebSocket {
    * @param exception the RuntimeException causing this problem
    */
   private void closeConnectionDueToInternalServerError(RuntimeException exception) {
-    write(generateHttpResponseDueToError(500));
-    flushAndClose(CloseFrame.NEVER_CONNECTED, exception.getMessage(), false);
+    String message = exception.getMessage();
+    write(generateHttpResponseDueToError(500, message));
+    flushAndClose(CloseFrame.NEVER_CONNECTED, message, false);
   }
 
   /**
    * Generate a simple response for the corresponding endpoint to indicate some error
    *
    * @param errorCode the http error code
+   * @param errorMessage the http error message
    * @return the complete response as ByteBuffer
    */
-  private ByteBuffer generateHttpResponseDueToError(int errorCode) {
+  private ByteBuffer generateHttpResponseDueToError(int errorCode, String errorMessage) {
     String errorCodeDescription;
     switch (errorCode) {
-      case 404:
-        errorCodeDescription = "404 WebSocket Upgrade Failure";
-        break;
       case 500:
+        if (errorMessage == null || errorMessage.isEmpty()) {
+          errorCodeDescription = "500 Internal Server Error";
+        } else {
+          errorCodeDescription = String.format("500 %s", errorMessage);
+        }
+        break;
       default:
-        errorCodeDescription = "500 Internal Server Error";
+        if (errorMessage == null || errorMessage.isEmpty()) {
+          errorCodeDescription = String.format("%d WebSocket Upgrade Failure", errorCode);
+        } else {
+          errorCodeDescription = String.format("%d %s", errorCode, errorMessage);
+        }
     }
     return ByteBuffer.wrap(Charsetfunctions.asciiBytes("HTTP/1.1 " + errorCodeDescription
         + "\r\nContent-Type: text/html\r\nServer: TooTallNate Java-WebSocket\r\nContent-Length: "
