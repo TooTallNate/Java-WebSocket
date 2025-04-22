@@ -248,7 +248,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
     iqueue = new LinkedList<>();
 
     decoders = new ArrayList<>(decodercount);
-    buffers = new LinkedBlockingQueue<>();
+    buffers = new LinkedBlockingQueue<>(4096);
     for (int i = 0; i < decodercount; i++) {
       WebSocketWorker ex = new WebSocketWorker();
       decoders.add(ex);
@@ -1111,7 +1111,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
     private BlockingQueue<WebSocketImpl> iqueue;
 
     public WebSocketWorker() {
-      iqueue = new LinkedBlockingQueue<>();
+      iqueue = new LinkedBlockingQueue<>(4096);
       setName("WebSocketWorker-" + getId());
       setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
         @Override

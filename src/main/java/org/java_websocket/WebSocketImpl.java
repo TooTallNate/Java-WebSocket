@@ -34,8 +34,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 import javax.net.ssl.SSLSession;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft_6455;
@@ -203,8 +203,8 @@ public class WebSocketImpl implements WebSocket {
     if (listener == null || (draft == null && role == Role.SERVER)) {
       throw new IllegalArgumentException("parameters must not be null");
     }
-    this.outQueue = new LinkedBlockingQueue<>();
-    inQueue = new LinkedBlockingQueue<>();
+    this.outQueue = new ArrayBlockingQueue<>(4096);
+    inQueue = new ArrayBlockingQueue<>(4096);
     this.wsl = listener;
     this.role = Role.CLIENT;
     if (draft != null) {
@@ -737,7 +737,11 @@ public class WebSocketImpl implements WebSocket {
     log.trace("write({}): {}", buf.remaining(),
         buf.remaining() > 1000 ? "too big to display" : new String(buf.array()));
 
-    outQueue.add(buf);
+    try {
+      outQueue.put(buf);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
     wsl.onWriteDemand(this);
   }
 
