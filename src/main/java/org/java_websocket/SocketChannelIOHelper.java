@@ -74,12 +74,13 @@ public class SocketChannelIOHelper {
   /**
    * Returns whether the whole outQueue has been flushed
    *
-   * @param ws          The WebSocketImpl associated with the channels
-   * @param sockchannel The channel to write to
+   * @param ws                 The WebSocketImpl associated with the channels
+   * @param sockchannel        The channel to write to
+   * @param maxBatchSizeInBytes Max number of bytes that are written to the socket in this batch.
    * @return returns Whether there is more data to write
    * @throws IOException May be thrown by {@link WrappedByteChannel#writeMore()}
    */
-  public static boolean batch(WebSocketImpl ws, ByteChannel sockchannel) throws IOException {
+  public static boolean batch(WebSocketImpl ws, ByteChannel sockchannel, int maxBatchSizeInBytes) throws IOException {
     if (ws == null) {
       return false;
     }
@@ -94,15 +95,20 @@ public class SocketChannelIOHelper {
         }
       }
     } else {
+      int written = 0;
       do {
-        // FIXME writing as much as possible is unfair!!
-        /*int written = */
+        int startPosition = buffer.position();
         sockchannel.write(buffer);
+        written += buffer.position() - startPosition;
         if (buffer.remaining() > 0) {
           return false;
         } else {
           ws.outQueue.poll(); // Buffer finished. Remove it.
           buffer = ws.outQueue.peek();
+          if (buffer != null && maxBatchSizeInBytes > 0 && written > maxBatchSizeInBytes // check for write limit
+              && !ws.isFlushAndClose()) {
+            return false;
+          }
         }
       } while (buffer != null);
     }
