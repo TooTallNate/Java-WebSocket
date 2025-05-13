@@ -106,8 +106,32 @@ class SocketChannelIOHelperTest {
     }
 
     @Test
-    void bulkWriteSingleMessageExceedingBuffer() throws IOException {
-        final ByteBuffer buffer1 = ByteBuffer.wrap(new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12});
+    void bulkWriteSingleMessageExceedingBufferFully() throws IOException {
+        socket.outQueue.add(ByteBuffer.wrap(new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}));
+        channel = new RecorderChannel(15);
+
+        boolean finished = SocketChannelIOHelper.bulkWrite(socket, channel);
+
+        assertTrue(finished);
+        assertEquals(1, channel.buffers.size());
+        assertEquals(3, channel.capacity);
+        assertFalse(socket.bulkReadMode);
+    }
+
+    @Test
+    void bulkWriteSingleMessageExceedingBufferPartially() throws IOException {
+        ByteBuffer buffer = ByteBuffer.wrap(new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14});
+        socket.outQueue.add(buffer);
+        channel = new RecorderChannel(11);
+
+        boolean finished = SocketChannelIOHelper.bulkWrite(socket, channel);
+
+        assertFalse(finished);
+        assertEquals(1, channel.buffers.size());
+        assertEquals(0, channel.capacity);
+        assertEquals(3, buffer.remaining());
+        assertEquals(1, socket.outQueue.size());
+        assertFalse(socket.bulkReadMode);
     }
 
     @Test
