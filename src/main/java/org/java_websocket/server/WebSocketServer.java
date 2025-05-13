@@ -130,8 +130,6 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
    */
   private int maxPendingConnections = -1;
 
-  private int maxWriteBatchSizeInBytes = 0;
-
   /**
    * Creates a WebSocketServer that will attempt to listen on port <var>WebSocketImpl.DEFAULT_PORT</var>.
    *
@@ -401,10 +399,6 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
     return maxPendingConnections;
   }
 
-  public void setMaxWriteBatchSizeInBytes(int bytes) {
-    this.maxWriteBatchSizeInBytes = bytes;
-  }
-
   // Runnable IMPLEMENTATION /////////////////////////////////////////////////
   public void run() {
     if (!doEnsureSingleThread()) {
@@ -592,7 +586,7 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
   private void doWrite(SelectionKey key) throws WrappedIOException {
     WebSocketImpl conn = (WebSocketImpl) key.attachment();
     try {
-      if (SocketChannelIOHelper.batch(conn, conn.getChannel(), maxWriteBatchSizeInBytes) && key.isValid()) {
+      if (SocketChannelIOHelper.batch(conn, conn.getChannel()) && key.isValid()) {
         key.interestOps(SelectionKey.OP_READ);
       }
     } catch (IOException e) {

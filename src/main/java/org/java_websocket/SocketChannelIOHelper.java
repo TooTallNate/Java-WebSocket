@@ -28,6 +28,8 @@ package org.java_websocket;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
+import java.nio.channels.WritableByteChannel;
+
 import org.java_websocket.enums.Role;
 
 public class SocketChannelIOHelper {
@@ -76,18 +78,21 @@ public class SocketChannelIOHelper {
    *
    * @param ws                 The WebSocketImpl associated with the channels
    * @param sockchannel        The channel to write to
-   * @param maxBatchSizeInBytes Max number of bytes that are written to the socket in this batch.
    * @return returns Whether there is more data to write
    * @throws IOException May be thrown by {@link WrappedByteChannel#writeMore()}
    */
-  public static boolean batch(WebSocketImpl ws, ByteChannel sockchannel, int maxBatchSizeInBytes) throws IOException {
+  public static boolean batch(WebSocketImpl ws, ByteChannel sockchannel) throws IOException {
     if (ws == null) {
       return false;
     }
     ByteBuffer buffer = ws.outQueue.peek();
     WrappedByteChannel c = null;
 
-    if (buffer == null) {
+    if (ws.bulkByteBuffer != null) {
+      boolean finished = bulkWrite(ws, sockchannel);
+      if (!finished)
+        return false;
+    } else if (buffer == null) {
       if (sockchannel instanceof WrappedByteChannel) {
         c = (WrappedByteChannel) sockchannel;
         if (c.isNeedWrite()) {
@@ -95,18 +100,15 @@ public class SocketChannelIOHelper {
         }
       }
     } else {
-      int written = 0;
       do {
-        written += sockchannel.write(buffer);
+        // FIXME writing as much as possible is unfair!!
+        /*int written = */
+        sockchannel.write(buffer);
         if (buffer.remaining() > 0) {
           return false;
         } else {
           ws.outQueue.poll(); // Buffer finished. Remove it.
           buffer = ws.outQueue.peek();
-          if (buffer != null && maxBatchSizeInBytes > 0 && written > maxBatchSizeInBytes // check for write limit
-              && !ws.isFlushAndClose()) {
-            return false;
-          }
         }
       } while (buffer != null);
     }
@@ -116,5 +118,51 @@ public class SocketChannelIOHelper {
       ws.closeConnection();
     }
     return c == null || !((WrappedByteChannel) sockchannel).isNeedWrite();
+  }
+
+  /**
+   * Try to send multiple messages in one go if possible
+   * @return true when there is no more data to send
+   */
+  static boolean bulkWrite(WebSocketImpl ws, WritableByteChannel sockchannel) throws IOException {
+    // Process existing bulked data first
+    if (ws.bulkReadMode && ws.bulkByteBuffer.hasRemaining()) {
+      sockchannel.write(ws.bulkByteBuffer);
+      if (ws.bulkByteBuffer.hasRemaining())
+        return false;
+      ws.bulkByteBuffer.clear();
+      ws.bulkReadMode = false;
+    }
+
+    // Process new data
+    ByteBuffer buffer = ws.outQueue.peek();
+
+    // Check if the message is larger than the bulk buffer. If so, write it directly.
+    if (buffer != null && buffer.remaining() > ws.bulkByteBuffer.capacity()) {
+      sockchannel.write(buffer);
+      if (buffer.remaining() > 0) // Message could not be written completely, process remaining data in next call
+        return false;
+      ws.outQueue.poll(); // Buffer completely written, remove it
+      return ws.outQueue.peek() == null;
+    }
+
+    // Bulk as many messages as possible and then write them
+    while (buffer != null) {
+      ws.bulkByteBuffer.put(buffer);
+      ws.outQueue.poll(); // Buffer completely cached, remove it
+      buffer = ws.outQueue.peek();
+      if (buffer == null || buffer.remaining() > ws.bulkByteBuffer.capacity() - ws.bulkByteBuffer.position()) {
+        ws.bulkByteBuffer.flip();
+        ws.bulkReadMode = true;
+        sockchannel.write(ws.bulkByteBuffer);
+        if (ws.bulkByteBuffer.hasRemaining())
+          return false; // Message could not be written completely, process remaining data in next call
+        ws.bulkByteBuffer.clear();
+        ws.bulkReadMode = false;
+        return buffer == null;
+      }
+    }
+
+    return true;
   }
 }

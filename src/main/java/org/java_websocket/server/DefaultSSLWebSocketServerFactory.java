@@ -82,7 +82,7 @@ public class DefaultSSLWebSocketServerFactory implements WebSocketServerFactory 
 
   @Override
   public WebSocketImpl createWebSocket(WebSocketAdapter a, List<Draft> d) {
-    return new WebSocketImpl(a, d);
+    return new WebSocketImpl(a, d, 0);
   }
 
   @Override

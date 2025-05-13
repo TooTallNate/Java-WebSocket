@@ -174,13 +174,16 @@ public class WebSocketImpl implements WebSocket {
    */
   private Object attachment;
 
+  public ByteBuffer bulkByteBuffer;
+  public boolean bulkReadMode;
+
   /**
    * Creates a websocket with server role
    *
    * @param listener The listener for this instance
    * @param drafts   The drafts which should be used
    */
-  public WebSocketImpl(WebSocketListener listener, List<Draft> drafts) {
+  public WebSocketImpl(WebSocketListener listener, List<Draft> drafts, int maxWriteBatchSize) {
     this(listener, (Draft) null);
     this.role = Role.SERVER;
     // draft.copyInstance will be called when the draft is first needed
@@ -190,6 +193,9 @@ public class WebSocketImpl implements WebSocket {
     } else {
       knownDrafts = drafts;
     }
+
+    if (maxWriteBatchSize > 0)
+      bulkByteBuffer = ByteBuffer.allocateDirect(maxWriteBatchSize);
   }
 
   /**

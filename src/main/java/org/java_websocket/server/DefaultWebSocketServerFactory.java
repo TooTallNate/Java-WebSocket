@@ -42,7 +42,7 @@ public class DefaultWebSocketServerFactory implements WebSocketServerFactory {
 
   @Override
   public WebSocketImpl createWebSocket(WebSocketAdapter a, List<Draft> d) {
-    return new WebSocketImpl(a, d);
+    return new WebSocketImpl(a, d, 1024);
   }
 
   @Override
