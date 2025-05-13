@@ -119,7 +119,7 @@ public class WebSocketImpl implements WebSocket {
   /**
    * When true no further frames may be submitted to be sent
    */
-  private boolean flushandclosestate = false;
+  private volatile boolean flushandclosestate = false;
 
   /**
    * The current state of the connection

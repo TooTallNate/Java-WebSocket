@@ -892,13 +892,13 @@ public class Draft_6455 extends Draft {
   @Override
   public void processFrame(WebSocketImpl webSocketImpl, Framedata frame)
       throws InvalidDataException {
+    webSocketImpl.updateLastPong();
     Opcode curop = frame.getOpcode();
     if (curop == Opcode.CLOSING) {
       processFrameClosing(webSocketImpl, frame);
     } else if (curop == Opcode.PING) {
       webSocketImpl.getWebSocketListener().onWebsocketPing(webSocketImpl, frame);
     } else if (curop == Opcode.PONG) {
-      webSocketImpl.updateLastPong();
       webSocketImpl.getWebSocketListener().onWebsocketPong(webSocketImpl, frame);
     } else if (!frame.isFin() || curop == Opcode.CONTINUOUS) {
       processFrameContinuousAndNonFin(webSocketImpl, frame, curop);
