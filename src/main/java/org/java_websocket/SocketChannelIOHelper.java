@@ -97,9 +97,7 @@ public class SocketChannelIOHelper {
     } else {
       int written = 0;
       do {
-        int startPosition = buffer.position();
-        sockchannel.write(buffer);
-        written += buffer.position() - startPosition;
+        written += sockchannel.write(buffer);
         if (buffer.remaining() > 0) {
           return false;
         } else {
