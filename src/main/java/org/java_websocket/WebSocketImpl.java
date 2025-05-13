@@ -888,4 +888,9 @@ public class WebSocketImpl implements WebSocket {
   public void setWorkerThread(WebSocketWorker workerThread) {
     this.workerThread = workerThread;
   }
+
+  @Override
+  public int getQueueLength() {
+    return outQueue.size();
+  }
 }

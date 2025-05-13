@@ -241,4 +241,8 @@ public interface WebSocket {
    * @since 1.5.2
    */
   IProtocol getProtocol();
+
+  default int getQueueLength() {
+    return 0;
+  }
 }

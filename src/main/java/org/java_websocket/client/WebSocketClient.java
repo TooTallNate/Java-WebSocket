@@ -1000,4 +1000,9 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
     }
     engine.eot();
   }
+
+  @Override
+  public int getQueueLength() {
+    return engine.getQueueLength();
+  }
 }
