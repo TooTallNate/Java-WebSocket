@@ -857,7 +857,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
           ByteBuffer buffer = engine.outQueue.take();
           bufferedInputStream.write(buffer.array(), 0, buffer.limit());
           if (engine.outQueue.isEmpty()) {
-              bufferedInputStream.flush();
+            bufferedInputStream.flush();
           }
         }
       } catch (InterruptedException e) {
