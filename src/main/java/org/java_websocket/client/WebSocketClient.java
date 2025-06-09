@@ -25,10 +25,10 @@
 
 package org.java_websocket.client;
 
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.BufferedOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -856,7 +856,7 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
         while (!Thread.interrupted()) {
           ByteBuffer buffer = engine.outQueue.take();
           bufferedInputStream.write(buffer.array(), 0, buffer.limit());
-          if(engine.outQueue.isEmpty()) {
+          if (engine.outQueue.isEmpty()) {
               bufferedInputStream.flush();
           }
         }
