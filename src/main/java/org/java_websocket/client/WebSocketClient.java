@@ -28,6 +28,7 @@ package org.java_websocket.client;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.BufferedOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -850,17 +851,20 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
      * @throws IOException if write or flush did not work
      */
     private void runWriteData() throws IOException {
+      BufferedOutputStream bufferedInputStream = new BufferedOutputStream(ostream);
       try {
         while (!Thread.interrupted()) {
           ByteBuffer buffer = engine.outQueue.take();
-          ostream.write(buffer.array(), 0, buffer.limit());
-          ostream.flush();
+          bufferedInputStream.write(buffer.array(), 0, buffer.limit());
+          if(engine.outQueue.isEmpty()) {
+              bufferedInputStream.flush();
+          }
         }
       } catch (InterruptedException e) {
         for (ByteBuffer buffer : engine.outQueue) {
-          ostream.write(buffer.array(), 0, buffer.limit());
-          ostream.flush();
+          bufferedInputStream.write(buffer.array(), 0, buffer.limit());
         }
+        bufferedInputStream.flush();
         Thread.currentThread().interrupt();
       }
     }
