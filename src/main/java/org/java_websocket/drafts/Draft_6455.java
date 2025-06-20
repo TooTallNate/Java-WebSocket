@@ -27,6 +27,7 @@ package org.java_websocket.drafts;
 
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -509,11 +510,28 @@ public class Draft_6455 extends Draft {
       throw new IllegalStateException("Size representation not supported/specified");
     }
     if (mask) {
-      ByteBuffer maskkey = ByteBuffer.allocate(4);
-      maskkey.putInt(reuseableRandom.nextInt());
-      buf.put(maskkey.array());
-      for (int i = 0; mes.hasRemaining(); i++) {
-        buf.put((byte) (mes.get() ^ maskkey.get(i % 4)));
+      int maskInt = reuseableRandom.nextInt();
+      if (useFastMask) {
+        //default ByteOrder.BIG_ENDIAN
+        ByteBuffer maskLongkey = ByteBuffer.allocate(8);
+        maskLongkey.putInt(maskInt);
+        maskLongkey.putInt(maskInt);
+        buf.putInt(maskInt);
+        int length = mes.remaining() / 8;
+        long maskLong = maskLongkey.getLong(0);
+        for (int i = 0; i < length; i++) {
+          buf.putLong(mes.getLong() ^ maskLong);
+        }
+        for (int i = 0; mes.hasRemaining(); i++) {
+          buf.put((byte) (mes.get() ^ maskLongkey.get(i % 4)));
+        }
+      } else {
+        ByteBuffer maskkey = ByteBuffer.allocate(4);
+        maskkey.putInt(maskInt);
+        buf.put(maskkey.array());
+        for (int i = 0; mes.hasRemaining(); i++) {
+          buf.put((byte) (mes.get() ^ maskkey.get(i % 4)));
+        }
       }
     } else {
       buf.put(mes);
@@ -524,6 +542,8 @@ public class Draft_6455 extends Draft {
     buf.flip();
     return buf;
   }
+
+  public static boolean useFastMask = true;
 
   private Framedata translateSingleFrame(ByteBuffer buffer)
       throws IncompleteException, InvalidDataException {
@@ -791,6 +811,7 @@ public class Draft_6455 extends Draft {
   public List<Framedata> createFrames(String text, boolean mask) {
     TextFrame curframe = new TextFrame();
     curframe.setPayload(ByteBuffer.wrap(Charsetfunctions.utf8Bytes(text)));
+    curframe.setHasCheckUTF8PlayLoad(true);
     curframe.setTransferemasked(mask);
     try {
       curframe.isValid();

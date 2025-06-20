@@ -393,7 +393,9 @@ public class WebSocketImpl implements WebSocket {
     try {
       frames = draft.translateFrame(socketBuffer);
       for (Framedata f : frames) {
-        log.trace("matched frame: {}", f);
+        if (log.isTraceEnabled()) {
+          log.trace("matched frame: {}", f);
+        }
         draft.processFrame(this, f);
       }
     } catch (LimitExceededException e) {
@@ -673,9 +675,24 @@ public class WebSocketImpl implements WebSocket {
     }
     ArrayList<ByteBuffer> outgoingFrames = new ArrayList<>();
     for (Framedata f : frames) {
-      log.trace("send frame: {}", f);
+      if (log.isTraceEnabled()) {
+        log.trace("send frame: {}", f);
+      }
       outgoingFrames.add(draft.createBinaryFrame(f));
     }
+    write(outgoingFrames);
+  }
+
+  public ByteBuffer createEncodedBinaryFrame(Framedata framedata) {
+    return draft.createBinaryFrame(framedata);
+  }
+
+  public void sendEncodedBinaryFrame(ByteBuffer binaryFrame) {
+    List<ByteBuffer> bufs = new ArrayList<>(4);
+    sendEncodedBinaryFrames(bufs);
+  }
+
+  public void sendEncodedBinaryFrames(List<ByteBuffer> outgoingFrames) {
     write(outgoingFrames);
   }
 
@@ -734,8 +751,11 @@ public class WebSocketImpl implements WebSocket {
   }
 
   private void write(ByteBuffer buf) {
-    log.trace("write({}): {}", buf.remaining(),
-        buf.remaining() > 1000 ? "too big to display" : new String(buf.array()));
+    // should check isTraceEnabled() to avoid performance down because of log
+    if (log.isTraceEnabled()) {
+      log.trace("write({}): {}", buf.remaining(),
+              buf.remaining() > 1000 ? "too big to display" : new String(buf.array()));
+    }
 
     outQueue.add(buf);
     wsl.onWriteDemand(this);
