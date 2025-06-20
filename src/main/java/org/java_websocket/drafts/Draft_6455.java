@@ -615,6 +615,11 @@ public class Draft_6455 extends Draft {
           (frame.getPayloadData().remaining() > 1000 ? "too big to display"
               : new String(frame.getPayloadData().array())));
     }
+
+    if (frame instanceof TextFrame) {
+      ((TextFrame) frame).setCanSkipCheckUTF8PlayLoad(true);
+    }
+    
     frame.isValid();
     return frame;
   }
@@ -814,7 +819,7 @@ public class Draft_6455 extends Draft {
   public List<Framedata> createFrames(String text, boolean mask) {
     TextFrame curframe = new TextFrame();
     curframe.setPayload(ByteBuffer.wrap(Charsetfunctions.utf8Bytes(text)));
-    curframe.setHasCheckUTF8PlayLoad(true);
+    curframe.setCanSkipCheckUTF8PlayLoad(true);
     curframe.setTransferemasked(mask);
     try {
       curframe.isValid();
