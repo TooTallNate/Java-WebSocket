@@ -579,10 +579,30 @@ public class Draft_6455 extends Draft {
 
     ByteBuffer payload = ByteBuffer.allocate(checkAlloc(payloadlength));
     if (mask) {
-      byte[] maskskey = new byte[4];
-      buffer.get(maskskey);
-      for (int i = 0; i < payloadlength; i++) {
-        payload.put((byte) (buffer.get(/*payloadstart + i*/) ^ maskskey[i % 4]));
+      if (useFastMask) {
+        byte[] maskskey = new byte[4];
+        buffer.get(maskskey);
+        ByteBuffer maskLongKey = ByteBuffer.allocate(8);
+        maskLongKey.put(maskskey);
+        maskLongKey.put(maskskey);
+
+        // n / 8 eq n >> 3
+        int length = payloadlength >> 3;
+        long maskLong = maskLongKey.getLong(0);
+        //fast mask use 8 byte long
+        for (int i = 0; i < length; i++) {
+          payload.putLong(buffer.getLong() ^ maskLong);
+        }
+        //mask remain bytes
+        for (int i = (length << 3); i < payloadlength; i++) {
+          payload.put((byte) (buffer.get(/*payloadstart + i*/) ^ maskskey[i % 4]));
+        }
+      } else {
+        byte[] maskskey = new byte[4];
+        buffer.get(maskskey);
+        for (int i = 0; i < payloadlength; i++) {
+          payload.put((byte) (buffer.get(/*payloadstart + i*/) ^ maskskey[i % 4]));
+        }
       }
     } else {
       payload.put(buffer.array(), buffer.position(), payload.limit());
