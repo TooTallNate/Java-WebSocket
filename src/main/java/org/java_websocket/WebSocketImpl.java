@@ -673,6 +673,22 @@ public class WebSocketImpl implements WebSocket {
     if (frames == null) {
       throw new IllegalArgumentException();
     }
+    List<ByteBuffer> outgoingFrames = createOutgoingBinaryFrame(frames);
+    write(outgoingFrames);
+  }
+
+  private List<ByteBuffer> createOutgoingBinaryFrame(Collection<Framedata> frames) {
+    // most scene send one message, use singletonList which is more fast than singletonList
+    if (frames.size() == 1) {
+      for (Framedata f : frames) {
+        if (log.isTraceEnabled()) {
+          log.trace("send frame: {}", f);
+        }
+        return Collections.singletonList(
+                draft.createBinaryFrame(f)
+        );
+      }
+    }
     ArrayList<ByteBuffer> outgoingFrames = new ArrayList<>();
     for (Framedata f : frames) {
       if (log.isTraceEnabled()) {
@@ -680,7 +696,7 @@ public class WebSocketImpl implements WebSocket {
       }
       outgoingFrames.add(draft.createBinaryFrame(f));
     }
-    write(outgoingFrames);
+    return outgoingFrames;
   }
 
   public ByteBuffer createEncodedBinaryFrame(Framedata framedata) {
@@ -688,8 +704,8 @@ public class WebSocketImpl implements WebSocket {
   }
 
   public void sendEncodedBinaryFrame(ByteBuffer binaryFrame) {
-    List<ByteBuffer> bufs = new ArrayList<>(4);
-    sendEncodedBinaryFrames(bufs);
+    List<ByteBuffer> outgoingFrames= Collections.singletonList(binaryFrame);
+    sendEncodedBinaryFrames(outgoingFrames);
   }
 
   public void sendEncodedBinaryFrames(List<ByteBuffer> outgoingFrames) {
