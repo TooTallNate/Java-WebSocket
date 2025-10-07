@@ -190,6 +190,14 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel, ISSLC
       if (writeEngineResult.getHandshakeStatus() == HandshakeStatus.FINISHED) {
         createBuffers(sslEngine.getSession());
         return;
+      } else {
+        // processHandshake() can spin in a loop if a connection is made with no SSL handshake,
+        // throttle this by delaying 10ms to avoid consuming a CPU core.
+        try {
+          Thread.sleep(10);
+        } catch (InterruptedException e) {
+          // Ignore
+        }
       }
     }
     assert (sslEngine.getHandshakeStatus()
