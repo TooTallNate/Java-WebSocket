@@ -39,7 +39,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLEngineResult;
 import javax.net.ssl.SSLEngineResult.HandshakeStatus;
@@ -105,6 +109,12 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel, ISSLC
    **/
   protected int bufferallocations = 0;
 
+  /**
+   * Scheduler to close the socket when the handshake takes too long
+   */
+  protected ScheduledExecutorService closeSocketScheduler;
+  protected ScheduledFuture<?> closeSocketTask;
+
   public SSLSocketChannel2(SocketChannel channel, SSLEngine sslEngine, ExecutorService exec,
       SelectionKey key) throws IOException {
     if (channel == null || sslEngine == null || exec == null) {
@@ -127,6 +137,16 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel, ISSLC
     // kick off handshake
     socketChannel.write(wrap(emptybuffer));// initializes res
     processHandshake(false);
+
+    // Close stale connection with no handshake in 60s
+    this.closeSocketScheduler = Executors.newSingleThreadScheduledExecutor();
+    this.closeSocketTask = closeSocketScheduler.schedule(() -> {
+      try {
+        close();
+      } catch (IOException e) {
+        // Ignored
+      }
+    }, 60, TimeUnit.SECONDS);
   }
 
   private void consumeFutureUninterruptible(Future<?> f) {
@@ -188,6 +208,11 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel, ISSLC
         || sslEngine.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.NEED_WRAP) {
       socketChannel.write(wrap(emptybuffer));
       if (writeEngineResult.getHandshakeStatus() == HandshakeStatus.FINISHED) {
+        if (closeSocketTask != null) {
+          closeSocketTask.cancel(false);
+          closeSocketTask = null;
+          closeSocketScheduler = null;
+        }
         createBuffers(sslEngine.getSession());
         return;
       } else {
