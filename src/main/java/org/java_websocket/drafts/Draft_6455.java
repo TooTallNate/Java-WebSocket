@@ -822,7 +822,7 @@ public class Draft_6455 extends Draft {
    * @return the server time
    */
   private String getServerTime() {
-    return HTTP_DATE_FORMAT.format(ZonedDateTime.now());
+    return HTTP_DATE_FORMAT.format(ZonedDateTime.now(ZoneId.of("GMT")));
   }
 
   /**
