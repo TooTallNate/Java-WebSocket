@@ -33,6 +33,11 @@ import java.nio.ByteBuffer;
 public class ByteBufferUtils {
 
   /**
+   * Shared empty ByteBuffer to avoid repeated allocations
+   */
+  private static final ByteBuffer EMPTY_BYTE_BUFFER = ByteBuffer.allocate(0);
+
+  /**
    * Private constructor for static class
    */
   private ByteBufferUtils() {
@@ -52,10 +57,12 @@ public class ByteBufferUtils {
     int fremain = source.remaining();
     int toremain = dest.remaining();
     if (fremain > toremain) {
-      int limit = Math.min(fremain, toremain);
-      source.limit(limit);
+      // We know fremain > toremain, so no need for Math.min
+      int originalLimit = source.limit();
+      source.limit(source.position() + toremain);
       dest.put(source);
-      return limit;
+      source.limit(originalLimit);
+      return toremain;
     } else {
       dest.put(source);
       return fremain;
@@ -68,6 +75,6 @@ public class ByteBufferUtils {
    * @return empty ByteBuffer
    */
   public static ByteBuffer getEmptyByteBuffer() {
-    return ByteBuffer.allocate(0);
+    return EMPTY_BYTE_BUFFER.duplicate();
   }
 }

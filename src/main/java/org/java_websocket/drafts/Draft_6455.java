@@ -30,14 +30,14 @@ import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.text.SimpleDateFormat;
+import java.time.ZonedDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
-import java.util.TimeZone;
 import org.java_websocket.WebSocketImpl;
 import org.java_websocket.enums.CloseHandshakeType;
 import org.java_websocket.enums.HandshakeState;
@@ -104,6 +104,13 @@ public class Draft_6455 extends Draft {
    * Handshake specific field for the connection
    */
   private static final String CONNECTION = "Connection";
+
+  /**
+   * DateTimeFormatter for HTTP date format (thread-safe)
+   */
+  private static final DateTimeFormatter HTTP_DATE_FORMAT = 
+      DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss z", Locale.US)
+          .withZone(ZoneId.of("GMT"));
 
   /**
    * Logger instance
@@ -723,7 +730,7 @@ public class Draft_6455 extends Draft {
   @Override
   public List<Framedata> translateFrame(ByteBuffer buffer) throws InvalidDataException {
     while (true) {
-      List<Framedata> frames = new LinkedList<>();
+      List<Framedata> frames = new ArrayList<>();
       Framedata cur;
       if (incompleteframe != null) {
         // complete an incomplete frame
@@ -816,11 +823,7 @@ public class Draft_6455 extends Draft {
    * @return the server time
    */
   private String getServerTime() {
-    Calendar calendar = Calendar.getInstance();
-    SimpleDateFormat dateFormat = new SimpleDateFormat(
-        "EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
-    dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-    return dateFormat.format(calendar.getTime());
+    return HTTP_DATE_FORMAT.format(ZonedDateTime.now());
   }
 
   /**
@@ -1114,15 +1117,15 @@ public class Draft_6455 extends Draft {
 
   @Override
   public String toString() {
-    String result = super.toString();
+    StringBuilder result = new StringBuilder(super.toString());
     if (getExtension() != null) {
-      result += " extension: " + getExtension().toString();
+      result.append(" extension: ").append(getExtension().toString());
     }
     if (getProtocol() != null) {
-      result += " protocol: " + getProtocol().toString();
+      result.append(" protocol: ").append(getProtocol().toString());
     }
-    result += " max frame size: " + this.maxFrameSize;
-    return result;
+    result.append(" max frame size: ").append(this.maxFrameSize);
+    return result.toString();
   }
 
   @Override
