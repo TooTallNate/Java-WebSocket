@@ -33,7 +33,8 @@ import java.nio.ByteBuffer;
 public class ByteBufferUtils {
 
   /**
-   * Shared empty ByteBuffer to avoid repeated allocations
+   * Shared empty ByteBuffer to avoid repeated allocations.
+   * Safe to share because it has zero capacity and duplicate() provides independent position/limit state.
    */
   private static final ByteBuffer EMPTY_BYTE_BUFFER = ByteBuffer.allocate(0);
 
@@ -70,9 +71,10 @@ public class ByteBufferUtils {
   }
 
   /**
-   * Get a ByteBuffer with zero capacity
+   * Get a ByteBuffer with zero capacity. Returns a duplicate of a shared empty buffer
+   * for efficiency - each duplicate has independent position/limit/mark state.
    *
-   * @return empty ByteBuffer
+   * @return empty ByteBuffer with zero capacity
    */
   public static ByteBuffer getEmptyByteBuffer() {
     return EMPTY_BYTE_BUFFER.duplicate();
