@@ -244,7 +244,7 @@ public class Draft_6455 extends Draft {
     boolean hasDefault = false;
     byteBufferList = new ArrayList<>();
     for (IExtension inputExtension : inputExtensions) {
-      if (inputExtension.getClass().equals(DefaultExtension.class)) {
+      if (inputExtension instanceof DefaultExtension) {
         hasDefault = true;
       }
     }
