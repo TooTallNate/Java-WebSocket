@@ -324,6 +324,12 @@ public class PerMessageDeflateExtension extends CompressionExtension {
       Map<String, String> headers = extensionData.getExtensionParameters();
       if (headers.containsKey(SERVER_NO_CONTEXT_TAKEOVER)) {
         serverNoContextTakeover = true;
+      } else {
+        // If the server does not return server_no_context_takeover, the client must not reset the
+        // decompressor (inflater) because that would break communication. Note that in contrast,
+        // the client can reset the compressor (deflater) even if the server does not reset the
+        // decompressor (inflater), so this is not required for client_no_context_takeover below.
+        serverNoContextTakeover = false;
       }
       if (headers.containsKey(CLIENT_NO_CONTEXT_TAKEOVER)) {
         clientNoContextTakeover = true;
