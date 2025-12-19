@@ -182,7 +182,7 @@ public class PerMessageDeflateExtension extends CompressionExtension {
 
       if (inputFrame.isFin()) {
         decompress(TAIL_BYTES, output);
-        // If context takeover is disabled for the other side, inflater must be reset.
+        // If context takeover is disabled on the other end, inflater can be reset.
         if (resetInflater) {
           inflater.reset();
         }
@@ -252,7 +252,7 @@ public class PerMessageDeflateExtension extends CompressionExtension {
       if (endsWithTail(outputBytes)) {
         outputLength -= TAIL_BYTES.length;
       }
-      // If context takeover is disabled for this side, deflater must be reset.
+      // If context takeover is disabled on this end, deflater can be reset.
       if (resetDeflater) {
         deflater.reset();
       }
