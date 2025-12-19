@@ -2,7 +2,6 @@ package org.java_websocket.extensions.permessage_deflate;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
@@ -47,14 +46,13 @@ public class PerMessageDeflateExtension extends CompressionExtension {
   private boolean serverNoContextTakeover = true;
   private boolean clientNoContextTakeover = false;
 
-  // For WebSocketServers, this variable holds the extension parameters that the peer client has requested.
-  // For WebSocketClients, this variable holds the extension parameters that client himself has requested.
-  private Map<String, String> requestedParameters = new LinkedHashMap<>();
-
   private final int compressionLevel;
 
   private final Inflater inflater;
   private final Deflater deflater;
+
+  private boolean resetDeflater = false;
+  private boolean resetInflater = false;
 
   /**
    * Constructor for the PerMessage Deflate Extension (<a href="https://tools.ietf.org/html/rfc7692#section-7">7&#46; Thepermessage-deflate" Extension</a>)
@@ -184,8 +182,8 @@ public class PerMessageDeflateExtension extends CompressionExtension {
 
       if (inputFrame.isFin()) {
         decompress(TAIL_BYTES, output);
-        // If context takeover is disabled, inflater can be reset.
-        if (clientNoContextTakeover) {
+        // If context takeover is disabled for the other side, inflater must be reset.
+        if (resetInflater) {
           inflater.reset();
         }
       }
@@ -254,8 +252,8 @@ public class PerMessageDeflateExtension extends CompressionExtension {
       if (endsWithTail(outputBytes)) {
         outputLength -= TAIL_BYTES.length;
       }
-
-      if (serverNoContextTakeover) {
+      // If context takeover is disabled for this side, deflater must be reset.
+      if (resetDeflater) {
         deflater.reset();
       }
     }
@@ -294,10 +292,18 @@ public class PerMessageDeflateExtension extends CompressionExtension {
 
       // Holds parameters that peer client has sent.
       Map<String, String> headers = extensionData.getExtensionParameters();
-      requestedParameters.putAll(headers);
-      if (requestedParameters.containsKey(CLIENT_NO_CONTEXT_TAKEOVER)) {
+      if (headers.containsKey(SERVER_NO_CONTEXT_TAKEOVER)) {
+        serverNoContextTakeover = true;
+      }
+      if (headers.containsKey(CLIENT_NO_CONTEXT_TAKEOVER)) {
         clientNoContextTakeover = true;
       }
+
+      // RFC 7692:
+      // server_ prefix parameters configure the server compressor (deflater)
+      // client_ prefix parameters configure the server decompressor (inflater)
+      resetDeflater = serverNoContextTakeover;
+      resetInflater = clientNoContextTakeover;
 
       return true;
     }
@@ -316,7 +322,19 @@ public class PerMessageDeflateExtension extends CompressionExtension {
 
       // Holds parameters that are sent by the server, as a response to our initial extension request.
       Map<String, String> headers = extensionData.getExtensionParameters();
-      // After this point, parameters that the server sent back can be configured, but we don't use them for now.
+      if (headers.containsKey(SERVER_NO_CONTEXT_TAKEOVER)) {
+        serverNoContextTakeover = true;
+      }
+      if (headers.containsKey(CLIENT_NO_CONTEXT_TAKEOVER)) {
+        clientNoContextTakeover = true;
+      }
+
+      // RFC 7692:
+      // client_ prefix parameters configure the client compressor (deflater)
+      // server_ prefix parameters configure the client decompressor (inflater)
+      resetDeflater = clientNoContextTakeover;
+      resetInflater = serverNoContextTakeover;
+
       return true;
     }
 
@@ -325,17 +343,15 @@ public class PerMessageDeflateExtension extends CompressionExtension {
 
   @Override
   public String getProvidedExtensionAsClient() {
-    requestedParameters.put(CLIENT_NO_CONTEXT_TAKEOVER, ExtensionRequestData.EMPTY_VALUE);
-    requestedParameters.put(SERVER_NO_CONTEXT_TAKEOVER, ExtensionRequestData.EMPTY_VALUE);
-
-    return EXTENSION_REGISTERED_NAME + "; " + SERVER_NO_CONTEXT_TAKEOVER + "; "
-        + CLIENT_NO_CONTEXT_TAKEOVER;
+    return EXTENSION_REGISTERED_NAME
+        + (serverNoContextTakeover ? "; " + SERVER_NO_CONTEXT_TAKEOVER : "")
+        + (clientNoContextTakeover ? "; " + CLIENT_NO_CONTEXT_TAKEOVER : "");
   }
 
   @Override
   public String getProvidedExtensionAsServer() {
     return EXTENSION_REGISTERED_NAME
-        + "; " + SERVER_NO_CONTEXT_TAKEOVER
+        + (serverNoContextTakeover ? "; " + SERVER_NO_CONTEXT_TAKEOVER : "")
         + (clientNoContextTakeover ? "; " + CLIENT_NO_CONTEXT_TAKEOVER : "");
   }
 
