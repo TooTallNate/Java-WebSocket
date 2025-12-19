@@ -214,7 +214,7 @@ public class PerMessageDeflateExtensionTest {
   @Test
   public void testGetProvidedExtensionAsClient() {
     PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
-    assertEquals("permessage-deflate; server_no_context_takeover; client_no_context_takeover",
+    assertEquals("permessage-deflate; server_no_context_takeover",
         deflateExtension.getProvidedExtensionAsClient());
   }
 
@@ -242,6 +242,8 @@ public class PerMessageDeflateExtensionTest {
     PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
     deflateExtension.setServerNoContextTakeover(false);
     assertFalse(deflateExtension.isServerNoContextTakeover());
+    assertEquals("permessage-deflate",
+        deflateExtension.getProvidedExtensionAsServer());
   }
 
   @Test
@@ -255,6 +257,8 @@ public class PerMessageDeflateExtensionTest {
     PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
     deflateExtension.setClientNoContextTakeover(true);
     assertTrue(deflateExtension.isClientNoContextTakeover());
+    assertEquals("permessage-deflate; server_no_context_takeover; client_no_context_takeover",
+        deflateExtension.getProvidedExtensionAsClient());
   }
 
   @Test
