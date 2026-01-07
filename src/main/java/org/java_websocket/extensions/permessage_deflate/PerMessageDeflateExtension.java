@@ -1,13 +1,44 @@
+/*
+ * TooTallNate - Java-WebSocket
+ *
+ * MIT License
+ *
+ * Copyright (C) 2025 Robert Schlabbach <robert.schlabbach@ubitricity.com>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package org.java_websocket.extensions.permessage_deflate;
+
+import static java.util.zip.Deflater.DEFAULT_COMPRESSION;
+import static java.util.zip.Deflater.NO_FLUSH;
+import static java.util.zip.Deflater.SYNC_FLUSH;
+import static org.java_websocket.extensions.ExtensionRequestData.parseExtensionRequest;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
-import java.util.LinkedHashMap;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.Optional;
 import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
-import org.java_websocket.enums.Opcode;
 import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.exceptions.InvalidFrameException;
 import org.java_websocket.extensions.CompressionExtension;
@@ -17,356 +48,527 @@ import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.ContinuousFrame;
 import org.java_websocket.framing.DataFrame;
 import org.java_websocket.framing.Framedata;
-import org.java_websocket.framing.FramedataImpl1;
 
-/**
- * PerMessage Deflate Extension (<a href="https://tools.ietf.org/html/rfc7692#section-7">7&#46; The
- * "permessage-deflate" Extension</a> in
- * <a href="https://tools.ietf.org/html/rfc7692">RFC 7692</a>).
- *
- * @see <a href="https://tools.ietf.org/html/rfc7692#section-7">7&#46; The "permessage-deflate"
- * Extension in RFC 7692</a>
- */
+/** RFC 7692 WebSocket Per-Message Deflate Extension implementation */
 public class PerMessageDeflateExtension extends CompressionExtension {
+  // RFC 7692 extension common name and identifier
+  public static final String EXTENSION_COMMON_NAME = "WebSocket Per-Message Deflate";
+  public static final String EXTENSION_IDENTIFIER = "permessage-deflate";
 
-  // Name of the extension as registered by IETF https://tools.ietf.org/html/rfc7692#section-9.
-  private static final String EXTENSION_REGISTERED_NAME = "permessage-deflate";
-  // Below values are defined for convenience. They are not used in the compression/decompression phase.
-  // They may be needed during the extension-negotiation offer in the future.
-  private static final String SERVER_NO_CONTEXT_TAKEOVER = "server_no_context_takeover";
-  private static final String CLIENT_NO_CONTEXT_TAKEOVER = "client_no_context_takeover";
-  private static final String SERVER_MAX_WINDOW_BITS = "server_max_window_bits";
-  private static final String CLIENT_MAX_WINDOW_BITS = "client_max_window_bits";
-  private static final int serverMaxWindowBits = 1 << 15;
-  private static final int clientMaxWindowBits = 1 << 15;
-  private static final byte[] TAIL_BYTES = {(byte) 0x00, (byte) 0x00, (byte) 0xFF, (byte) 0xFF};
-  private static final int BUFFER_SIZE = 1 << 10;
+  // RFC 7692 extension parameters
+  public static final String PARAMETER_CLIENT_NO_CONTEXT_TAKEOVER = "client_no_context_takeover";
+  public static final String PARAMETER_SERVER_NO_CONTEXT_TAKEOVER = "server_no_context_takeover";
+  public static final String PARAMETER_CLIENT_MAX_WINDOW_BITS = "client_max_window_bits";
+  public static final int MINIMUM_CLIENT_MAX_WINDOW_BITS = 8;
+  public static final int MAXIMUM_CLIENT_MAX_WINDOW_BITS = 15;
+  public static final String PARAMETER_SERVER_MAX_WINDOW_BITS = "server_max_window_bits";
+  public static final int MINIMUM_SERVER_MAX_WINDOW_BITS = 8;
+  public static final int MAXIMUM_SERVER_MAX_WINDOW_BITS = 15;
 
-  private int threshold = 1024;
+  // RFC 7692 extension parameter defaults
+  public static boolean DEFAULT_CLIENT_NO_CONTEXT_TAKEOVER = false;
+  public static boolean DEFAULT_SERVER_NO_CONTEXT_TAKEOVER = false;
+  public static int DEFAULT_CLIENT_MAX_WINDOW_BITS = MAXIMUM_CLIENT_MAX_WINDOW_BITS;
+  public static int DEFAULT_SERVER_MAX_WINDOW_BITS = MAXIMUM_SERVER_MAX_WINDOW_BITS;
+  public static int DEFAULT_COMPRESSION_THRESHOLD = 64;
 
-  private boolean serverNoContextTakeover = true;
-  private boolean clientNoContextTakeover = false;
+  // RFC 7692 tail end to be removed from compressed data and appended when decompressing
+  public static final byte[] EMPTY_DEFLATE_BLOCK =
+      new byte[] {0x00, 0x00, (byte) 0xff, (byte) 0xff};
 
-  // For WebSocketServers, this variable holds the extension parameters that the peer client has requested.
-  // For WebSocketClients, this variable holds the extension parameters that client himself has requested.
-  private Map<String, String> requestedParameters = new LinkedHashMap<>();
+  // RFC 7692 empty uncompressed DEFLATE block to be used when out of uncompressed data
+  public static final byte[] EMPTY_UNCOMPRESSED_DEFLATE_BLOCK = new byte[] {0x00};
+
+  private static final int TRANSFER_CHUNK_SIZE = 8192;
 
   private final int compressionLevel;
+  private final int maxFrameSize;
+  private final Deflater compressor;
+  private final Inflater decompressor;
 
-  private final Inflater inflater;
-  private final Deflater deflater;
+  private int compressionThreshold;
+  private boolean clientNoContextTakeover;
+  private boolean serverNoContextTakeover;
+  private int clientMaxWindowBits;
+  private int serverMaxWindowBits;
 
-  /**
-   * Constructor for the PerMessage Deflate Extension (<a href="https://tools.ietf.org/html/rfc7692#section-7">7&#46; Thepermessage-deflate" Extension</a>)
-   *
-   * Uses {@link java.util.zip.Deflater#DEFAULT_COMPRESSION} as the compression level for the {@link java.util.zip.Deflater#Deflater(int)}
-   */
+  private boolean isCompressorResetRequired;
+  private boolean isDecompressorResetAllowed;
+  private boolean isCompressing;
+  private boolean isDecompressing;
+  private long compressedBytes;
+  private long decompressedBytes;
+
   public PerMessageDeflateExtension() {
-    this(Deflater.DEFAULT_COMPRESSION);
+    this(DEFAULT_COMPRESSION);
   }
 
-  /**
-   * Constructor for the PerMessage Deflate Extension (<a href="https://tools.ietf.org/html/rfc7692#section-7">7&#46; Thepermessage-deflate" Extension</a>)
-   *
-   * @param compressionLevel The compression level passed to the {@link java.util.zip.Deflater#Deflater(int)}
-   */
   public PerMessageDeflateExtension(int compressionLevel) {
+    this(compressionLevel, Integer.MAX_VALUE);
+  }
+
+  public PerMessageDeflateExtension(int compressionLevel, int maxFrameSize) {
     this.compressionLevel = compressionLevel;
-    this.deflater = new Deflater(this.compressionLevel, true);
-    this.inflater = new Inflater(true);
+    this.maxFrameSize = maxFrameSize;
+    compressor = new Deflater(compressionLevel, true);
+    decompressor = new Inflater(true);
+    compressionThreshold = DEFAULT_COMPRESSION_THRESHOLD;
+    clientNoContextTakeover = DEFAULT_CLIENT_NO_CONTEXT_TAKEOVER;
+    serverNoContextTakeover = DEFAULT_SERVER_NO_CONTEXT_TAKEOVER;
+    clientMaxWindowBits = DEFAULT_CLIENT_MAX_WINDOW_BITS;
+    serverMaxWindowBits = DEFAULT_SERVER_MAX_WINDOW_BITS;
+    isCompressorResetRequired = false;
+    isDecompressorResetAllowed = false;
+    isCompressing = false;
+    isDecompressing = false;
+    compressedBytes = 0;
+    decompressedBytes = 0;
   }
 
-  /**
-   * Get the compression level used for the compressor.
-   * @return the compression level
-   */
   public int getCompressionLevel() {
-    return this.compressionLevel;
+    return compressionLevel;
   }
 
-  /**
-   * Get the size threshold for doing the compression
-   * @return Size (in bytes) below which messages will not be compressed
-   * @since 1.5.3
-   */
+  public int getMaxFrameSize() {
+    return maxFrameSize;
+  }
+
   public int getThreshold() {
-    return threshold;
+    return compressionThreshold;
   }
 
-  /**
-   * Set the size when payloads smaller than this will not be compressed.
-   * @param threshold the size in bytes
-   * @since 1.5.3
-   */
   public void setThreshold(int threshold) {
-    this.threshold = threshold;
+    this.compressionThreshold = threshold;
   }
 
-  /**
-   * Access the "server_no_context_takeover" extension parameter
-   *
-   * @see <a href="https://tools.ietf.org/html/rfc7692#section-7.1.1.1">The "server_no_context_takeover" Extension Parameter</a>
-   * @return serverNoContextTakeover is the server no context parameter active
-   */
+  public boolean isClientNoContextTakeover() {
+    return clientNoContextTakeover;
+  }
+
+  public void setClientNoContextTakeover(boolean clientNoContextTakeover) {
+    this.clientNoContextTakeover = clientNoContextTakeover;
+  }
+
   public boolean isServerNoContextTakeover() {
     return serverNoContextTakeover;
   }
 
-  /**
-   * Setter for the "server_no_context_takeover" extension parameter
-   * @see <a href="https://tools.ietf.org/html/rfc7692#section-7.1.1.1">The "server_no_context_takeover" Extension Parameter</a>
-   * @param serverNoContextTakeover set the server no context parameter
-   */
   public void setServerNoContextTakeover(boolean serverNoContextTakeover) {
     this.serverNoContextTakeover = serverNoContextTakeover;
   }
 
   /**
-   * Access the "client_no_context_takeover" extension parameter
+   * Returns the overall compression ratio of all incoming and outgoing payloads which were
+   * compressed.
    *
-   * @see <a href="https://tools.ietf.org/html/rfc7692#section-7.1.1.2">The "client_no_context_takeover" Extension Parameter</a>
-   * @return clientNoContextTakeover is the client no context parameter active
+   * <p>Values below 1 mean the compression is effective, the lower, the better. If you get values
+   * above 1, look into increasing the compression level or the threshold. If that does not help,
+   * consider not using this extension.
+   *
+   * @return the overall compression ratio of all incoming and outgoing payloads
    */
-  public boolean isClientNoContextTakeover() {
-    return clientNoContextTakeover;
+  public double getCompressionRatio() {
+    double decompressed = decompressedBytes;
+    return decompressed > 0 ? compressedBytes / decompressed : 1;
   }
 
-  /**
-   * Setter for the "client_no_context_takeover" extension parameter
-   * @see <a href="https://tools.ietf.org/html/rfc7692#section-7.1.1.2">The "client_no_context_takeover" Extension Parameter</a>
-   * @param clientNoContextTakeover set the client no context parameter
-   */
-  public void setClientNoContextTakeover(boolean clientNoContextTakeover) {
-    this.clientNoContextTakeover = clientNoContextTakeover;
-  }
-
-  /*
-      An endpoint uses the following algorithm to decompress a message.
-      1.  Append 4 octets of 0x00 0x00 0xff 0xff to the tail end of the
-         payload of the message.
-      2.  Decompress the resulting data using DEFLATE.
-      See, https://tools.ietf.org/html/rfc7692#section-7.2.2
-   */
-  @Override
-  public void decodeFrame(Framedata inputFrame) throws InvalidDataException {
-    // Only DataFrames can be decompressed.
-    if (!(inputFrame instanceof DataFrame)) {
-      return;
-    }
-
-    if (!inputFrame.isRSV1() && inputFrame.getOpcode() != Opcode.CONTINUOUS) {
-      return;
-    }
-
-    // RSV1 bit must be set only for the first frame.
-    if (inputFrame.getOpcode() == Opcode.CONTINUOUS && inputFrame.isRSV1()) {
-      throw new InvalidDataException(CloseFrame.POLICY_VALIDATION,
-          "RSV1 bit can only be set for the first frame.");
-    }
-
-    // Decompressed output buffer.
-    ByteArrayOutputStream output = new ByteArrayOutputStream();
-    try {
-      decompress(inputFrame.getPayloadData().array(), output);
-
-      /*
-          If a message is "first fragmented and then compressed", as this project does, then the inflater
-              can not inflate fragments except the first one.
-          This behavior occurs most likely because those fragments end with "final deflate blocks".
-          We can check the getRemaining() method to see whether the data we supplied has been decompressed or not.
-          And if not, we just reset the inflater and decompress again.
-          Note that this behavior doesn't occur if the message is "first compressed and then fragmented".
-       */
-      if (inflater.getRemaining() > 0) {
-        inflater.reset();
-        decompress(inputFrame.getPayloadData().array(), output);
-      }
-
-      if (inputFrame.isFin()) {
-        decompress(TAIL_BYTES, output);
-        // If context takeover is disabled, inflater can be reset.
-        if (clientNoContextTakeover) {
-          inflater.reset();
-        }
-      }
-    } catch (DataFormatException e) {
-      throw new InvalidDataException(CloseFrame.POLICY_VALIDATION, e.getMessage());
-    }
-
-    // Set frames payload to the new decompressed data.
-    ((FramedataImpl1) inputFrame)
-        .setPayload(ByteBuffer.wrap(output.toByteArray(), 0, output.size()));
-  }
-
-  /**
-   * @param data         the bytes of data
-   * @param outputBuffer the output stream
-   * @throws DataFormatException
-   */
-  private void decompress(byte[] data, ByteArrayOutputStream outputBuffer)
-      throws DataFormatException {
-    inflater.setInput(data);
-    byte[] buffer = new byte[BUFFER_SIZE];
-
-    int bytesInflated;
-    while ((bytesInflated = inflater.inflate(buffer)) > 0) {
-      outputBuffer.write(buffer, 0, bytesInflated);
-    }
-  }
-
-  @Override
-  public void encodeFrame(Framedata inputFrame) {
-    // Only DataFrames can be decompressed.
-    if (!(inputFrame instanceof DataFrame)) {
-      return;
-    }
-
-    byte[] payloadData = inputFrame.getPayloadData().array();
-    if (payloadData.length < threshold) {
-      return;
-    }
-    // Only the first frame's RSV1 must be set.
-    if (!(inputFrame instanceof ContinuousFrame)) {
-      ((DataFrame) inputFrame).setRSV1(true);
-    }
-
-    deflater.setInput(payloadData);
-    // Compressed output buffer.
-    ByteArrayOutputStream output = new ByteArrayOutputStream();
-    // Temporary buffer to hold compressed output.
-    byte[] buffer = new byte[1024];
-    int bytesCompressed;
-    while ((bytesCompressed = deflater.deflate(buffer, 0, buffer.length, Deflater.SYNC_FLUSH))
-        > 0) {
-      output.write(buffer, 0, bytesCompressed);
-    }
-
-    byte[] outputBytes = output.toByteArray();
-    int outputLength = outputBytes.length;
-
-    /*
-        https://tools.ietf.org/html/rfc7692#section-7.2.1 states that if the final fragment's compressed
-            payload ends with 0x00 0x00 0xff 0xff, they should be removed.
-        To simulate removal, we just pass 4 bytes less to the new payload
-            if the frame is final and outputBytes ends with 0x00 0x00 0xff 0xff.
-     */
-    if (inputFrame.isFin()) {
-      if (endsWithTail(outputBytes)) {
-        outputLength -= TAIL_BYTES.length;
-      }
-
-      if (serverNoContextTakeover) {
-        deflater.reset();
-      }
-    }
-
-    // Set frames payload to the new compressed data.
-    ((FramedataImpl1) inputFrame).setPayload(ByteBuffer.wrap(outputBytes, 0, outputLength));
-  }
-
-  /**
-   * @param data the bytes of data
-   * @return true if the data is OK
-   */
-  private static boolean endsWithTail(byte[] data) {
-    if (data.length < 4) {
-      return false;
-    }
-
-    int length = data.length;
-    for (int i = 0; i < TAIL_BYTES.length; i++) {
-      if (TAIL_BYTES[i] != data[length - TAIL_BYTES.length + i]) {
-        return false;
-      }
-    }
-
-    return true;
-  }
-
-  @Override
-  public boolean acceptProvidedExtensionAsServer(String inputExtension) {
-    String[] requestedExtensions = inputExtension.split(",");
-    for (String extension : requestedExtensions) {
-      ExtensionRequestData extensionData = ExtensionRequestData.parseExtensionRequest(extension);
-      if (!EXTENSION_REGISTERED_NAME.equalsIgnoreCase(extensionData.getExtensionName())) {
-        continue;
-      }
-
-      // Holds parameters that peer client has sent.
-      Map<String, String> headers = extensionData.getExtensionParameters();
-      requestedParameters.putAll(headers);
-      if (requestedParameters.containsKey(CLIENT_NO_CONTEXT_TAKEOVER)) {
-        clientNoContextTakeover = true;
-      }
-
-      return true;
-    }
-
-    return false;
-  }
-
-  @Override
-  public boolean acceptProvidedExtensionAsClient(String inputExtension) {
-    String[] requestedExtensions = inputExtension.split(",");
-    for (String extension : requestedExtensions) {
-      ExtensionRequestData extensionData = ExtensionRequestData.parseExtensionRequest(extension);
-      if (!EXTENSION_REGISTERED_NAME.equalsIgnoreCase(extensionData.getExtensionName())) {
-        continue;
-      }
-
-      // Holds parameters that are sent by the server, as a response to our initial extension request.
-      Map<String, String> headers = extensionData.getExtensionParameters();
-      // After this point, parameters that the server sent back can be configured, but we don't use them for now.
-      return true;
-    }
-
-    return false;
-  }
-
-  @Override
-  public String getProvidedExtensionAsClient() {
-    requestedParameters.put(CLIENT_NO_CONTEXT_TAKEOVER, ExtensionRequestData.EMPTY_VALUE);
-    requestedParameters.put(SERVER_NO_CONTEXT_TAKEOVER, ExtensionRequestData.EMPTY_VALUE);
-
-    return EXTENSION_REGISTERED_NAME + "; " + SERVER_NO_CONTEXT_TAKEOVER + "; "
-        + CLIENT_NO_CONTEXT_TAKEOVER;
-  }
-
-  @Override
-  public String getProvidedExtensionAsServer() {
-    return EXTENSION_REGISTERED_NAME
-        + "; " + SERVER_NO_CONTEXT_TAKEOVER
-        + (clientNoContextTakeover ? "; " + CLIENT_NO_CONTEXT_TAKEOVER : "");
-  }
-
-  @Override
-  public IExtension copyInstance() {
-    PerMessageDeflateExtension clone = new PerMessageDeflateExtension(this.getCompressionLevel());
-    clone.setThreshold(this.getThreshold());
-    clone.setClientNoContextTakeover(this.isClientNoContextTakeover());
-    clone.setServerNoContextTakeover(this.isServerNoContextTakeover());
-    return clone;
-  }
-
-  /**
-   * This extension requires the RSV1 bit to be set only for the first frame. If the frame is type
-   * is CONTINUOUS, RSV1 bit must be unset.
-   */
   @Override
   public void isFrameValid(Framedata inputFrame) throws InvalidDataException {
-    if ((inputFrame instanceof ContinuousFrame) && (inputFrame.isRSV1() || inputFrame.isRSV2()
-        || inputFrame.isRSV3())) {
-      throw new InvalidFrameException(
-          "bad rsv RSV1: " + inputFrame.isRSV1() + " RSV2: " + inputFrame.isRSV2() + " RSV3: "
-              + inputFrame.isRSV3());
+    // RFC 7692: RSV1 may only be set for the first fragment of a message
+    if (inputFrame instanceof ContinuousFrame
+        && (inputFrame.isRSV1() || inputFrame.isRSV2() || inputFrame.isRSV3())) {
+      throw new InvalidFrameException("Continuous frame cannot have RSV1, RSV2 or RSV3 set");
     }
     super.isFrameValid(inputFrame);
   }
 
   @Override
-  public String toString() {
-    return "PerMessageDeflateExtension";
+  public void decodeFrame(Framedata inputFrame) throws InvalidDataException {
+    // RFC 7692: PMCEs operate only on data messages.
+    if (!(inputFrame instanceof DataFrame)) {
+      return;
+    }
+
+    // decompression is only applicable if it was started on the first fragment
+    if (!isDecompressing && inputFrame instanceof ContinuousFrame) {
+      return;
+    }
+
+    // check the RFC 7962 compression marker RSV1 whether to start decompressing
+    if (inputFrame.isRSV1()) {
+      isDecompressing = true;
+    }
+
+    if (!isDecompressing) {
+      return;
+    }
+
+    // decompress the frame payload
+    DataFrame dataFrame = (DataFrame) inputFrame;
+    ByteBuffer payload = dataFrame.getPayloadData();
+    compressedBytes += payload.remaining();
+    byte[] decompressed = decompress(payload, dataFrame.isFin());
+    decompressedBytes += decompressed.length;
+    dataFrame.setPayload(ByteBuffer.wrap(decompressed));
+
+    // payload is no longer compressed, clear the RFC 7962 compression marker RSV1
+    if (!(dataFrame instanceof ContinuousFrame)) {
+      dataFrame.setRSV1(false);
+    }
+
+    // stop decompressing after the final fragment
+    if (dataFrame.isFin()) {
+      isDecompressing = false;
+      // RFC 7692: If the "agreed parameters" contain the "client|server_no_context_takeover"
+      // extension parameter, the server|client MAY decompress each new message with an empty
+      // LZ77 sliding window.
+      if (isDecompressorResetAllowed) {
+        decompressor.reset();
+      }
+    }
   }
 
+  private byte[] decompress(ByteBuffer buffer, boolean isFinal) throws InvalidDataException {
+    ByteArrayOutputStream decompressed = new ByteArrayOutputStream();
+    try {
+      decompress(buffer, decompressed);
+      // RFC 7962: Append empty deflate block to the tail end of the payload of the message
+      if (isFinal) {
+        decompress(ByteBuffer.wrap(EMPTY_DEFLATE_BLOCK), decompressed);
+      }
+    } catch (DataFormatException e) {
+      throw new InvalidDataException(CloseFrame.POLICY_VALIDATION, e.getMessage());
+    }
+    return decompressed.toByteArray();
+  }
 
+  private void decompress(ByteBuffer buffer, ByteArrayOutputStream decompressed)
+      throws DataFormatException {
+    if (buffer.hasArray()) {
+      decompressor.setInput(
+          buffer.array(), buffer.arrayOffset() + buffer.position(), buffer.remaining());
+    } else {
+      byte[] input = new byte[buffer.remaining()];
+      buffer.duplicate().get(input);
+      decompressor.setInput(input);
+    }
+    byte[] chunk = new byte[TRANSFER_CHUNK_SIZE];
+    while (!decompressor.finished()) {
+      int length = decompressor.inflate(chunk);
+      if (length > 0) {
+        decompressed.write(chunk, 0, length);
+        if (maxFrameSize > 0 && maxFrameSize < decompressed.size()) {
+          throw new DataFormatException(
+              "Inflated frame size exceeds limit of " + maxFrameSize + " bytes");
+        }
+      } else {
+        break;
+      }
+    }
+  }
+
+  @Override
+  public void encodeFrame(Framedata inputFrame) {
+    // RFC 7692: PMCEs operate only on data messages.
+    if (!(inputFrame instanceof DataFrame)) {
+      return;
+    }
+
+    // compression is only applicable if it was started on the first fragment
+    if (!isCompressing && inputFrame instanceof ContinuousFrame) {
+      return;
+    }
+
+    // check the threshold whether to start compressing
+    if (inputFrame.getPayloadData().remaining() >= compressionThreshold) {
+      isCompressing = true;
+    }
+
+    if (!isCompressing) {
+      return;
+    }
+
+    // compress the frame payload
+    DataFrame dataFrame = (DataFrame) inputFrame;
+    ByteBuffer payload = dataFrame.getPayloadData();
+    decompressedBytes += payload.remaining();
+    byte[] compressed = compress(payload, dataFrame.isFin());
+    compressedBytes += compressed.length;
+    dataFrame.setPayload(ByteBuffer.wrap(compressed));
+
+    // payload is compressed now, set the RFC 7962 compression marker RSV1
+    if (!(dataFrame instanceof ContinuousFrame)) {
+      dataFrame.setRSV1(true);
+    }
+
+    // stop compressing after the final fragment
+    if (dataFrame.isFin()) {
+      isCompressing = false;
+      // RFC 7692: If the "agreed parameters" contain the "client|server_no_context_takeover"
+      // extension parameter, the client|server MUST start compressing each new message with an
+      // empty LZ77 sliding window.
+      if (isCompressorResetRequired) {
+        compressor.reset();
+      }
+    }
+  }
+
+  private byte[] compress(ByteBuffer buffer, boolean isFinal) {
+    // RFC 7962: Generate an empty fragment if the buffer for uncompressed data buffer is empty.
+    if (!buffer.hasRemaining() && isFinal) {
+      return EMPTY_UNCOMPRESSED_DEFLATE_BLOCK;
+    }
+    if (buffer.hasArray()) {
+      compressor.setInput(
+          buffer.array(), buffer.arrayOffset() + buffer.position(), buffer.remaining());
+    } else {
+      byte[] input = new byte[buffer.remaining()];
+      buffer.duplicate().get(input);
+      compressor.setInput(input);
+    }
+    // RFC 7962 prefers the compressor output not to have the BFINAL bit set, so instead of calling
+    // finish(), deflate with NO_FLUSH until the input is exhausted, then deflate with SYNC_FLUSH
+    // until the output runs dry.
+    ByteArrayOutputStream compressed = new ByteArrayOutputStream();
+    byte[] chunk = new byte[TRANSFER_CHUNK_SIZE];
+    while (!compressor.needsInput()) {
+      int length = compressor.deflate(chunk, 0, chunk.length, NO_FLUSH);
+      if (length > 0) {
+        compressed.write(chunk, 0, length);
+      } else {
+        break;
+      }
+    }
+    while (!compressor.finished()) {
+      int length = compressor.deflate(chunk, 0, chunk.length, SYNC_FLUSH);
+      if (length > 0) {
+        compressed.write(chunk, 0, length);
+      } else {
+        break;
+      }
+    }
+    return isFinal
+        ? removeTail(compressed.toByteArray(), EMPTY_DEFLATE_BLOCK)
+        : compressed.toByteArray();
+  }
+
+  private byte[] removeTail(byte[] input, byte[] tail) {
+    return hasTail(input, tail) ? Arrays.copyOf(input, input.length - tail.length) : input;
+  }
+
+  private boolean hasTail(byte[] input, byte[] tail) {
+    int offset = input.length - tail.length;
+    if (offset < 0) {
+      return false;
+    }
+    for (int i = 0; i < tail.length; i++) {
+      if (input[offset + i] != tail[i]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  @Override
+  public boolean acceptProvidedExtensionAsServer(String inputExtension) {
+    for (String extensionRequest : inputExtension.split(",")) {
+      ExtensionRequestData extensionRequestData = parseExtensionRequest(extensionRequest);
+      if (EXTENSION_IDENTIFIER.equalsIgnoreCase(extensionRequestData.getExtensionName())
+          && acceptExtensionParametersAsServer(extensionRequestData)) {
+        // extension offer with acceptable extension parameters found
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private boolean acceptExtensionParametersAsServer(ExtensionRequestData extensionRequestData) {
+    // initialize extension negotiation offer parameters
+    boolean offerClientNoContextTakeover = false;
+    boolean offerServerNoContextTakeover = false;
+    Optional<Integer> offerClientMaxWindowBits = Optional.empty();
+    Optional<Integer> offerServerMaxWindowBits = Optional.empty();
+
+    // scan through the parameters in the extension negotiation offer
+    for (Map.Entry<String, String> parameter :
+        extensionRequestData.getExtensionParameters().entrySet()) {
+      if (PARAMETER_CLIENT_NO_CONTEXT_TAKEOVER.equalsIgnoreCase(parameter.getKey())) {
+        offerClientNoContextTakeover = true;
+      } else if (PARAMETER_SERVER_NO_CONTEXT_TAKEOVER.equalsIgnoreCase(parameter.getKey())) {
+        offerServerNoContextTakeover = true;
+      } else if (PARAMETER_CLIENT_MAX_WINDOW_BITS.equalsIgnoreCase(parameter.getKey())) {
+        // RFC 7692: This parameter may have no value to only indicate support for it
+        if (parameter.getValue().isEmpty()) {
+          offerClientMaxWindowBits = Optional.of(clientMaxWindowBits);
+        } else {
+          try {
+            offerClientMaxWindowBits = Optional.of(Integer.parseInt(parameter.getValue()));
+            if (offerClientMaxWindowBits.get() < MINIMUM_CLIENT_MAX_WINDOW_BITS
+                || offerClientMaxWindowBits.get() > MAXIMUM_CLIENT_MAX_WINDOW_BITS) {
+              return false;
+            }
+          } catch (NumberFormatException e) {
+            return false;
+          }
+        }
+      } else if (PARAMETER_SERVER_MAX_WINDOW_BITS.equalsIgnoreCase(parameter.getKey())) {
+        // RFC 7692: This parameter must always have a value
+        try {
+          offerServerMaxWindowBits = Optional.of(Integer.parseInt(parameter.getValue()));
+          if (offerServerMaxWindowBits.get() < MINIMUM_SERVER_MAX_WINDOW_BITS
+              || offerServerMaxWindowBits.get() > MAXIMUM_SERVER_MAX_WINDOW_BITS) {
+            return false;
+          }
+          // The Java Deflater class only supports the default maximum window bits (15)
+          if (offerServerMaxWindowBits.get() != DEFAULT_SERVER_MAX_WINDOW_BITS) {
+            return false;
+          }
+        } catch (NumberFormatException e) {
+          return false;
+        }
+      } else {
+        // RFC 7692: A server MUST decline an extension negotiation offer for this extension
+        // if the negotiation offer contains an extension parameter not defined for use in an
+        // offer.
+        return false;
+      }
+    }
+
+    // merge accepted extension parameters with local configuration
+    clientNoContextTakeover |= offerClientNoContextTakeover;
+    serverNoContextTakeover |= offerServerNoContextTakeover;
+    clientMaxWindowBits = offerClientMaxWindowBits.orElse(clientMaxWindowBits);
+    serverMaxWindowBits = offerServerMaxWindowBits.orElse(serverMaxWindowBits);
+
+    // RFC 7692: The extension parameters with the "server_" prefix are used by the server to
+    // configure its compressor. The extension parameters with the "client_" prefix are used by
+    // the server to configure its decompressor.
+    isCompressorResetRequired = serverNoContextTakeover;
+    isDecompressorResetAllowed = clientNoContextTakeover;
+    return true;
+  }
+
+  @Override
+  public boolean acceptProvidedExtensionAsClient(String inputExtension) {
+    for (String extensionRequest : inputExtension.split(",")) {
+      ExtensionRequestData extensionRequestData = parseExtensionRequest(extensionRequest);
+      if (EXTENSION_IDENTIFIER.equalsIgnoreCase(extensionRequestData.getExtensionName())) {
+        return acceptExtensionParametersAsClient(extensionRequestData);
+      }
+    }
+    return false;
+  }
+
+  private boolean acceptExtensionParametersAsClient(ExtensionRequestData extensionRequestData) {
+    // initialize extension negotiation response parameters
+    boolean responseClientNoContextTakeover = false;
+    boolean responseServerNoContextTakeover = false;
+    Optional<Integer> responseClientMaxWindowBits = Optional.empty();
+    Optional<Integer> responseServerMaxWindowBits = Optional.empty();
+
+    // scan through the parameters in the extension negotiation response
+    for (Map.Entry<String, String> parameter :
+        extensionRequestData.getExtensionParameters().entrySet()) {
+      if (PARAMETER_CLIENT_NO_CONTEXT_TAKEOVER.equalsIgnoreCase(parameter.getKey())) {
+        responseClientNoContextTakeover = true;
+      } else if (PARAMETER_SERVER_NO_CONTEXT_TAKEOVER.equalsIgnoreCase(parameter.getKey())) {
+        responseServerNoContextTakeover = true;
+      } else if (PARAMETER_CLIENT_MAX_WINDOW_BITS.equalsIgnoreCase(parameter.getKey())) {
+        try {
+          responseClientMaxWindowBits = Optional.of(Integer.parseInt(parameter.getValue()));
+          if (responseClientMaxWindowBits.get() < MINIMUM_CLIENT_MAX_WINDOW_BITS
+              || responseClientMaxWindowBits.get() > MAXIMUM_CLIENT_MAX_WINDOW_BITS) {
+            return false;
+          }
+          // The Java Deflater class only supports the default maximum window bits (15)
+          if (responseClientMaxWindowBits.get() != DEFAULT_CLIENT_MAX_WINDOW_BITS) {
+            return false;
+          }
+        } catch (NumberFormatException e) {
+          return false;
+        }
+      } else if (PARAMETER_SERVER_MAX_WINDOW_BITS.equalsIgnoreCase(parameter.getKey())) {
+        try {
+          responseServerMaxWindowBits = Optional.of(Integer.parseInt(parameter.getValue()));
+          if (responseServerMaxWindowBits.get() < MINIMUM_SERVER_MAX_WINDOW_BITS
+              || responseServerMaxWindowBits.get() > MAXIMUM_SERVER_MAX_WINDOW_BITS) {
+            return false;
+          }
+        } catch (NumberFormatException e) {
+          return false;
+        }
+      } else {
+        // RFC 7692: A client MUST _Fail the WebSocket Connection_ if the peer server accepted an
+        // extension negotiation offer for this extension with an extension negotiation response
+        // that contains an extension parameter not defined for use in a response.
+        return false;
+      }
+    }
+
+    // merge accepted extension parameters with local configuration
+    clientNoContextTakeover |= responseClientNoContextTakeover;
+    // the server_no_context_takeover parameter MUST NOT be merged with the local setting!
+    // if the server does not return this parameter, it must not be used.
+    serverNoContextTakeover = responseServerNoContextTakeover;
+    clientMaxWindowBits = responseClientMaxWindowBits.orElse(clientMaxWindowBits);
+    serverMaxWindowBits = responseServerMaxWindowBits.orElse(serverMaxWindowBits);
+
+    // RFC 7692: The extension parameters with the "client_" prefix are used by the client to
+    // configure its compressor. The extension parameters with the "server_" prefix are used by
+    // the client to configure its decompressor.
+    isCompressorResetRequired = clientNoContextTakeover;
+    isDecompressorResetAllowed = serverNoContextTakeover;
+    return true;
+  }
+
+  @Override
+  public String getProvidedExtensionAsClient() {
+    return EXTENSION_IDENTIFIER
+        + (clientNoContextTakeover ? "; " + PARAMETER_CLIENT_NO_CONTEXT_TAKEOVER : "")
+        + (serverNoContextTakeover ? "; " + PARAMETER_SERVER_NO_CONTEXT_TAKEOVER : "")
+        + (clientMaxWindowBits != DEFAULT_CLIENT_MAX_WINDOW_BITS
+            ? "; " + PARAMETER_CLIENT_MAX_WINDOW_BITS + "=" + clientMaxWindowBits
+            : "")
+        + (serverMaxWindowBits != DEFAULT_SERVER_MAX_WINDOW_BITS
+            ? "; " + PARAMETER_SERVER_MAX_WINDOW_BITS + "=" + serverMaxWindowBits
+            : "");
+  }
+
+  @Override
+  public String getProvidedExtensionAsServer() {
+    return EXTENSION_IDENTIFIER
+        + (clientNoContextTakeover ? "; " + PARAMETER_CLIENT_NO_CONTEXT_TAKEOVER : "")
+        + (serverNoContextTakeover ? "; " + PARAMETER_SERVER_NO_CONTEXT_TAKEOVER : "")
+        + (clientMaxWindowBits != DEFAULT_CLIENT_MAX_WINDOW_BITS
+            ? "; " + PARAMETER_CLIENT_MAX_WINDOW_BITS + "=" + clientMaxWindowBits
+            : "")
+        + (serverMaxWindowBits != DEFAULT_SERVER_MAX_WINDOW_BITS
+            ? "; " + PARAMETER_SERVER_MAX_WINDOW_BITS + "=" + serverMaxWindowBits
+            : "");
+  }
+
+  @Override
+  public IExtension copyInstance() {
+    PerMessageDeflateExtension clone =
+        new PerMessageDeflateExtension(getCompressionLevel(), getMaxFrameSize());
+    clone.setClientNoContextTakeover(isClientNoContextTakeover());
+    clone.setServerNoContextTakeover(isServerNoContextTakeover());
+    clone.clientMaxWindowBits = clientMaxWindowBits;
+    clone.serverMaxWindowBits = serverMaxWindowBits;
+    clone.setThreshold(getThreshold());
+    return clone;
+  }
+
+  @Override
+  public void reset() {
+    isCompressing = false;
+    isDecompressing = false;
+    compressedBytes = 0;
+    decompressedBytes = 0;
+  }
+
+  @Override
+  public String toString() {
+    return EXTENSION_COMMON_NAME;
+  }
 }

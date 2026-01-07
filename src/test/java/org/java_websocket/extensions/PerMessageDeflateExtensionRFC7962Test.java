@@ -37,14 +37,14 @@ import java.util.List;
 import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.exceptions.InvalidHandshakeException;
-import org.java_websocket.extensions.permessage_deflate.WebSocketPerMessageDeflateExtension;
+import org.java_websocket.extensions.permessage_deflate.PerMessageDeflateExtension;
 import org.java_websocket.framing.*;
 import org.java_websocket.handshake.HandshakeImpl1Client;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /** RFC 7692 WebSocket Per-Message Deflate Extension Tests */
-public class WebSocketPerMessageDeflateExtensionRFC7962Test {
+public class PerMessageDeflateExtensionRFC7962Test {
   // RFC 7692 Section 7.2.3.1 A Message Compressed Using One Compressed Deflate Block
   private static final String RFC_7962_TEST_MESSAGE_TEXT = "Hello";
   private static final byte[] RFC_7962_TEST_MESSAGE_COMPRESSED =
@@ -112,12 +112,12 @@ public class WebSocketPerMessageDeflateExtensionRFC7962Test {
   // RFC 7692 Section 7.2.3.6 Compressed Empty Fragment
   private static final byte[] RFC_7962_TEST_PAYLOAD_COMPRESSED_EMPTY_FRAGMENT = new byte[] {0x00};
 
-  private WebSocketPerMessageDeflateExtension extension;
+  private PerMessageDeflateExtension extension;
   private Draft_6455 draft;
 
   @BeforeEach
   public void setUp() throws Exception {
-    extension = new WebSocketPerMessageDeflateExtension();
+    extension = new PerMessageDeflateExtension();
     extension.setThreshold(0);
     setupDraft();
   }
