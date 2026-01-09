@@ -96,6 +96,8 @@ public class PerMessageDeflateExtension extends CompressionExtension {
   private boolean isDecompressorResetAllowed;
   private boolean isCompressing;
   private boolean isDecompressing;
+  private long compressedBytes;
+  private long decompressedBytes;
 
   public PerMessageDeflateExtension() {
     this(DEFAULT_COMPRESSION);
@@ -126,6 +128,8 @@ public class PerMessageDeflateExtension extends CompressionExtension {
     isDecompressorResetAllowed = false;
     isCompressing = false;
     isDecompressing = false;
+    compressedBytes = 0;
+    decompressedBytes = 0;
   }
 
   public int getCompressionLevel() {
@@ -158,6 +162,21 @@ public class PerMessageDeflateExtension extends CompressionExtension {
 
   public void setServerNoContextTakeover(boolean serverNoContextTakeover) {
     this.serverNoContextTakeover = serverNoContextTakeover;
+  }
+
+  /**
+   * Returns the overall compression ratio of all incoming and outgoing payloads which were
+   * compressed.
+   *
+   * <p>Values below 1 mean the compression is effective, the lower, the better. If you get values
+   * above 1, look into increasing the compression level or the threshold. If that does not help,
+   * consider not using this extension.
+   *
+   * @return the overall compression ratio of all incoming and outgoing payloads
+   */
+  public double getCompressionRatio() {
+    double decompressed = decompressedBytes;
+    return decompressed > 0 ? compressedBytes / decompressed : 1;
   }
 
   @Override
@@ -194,7 +213,9 @@ public class PerMessageDeflateExtension extends CompressionExtension {
     // decompress the frame payload
     DataFrame dataFrame = (DataFrame) inputFrame;
     ByteBuffer payload = dataFrame.getPayloadData();
+    compressedBytes += payload.remaining();
     byte[] decompressed = decompress(payload, dataFrame.isFin());
+    decompressedBytes += decompressed.length;
     dataFrame.setPayload(ByteBuffer.wrap(decompressed));
 
     // payload is no longer compressed, clear the RFC 7692 compression marker RSV1
@@ -277,7 +298,9 @@ public class PerMessageDeflateExtension extends CompressionExtension {
     // compress the frame payload
     DataFrame dataFrame = (DataFrame) inputFrame;
     ByteBuffer payload = dataFrame.getPayloadData();
+    decompressedBytes += payload.remaining();
     byte[] compressed = compress(payload, dataFrame.isFin());
+    compressedBytes += compressed.length;
     dataFrame.setPayload(ByteBuffer.wrap(compressed));
 
     // payload is compressed now, set the RFC 7692 compression marker RSV1
@@ -545,9 +568,10 @@ public class PerMessageDeflateExtension extends CompressionExtension {
 
   @Override
   public void reset() {
-    super.reset();
     isCompressing = false;
     isDecompressing = false;
+    compressedBytes = 0;
+    decompressedBytes = 0;
   }
 
   @Override
