@@ -194,7 +194,7 @@ public class PerMessageDeflateExtension extends CompressionExtension {
       return;
     }
 
-    // check the RFC 7962 compression marker RSV1 whether to start decompressing
+    // check the RFC 7692 compression marker RSV1 whether to start decompressing
     if (inputFrame.isRSV1()) {
       isDecompressing = true;
     }
@@ -211,7 +211,7 @@ public class PerMessageDeflateExtension extends CompressionExtension {
     decompressedBytes += decompressed.length;
     dataFrame.setPayload(ByteBuffer.wrap(decompressed));
 
-    // payload is no longer compressed, clear the RFC 7962 compression marker RSV1
+    // payload is no longer compressed, clear the RFC 7692 compression marker RSV1
     if (!(dataFrame instanceof ContinuousFrame)) {
       dataFrame.setRSV1(false);
     }
@@ -232,7 +232,7 @@ public class PerMessageDeflateExtension extends CompressionExtension {
     ByteArrayOutputStream decompressed = new ByteArrayOutputStream();
     try {
       decompress(buffer, decompressed);
-      // RFC 7962: Append empty deflate block to the tail end of the payload of the message
+      // RFC 7692: Append empty deflate block to the tail end of the payload of the message
       if (isFinal) {
         decompress(ByteBuffer.wrap(EMPTY_DEFLATE_BLOCK), decompressed);
       }
@@ -296,7 +296,7 @@ public class PerMessageDeflateExtension extends CompressionExtension {
     compressedBytes += compressed.length;
     dataFrame.setPayload(ByteBuffer.wrap(compressed));
 
-    // payload is compressed now, set the RFC 7962 compression marker RSV1
+    // payload is compressed now, set the RFC 7692 compression marker RSV1
     if (!(dataFrame instanceof ContinuousFrame)) {
       dataFrame.setRSV1(true);
     }
@@ -314,7 +314,7 @@ public class PerMessageDeflateExtension extends CompressionExtension {
   }
 
   private byte[] compress(ByteBuffer buffer, boolean isFinal) {
-    // RFC 7962: Generate an empty fragment if the buffer for uncompressed data buffer is empty.
+    // RFC 7692: Generate an empty fragment if the buffer for uncompressed data buffer is empty.
     if (!buffer.hasRemaining() && isFinal) {
       return EMPTY_UNCOMPRESSED_DEFLATE_BLOCK;
     }
@@ -326,7 +326,7 @@ public class PerMessageDeflateExtension extends CompressionExtension {
       buffer.duplicate().get(input);
       compressor.setInput(input);
     }
-    // RFC 7962 prefers the compressor output not to have the BFINAL bit set, so instead of calling
+    // RFC 7692 prefers the compressor output not to have the BFINAL bit set, so instead of calling
     // finish(), deflate with NO_FLUSH until the input is exhausted, then deflate with SYNC_FLUSH
     // until the output runs dry.
     ByteArrayOutputStream compressed = new ByteArrayOutputStream();

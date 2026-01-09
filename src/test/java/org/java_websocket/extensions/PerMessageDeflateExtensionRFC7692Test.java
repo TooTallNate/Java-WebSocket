@@ -44,14 +44,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /** RFC 7692 WebSocket Per-Message Deflate Extension Tests */
-public class PerMessageDeflateExtensionRFC7962Test {
+public class PerMessageDeflateExtensionRFC7692Test {
   // RFC 7692 Section 7.2.3.1 A Message Compressed Using One Compressed Deflate Block
-  private static final String RFC_7962_TEST_MESSAGE_TEXT = "Hello";
-  private static final byte[] RFC_7962_TEST_MESSAGE_COMPRESSED =
+  private static final String RFC_7692_TEST_MESSAGE_TEXT = "Hello";
+  private static final byte[] RFC_7692_TEST_MESSAGE_COMPRESSED =
       new byte[] {
         (byte) 0xc1, 0x07, (byte) 0xf2, 0x48, (byte) 0xcd, (byte) 0xc9, (byte) 0xc9, 0x07, 0x00
       };
-  private static final byte[] RFC_7962_TEST_MESSAGE_FRAGMENTS =
+  private static final byte[] RFC_7692_TEST_MESSAGE_FRAGMENTS =
       new byte[] {
         // first frame:
         0x41,
@@ -68,12 +68,12 @@ public class PerMessageDeflateExtensionRFC7962Test {
         0x00
       };
   // RFC 7692 Section 7.2.3.2 Sharing LZ77 Sliding Window
-  private static final byte[] RFC_7962_TEST_PAYLOAD_COMPRESSED =
+  private static final byte[] RFC_7692_TEST_PAYLOAD_COMPRESSED =
       new byte[] {(byte) 0xf2, 0x48, (byte) 0xcd, (byte) 0xc9, (byte) 0xc9, 0x07, 0x00};
-  private static final byte[] RFC_7962_TEST_PAYLOAD_COMPRESSED_AGAIN =
+  private static final byte[] RFC_7692_TEST_PAYLOAD_COMPRESSED_AGAIN =
       new byte[] {(byte) 0xf2, 0x00, 0x11, 0x00, 0x00};
   // RFC 7692 Section 7.2.3.3 DEFLATE Block with No Compression
-  private static final byte[] RFC_7962_TEST_MESSAGE_NO_COMPRESSION =
+  private static final byte[] RFC_7692_TEST_MESSAGE_NO_COMPRESSION =
       new byte[] {
         (byte) 0xc1,
         0x0b,
@@ -90,10 +90,10 @@ public class PerMessageDeflateExtensionRFC7962Test {
         0x00
       };
   // RFC 7692 Section 7.2.3.4 DEFLATE Block with "BFINAL" Set to 1
-  private static final byte[] RFC_7962_TEST_PAYLOAD_COMPRESSED_BFINAL =
+  private static final byte[] RFC_7692_TEST_PAYLOAD_COMPRESSED_BFINAL =
       new byte[] {(byte) 0xf3, 0x48, (byte) 0xcd, (byte) 0xc9, (byte) 0xc9, 0x07, 0x00, 0x00};
   // RFC 7692 Section 7.2.3.5 Two DEFLATE Blocks in One Message
-  private static final byte[] RFC_7962_TEST_PAYLOAD_TWO_DEFLATE_BLOCKS =
+  private static final byte[] RFC_7692_TEST_PAYLOAD_TWO_DEFLATE_BLOCKS =
       new byte[] {
         (byte) 0xf2,
         0x48,
@@ -110,7 +110,7 @@ public class PerMessageDeflateExtensionRFC7962Test {
         0x00
       };
   // RFC 7692 Section 7.2.3.6 Compressed Empty Fragment
-  private static final byte[] RFC_7962_TEST_PAYLOAD_COMPRESSED_EMPTY_FRAGMENT = new byte[] {0x00};
+  private static final byte[] RFC_7692_TEST_PAYLOAD_COMPRESSED_EMPTY_FRAGMENT = new byte[] {0x00};
 
   private PerMessageDeflateExtension extension;
   private Draft_6455 draft;
@@ -135,15 +135,15 @@ public class PerMessageDeflateExtensionRFC7962Test {
   }
 
   @Test
-  public void testRFC7962Section7231MessageCompression() {
-    Framedata frame = buildMessageFrame(RFC_7962_TEST_MESSAGE_TEXT);
+  public void testRFC7692Section7231MessageCompression() {
+    Framedata frame = buildMessageFrame(RFC_7692_TEST_MESSAGE_TEXT);
     byte[] frameBytes = draft.createBinaryFrame(frame).array();
-    assertArrayEquals(RFC_7962_TEST_MESSAGE_COMPRESSED, frameBytes);
+    assertArrayEquals(RFC_7692_TEST_MESSAGE_COMPRESSED, frameBytes);
   }
 
   @Test
-  public void testRFC7962Section7231FragmentsDecompression() throws InvalidDataException {
-    List<Framedata> frames = draft.translateFrame(ByteBuffer.wrap(RFC_7962_TEST_MESSAGE_FRAGMENTS));
+  public void testRFC7692Section7231FragmentsDecompression() throws InvalidDataException {
+    List<Framedata> frames = draft.translateFrame(ByteBuffer.wrap(RFC_7692_TEST_MESSAGE_FRAGMENTS));
     assertEquals(2, frames.size());
     assertInstanceOf(DataFrame.class, frames.get(0));
     assertFalse(frames.get(0) instanceof ContinuousFrame);
@@ -156,36 +156,36 @@ public class PerMessageDeflateExtensionRFC7962Test {
     assertFalse(frames.get(1).isRSV1());
     assertFalse(frames.get(1).isRSV2());
     assertFalse(frames.get(1).isRSV3());
-    assertEquals(RFC_7962_TEST_MESSAGE_TEXT, framesPayloadToString(frames));
+    assertEquals(RFC_7692_TEST_MESSAGE_TEXT, framesPayloadToString(frames));
   }
 
   @Test
-  public void testRFC7962Section7232CompressionWithNoContextTakeover()
+  public void testRFC7692Section7232CompressionWithNoContextTakeover()
       throws InvalidHandshakeException {
     extension.setServerNoContextTakeover(true);
     setupDraft();
-    Framedata frame1 = buildMessageFrame(RFC_7962_TEST_MESSAGE_TEXT);
+    Framedata frame1 = buildMessageFrame(RFC_7692_TEST_MESSAGE_TEXT);
     extension.encodeFrame(frame1);
-    assertArrayEquals(RFC_7962_TEST_PAYLOAD_COMPRESSED, getPayload(frame1));
-    Framedata frame2 = buildMessageFrame(RFC_7962_TEST_MESSAGE_TEXT);
+    assertArrayEquals(RFC_7692_TEST_PAYLOAD_COMPRESSED, getPayload(frame1));
+    Framedata frame2 = buildMessageFrame(RFC_7692_TEST_MESSAGE_TEXT);
     extension.encodeFrame(frame2);
-    assertArrayEquals(RFC_7962_TEST_PAYLOAD_COMPRESSED, getPayload(frame2));
+    assertArrayEquals(RFC_7692_TEST_PAYLOAD_COMPRESSED, getPayload(frame2));
   }
 
   @Test
-  public void testRFC7962Section7232CompressionWithContextTakeover() {
-    Framedata frame1 = buildMessageFrame(RFC_7962_TEST_MESSAGE_TEXT);
+  public void testRFC7692Section7232CompressionWithContextTakeover() {
+    Framedata frame1 = buildMessageFrame(RFC_7692_TEST_MESSAGE_TEXT);
     extension.encodeFrame(frame1);
-    assertArrayEquals(RFC_7962_TEST_PAYLOAD_COMPRESSED, getPayload(frame1));
-    Framedata frame2 = buildMessageFrame(RFC_7962_TEST_MESSAGE_TEXT);
+    assertArrayEquals(RFC_7692_TEST_PAYLOAD_COMPRESSED, getPayload(frame1));
+    Framedata frame2 = buildMessageFrame(RFC_7692_TEST_MESSAGE_TEXT);
     extension.encodeFrame(frame2);
-    assertArrayEquals(RFC_7962_TEST_PAYLOAD_COMPRESSED_AGAIN, getPayload(frame2));
+    assertArrayEquals(RFC_7692_TEST_PAYLOAD_COMPRESSED_AGAIN, getPayload(frame2));
   }
 
   @Test
-  public void testRFC7962Section7233DeflateBlockWithNoCompression() throws InvalidDataException {
+  public void testRFC7692Section7233DeflateBlockWithNoCompression() throws InvalidDataException {
     List<Framedata> frames =
-        draft.translateFrame(ByteBuffer.wrap(RFC_7962_TEST_MESSAGE_NO_COMPRESSION));
+        draft.translateFrame(ByteBuffer.wrap(RFC_7692_TEST_MESSAGE_NO_COMPRESSION));
     assertEquals(1, frames.size());
     assertInstanceOf(DataFrame.class, frames.get(0));
     assertFalse(frames.get(0) instanceof ContinuousFrame);
@@ -193,46 +193,46 @@ public class PerMessageDeflateExtensionRFC7962Test {
     assertFalse(frames.get(0).isRSV1());
     assertFalse(frames.get(0).isRSV2());
     assertFalse(frames.get(0).isRSV3());
-    assertEquals(RFC_7962_TEST_MESSAGE_TEXT, framesPayloadToString(frames));
+    assertEquals(RFC_7692_TEST_MESSAGE_TEXT, framesPayloadToString(frames));
   }
 
   @Test
-  public void testRFC7962Section7234DeflateBlockWithBFINAL() throws InvalidDataException {
-    Framedata frame = buildCompressedFrame(RFC_7962_TEST_PAYLOAD_COMPRESSED_BFINAL);
+  public void testRFC7692Section7234DeflateBlockWithBFINAL() throws InvalidDataException {
+    Framedata frame = buildCompressedFrame(RFC_7692_TEST_PAYLOAD_COMPRESSED_BFINAL);
     extension.decodeFrame(frame);
     assertTrue(frame.isFin());
     assertFalse(frame.isRSV1());
     assertFalse(frame.isRSV2());
     assertFalse(frame.isRSV3());
-    assertEquals(RFC_7962_TEST_MESSAGE_TEXT, framePayloadToString(frame));
+    assertEquals(RFC_7692_TEST_MESSAGE_TEXT, framePayloadToString(frame));
   }
 
   @Test
-  public void testRFC7962Section7235TwoDeflateBlocksInOneMessage() throws InvalidDataException {
-    Framedata frame = buildCompressedFrame(RFC_7962_TEST_PAYLOAD_TWO_DEFLATE_BLOCKS);
+  public void testRFC7692Section7235TwoDeflateBlocksInOneMessage() throws InvalidDataException {
+    Framedata frame = buildCompressedFrame(RFC_7692_TEST_PAYLOAD_TWO_DEFLATE_BLOCKS);
     extension.decodeFrame(frame);
     assertTrue(frame.isFin());
     assertFalse(frame.isRSV1());
     assertFalse(frame.isRSV2());
     assertFalse(frame.isRSV3());
-    assertEquals(RFC_7962_TEST_MESSAGE_TEXT, framePayloadToString(frame));
+    assertEquals(RFC_7692_TEST_MESSAGE_TEXT, framePayloadToString(frame));
   }
 
   @Test
-  public void testRFC7962Section7236GeneratingAnEmptyFragment() throws InvalidDataException {
-    DataFrame frame1 = buildMessageFrame(RFC_7962_TEST_MESSAGE_TEXT);
+  public void testRFC7692Section7236GeneratingAnEmptyFragment() throws InvalidDataException {
+    DataFrame frame1 = buildMessageFrame(RFC_7692_TEST_MESSAGE_TEXT);
     frame1.setFin(false);
     DataFrame frame2 = new ContinuousFrame();
     frame2.setFin(true);
     extension.encodeFrame(frame1);
     extension.encodeFrame(frame2);
-    assertArrayEquals(RFC_7962_TEST_PAYLOAD_COMPRESSED_EMPTY_FRAGMENT, getPayload(frame2));
+    assertArrayEquals(RFC_7692_TEST_PAYLOAD_COMPRESSED_EMPTY_FRAGMENT, getPayload(frame2));
     extension.decodeFrame(frame1);
     extension.decodeFrame(frame2);
     List<Framedata> frames = new ArrayList<>(2);
     frames.add(frame1);
     frames.add(frame2);
-    assertEquals(RFC_7962_TEST_MESSAGE_TEXT, framesPayloadToString(frames));
+    assertEquals(RFC_7692_TEST_MESSAGE_TEXT, framesPayloadToString(frames));
   }
 
   private DataFrame buildMessageFrame(String message) {
