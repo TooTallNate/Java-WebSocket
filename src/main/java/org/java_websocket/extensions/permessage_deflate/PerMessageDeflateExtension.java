@@ -82,7 +82,7 @@ public class PerMessageDeflateExtension extends CompressionExtension {
   private static final int TRANSFER_CHUNK_SIZE = 8192;
 
   private final int compressionLevel;
-  private final int maxFrameSize;
+  private final int maxFragmentSize;
   private final Deflater compressor;
   private final Inflater decompressor;
 
@@ -107,9 +107,16 @@ public class PerMessageDeflateExtension extends CompressionExtension {
     this(compressionLevel, Integer.MAX_VALUE);
   }
 
-  public PerMessageDeflateExtension(int compressionLevel, int maxFrameSize) {
+  /**
+   * Constructs the RFC 7692 permessage-deflate extension with a specific compression level and a
+   * maximum decompressed fragment size.
+   *
+   * @param compressionLevel the compression level to use, see {@link Deflater}
+   * @param maxFragmentSize the maximum allowed fragment size after decompression
+   */
+  public PerMessageDeflateExtension(int compressionLevel, int maxFragmentSize) {
     this.compressionLevel = compressionLevel;
-    this.maxFrameSize = maxFrameSize;
+    this.maxFragmentSize = maxFragmentSize;
     compressor = new Deflater(compressionLevel, true);
     decompressor = new Inflater(true);
     compressionThreshold = DEFAULT_COMPRESSION_THRESHOLD;
@@ -129,8 +136,8 @@ public class PerMessageDeflateExtension extends CompressionExtension {
     return compressionLevel;
   }
 
-  public int getMaxFrameSize() {
-    return maxFrameSize;
+  public int getMaxFragmentSize() {
+    return maxFragmentSize;
   }
 
   public int getThreshold() {
@@ -257,9 +264,9 @@ public class PerMessageDeflateExtension extends CompressionExtension {
       int length = decompressor.inflate(chunk);
       if (length > 0) {
         decompressed.write(chunk, 0, length);
-        if (maxFrameSize > 0 && maxFrameSize < decompressed.size()) {
+        if (maxFragmentSize > 0 && maxFragmentSize < decompressed.size()) {
           throw new DataFormatException(
-              "Inflated frame size exceeds limit of " + maxFrameSize + " bytes");
+              "Inflated fragment size exceeds limit of " + maxFragmentSize + " bytes");
         }
       } else {
         break;
@@ -550,7 +557,7 @@ public class PerMessageDeflateExtension extends CompressionExtension {
   @Override
   public IExtension copyInstance() {
     PerMessageDeflateExtension clone =
-        new PerMessageDeflateExtension(getCompressionLevel(), getMaxFrameSize());
+        new PerMessageDeflateExtension(getCompressionLevel(), getMaxFragmentSize());
     clone.setClientNoContextTakeover(isClientNoContextTakeover());
     clone.setServerNoContextTakeover(isServerNoContextTakeover());
     clone.clientMaxWindowBits = clientMaxWindowBits;
