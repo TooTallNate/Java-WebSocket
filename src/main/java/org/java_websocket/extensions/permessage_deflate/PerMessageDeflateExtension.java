@@ -172,6 +172,11 @@ public class PerMessageDeflateExtension extends CompressionExtension {
    * above 1, look into increasing the compression level or the threshold. If that does not help,
    * consider not using this extension.
    *
+   * <p>IMPORTANT: This API must be called on the class instance used by the library, NOT on the
+   * instance which was handed to the library! To get this class instance, retrieve it from the
+   * library e.g. via ((Draft_6455) webSocketClient.getConnection().getDraft()).getExtension().
+   * Make sure to apply class instance checks, as the extension may not have been negotiated.
+   *
    * @return the overall compression ratio of all incoming and outgoing payloads
    */
   public double getCompressionRatio() {
@@ -568,6 +573,7 @@ public class PerMessageDeflateExtension extends CompressionExtension {
 
   @Override
   public void reset() {
+    super.reset();
     isCompressing = false;
     isDecompressing = false;
     compressedBytes = 0;
