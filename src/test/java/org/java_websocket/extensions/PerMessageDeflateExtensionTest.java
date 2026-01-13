@@ -61,7 +61,7 @@ public class PerMessageDeflateExtensionTest {
     frame.setPayload(ByteBuffer.wrap(message));
     deflateExtension.encodeFrame(frame);
     byte[] payloadArray = frame.getPayloadData().array();
-    assertArrayEquals(message, Arrays.copyOfRange(payloadArray, 5,payloadArray.length-5));
+    assertArrayEquals(message, Arrays.copyOfRange(payloadArray, 5, payloadArray.length - 1));
     assertTrue(frame.isRSV1());
     deflateExtension.decodeFrame(frame);
     assertArrayEquals(message, frame.getPayloadData().array());
@@ -87,7 +87,7 @@ public class PerMessageDeflateExtensionTest {
 
     deflateExtension.encodeFrame(frame);
     byte[] payloadArray = frame.getPayloadData().array();
-    assertArrayEquals(Arrays.copyOfRange(buffer,0, bytesCompressed), Arrays.copyOfRange(payloadArray,0,payloadArray.length));
+    assertArrayEquals(Arrays.copyOfRange(buffer, 0, bytesCompressed - 4), payloadArray);
     assertTrue(frame.isRSV1());
     deflateExtension.decodeFrame(frame);
     assertArrayEquals(message, frame.getPayloadData().array());
@@ -113,7 +113,7 @@ public class PerMessageDeflateExtensionTest {
 
     deflateExtension.encodeFrame(frame);
     byte[] payloadArray = frame.getPayloadData().array();
-    assertArrayEquals(Arrays.copyOfRange(buffer,0, bytesCompressed), Arrays.copyOfRange(payloadArray,0,payloadArray.length));
+    assertArrayEquals(Arrays.copyOfRange(buffer, 0, bytesCompressed - 4), payloadArray);
     assertTrue(frame.isRSV1());
     deflateExtension.decodeFrame(frame);
     assertArrayEquals(message, frame.getPayloadData().array());
@@ -214,13 +214,29 @@ public class PerMessageDeflateExtensionTest {
   @Test
   public void testGetProvidedExtensionAsClient() {
     PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
-    assertEquals("permessage-deflate; server_no_context_takeover; client_no_context_takeover",
+    assertEquals("permessage-deflate", deflateExtension.getProvidedExtensionAsClient());
+    deflateExtension.setClientNoContextTakeover(true);
+    assertEquals("permessage-deflate; client_no_context_takeover",
+        deflateExtension.getProvidedExtensionAsClient());
+    deflateExtension.setServerNoContextTakeover(true);
+    assertEquals("permessage-deflate; client_no_context_takeover; server_no_context_takeover",
+        deflateExtension.getProvidedExtensionAsClient());
+    deflateExtension.setClientNoContextTakeover(false);
+    assertEquals("permessage-deflate; server_no_context_takeover",
         deflateExtension.getProvidedExtensionAsClient());
   }
 
   @Test
   public void testGetProvidedExtensionAsServer() {
     PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
+    assertEquals("permessage-deflate", deflateExtension.getProvidedExtensionAsServer());
+    deflateExtension.setClientNoContextTakeover(true);
+    assertEquals("permessage-deflate; client_no_context_takeover",
+        deflateExtension.getProvidedExtensionAsServer());
+    deflateExtension.setServerNoContextTakeover(true);
+    assertEquals("permessage-deflate; client_no_context_takeover; server_no_context_takeover",
+        deflateExtension.getProvidedExtensionAsServer());
+    deflateExtension.setClientNoContextTakeover(false);
     assertEquals("permessage-deflate; server_no_context_takeover",
         deflateExtension.getProvidedExtensionAsServer());
   }
@@ -228,20 +244,20 @@ public class PerMessageDeflateExtensionTest {
   @Test
   public void testToString() {
     PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
-    assertEquals("PerMessageDeflateExtension", deflateExtension.toString());
+    assertEquals("WebSocket Per-Message Deflate", deflateExtension.toString());
   }
 
   @Test
   public void testIsServerNoContextTakeover() {
     PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
-    assertTrue(deflateExtension.isServerNoContextTakeover());
+    assertFalse(deflateExtension.isServerNoContextTakeover());
   }
 
   @Test
   public void testSetServerNoContextTakeover() {
     PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
-    deflateExtension.setServerNoContextTakeover(false);
-    assertFalse(deflateExtension.isServerNoContextTakeover());
+    deflateExtension.setServerNoContextTakeover(true);
+    assertTrue(deflateExtension.isServerNoContextTakeover());
   }
 
   @Test
@@ -261,7 +277,7 @@ public class PerMessageDeflateExtensionTest {
   public void testCopyInstance() {
     PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
     PerMessageDeflateExtension newDeflateExtension = (PerMessageDeflateExtension)deflateExtension.copyInstance();
-    assertEquals("PerMessageDeflateExtension", newDeflateExtension.toString());
+    assertEquals("WebSocket Per-Message Deflate", newDeflateExtension.toString());
     // Also check the values
     assertEquals(deflateExtension.getThreshold(), newDeflateExtension.getThreshold());
     assertEquals(deflateExtension.isClientNoContextTakeover(), newDeflateExtension.isClientNoContextTakeover());
@@ -297,8 +313,8 @@ public class PerMessageDeflateExtensionTest {
   public void testDefaults() {
     PerMessageDeflateExtension deflateExtension = new PerMessageDeflateExtension();
     assertFalse(deflateExtension.isClientNoContextTakeover());
-    assertTrue(deflateExtension.isServerNoContextTakeover());
-    assertEquals(1024, deflateExtension.getThreshold());
+    assertFalse(deflateExtension.isServerNoContextTakeover());
+    assertEquals(64, deflateExtension.getThreshold());
     assertEquals(Deflater.DEFAULT_COMPRESSION, deflateExtension.getCompressionLevel());
   }
 }
