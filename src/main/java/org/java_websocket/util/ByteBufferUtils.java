@@ -33,6 +33,12 @@ import java.nio.ByteBuffer;
 public class ByteBufferUtils {
 
   /**
+   * Shared empty ByteBuffer to avoid repeated allocations.
+   * Safe to share because it has zero capacity and duplicate() provides independent position/limit state.
+   */
+  private static final ByteBuffer EMPTY_BYTE_BUFFER = ByteBuffer.allocate(0);
+
+  /**
    * Private constructor for static class
    */
   private ByteBufferUtils() {
@@ -52,10 +58,12 @@ public class ByteBufferUtils {
     int fremain = source.remaining();
     int toremain = dest.remaining();
     if (fremain > toremain) {
-      int limit = Math.min(fremain, toremain);
-      source.limit(limit);
+      // We know fremain > toremain, so no need for Math.min
+      int originalLimit = source.limit();
+      source.limit(source.position() + toremain);
       dest.put(source);
-      return limit;
+      source.limit(originalLimit);
+      return toremain;
     } else {
       dest.put(source);
       return fremain;
@@ -63,11 +71,12 @@ public class ByteBufferUtils {
   }
 
   /**
-   * Get a ByteBuffer with zero capacity
+   * Get a ByteBuffer with zero capacity. Returns a duplicate of a shared empty buffer
+   * for efficiency - each duplicate has independent position/limit/mark state.
    *
-   * @return empty ByteBuffer
+   * @return empty ByteBuffer with zero capacity
    */
   public static ByteBuffer getEmptyByteBuffer() {
-    return ByteBuffer.allocate(0);
+    return EMPTY_BYTE_BUFFER.duplicate();
   }
 }
