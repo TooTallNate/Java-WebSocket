@@ -105,6 +105,12 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel, ISSLC
    **/
   protected int bufferallocations = 0;
 
+  /**
+   * 2022-06-17 Handshake start time in WSS for the underlying channel. 
+   *            If wss handshake is not completed in 10s, close this channel to prevent cpu overload or unexpected channel error. see #896.
+   */
+  protected long	  handshakeStartTime = System.currentTimeMillis() ;
+  
   public SSLSocketChannel2(SocketChannel channel, SSLEngine sslEngine, ExecutorService exec,
       SelectionKey key) throws IOException {
     if (channel == null || sslEngine == null || exec == null) {
@@ -396,8 +402,21 @@ public class SSLSocketChannel2 implements ByteChannel, WrappedByteChannel, ISSLC
 
   private boolean isHandShakeComplete() {
     HandshakeStatus status = sslEngine.getHandshakeStatus();
-    return status == SSLEngineResult.HandshakeStatus.FINISHED
-        || status == SSLEngineResult.HandshakeStatus.NOT_HANDSHAKING;
+    
+    // handshake status
+    boolean ret = status == SSLEngineResult.HandshakeStatus.FINISHED
+               || status == SSLEngineResult.HandshakeStatus.NOT_HANDSHAKING;
+    
+    if ( ret == false )
+    {
+      // 2022-06-17 If wss handshake is not completed in 10s, close this channel to prevent cpu overload or unexpected channel error. see #896.
+      if ( handshakeStartTime > 0 && ( System.currentTimeMillis() - handshakeStartTime ) > 10000 )
+      {
+        try{close() ;}catch(Exception ex){} ;
+      }
+    }
+
+    return ret;
   }
 
   public SelectableChannel configureBlocking(boolean b) throws IOException {
