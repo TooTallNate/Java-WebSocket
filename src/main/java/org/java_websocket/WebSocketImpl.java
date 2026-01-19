@@ -393,7 +393,9 @@ public class WebSocketImpl implements WebSocket {
     try {
       frames = draft.translateFrame(socketBuffer);
       for (Framedata f : frames) {
-        log.trace("matched frame: {}", f);
+        if (log.isTraceEnabled()) {
+          log.trace("matched frame: {}", f);
+        }
         draft.processFrame(this, f);
       }
     } catch (LimitExceededException e) {
@@ -671,11 +673,42 @@ public class WebSocketImpl implements WebSocket {
     if (frames == null) {
       throw new IllegalArgumentException();
     }
+    List<ByteBuffer> outgoingFrames = createOutgoingBinaryFrame(frames);
+    write(outgoingFrames);
+  }
+
+  private List<ByteBuffer> createOutgoingBinaryFrame(Collection<Framedata> frames) {
+    // most scene send one message, use singletonList which is more fast than singletonList
+    if (frames.size() == 1) {
+      for (Framedata f : frames) {
+        if (log.isTraceEnabled()) {
+          log.trace("send frame: {}", f);
+        }
+        return Collections.singletonList(
+                draft.createBinaryFrame(f)
+        );
+      }
+    }
     ArrayList<ByteBuffer> outgoingFrames = new ArrayList<>();
     for (Framedata f : frames) {
-      log.trace("send frame: {}", f);
+      if (log.isTraceEnabled()) {
+        log.trace("send frame: {}", f);
+      }
       outgoingFrames.add(draft.createBinaryFrame(f));
     }
+    return outgoingFrames;
+  }
+
+  public ByteBuffer createEncodedBinaryFrame(Framedata framedata) {
+    return draft.createBinaryFrame(framedata);
+  }
+
+  public void sendEncodedBinaryFrame(ByteBuffer binaryFrame) {
+    List<ByteBuffer> outgoingFrames= Collections.singletonList(binaryFrame);
+    sendEncodedBinaryFrames(outgoingFrames);
+  }
+
+  public void sendEncodedBinaryFrames(List<ByteBuffer> outgoingFrames) {
     write(outgoingFrames);
   }
 
@@ -734,8 +767,11 @@ public class WebSocketImpl implements WebSocket {
   }
 
   private void write(ByteBuffer buf) {
-    log.trace("write({}): {}", buf.remaining(),
-        buf.remaining() > 1000 ? "too big to display" : new String(buf.array()));
+    // should check isTraceEnabled() to avoid performance down because of log
+    if (log.isTraceEnabled()) {
+      log.trace("write({}): {}", buf.remaining(),
+              buf.remaining() > 1000 ? "too big to display" : new String(buf.array()));
+    }
 
     outQueue.add(buf);
     wsl.onWriteDemand(this);

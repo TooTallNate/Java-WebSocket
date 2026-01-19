@@ -27,6 +27,7 @@ package org.java_websocket.drafts;
 
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -509,11 +510,31 @@ public class Draft_6455 extends Draft {
       throw new IllegalStateException("Size representation not supported/specified");
     }
     if (mask) {
-      ByteBuffer maskkey = ByteBuffer.allocate(4);
-      maskkey.putInt(reuseableRandom.nextInt());
-      buf.put(maskkey.array());
-      for (int i = 0; mes.hasRemaining(); i++) {
-        buf.put((byte) (mes.get() ^ maskkey.get(i % 4)));
+      int maskInt = reuseableRandom.nextInt();
+      if (useFastMask) {
+        //default ByteOrder.BIG_ENDIAN
+        ByteBuffer maskLongkey = ByteBuffer.allocate(8);
+        maskLongkey.putInt(maskInt);
+        maskLongkey.putInt(maskInt);
+        buf.putInt(maskInt);
+        // n / 8 eq n >> 3
+        int length = mes.remaining() >> 3;
+        long maskLong = maskLongkey.getLong(0);
+        for (int i = 0; i < length; i++) {
+          buf.putLong(mes.getLong() ^ maskLong);
+        }
+        for (int i = 0; mes.hasRemaining(); i++) {
+          // x % 2^n 为 x & (2^n - 1)
+          buf.put((byte) (mes.get() ^ maskLongkey.get(i & 3)));
+        }
+      } else {
+        ByteBuffer maskkey = ByteBuffer.allocate(4);
+        maskkey.putInt(maskInt);
+        buf.put(maskkey.array());
+        for (int i = 0; mes.hasRemaining(); i++) {
+          // x % 2^n 为 x & (2^n - 1)
+          buf.put((byte) (mes.get() ^ maskkey.get(i & 3)));
+        }
       }
     } else {
       buf.put(mes);
@@ -524,6 +545,8 @@ public class Draft_6455 extends Draft {
     buf.flip();
     return buf;
   }
+
+  public static boolean useFastMask = true;
 
   private Framedata translateSingleFrame(ByteBuffer buffer)
       throws IncompleteException, InvalidDataException {
@@ -556,10 +579,30 @@ public class Draft_6455 extends Draft {
 
     ByteBuffer payload = ByteBuffer.allocate(checkAlloc(payloadlength));
     if (mask) {
-      byte[] maskskey = new byte[4];
-      buffer.get(maskskey);
-      for (int i = 0; i < payloadlength; i++) {
-        payload.put((byte) (buffer.get(/*payloadstart + i*/) ^ maskskey[i % 4]));
+      if (useFastMask) {
+        byte[] maskskey = new byte[4];
+        buffer.get(maskskey);
+        ByteBuffer maskLongKey = ByteBuffer.allocate(8);
+        maskLongKey.put(maskskey);
+        maskLongKey.put(maskskey);
+
+        // n / 8 eq n >> 3
+        int length = payloadlength >> 3;
+        long maskLong = maskLongKey.getLong(0);
+        //fast mask use 8 byte long
+        for (int i = 0; i < length; i++) {
+          payload.putLong(buffer.getLong() ^ maskLong);
+        }
+        //mask remain bytes
+        for (int i = (length << 3); i < payloadlength; i++) {
+          payload.put((byte) (buffer.get(/*payloadstart + i*/) ^ maskskey[i % 4]));
+        }
+      } else {
+        byte[] maskskey = new byte[4];
+        buffer.get(maskskey);
+        for (int i = 0; i < payloadlength; i++) {
+          payload.put((byte) (buffer.get(/*payloadstart + i*/) ^ maskskey[i % 4]));
+        }
       }
     } else {
       payload.put(buffer.array(), buffer.position(), payload.limit());
@@ -592,6 +635,11 @@ public class Draft_6455 extends Draft {
           (frame.getPayloadData().remaining() > 1000 ? "too big to display"
               : new String(frame.getPayloadData().array())));
     }
+
+    if (frame instanceof TextFrame) {
+      ((TextFrame) frame).setCanSkipCheckUTF8PlayLoad(true);
+    }
+    
     frame.isValid();
     return frame;
   }
@@ -791,6 +839,7 @@ public class Draft_6455 extends Draft {
   public List<Framedata> createFrames(String text, boolean mask) {
     TextFrame curframe = new TextFrame();
     curframe.setPayload(ByteBuffer.wrap(Charsetfunctions.utf8Bytes(text)));
+    curframe.setCanSkipCheckUTF8PlayLoad(true);
     curframe.setTransferemasked(mask);
     try {
       curframe.isValid();
