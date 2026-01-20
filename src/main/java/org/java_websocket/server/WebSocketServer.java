@@ -621,7 +621,16 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
       for (WebSocketWorker ex : decoders) {
         ex.start();
       }
-      onStart();
+      try {
+        onStart();
+      } catch (Exception e) {
+        log.error("Exception in onStart", e);
+        try {
+          onError(null, e);
+        } catch (Exception ex2) {
+          log.error("Exception in onError while handling onStart", ex2);
+        }
+      }
     } catch (IOException ex) {
       handleFatal(null, ex);
       return false;
@@ -735,7 +744,11 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 
   private void handleFatal(WebSocket conn, Exception e) {
     log.error("Shutdown due to fatal error", e);
-    onError(conn, e);
+    try {
+      onError(conn, e);
+    } catch (Exception ex2) {
+      log.error("Exception in onError while handling fatal error", ex2);
+    }
 
     String causeMessage = e.getCause() != null ? " caused by " + e.getCause().getClass().getName() : "";
     String errorMessage = "Got error on server side: " + e.getClass().getName() + causeMessage;
@@ -744,7 +757,11 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
     } catch (InterruptedException e1) {
       Thread.currentThread().interrupt();
       log.error("Interrupt during stop", e);
-      onError(null, e1);
+      try {
+        onError(null, e1);
+      } catch (Exception ex2) {
+        log.error("Exception in onError while handling interrupt during stop", ex2);
+      }
     }
 
     //Shutting down WebSocketWorkers, see #222
@@ -772,7 +789,16 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
   @Override
   public final void onWebsocketOpen(WebSocket conn, Handshakedata handshake) {
     if (addConnection(conn)) {
-      onOpen(conn, (ClientHandshake) handshake);
+      try {
+        onOpen(conn, (ClientHandshake) handshake);
+      } catch (Exception e) {
+        log.error("Exception in onOpen", e);
+        try {
+          onError(conn, e);
+        } catch (Exception ex2) {
+          log.error("Exception in onError while handling onOpen", ex2);
+        }
+      }
     }
   }
 
@@ -781,7 +807,16 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
     selector.wakeup();
     try {
       if (removeConnection(conn)) {
-        onClose(conn, code, reason, remote);
+        try {
+          onClose(conn, code, reason, remote);
+        } catch (Exception e) {
+          log.error("Exception in onClose", e);
+          try {
+            onError(conn, e);
+          } catch (Exception ex2) {
+            log.error("Exception in onError while handling onClose", ex2);
+          }
+        }
       }
     } finally {
       try {
@@ -841,7 +876,11 @@ public abstract class WebSocketServer extends AbstractWebSocket implements Runna
 
   @Override
   public final void onWebsocketError(WebSocket conn, Exception ex) {
-    onError(conn, ex);
+    try {
+      onError(conn, ex);
+    } catch (Exception ex2) {
+      log.error("Exception in onError", ex2);
+    }
   }
 
   @Override
