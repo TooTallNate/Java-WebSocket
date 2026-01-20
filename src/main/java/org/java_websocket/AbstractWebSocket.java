@@ -241,7 +241,7 @@ public abstract class AbstractWebSocket extends WebSocketAdapter {
    * @param minimumPongTime the lowest/oldest allowable last pong time (in nanoTime) before we
    *                        consider the connection to be lost
    */
-  private void executeConnectionLostDetection(WebSocket webSocket, long minimumPongTime) {
+  protected void executeConnectionLostDetection(WebSocket webSocket, long minimumPongTime) {
     if (!(webSocket instanceof WebSocketImpl)) {
       return;
     }
