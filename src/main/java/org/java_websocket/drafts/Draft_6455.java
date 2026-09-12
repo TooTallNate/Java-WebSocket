@@ -163,6 +163,13 @@ public class Draft_6455 extends Draft {
   private final SecureRandom reuseableRandom = new SecureRandom();
 
   /**
+   * Default maximum payload size for a single frame when not explicitly configured (16 MiB).
+   *
+   * @since 1.6.1
+   */
+  public static final int DEFAULT_MAX_FRAME_SIZE = 16 * 1024 * 1024;
+
+  /**
    * Attribute for the maximum allowed size of a frame
    *
    * @since 1.4.0
@@ -207,7 +214,7 @@ public class Draft_6455 extends Draft {
    * @since 1.3.7
    */
   public Draft_6455(List<IExtension> inputExtensions, List<IProtocol> inputProtocols) {
-    this(inputExtensions, inputProtocols, Integer.MAX_VALUE);
+    this(inputExtensions, inputProtocols, DEFAULT_MAX_FRAME_SIZE);
   }
 
   /**
@@ -379,6 +386,15 @@ public class Draft_6455 extends Draft {
    */
   public int getMaxFrameSize() {
     return maxFrameSize;
+  }
+
+  @Override
+  public int checkAlloc(int bytecount) throws InvalidDataException {
+    int allowed = super.checkAlloc(bytecount);
+    if (allowed > maxFrameSize) {
+      throw new LimitExceededException("Payload limit reached.", maxFrameSize);
+    }
+    return allowed;
   }
 
   /**
