@@ -565,6 +565,13 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
       // this catch case covers internal errors only and indicates a bug in this websocket implementation
       onError(e);
       engine.closeConnection(CloseFrame.ABNORMAL_CLOSE, e.getMessage());
+    } catch (VirtualMachineError | ThreadDeath | LinkageError e) {
+      // Fatal Errors rethrown by WebSocketImpl#decodeFrames must surface via onError and
+      // close the connection instead of silently terminating the connect/read thread.
+      // See https://github.com/TooTallNate/Java-WebSocket/issues/1460
+      onError(new Exception(e));
+      engine.closeConnection(CloseFrame.UNEXPECTED_CONDITION,
+          "Got error " + e.getClass().getName());
     }
   }
 
