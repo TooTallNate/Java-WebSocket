@@ -562,8 +562,8 @@ public class Draft_6455 extends Draft {
         payload.put((byte) (buffer.get(/*payloadstart + i*/) ^ maskskey[i % 4]));
       }
     } else {
-      payload.put(buffer.array(), buffer.position(), payload.limit());
-      buffer.position(buffer.position() + payload.limit());
+      buffer.get(payload.array(), 0, payloadlength);
+      payload.position(payloadlength);
     }
 
     FramedataImpl1 frame = FramedataImpl1.get(optcode);
@@ -735,12 +735,11 @@ public class Draft_6455 extends Draft {
 
           if (expectedNextByteCount > availableNextByteCount) {
             // did not receive enough bytes to complete the frame
-            incompleteframe.put(buffer.array(), buffer.position(), availableNextByteCount);
-            buffer.position(buffer.position() + availableNextByteCount);
+            incompleteframe.put(buffer);
             return Collections.emptyList();
           }
-          incompleteframe.put(buffer.array(), buffer.position(), expectedNextByteCount);
-          buffer.position(buffer.position() + expectedNextByteCount);
+          buffer.get(incompleteframe.array(), incompleteframe.position(), expectedNextByteCount);
+          incompleteframe.position(incompleteframe.position() + expectedNextByteCount);
           cur = translateSingleFrame((ByteBuffer) incompleteframe.duplicate().position(0));
           frames.add(cur);
           incompleteframe = null;
